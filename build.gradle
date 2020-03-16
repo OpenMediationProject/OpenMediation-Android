@@ -1,0 +1,94 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    apply from: "${rootProject.projectDir}/config.gradle"
+
+    repositories {
+        google()
+        jcenter()
+        maven { url "https://s3.amazonaws.com/moat-sdk-builds" }
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.5.1'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+ext {
+    //版本信息配置
+    version = [
+            "buildToolsVersion": "25.0.2",
+            "compileSdkVersion": 28,
+            "minSdkVersion"    : 16,
+            "targetSdkVersion" : 28,
+            "versionCode"      : 1,
+            "versionName"      : "1.0"
+    ]
+
+    compileOptions = [
+            "sourceCompatibility": JavaVersion.VERSION_1_8,
+            "targetCompatibility": JavaVersion.VERSION_1_8
+    ]
+
+//support 包相关包的引用
+    dependencies = [
+            //fb
+            "facebook"                   : 'com.facebook.android:audience-network-sdk:5.6.0',
+            //admob
+            "admob"                      : 'com.google.android.gms:play-services-ads:17.2.1',
+            //vungle
+            "vungle"                     : 'com.github.vungle:vungle-android-sdk:6.4.11',
+            //AdColony
+            "adcolony"                   : 'com.adcolony:sdk:4.1.3',
+            //Applovin
+            "applovin"                   : 'com.applovin:applovin-sdk:9.7.2',
+            //MoPub
+            "mopub"                      : 'com.mopub:mopub-sdk:5.8.0@aar',
+            //TapJoy
+            "tapjoy"                     : 'com.tapjoy:tapjoy-android-sdk:12.4.2@aar',
+            //chartboost
+            "chartboost"                 : 'com.chartboost.sdk:chartboost:7.5.0',
+            //unity
+            "unity"                      : 'com.unity3d.ads:unity-ads:3.2.0',
+            //gp-base
+            "play_service_base"          : 'com.google.android.gms:play-services-base:16.1.0',
+            //gp-ads-identifier
+            "play_service_ads_identifier": 'com.google.android.gms:play-services-ads-identifier:16.0.0',
+            //multidex
+            "multidex"                   : 'com.android.support:multidex:1.0.1',
+            //Mintegral
+            "mtg_version"                : '10.1.81',
+
+            "adtiming"                   : 'com.adtiming:mediation-sdk:6.2.1@aar',
+    ]
+}
+
+allprojects {
+    repositories {
+        mavenCentral()
+        google()
+        jcenter()
+        maven {
+            url 'https://jitpack.io'
+        }
+        maven {
+            url "https://adcolony.bintray.com/AdColony"
+        }
+        maven {
+            url "https://s3.amazonaws.com/moat-sdk-builds"
+        }
+        maven {
+            name "Tapjoy's maven repo"
+            url "https://tapjoy.bintray.com/maven"
+        }
+        maven {
+            url "https://dl.adtiming.com/android-sdk"
+        }
+    }
+}

@@ -1,0 +1,15 @@
+ext {
+    adapterVersion = [
+            'adtiming'  : '1.0.0',
+            'admob'     : '1.0.0',
+            'facebook'  : '1.0.0',
+            'unity'     : '1.0.0',
+            'vungle'    : '1.0.0',
+            'adcolony'  : '1.0.0',
+            'applovin'  : '1.0.0',
+            'mopub'     : '1.0.0',
+            'tapjoy'    : '1.0.0',
+            'chartboost': '1.0.0',
+            'mintegral' : '1.0.0'
+    ]
+}

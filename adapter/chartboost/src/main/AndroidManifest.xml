@@ -1,0 +1,25 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.openmediation.sdk.mobileads.chartboost" >
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Allows the SDK to check WiFi details and send Chartboost the
+    MAC address in the HTTP request. This will be used alongside Android ID
+    and/or GAID as the identifier for the user. -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <!-- Allows the SDK to cache all ad assets (creatives, custom frames, etc.)
+     in external memory. This maximizes performance by immediately delivering
+     ads and reducing network traffic used by the SDK. -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <!-- Allows the SDK to handle video playback when interrupted by a call -->
+    <!--<uses-permission android:name="android.permission.READ_PHONE_STATE" />-->
+
+    <application>
+        <activity
+            android:name="com.chartboost.sdk.CBImpressionActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:excludeFromRecents="true"
+            android:hardwareAccelerated="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen" />
+    </application>
+</manifest>

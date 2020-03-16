@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/text1"
+    android:textAppearance="?android:attr/textAppearanceListItemSmall"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="?android:attr/listPreferredItemPaddingStart"
+    android:paddingLeft="?android:attr/listPreferredItemPaddingLeft"
+    android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
+    android:paddingRight="?android:attr/listPreferredItemPaddingRight"
+    android:paddingBottom="8dp"
+    android:gravity="bottom"
+    android:minHeight="@dimen/applovin_sdk_mediationDebuggerSectionHeight"
+    android:background="@color/applovin_sdk_listViewBackground"
+    android:textColor="@color/applovin_sdk_listViewSectionTextColor"
+    android:textSize="@dimen/applovin_sdk_mediationDebuggerSectionTextSize"/>

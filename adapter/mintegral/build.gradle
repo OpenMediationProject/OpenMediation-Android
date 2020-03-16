@@ -1,0 +1,44 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 29
+    buildToolsVersion "29.0.2"
+
+
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 29
+        versionCode 1
+        versionName rootProject.ext.adapterVersion.mintegral
+
+        consumerProguardFiles 'consumer-rules.pro'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    useLibrary 'org.apache.http.legacy'
+}
+
+android.libraryVariants.all { variant ->
+    variant.outputs.all {
+        outputFileName = project.name +'.aar'
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation project(':om-android-sdk')
+
+    implementation 'com.mintegral.msdk:videojs:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk:mtgjscommon:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk:playercommon:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk:reward:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk:videocommon:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk:interstitialvideo:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk:common:' + rootProject.ext.dependencies.mtg_version
+}
