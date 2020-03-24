@@ -8,6 +8,7 @@ Thanks for taking a look at OpenMediation! We offers diversified and competitive
 
 ## Installation
 
+```
 android {
   ...
   defaultConfig {
@@ -41,11 +42,13 @@ dependencies {
   // Mintegral-Adapter
   implementation 'com.adtiming.adapters:mintegral:1.0.0'
 }
+```
 
 ## ProGuard
-  
+```
 -keep class com.openmediation.sdk.mediation.** { *; }
 -keep class com.openmediation.sdk.mobileads.** { *; }
+```
 
 ## Requirements
 We support Android Operating Systems Version 4.1 (API Level 16) and up. Be sure to:
