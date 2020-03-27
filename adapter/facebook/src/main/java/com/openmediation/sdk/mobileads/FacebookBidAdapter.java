@@ -37,7 +37,7 @@ public class FacebookBidAdapter extends BidAdapter {
                     context,
                     appKey,
                     placementId,
-                    getBidFormat(bidAdType)).withTestMode(true);
+                    getBidFormat(bidAdType));
             bidRequest.getFBBid(new FbBidResCallback(callback));
         } catch (ClassNotFoundException e) {
             AdLog.getSingleton().LogE("Facebook bid sdk not been integrated");
