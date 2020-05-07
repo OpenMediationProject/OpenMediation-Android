@@ -16,6 +16,7 @@ import com.vungle.warren.InitCallback;
 import com.vungle.warren.LoadAdCallback;
 import com.vungle.warren.PlayAdCallback;
 import com.vungle.warren.Vungle;
+import com.vungle.warren.error.VungleException;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -67,17 +68,17 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
             }
 
             @Override
-            public void onError(Throwable throwable) {
+            public void onError(VungleException error) {
                 mInitState = InitState.INIT_FAIL;
-                AdLog.getSingleton().LogE("Om-Vungle: Vungle init failed " + throwable.getLocalizedMessage());
+                AdLog.getSingleton().LogE("Om-Vungle: Vungle init failed " + error.getLocalizedMessage());
                 if (!mRvCallback.isEmpty()) {
                     for (Map.Entry<String, RewardedVideoCallback> videoCallbackEntry : mRvCallback.entrySet()) {
-                        videoCallbackEntry.getValue().onRewardedVideoInitFailed("Vungle init failed " + throwable.getLocalizedMessage());
+                        videoCallbackEntry.getValue().onRewardedVideoInitFailed("Vungle init failed " + error.getLocalizedMessage());
                     }
                 }
                 if (!mIsCallback.isEmpty()) {
                     for (Map.Entry<String, InterstitialAdCallback> interstitialAdCallbackEntry : mIsCallback.entrySet()) {
-                        interstitialAdCallbackEntry.getValue().onInterstitialAdInitFailed("Vungle init failed " + throwable.getLocalizedMessage());
+                        interstitialAdCallbackEntry.getValue().onInterstitialAdInitFailed("Vungle init failed " + error.getLocalizedMessage());
                     }
                 }
             }
@@ -298,7 +299,7 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
     }
 
     @Override
-    public void onError(String id, Throwable error) {
+    public void onError(String id, VungleException error) {
         AdLog.getSingleton().LogE("Om-Vungle: Vungle ad play failed, id: "
                 + id + ", message: " + error.getLocalizedMessage());
         if (mRvCallback.containsKey(id)) {
@@ -336,7 +337,7 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
         }
 
         @Override
-        public void onError(String id, Throwable cause) {
+        public void onError(String id, VungleException cause) {
             AdLog.getSingleton().LogE("Om-Vungle: Vungle load failed, message:" + cause.getMessage());
             if (mRvCallback.containsKey(id)) {
                 RewardedVideoCallback callback = mRvCallback.get(id);

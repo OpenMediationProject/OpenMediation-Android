@@ -7,8 +7,10 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import com.openmediation.sdk.banner.AdSize;
 import com.openmediation.sdk.banner.BannerAdListener;
 import com.openmediation.sdk.bid.AuctionUtil;
 import com.openmediation.sdk.core.AbstractHybridAd;
@@ -19,11 +21,14 @@ import com.openmediation.sdk.utils.AdsUtil;
 import com.openmediation.sdk.utils.HandlerUtil;
 import com.openmediation.sdk.utils.PlacementUtils;
 import com.openmediation.sdk.utils.constant.CommonConstants;
+import com.openmediation.sdk.utils.crash.CrashUtil;
 import com.openmediation.sdk.utils.error.ErrorCode;
 import com.openmediation.sdk.utils.event.EventId;
 import com.openmediation.sdk.utils.event.EventUploadManager;
 import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.PlacementInfo;
+
+import java.util.Map;
 
 /**
  * Actual banner ad imp
@@ -33,19 +38,31 @@ public final class BannerImp extends AbstractHybridAd implements View.OnAttachSt
     private FrameLayout mLytBanner;
     private RefreshTask mRefreshTask;
     private HandlerUtil.HandlerHolder mRlwHandler;
+    private AdSize mAdSize;
+    private Activity mActivity;
 
     public BannerImp(Activity activity, String placementId, BannerAdListener listener) {
         super(activity, placementId);
         mBannerListener = listener;
-        mLytBanner = new FrameLayout(activity);
-        mLytBanner.setBackgroundColor(Color.TRANSPARENT);
+        mActivity = activity;
+        mLytBanner = createBannerParent(activity);
         mRlwHandler = new HandlerUtil.HandlerHolder(null);
+    }
+
+    private FrameLayout createBannerParent(Activity activity) {
+        FrameLayout layout = new FrameLayout(activity);
+        layout.setBackgroundColor(Color.TRANSPARENT);
+        return layout;
     }
 
     @Override
     public void loadAd(OmManager.LOAD_TYPE type) {
         AdsUtil.callActionReport(mPlacementId, 0, EventId.CALLED_LOAD);
         super.loadAd(type);
+    }
+
+    public void setAdSize(AdSize adSize) {
+        mAdSize = adSize;
     }
 
     @Override
@@ -70,8 +87,13 @@ public final class BannerImp extends AbstractHybridAd implements View.OnAttachSt
             AuctionUtil.instanceNotifyBidWin(mPlacement.getHbAbt(), instances);
             AuctionUtil.removeBidResponse(mBidResponses, instances);
         }
-        bannerEvent.loadAd(mActRef.get(), PlacementUtils.getPlacementInfo(mPlacementId, instances,
-                AuctionUtil.generateStringRequestData(mBidResponses, instances)));
+        Map<String, String> placementInfo = PlacementUtils.getPlacementInfo(mPlacementId, instances,
+                AuctionUtil.generateStringRequestData(mBidResponses, instances));
+        if (mAdSize != null) {
+            placementInfo.put("width", String.valueOf(mAdSize.getWidth()));
+            placementInfo.put("height", String.valueOf(mAdSize.getHeight()));
+        }
+        bannerEvent.loadAd(mActRef.get(), placementInfo);
         iLoadReport(instances);
     }
 
@@ -120,37 +142,50 @@ public final class BannerImp extends AbstractHybridAd implements View.OnAttachSt
 
     @Override
     protected void onAdReadyCallback() {
-        if (mBannerListener == null) {
-            return;
-        }
-        if (isRefreshTriggered.get()) {
-            isRefreshTriggered.set(false);
-        }
-        if (mCurrentIns != null) {
-            if (mCurrentIns.getObject() instanceof View) {
-                View banner = (View) mCurrentIns.getObject();
-                banner.removeOnAttachStateChangeListener(this);
-                mLytBanner.removeAllViews();
-                banner.addOnAttachStateChangeListener(this);
-                mLytBanner.addView(banner);
-                releaseAdEvent();
-//
-                mBannerListener.onAdReady(mLytBanner);
-                AdsUtil.callbackActionReport(EventId.CALLBACK_LOAD_SUCCESS, mPlacementId, null, null);
-//                }
+        try {
+            if (mBannerListener == null) {
+                return;
+            }
+            if (isRefreshTriggered.get()) {
+                isRefreshTriggered.set(false);
+            }
+            if (mCurrentIns != null) {
+                if (mCurrentIns.getObject() instanceof View) {
+                    View banner = (View) mCurrentIns.getObject();
+                    banner.removeOnAttachStateChangeListener(this);
+                    if (banner.getParent() != null) {
+                        ViewGroup parent = (ViewGroup) banner.getParent();
+                        parent.removeView(banner);
+                    }
+                    banner.addOnAttachStateChangeListener(this);
+                    mLytBanner = createBannerParent(mActivity);
+                    mLytBanner.addView(banner);
+                    releaseAdEvent();
+                    //
+                    mBannerListener.onAdReady(mLytBanner);
+                    EventUploadManager.getInstance().uploadEvent(EventId.CALLBACK_LOAD_SUCCESS,
+                            PlacementUtils.placementEventParams(mPlacementId));
+                    //                }
+                } else {
+                    if (isManualTriggered) {
+                        mBannerListener.onAdFailed(ErrorCode.ERROR_NO_FILL);
+                        errorCallbackReport(ErrorCode.ERROR_NO_FILL);
+                    }
+                }
             } else {
                 if (isManualTriggered) {
                     mBannerListener.onAdFailed(ErrorCode.ERROR_NO_FILL);
                     errorCallbackReport(ErrorCode.ERROR_NO_FILL);
                 }
             }
-        } else {
+            isManualTriggered = false;
+        } catch (Exception e) {
             if (isManualTriggered) {
                 mBannerListener.onAdFailed(ErrorCode.ERROR_NO_FILL);
                 errorCallbackReport(ErrorCode.ERROR_NO_FILL);
             }
+            CrashUtil.getSingleton().saveException(e);
         }
-        isManualTriggered = false;
     }
 
     @Override

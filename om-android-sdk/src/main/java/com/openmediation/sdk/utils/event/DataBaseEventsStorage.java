@@ -10,6 +10,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.cache.DataBaseHelper;
+import com.openmediation.sdk.utils.crash.CrashUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,8 +18,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * DB helper for saving events and reporting; different table from key-value in the same DB
- *
- * 
  */
 public class DataBaseEventsStorage extends DataBaseHelper {
 
@@ -49,12 +48,16 @@ public class DataBaseEventsStorage extends DataBaseHelper {
     }
 
     /**
-     * 
+     *
      */
     void createTable() {
-        getWritableDatabase();
-        mSQLiteDatabase.execSQL(String.format("CREATE TABLE IF NOT EXISTS %s (_id INTEGER PRIMARY KEY AUTOINCREMENT,%s)",
-                DB_TABLE_NAME, DB_COLUMN_EVENT));
+        try {
+            getWritableDatabase();
+            mSQLiteDatabase.execSQL(String.format("CREATE TABLE IF NOT EXISTS %s (_id INTEGER PRIMARY KEY AUTOINCREMENT,%s)",
+                    DB_TABLE_NAME, DB_COLUMN_EVENT));
+        } catch (Exception e) {
+            CrashUtil.getSingleton().saveException(e);
+        }
     }
 
     synchronized void addEvent(Event event) {

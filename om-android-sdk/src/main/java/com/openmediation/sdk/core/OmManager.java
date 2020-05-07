@@ -324,9 +324,9 @@ public final class OmManager implements InitCallback {
                 }
                 mDelayLoadIs.add(placementId);
             } else {
-                if (mIsListeners.containsKey(placementId)) {
+                if (mIsListeners != null && mIsListeners.containsKey(placementId)) {
                     mIsListeners.get(placementId).onInterstitialAdAvailabilityChanged(false);
-                } else if (mMediationIsListeners.containsKey(placementId)) {
+                } else if (mMediationIsListeners != null && mMediationIsListeners.containsKey(placementId)) {
                     mMediationIsListeners.get(placementId).onInterstitialAdLoadFailed(
                             new Error(ErrorCode.CODE_LOAD_SDK_UNINITIALIZED,
                                     ErrorCode.MSG_LOAD_SDK_UNINITIALIZED, -1));
@@ -370,12 +370,12 @@ public final class OmManager implements InitCallback {
         if (isManager != null) {
             isManager.showInterstitialAd(scene);
         } else {
-            if (mIsListeners.containsKey(placementId)) {
+            if (mIsListeners != null && mIsListeners.containsKey(placementId)) {
                 mIsListeners.get(placementId).onInterstitialAdShowFailed(
                         SceneUtil.getScene(PlacementUtils.getPlacement(placementId), scene),
                         new Error(ErrorCode.CODE_SHOW_SDK_UNINITIALIZED,
                                 ErrorCode.MSG_SHOW_SDK_UNINITIALIZED, -1));
-            } else if (mMediationIsListeners.containsKey(placementId)) {
+            } else if (mMediationIsListeners != null && mMediationIsListeners.containsKey(placementId)) {
                 mMediationIsListeners.get(placementId).onInterstitialAdShowFailed(
                         new Error(ErrorCode.CODE_SHOW_SDK_UNINITIALIZED,
                                 ErrorCode.MSG_SHOW_SDK_UNINITIALIZED, -1));
@@ -461,9 +461,9 @@ public final class OmManager implements InitCallback {
                 }
                 mDelayLoadRv.add(placementId);
             } else {
-                if (mRvListeners.containsKey(placementId)) {
+                if (mRvListeners != null && mRvListeners.containsKey(placementId)) {
                     mRvListeners.get(placementId).onRewardedVideoAvailabilityChanged(false);
-                } else if (mMediationRvListeners.containsKey(placementId)) {
+                } else if (mMediationRvListeners != null && mMediationRvListeners.containsKey(placementId)) {
                     mMediationRvListeners.get(placementId).onRewardedVideoLoadFailed(
                             new Error(ErrorCode.CODE_LOAD_SDK_UNINITIALIZED,
                                     ErrorCode.MSG_LOAD_SDK_UNINITIALIZED, -1));
@@ -507,13 +507,13 @@ public final class OmManager implements InitCallback {
         if (rvManager != null) {
             rvManager.showRewardedVideo(scene);
         } else {
-            if (mRvListeners.containsKey(placementId)) {
+            if (mRvListeners != null && mRvListeners.containsKey(placementId)) {
                 mRvListeners.get(placementId).onRewardedVideoAdShowFailed(
                         SceneUtil.getScene(PlacementUtils.getPlacement(placementId), scene),
                         new Error(ErrorCode.CODE_SHOW_SDK_UNINITIALIZED,
                                 ErrorCode.MSG_SHOW_SDK_UNINITIALIZED, -1));
-            } else if (mMediationIsListeners.containsKey(placementId)) {
-                mMediationIsListeners.get(placementId).onInterstitialAdShowFailed(
+            } else if (mMediationRvListeners != null && mMediationRvListeners.containsKey(placementId)) {
+                mMediationRvListeners.get(placementId).onRewardedVideoAdShowFailed(
                         new Error(ErrorCode.CODE_SHOW_SDK_UNINITIALIZED,
                                 ErrorCode.MSG_SHOW_SDK_UNINITIALIZED, -1));
             } else {
@@ -655,14 +655,14 @@ public final class OmManager implements InitCallback {
                 String placementId = placement.getId();
                 switch (adType) {
                     case CommonConstants.INTERSTITIAL:
-                        if (!mIsManagers.containsKey(placementId)) {
+                        if (mIsManagers != null && !mIsManagers.containsKey(placementId)) {
                             IsManager isManager = new IsManager();
                             isManager.setCurrentPlacement(placement);
                             mIsManagers.put(placementId, isManager);
                         }
                         break;
                     case CommonConstants.VIDEO:
-                        if (!mRvManagers.containsKey(placementId)) {
+                        if (mRvManagers != null && !mRvManagers.containsKey(placementId)) {
                             RvManager rvManager = new RvManager();
                             rvManager.setCurrentPlacement(placement);
                             mRvManagers.put(placementId, rvManager);

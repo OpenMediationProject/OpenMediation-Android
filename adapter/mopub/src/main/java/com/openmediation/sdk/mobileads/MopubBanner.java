@@ -21,7 +21,7 @@ public class MopubBanner extends CustomBannerEvent implements MoPubView.BannerAd
     private MoPubView adView;
 
     @Override
-    public void loadAd(final Activity activity, Map<String, String> config) throws Throwable {
+    public void loadAd(final Activity activity, final Map<String, String> config) throws Throwable {
         super.loadAd(activity, config);
         if (!check(activity, config)) {
             return;
@@ -31,11 +31,11 @@ public class MopubBanner extends CustomBannerEvent implements MoPubView.BannerAd
             MoPub.initializeSdk(activity, sdkConfiguration, new SdkInitializationListener() {
                 @Override
                 public void onInitializationFinished() {
-                    loadBannerAd(activity);
+                    loadBannerAd(activity, config);
                 }
             });
         } else {
-            loadBannerAd(activity);
+            loadBannerAd(activity, config);
         }
     }
 
@@ -89,13 +89,26 @@ public class MopubBanner extends CustomBannerEvent implements MoPubView.BannerAd
 
     }
 
-    private void loadBannerAd(Activity activity) {
+    private void loadBannerAd(Activity activity, Map<String, String> config) {
         if (adView == null) {
             adView = new MoPubView(activity);
+            MoPubView.MoPubAdSize adSize = getAdSize(config, adView.getAdSize());
+            adView.setAdSize(adSize);
             adView.setAdUnitId(mInstancesKey);
             adView.setBannerAdListener(this);
         }
 
         adView.loadAd();
+    }
+
+    private MoPubView.MoPubAdSize getAdSize(Map<String, String> config, MoPubView.MoPubAdSize defaultSize) {
+        int[] size = getBannerSize(config);
+        int height = size[1];
+        if (height == MoPubView.MoPubAdSize.HEIGHT_90_INT) {
+            return MoPubView.MoPubAdSize.HEIGHT_90;
+        } else if (height == MoPubView.MoPubAdSize.HEIGHT_250_INT) {
+            return MoPubView.MoPubAdSize.HEIGHT_250;
+        }
+        return defaultSize;
     }
 }

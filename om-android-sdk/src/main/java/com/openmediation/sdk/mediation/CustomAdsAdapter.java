@@ -125,9 +125,9 @@ public abstract class CustomAdsAdapter implements RewardedVideoApi, Interstitial
             return "activity is null";
         }
         if (isDestroyed(activity)) {
-            return "activity is destroied";
+            return "activity is destroyed";
         }
-        if (mAppKey == null) {
+        if (TextUtils.isEmpty(mAppKey)) {
             return "app key is null";
         }
         if (TextUtils.isEmpty(adUnitId)) {
@@ -141,10 +141,10 @@ public abstract class CustomAdsAdapter implements RewardedVideoApi, Interstitial
             return "activity is null";
         }
         if (isDestroyed(activity)) {
-            return "activity is destroied";
+            return "activity is destroyed";
         }
-        if (mAppKey == null) {
-            return "app key is null";
+        if (TextUtils.isEmpty(mAppKey)) {
+            return "app key is empty";
         }
         return "";
     }
@@ -152,12 +152,6 @@ public abstract class CustomAdsAdapter implements RewardedVideoApi, Interstitial
     private void initData(Activity activity, Map<String, Object> dataMap) {
         if (!TextUtils.isEmpty(mAppKey)) {
             return;
-        }
-        if (activity == null) {
-            throw new IllegalArgumentException("Activity Destroy");
-        }
-        if (!dataMap.containsKey("AppKey") || TextUtils.isEmpty((CharSequence) dataMap.get("AppKey"))) {
-            throw new IllegalArgumentException("AppKey is empty");
         }
         mAppKey = (String) dataMap.get("AppKey");
     }

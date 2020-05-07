@@ -26,7 +26,7 @@ android {
 
 android.libraryVariants.all { variant ->
     variant.outputs.all {
-        outputFileName = project.name +'.aar'
+        outputFileName = project.name + '.aar'
     }
 }
 

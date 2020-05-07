@@ -50,10 +50,17 @@ public class MintegralAdapter extends CustomAdsAdapter {
     @Override
     public void initRewardedVideo(Activity activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
-        initSDK(activity.getApplicationContext());
-        if (mDidInitSdk) {
+        String error = check(activity);
+        if (TextUtils.isEmpty(error)) {
+            initSDK(activity.getApplicationContext());
+            if (mDidInitSdk) {
+                if (callback != null) {
+                    callback.onRewardedVideoInitSuccess();
+                }
+            }
+        } else {
             if (callback != null) {
-                callback.onRewardedVideoInitSuccess();
+                callback.onRewardedVideoInitFailed(error);
             }
         }
     }
@@ -85,6 +92,9 @@ public class MintegralAdapter extends CustomAdsAdapter {
 
     @Override
     public boolean isRewardedVideoAvailable(String adUnitId) {
+        if (TextUtils.isEmpty(adUnitId)) {
+            return false;
+        }
         MTGRewardVideoHandler rewardVideoHandler = mRvAds.get(adUnitId);
         return rewardVideoHandler != null && rewardVideoHandler.isReady();
     }
@@ -92,6 +102,13 @@ public class MintegralAdapter extends CustomAdsAdapter {
     @Override
     public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
+        String error = check(activity, adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onRewardedVideoAdShowFailed(error);
+            }
+            return;
+        }
         MTGRewardVideoHandler rewardVideoHandler = mRvAds.get(adUnitId);
         if (rewardVideoHandler == null || !rewardVideoHandler.isReady()) {
             if (callback != null) {
@@ -105,16 +122,24 @@ public class MintegralAdapter extends CustomAdsAdapter {
     @Override
     public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
-        initSDK(activity.getApplicationContext());
-        if (mDidInitSdk) {
+        String error = check(activity);
+        if (TextUtils.isEmpty(error)) {
+            initSDK(activity.getApplicationContext());
+            if (mDidInitSdk) {
+                if (callback != null) {
+                    callback.onInterstitialAdInitSuccess();
+                }
+            }
+        } else {
             if (callback != null) {
-                callback.onInterstitialAdInitSuccess();
+                callback.onInterstitialAdInitFailed(error);
             }
         }
     }
 
     @Override
     public void loadInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+        super.loadInterstitialAd(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
             MTGInterstitialVideoHandler mtgInterstitialVideoHandler = mInterstitialAds.get(adUnitId);
@@ -140,12 +165,23 @@ public class MintegralAdapter extends CustomAdsAdapter {
 
     @Override
     public boolean isInterstitialAdAvailable(String adUnitId) {
+        if (TextUtils.isEmpty(adUnitId)) {
+            return false;
+        }
         MTGInterstitialVideoHandler mtgInterstitialVideoHandler = mInterstitialAds.get(adUnitId);
         return mtgInterstitialVideoHandler != null && mtgInterstitialVideoHandler.isReady();
     }
 
     @Override
     public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+        super.showInterstitialAd(activity, adUnitId, callback);
+        String error = check(activity, adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onInterstitialAdShowFailed(error);
+            }
+            return;
+        }
         MTGInterstitialVideoHandler mtgInterstitialVideoHandler = mInterstitialAds.get(adUnitId);
         if (mtgInterstitialVideoHandler == null || !mtgInterstitialVideoHandler.isReady()) {
             if (callback != null) {

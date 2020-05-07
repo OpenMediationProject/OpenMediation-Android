@@ -120,8 +120,9 @@ public class FacebookAdapter extends CustomAdsAdapter {
 
     @Override
     public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
-        RewardedVideoAd rewardedVideoAd = mFbRvAds.get(adUnitId);
-        if (rewardedVideoAd != null && rewardedVideoAd.isAdLoaded()) {
+        super.showRewardedVideo(activity, adUnitId, callback);
+        if (isRewardedVideoAvailable(adUnitId)) {
+            RewardedVideoAd rewardedVideoAd = mFbRvAds.get(adUnitId);
             rewardedVideoAd.show();
         } else {
             if (callback != null) {
@@ -132,6 +133,9 @@ public class FacebookAdapter extends CustomAdsAdapter {
 
     @Override
     public boolean isRewardedVideoAvailable(String adUnitId) {
+        if (TextUtils.isEmpty(adUnitId)) {
+            return false;
+        }
         RewardedVideoAd rewardedVideoAd = mFbRvAds.get(adUnitId);
         return rewardedVideoAd != null && rewardedVideoAd.isAdLoaded();
     }
@@ -201,8 +205,8 @@ public class FacebookAdapter extends CustomAdsAdapter {
     @Override
     public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
-        InterstitialAd interstitialAd = mFbIsAds.get(adUnitId);
-        if (interstitialAd != null && interstitialAd.isAdLoaded()) {
+        if (isInterstitialAdAvailable(adUnitId)) {
+            InterstitialAd interstitialAd = mFbIsAds.get(adUnitId);
             interstitialAd.show();
         } else {
             if (callback != null) {
@@ -213,6 +217,9 @@ public class FacebookAdapter extends CustomAdsAdapter {
 
     @Override
     public boolean isInterstitialAdAvailable(String adUnitId) {
+        if (TextUtils.isEmpty(adUnitId)) {
+            return false;
+        }
         InterstitialAd interstitialAd = mFbIsAds.get(adUnitId);
         return interstitialAd != null && interstitialAd.isAdLoaded();
     }

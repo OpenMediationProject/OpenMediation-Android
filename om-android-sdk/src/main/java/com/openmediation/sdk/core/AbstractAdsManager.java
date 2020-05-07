@@ -9,6 +9,7 @@ import com.openmediation.sdk.bid.AdTimingAuctionManager;
 import com.openmediation.sdk.bid.AdTimingBidResponse;
 import com.openmediation.sdk.bid.AuctionCallback;
 import com.openmediation.sdk.bid.AuctionUtil;
+import com.openmediation.sdk.core.runnable.AdsScheduleTask;
 import com.openmediation.sdk.utils.ActLifecycle;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.utils.AdRateUtil;
@@ -531,6 +532,10 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
         callbackLoadError(errorResult);
     }
 
+    public void loadAdWithInterval() {
+        loadAdWithAction(OmManager.LOAD_TYPE.INTERVAL);
+    }
+
     /**
      * schedules Load Ad Task
      */
@@ -539,7 +544,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
             return;
         }
         mDidScheduleTaskStarted.set(true);
-        WorkExecutor.scheduleWithFixedDelay(new AdsScheduleTask(), mPlacement.getRf(), mPlacement.getRf(),
+        WorkExecutor.scheduleWithFixedDelay(new AdsScheduleTask(this), mPlacement.getRf(), mPlacement.getRf(),
                 TimeUnit.SECONDS);
     }
 
@@ -770,12 +775,5 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
 
     private void reportEvent(int eventId, JSONObject data) {
         EventUploadManager.getInstance().uploadEvent(eventId, data);
-    }
-
-    private class AdsScheduleTask implements Runnable {
-        @Override
-        public void run() {
-            loadAdWithAction(OmManager.LOAD_TYPE.INTERVAL);
-        }
     }
 }

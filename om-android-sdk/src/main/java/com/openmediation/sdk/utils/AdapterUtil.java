@@ -10,7 +10,6 @@ import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.utils.constant.CommonConstants;
 import com.openmediation.sdk.utils.model.AdNetwork;
-import com.openmediation.sdk.utils.crash.CrashUtil;
 
 import org.json.JSONArray;
 
@@ -37,17 +36,18 @@ public class AdapterUtil {
         mAdapterPaths.put(MediationInfo.MEDIATION_ID_3, getAdapterPath(MediationInfo.MEDIATION_ID_3));
         mAdapterPaths.put(MediationInfo.MEDIATION_ID_4, getAdapterPath(MediationInfo.MEDIATION_ID_4));
         mAdapterPaths.put(MediationInfo.MEDIATION_ID_5, getAdapterPath(MediationInfo.MEDIATION_ID_5));
+        mAdapterPaths.put(MediationInfo.MEDIATION_ID_6, getAdapterPath(MediationInfo.MEDIATION_ID_6));
         mAdapterPaths.put(MediationInfo.MEDIATION_ID_7, getAdapterPath(MediationInfo.MEDIATION_ID_7));
         mAdapterPaths.put(MediationInfo.MEDIATION_ID_8, getAdapterPath(MediationInfo.MEDIATION_ID_8));
         mAdapterPaths.put(MediationInfo.MEDIATION_ID_9, getAdapterPath(MediationInfo.MEDIATION_ID_9));
         mAdapterPaths.put(MediationInfo.MEDIATION_ID_11, getAdapterPath(MediationInfo.MEDIATION_ID_11));
         mAdapterPaths.put(MediationInfo.MEDIATION_ID_12, getAdapterPath(MediationInfo.MEDIATION_ID_12));
+        mAdapterPaths.put(MediationInfo.MEDIATION_ID_13, getAdapterPath(MediationInfo.MEDIATION_ID_13));
         mAdapterPaths.put(MediationInfo.MEDIATION_ID_14, getAdapterPath(MediationInfo.MEDIATION_ID_14));
+        mAdapterPaths.put(MediationInfo.MEDIATION_ID_15, getAdapterPath(MediationInfo.MEDIATION_ID_15));
     }
 
     /**
-     * init接口请求参数时调用此方法，然后向mAdapterMap存值
-     *
      * @return the adns
      */
     public static JSONArray getAdns() {
@@ -66,7 +66,7 @@ public class AdapterUtil {
                 AdNetwork unityAdNetwork = getAdNetWork(adapter);
                 jsonArray.put(unityAdNetwork.toJson());
             } catch (Exception e) {
-                CrashUtil.getSingleton().saveException(e);
+//                CrashUtil.getSingleton().saveException(e);
 //                DeveloperLog.LogD("AdapterUtil getAdns : ", e);
             }
         }
@@ -149,6 +149,9 @@ public class AdapterUtil {
             case MediationInfo.MEDIATION_ID_5:
                 path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_5)).concat(ADAPTER);
                 break;
+            case MediationInfo.MEDIATION_ID_6:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_6)).concat(ADAPTER);
+                break;
             case MediationInfo.MEDIATION_ID_7:
                 path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_7)).concat(ADAPTER);
                 break;
@@ -164,8 +167,14 @@ public class AdapterUtil {
             case MediationInfo.MEDIATION_ID_12:
                 path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_12)).concat(ADAPTER);
                 break;
+            case MediationInfo.MEDIATION_ID_13:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_13)).concat(ADAPTER);
+                break;
             case MediationInfo.MEDIATION_ID_14:
                 path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_14)).concat(ADAPTER);
+                break;
+            case MediationInfo.MEDIATION_ID_15:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_15)).concat(ADAPTER);
                 break;
             default:
                 break;

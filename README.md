@@ -1,4 +1,4 @@
-# OpenMediation SDK for Android
+﻿# OpenMediation SDK for Android
 Thanks for taking a look at OpenMediation! We offers diversified and competitive monetization solution and supports a variety of Ad formats including Native Ad, Interstitial Ad, Banner Ad, and Rewarded Video Ad. The OpenMediation platform works with multiple ad networks include AdMob, Facebook, UnityAds, Vungle, AdColony, AppLovin, MoPub, Tapjoy, Chartboost and Mintegral etc.
 
 ## Communication
@@ -17,30 +17,36 @@ android {
 }
 
 dependencies {
-  implementation 'com.adtiming:om-android-sdk:1.0.0'
+  implementation 'com.adtiming:om-android-sdk:1.1.0'
 
   // AdTiming-Adapter
-  implementation 'com.adtiming.adapters:adtiming:1.0.0'  
+  implementation 'com.adtiming.adapters:adtiming:1.1.0'  
   // AdMob-Adapter
-  implementation 'com.adtiming.adapters:admob:1.0.0'
+  implementation 'com.adtiming.adapters:admob:1.1.0'
   // Facebook-Adapter
-  implementation 'com.adtiming.adapters:facebook:1.0.0'  
+  implementation 'com.adtiming.adapters:facebook:1.1.0'  
   // Unity-Adapter
-  implementation 'com.adtiming.adapters:unity:1.0.0'
+  implementation 'com.adtiming.adapters:unity:1.1.0'
   // Vungle-Adapter
-  implementation 'com.adtiming.adapters:vungle:1.0.0'  
+  implementation 'com.adtiming.adapters:vungle:1.1.0'  
   // AdColony-Adapter
-  implementation 'com.adtiming.adapters:adcolony:1.0.0'
+  implementation 'com.adtiming.adapters:adcolony:1.1.0'
   // AppLovin-Adapter
-  implementation 'com.adtiming.adapters:applovin:1.0.0'  
+  implementation 'com.adtiming.adapters:applovin:1.1.0'  
   // MoPub-Adapter
-  implementation 'com.adtiming.adapters:mopub:1.0.0'
+  implementation 'com.adtiming.adapters:mopub:1.1.0'
   // Tapjoy-Adapter
-  implementation 'com.adtiming.adapters:tapjoy:1.0.0'
+  implementation 'com.adtiming.adapters:tapjoy:1.1.0'
   // Chartboost-Adapter
-  implementation 'com.adtiming.adapters:chartboost:1.0.0'  
+  implementation 'com.adtiming.adapters:chartboost:1.1.0'  
   // Mintegral-Adapter
-  implementation 'com.adtiming.adapters:mintegral:1.0.0'
+  implementation 'com.adtiming.adapters:mintegral:1.1.0'
+  //TikTok-Adapter
+  implementation 'com.adtiming.adapters:tiktok:1.0.0'
+  //IronSource-Adapter
+  implementation 'com.adtiming.adapters:ironsource:1.0.0'
+  //Fyber-Adapter
+  implementation 'com.adtiming.adapters:fyber:1.0.0'
 }
 ```
 

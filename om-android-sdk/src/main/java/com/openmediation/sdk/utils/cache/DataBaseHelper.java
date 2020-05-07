@@ -93,11 +93,11 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     ArrayList<String[]> rawQuery(String sql) {
         Cursor cursor = null;
         ArrayList<String[]> dataList = new ArrayList<>();
-        getWritableDatabase();
-        if (!isRead()) {
-            return dataList;
-        }
         try {
+            getWritableDatabase();
+            if (!isRead()) {
+                return dataList;
+            }
             cursor = mSQLiteDatabase.rawQuery(sql, null);
             if (cursor != null && cursor.moveToFirst()) {
                 do {

@@ -115,6 +115,14 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
 
     @Override
     public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+        super.showRewardedVideo(activity, adUnitId, callback);
+        String error = check(activity, adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onRewardedVideoAdShowFailed(error);
+            }
+            return;
+        }
         if (UnityAds.isReady(adUnitId)) {
             UnityAds.show(activity, adUnitId);
         } else {
@@ -134,10 +142,17 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
     public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
         AdLog.getSingleton().LogD("UnityAdapter", "initInterstitialAd, appkey:" + mAppKey);
-        initSDK(activity);
-        if (mDidInit) {
+        String error = check(activity);
+        if (TextUtils.isEmpty(error)) {
+            initSDK(activity);
+            if (mDidInit) {
+                if (callback != null) {
+                    callback.onInterstitialAdInitSuccess();
+                }
+            }
+        } else {
             if (callback != null) {
-                callback.onInterstitialAdInitSuccess();
+                callback.onInterstitialAdInitFailed(error);
             }
         }
     }
@@ -176,6 +191,13 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
     @Override
     public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
+        String error = check(activity, adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onInterstitialAdShowFailed(error);
+            }
+            return;
+        }
         if (UnityAds.isReady(adUnitId)) {
             UnityAds.show(activity, adUnitId);
         } else {

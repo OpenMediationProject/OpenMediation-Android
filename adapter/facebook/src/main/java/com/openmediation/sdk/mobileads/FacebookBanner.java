@@ -36,7 +36,7 @@ public class FacebookBanner extends CustomBannerEvent implements AdListener {
             adView.loadAd();
             return;
         }
-        AdSize adSize = AdSize.BANNER_HEIGHT_50;
+        AdSize adSize = getAdSize(config);
         adView = new AdView(activity.getApplicationContext(), mInstancesKey, adSize);
         AdView.AdViewLoadConfigBuilder loadConfigBuilder = adView.buildLoadAdConfig();
         if (config.containsKey(PAY_LOAD)) {
@@ -89,6 +89,17 @@ public class FacebookBanner extends CustomBannerEvent implements AdListener {
     @Override
     public void onLoggingImpression(Ad ad) {
 
+    }
+
+    private AdSize getAdSize(Map<String, String> config) {
+        int[] size = getBannerSize(config);
+        int height = size[1];
+        if (height == AdSize.BANNER_HEIGHT_90.getHeight()) {
+            return AdSize.BANNER_HEIGHT_90;
+        } else if (height == AdSize.RECTANGLE_HEIGHT_250.getHeight()) {
+            return AdSize.RECTANGLE_HEIGHT_250;
+        }
+        return AdSize.BANNER_HEIGHT_50;
     }
 
     private void initSdk(Activity activity) {

@@ -51,14 +51,22 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
     @Override
     public void initRewardedVideo(Activity activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
-        initAdColony(activity, dataMap);
-        if (callback != null) {
-            callback.onRewardedVideoInitSuccess();
+        String error = check(activity);
+        if (TextUtils.isEmpty(error)) {
+            initAdColony(activity, dataMap);
+            if (callback != null) {
+                callback.onRewardedVideoInitSuccess();
+            }
+        } else {
+            if (callback != null) {
+                callback.onRewardedVideoInitFailed(error);
+            }
         }
     }
 
     @Override
     public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+        super.loadRewardedVideo(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
             AdColonyInterstitial rvAd = mAdColonyAds.get(adUnitId);
@@ -76,6 +84,7 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
 
     @Override
     public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+        super.showRewardedVideo(activity, adUnitId, callback);
         if (isRewardedVideoAvailable(adUnitId)) {
             AdColonyInterstitial interstitial = mAdColonyAds.get(adUnitId);
             if (interstitial != null) {

@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.openmediation.sdk.demo"
-        minSdkVersion 17
+        minSdkVersion 19
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
@@ -56,6 +56,8 @@ dependencies {
     implementation rootProject.ext.dependencies.chartboost
     //unity
     implementation rootProject.ext.dependencies.unity
+    //ironsource
+    implementation rootProject.ext.dependencies.ironsource
 
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
@@ -75,6 +77,9 @@ dependencies {
     implementation project(path: ':adapter:mopub')
     implementation project(path: ':om-android-sdk')
     implementation project(path: ':adapter:mintegral')
+    implementation project(path: ':adapter:ironsource')
+//    implementation project(path: ':adapter:fyber')
+//    implementation project(path: ':adapter:tiktok')
 }
 
 repositories {

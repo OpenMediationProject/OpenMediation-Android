@@ -4,13 +4,13 @@
 package com.openmediation.sdk.utils.constant;
 
 public interface CommonConstants {
-    String INIT_URL = "https://omdemoserver.adtiming.com/init";
+    String INIT_URL = "https://omtest.adtiming.com/init";
 
     String CHARTSET_UTF8 = "UTF-8";
     int PLAT_FORM_ANDROID = 1;
     int API_VERSION = 1;
 
-    String SDK_VERSION_NAME = "1.0.0";
+    String SDK_VERSION_NAME = "1.1.0";
 
     String ADTYPE_BANNER = "Banner";
     String ADTYPE_NATIVE = "Native";

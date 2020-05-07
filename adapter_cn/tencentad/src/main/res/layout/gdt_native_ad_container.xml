@@ -1,0 +1,25 @@
+<com.qq.e.ads.nativ.widget.NativeAdContainer xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/gdt_native_ad_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+        <FrameLayout
+            android:id="@+id/gdt_custom_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true">
+
+            <ImageView
+                android:id="@+id/gdt_img_poster"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scaleType="fitXY" />
+
+            <com.qq.e.ads.nativ.MediaView
+                android:id="@+id/gdt_media_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="#000" />
+        </FrameLayout>
+</com.qq.e.ads.nativ.widget.NativeAdContainer>

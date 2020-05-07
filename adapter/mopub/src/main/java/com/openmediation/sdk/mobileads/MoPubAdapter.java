@@ -4,7 +4,6 @@
 package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
@@ -40,7 +39,7 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
 
     private MoPubRewardedVideoManager.RequestParameters mRequestParameters;
     private String mShowingId;
-    private Activity mActivity;
+
 
     public MoPubAdapter() {
         mRvCallback = new ConcurrentHashMap<>();
@@ -68,7 +67,6 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
     @Override
     public void onResume(Activity activity) {
         super.onResume(activity);
-        mActivity = activity;
         MoPub.onCreate(activity);
         MoPub.onStart(activity);
         MoPub.onResume(activity);
@@ -108,23 +106,33 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
     public void initRewardedVideo(Activity activity, Map<String, Object> dataMap
             , final RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
-        String pid = (String) dataMap.get("pid");
-        switch (mInitState) {
-            case NOT_INIT:
-                mRvCallback.put(pid, callback);
-                initSDK(activity, pid);
-                break;
-            case INIT_PENDING:
-                mRvCallback.put(pid, callback);
-                break;
-            case INIT_SUCCESS:
-                callback.onRewardedVideoInitSuccess();
-                break;
-            case INIT_FAIL:
-                callback.onRewardedVideoInitFailed("MoPub initRewardedVideo failed");
-                break;
-            default:
-                break;
+        String pid = "";
+        if (dataMap.get("pid") != null) {
+            pid = (String) dataMap.get("pid");
+        }
+        String error = check(activity, pid);
+        if (TextUtils.isEmpty(error)) {
+            switch (mInitState) {
+                case NOT_INIT:
+                    mRvCallback.put(pid, callback);
+                    initSDK(activity, pid);
+                    break;
+                case INIT_PENDING:
+                    mRvCallback.put(pid, callback);
+                    break;
+                case INIT_SUCCESS:
+                    callback.onRewardedVideoInitSuccess();
+                    break;
+                case INIT_FAIL:
+                    callback.onRewardedVideoInitFailed("MoPub initRewardedVideo failed");
+                    break;
+                default:
+                    break;
+            }
+        } else {
+            if (callback != null) {
+                callback.onRewardedVideoInitFailed(error);
+            }
         }
     }
 
@@ -132,7 +140,6 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
     public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
-            mActivity = activity;
             if (!mRvCallback.containsKey(adUnitId)) {
                 mRvCallback.put(adUnitId, callback);
             }
@@ -152,7 +159,14 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
 
     @Override
     public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
-        mActivity = activity;
+        super.showRewardedVideo(activity, adUnitId, callback);
+        String error = check(activity, adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onRewardedVideoAdShowFailed(error);
+            }
+            return;
+        }
         if (isRewardedVideoAvailable(adUnitId)) {
             if (!mRvCallback.containsKey(adUnitId)) {
                 mRvCallback.put(adUnitId, callback);
@@ -167,11 +181,14 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
 
     @Override
     public boolean isRewardedVideoAvailable(String adUnitId) {
+        if (TextUtils.isEmpty(adUnitId)) {
+            return false;
+        }
         return MoPubRewardedVideos.hasRewardedVideo(adUnitId);
     }
 
     @Override
-    public void onRewardedVideoLoadSuccess(@NonNull String adUnitId) {
+    public void onRewardedVideoLoadSuccess(String adUnitId) {
         AdLog.getSingleton().LogD("onRewardedVideoLoadSuccess : " + adUnitId);
         RewardedVideoCallback callback = mRvCallback.get(adUnitId);
         if (callback != null) {
@@ -180,7 +197,7 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
     }
 
     @Override
-    public void onRewardedVideoLoadFailure(@NonNull String adUnitId, @NonNull MoPubErrorCode errorCode) {
+    public void onRewardedVideoLoadFailure(String adUnitId, MoPubErrorCode errorCode) {
         AdLog.getSingleton().LogE("onRewardedVideoLoadFailure : " + adUnitId + ", errorCode:" + errorCode);
         RewardedVideoCallback callback = mRvCallback.get(adUnitId);
         if (callback != null) {
@@ -189,17 +206,18 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
     }
 
     @Override
-    public void onRewardedVideoStarted(@NonNull String adUnitId) {
+    public void onRewardedVideoStarted(String adUnitId) {
         AdLog.getSingleton().LogD("onRewardedVideoStarted : " + adUnitId);
         mShowingId = adUnitId;
         RewardedVideoCallback callback = mRvCallback.get(adUnitId);
         if (callback != null) {
+            callback.onRewardedVideoAdShowSuccess();
             callback.onRewardedVideoAdStarted();
         }
     }
 
     @Override
-    public void onRewardedVideoPlaybackError(@NonNull String adUnitId, @NonNull MoPubErrorCode errorCode) {
+    public void onRewardedVideoPlaybackError(String adUnitId, MoPubErrorCode errorCode) {
         AdLog.getSingleton().LogE("onRewardedVideoPlaybackError : " + adUnitId);
         RewardedVideoCallback callback = mRvCallback.get(adUnitId);
         if (callback != null) {
@@ -208,7 +226,7 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
     }
 
     @Override
-    public void onRewardedVideoClicked(@NonNull String adUnitId) {
+    public void onRewardedVideoClicked(String adUnitId) {
         AdLog.getSingleton().LogD("onRewardedVideoClicked : " + adUnitId);
         RewardedVideoCallback callback = mRvCallback.get(adUnitId);
         if (callback != null) {
@@ -217,7 +235,7 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
     }
 
     @Override
-    public void onRewardedVideoClosed(@NonNull String adUnitId) {
+    public void onRewardedVideoClosed(String adUnitId) {
         AdLog.getSingleton().LogD("onRewardedVideoClosed : " + adUnitId);
         RewardedVideoCallback callback = mRvCallback.get(adUnitId);
         if (callback != null) {
@@ -226,9 +244,9 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
     }
 
     @Override
-    public void onRewardedVideoCompleted(@NonNull Set<String> adUnitIds, @NonNull MoPubReward reward) {
+    public void onRewardedVideoCompleted(Set<String> adUnitIds, MoPubReward reward) {
         AdLog.getSingleton().LogD("onRewardedVideoCompleted : " + adUnitIds + ", reward:" + reward);
-        if (TextUtils.isEmpty(mShowingId)) {
+        if (!TextUtils.isEmpty(mShowingId)) {
             RewardedVideoCallback callback = mRvCallback.get(mShowingId);
             if (callback != null) {
                 callback.onRewardedVideoAdEnded();
@@ -240,23 +258,33 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
     @Override
     public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
-        String pid = (String) dataMap.get("pid");
-        switch (mInitState) {
-            case NOT_INIT:
-                mIsCallback.put(getInterstitialAd(activity, pid), callback);
-                initSDK(activity, pid);
-                break;
-            case INIT_PENDING:
-                mIsCallback.put(getInterstitialAd(activity, pid), callback);
-                break;
-            case INIT_SUCCESS:
-                callback.onInterstitialAdInitSuccess();
-                break;
-            case INIT_FAIL:
-                callback.onInterstitialAdInitFailed("MoPub initInterstitialAd failed");
-                break;
-            default:
-                break;
+        String pid = "";
+        if (dataMap.get("pid") != null) {
+            pid = (String) dataMap.get("pid");
+        }
+        String error = check(activity, pid);
+        if (TextUtils.isEmpty(error)) {
+            switch (mInitState) {
+                case NOT_INIT:
+                    mIsCallback.put(getInterstitialAd(activity, pid), callback);
+                    initSDK(activity, pid);
+                    break;
+                case INIT_PENDING:
+                    mIsCallback.put(getInterstitialAd(activity, pid), callback);
+                    break;
+                case INIT_SUCCESS:
+                    callback.onInterstitialAdInitSuccess();
+                    break;
+                case INIT_FAIL:
+                    callback.onInterstitialAdInitFailed("MoPub initInterstitialAd failed");
+                    break;
+                default:
+                    break;
+            }
+        } else {
+            if (callback != null) {
+                callback.onInterstitialAdInitFailed(error);
+            }
         }
     }
 
@@ -265,7 +293,6 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
         super.loadInterstitialAd(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
-            mActivity = activity;
             MoPubInterstitial interstitial = getInterstitialAd(activity, adUnitId);
             if (!mIsCallback.containsKey(interstitial)) {
                 mIsCallback.put(interstitial, callback);
@@ -287,12 +314,19 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
     @Override
     public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
-        mActivity = activity;
+        String error = check(activity, adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onInterstitialAdShowFailed(error);
+            }
+            return;
+        }
         if (isInterstitialAdAvailable(adUnitId)) {
             MoPubInterstitial interstitial = getInterstitialAd(activity, adUnitId);
             if (!mIsCallback.containsKey(interstitial)) {
                 mIsCallback.put(interstitial, callback);
             }
+            mShowingId = adUnitId;
             interstitial.show();
         } else {
             if (callback != null) {
@@ -303,7 +337,10 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
 
     @Override
     public boolean isInterstitialAdAvailable(String adUnitId) {
-        MoPubInterstitial interstitial = getInterstitialAd(mActivity, adUnitId);
+        if (TextUtils.isEmpty(adUnitId)) {
+            return false;
+        }
+        MoPubInterstitial interstitial = mInterstitialAds.get(adUnitId);
         return interstitial != null && interstitial.isReady();
     }
 
@@ -323,7 +360,7 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
                 + (interstitial != null ? interstitial.getLocation() : null));
         InterstitialAdCallback callback = mIsCallback.get(interstitial);
         if (callback != null) {
-            callback.onInterstitialAdInitSuccess();
+            callback.onInterstitialAdLoadSuccess();
         }
     }
 
@@ -365,6 +402,14 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
         InterstitialAdCallback callback = mIsCallback.get(interstitial);
         if (callback != null) {
             callback.onInterstitialAdClosed();
+        }
+        if (interstitial != null) {
+            mIsCallback.remove(interstitial);
+            MoPubInterstitial mi = mInterstitialAds.get(mShowingId);
+            if (mi == interstitial) {
+                mi.destroy();
+                mInterstitialAds.remove(mShowingId);
+            }
         }
     }
 

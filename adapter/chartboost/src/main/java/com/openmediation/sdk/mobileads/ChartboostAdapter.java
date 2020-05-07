@@ -31,6 +31,8 @@ public class ChartboostAdapter extends CustomAdsAdapter {
     private ConcurrentMap<String, RewardedVideoCallback> mRvCallbacks;
     private ConcurrentMap<String, InterstitialAdCallback> mIsCallbacks;
 
+    private CbCallback mCbDelegate;
+
     public ChartboostAdapter() {
         mIsLoadTriggerIds = new ConcurrentLinkedQueue<>();
         mRvLoadTriggerIds = new ConcurrentLinkedQueue<>();
@@ -41,6 +43,7 @@ public class ChartboostAdapter extends CustomAdsAdapter {
     private void initSDK(final Activity activity) {
         AdLog.getSingleton().LogD("init chartboost sdk");
         if (!hasInit.get()) {
+            mCbDelegate = new CbCallback();
             activity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -49,18 +52,14 @@ public class ChartboostAdapter extends CustomAdsAdapter {
                         String[] tmp = mAppKey.split("#");
                         String appId = tmp[0];
                         String signature = tmp[1];
-                        Chartboost.setActivityCallbacks(false);
                         Chartboost.setPIDataUseConsent(activity, Chartboost.CBPIDataUseConsent.YES_BEHAVIORAL);
-                        Chartboost.startWithAppId(activity, appId, signature);
-                        Chartboost.setDelegate(new CbCallback());
-                        Chartboost.setMediation(Chartboost.CBMediation.CBMediationOther, getAdapterVersion());
+                        Chartboost.startWithAppId(activity.getApplication(), appId, signature);
+                        Chartboost.setDelegate(mCbDelegate);
+                        Chartboost.setMediation(Chartboost.CBMediation.CBMediationOther, getAdapterVersion(), "");
                         Chartboost.setShouldRequestInterstitialsInFirstSession(false);
                         Chartboost.setShouldPrefetchVideoContent(false);
                         Chartboost.setAutoCacheAds(true);
 
-                        Chartboost.onCreate(activity);
-                        Chartboost.onStart(activity);
-                        Chartboost.onResume(activity);
                     } catch (Exception e) {
                         AdLog.getSingleton().LogE("Om-Chartboost", e);
                     }
@@ -98,22 +97,6 @@ public class ChartboostAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void onResume(Activity activity) {
-        if (activity != null) {
-            Chartboost.onStart(activity);
-            Chartboost.onResume(activity);
-        }
-    }
-
-    @Override
-    public void onPause(Activity activity) {
-        if (activity != null) {
-            Chartboost.onPause(activity);
-            Chartboost.onStop(activity);
-        }
-    }
-
-    @Override
     public void initRewardedVideo(Activity activity, Map<String, Object> dataMap
             , RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
@@ -141,6 +124,9 @@ public class ChartboostAdapter extends CustomAdsAdapter {
                 }
             } else {
                 mRvLoadTriggerIds.add(adUnitId);
+                if (Chartboost.getDelegate() == null) {
+                    Chartboost.setDelegate(mCbDelegate);
+                }
                 Chartboost.cacheRewardedVideo(adUnitId);
             }
         } else {
@@ -155,6 +141,9 @@ public class ChartboostAdapter extends CustomAdsAdapter {
         String checkError = check(activity, adUnitId);
         if (TextUtils.isEmpty(checkError)) {
             if (Chartboost.hasRewardedVideo(adUnitId)) {
+                if (Chartboost.getDelegate() == null) {
+                    Chartboost.setDelegate(mCbDelegate);
+                }
                 Chartboost.showRewardedVideo(adUnitId);
             } else {
                 AdLog.getSingleton().LogE("chartboost ad not ready");
@@ -199,6 +188,9 @@ public class ChartboostAdapter extends CustomAdsAdapter {
                 }
             } else {
                 mIsLoadTriggerIds.add(adUnitId);
+                if (Chartboost.getDelegate() == null) {
+                    Chartboost.setDelegate(mCbDelegate);
+                }
                 Chartboost.cacheInterstitial(adUnitId);
             }
         } else {
@@ -214,6 +206,9 @@ public class ChartboostAdapter extends CustomAdsAdapter {
         String checkError = check(activity, adUnitId);
         if (TextUtils.isEmpty(checkError)) {
             if (Chartboost.hasInterstitial(adUnitId)) {
+                if (Chartboost.getDelegate() == null) {
+                    Chartboost.setDelegate(mCbDelegate);
+                }
                 Chartboost.showInterstitial(adUnitId);
             } else {
                 AdLog.getSingleton().LogE("chartboost ad not ready");

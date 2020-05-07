@@ -301,7 +301,7 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
         if (mLoadTs > mCallbackTs) {
             mCallbackTs = System.currentTimeMillis();
         }
-        cleanAfterCloseOrFailed();
+//        cleanAfterCloseOrFailed();
         HandlerUtil.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -403,16 +403,20 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
      * @param instances the instances
      */
     protected void insImpReport(BaseInstance instances) {
-        if (isDestroyed) {
-            return;
-        }
-        mCurrentIns.onInsShow(null);
-        if (isManualTriggered) {
-            LrReportHelper.report(instances, OmManager.LOAD_TYPE.MANUAL.getValue(), mPlacement.getWfAbt(),
-                    CommonConstants.INSTANCE_IMPR);
-        } else {
-            LrReportHelper.report(instances, OmManager.LOAD_TYPE.INTERVAL.getValue(), mPlacement.getWfAbt(),
-                    CommonConstants.INSTANCE_IMPR);
+        try {
+            if (isDestroyed) {
+                return;
+            }
+            mCurrentIns.onInsShow(null);
+            if (isManualTriggered) {
+                LrReportHelper.report(instances, OmManager.LOAD_TYPE.MANUAL.getValue(), mPlacement.getWfAbt(),
+                        CommonConstants.INSTANCE_IMPR);
+            } else {
+                LrReportHelper.report(instances, OmManager.LOAD_TYPE.INTERVAL.getValue(), mPlacement.getWfAbt(),
+                        CommonConstants.INSTANCE_IMPR);
+            }
+        } catch (Exception e) {
+            CrashUtil.getSingleton().saveException(e);
         }
     }
 

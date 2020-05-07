@@ -39,6 +39,12 @@ public class BannerAd {
         }
     }
 
+    public void setAdSize(AdSize adSize) {
+        if (mBanner != null) {
+            mBanner.setAdSize(adSize);
+        }
+    }
+
     /**
      * Cleans up all {@link BannerAd} state. Call this method when the {@link BannerAd} will never be shown to a
      * user again.
