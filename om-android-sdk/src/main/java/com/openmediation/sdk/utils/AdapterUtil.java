@@ -9,6 +9,7 @@ import android.util.SparseArray;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.utils.constant.CommonConstants;
+import com.openmediation.sdk.utils.crash.CrashUtil;
 import com.openmediation.sdk.utils.model.AdNetwork;
 
 import org.json.JSONArray;
@@ -66,8 +67,8 @@ public class AdapterUtil {
                 AdNetwork unityAdNetwork = getAdNetWork(adapter);
                 jsonArray.put(unityAdNetwork.toJson());
             } catch (Exception e) {
-//                CrashUtil.getSingleton().saveException(e);
-//                DeveloperLog.LogD("AdapterUtil getAdns : ", e);
+                CrashUtil.getSingleton().saveException(e);
+                DeveloperLog.LogD("AdapterUtil getAdns : ", e);
             }
         }
         return jsonArray;

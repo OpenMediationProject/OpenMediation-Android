@@ -224,6 +224,7 @@ public class MainActivity extends Activity {
             }
         });
         bannerAd.loadAd();
+
     }
 
     public void loadAndShowNative(View view) {

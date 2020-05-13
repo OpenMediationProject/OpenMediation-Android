@@ -17,7 +17,7 @@ public class AdtUtil {
     public static void init(Context context) {
         application = (Application) context.getApplicationContext();
 
-        DeveloperLog.enableDebug(application, false);
+        DeveloperLog.enableDebug(application, true);
         CrashUtil.getSingleton().init();
     }
 

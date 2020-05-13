@@ -78,8 +78,8 @@ dependencies {
     implementation project(path: ':om-android-sdk')
     implementation project(path: ':adapter:mintegral')
     implementation project(path: ':adapter:ironsource')
-//    implementation project(path: ':adapter:fyber')
-//    implementation project(path: ':adapter:tiktok')
+    implementation project(path: ':adapter:fyber')
+    implementation project(path: ':adapter:tiktok')
 }
 
 repositories {

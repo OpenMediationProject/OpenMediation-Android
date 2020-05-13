@@ -4,6 +4,7 @@
 package com.openmediation.sdk.utils.request.network;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.openmediation.sdk.utils.IOUtil;
 import com.openmediation.sdk.utils.constant.CommonConstants;
@@ -25,7 +26,9 @@ public class StreamBody implements ResponseBody {
     @Override
     public String string() throws IOException {
         String charset = Headers.parseSubValue(mContentType, "charset", CommonConstants.CHARTSET_UTF8);
-        return TextUtils.isEmpty(charset) ? IOUtil.toString(mStream) : IOUtil.toString(mStream, charset);
+        String result=TextUtils.isEmpty(charset) ? IOUtil.toString(mStream) : IOUtil.toString(mStream, charset);
+        Log.i("AdtDebug", "result=" + result);
+        return result;
     }
 
     @Override

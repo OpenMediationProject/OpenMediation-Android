@@ -4,6 +4,7 @@
 package com.openmediation.sdk.utils.request.network.connect;
 
 import android.os.Build;
+import android.util.Log;
 
 import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.IOUtil;
@@ -38,7 +39,8 @@ public class HttpConnection extends AbstractUrlConnection {
     @Override
     public URLConnection connect(Request request) throws Exception {
         String u = request.getUrl();
-        DeveloperLog.LogD("HttpConnection", "url is : " + u);
+//        DeveloperLog.LogD("HttpConnection", "url is : " + u);
+        Log.i("AdtDebug", "url=" + u);
         URL url = new URL(u);
         mConnection = (HttpURLConnection) url.openConnection();
         mConnection.setConnectTimeout(request.getConnectTimeout());
