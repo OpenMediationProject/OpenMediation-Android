@@ -7,7 +7,6 @@ import android.app.Activity;
 import android.content.res.Configuration;
 import android.text.TextUtils;
 
-import com.openmediation.sdk.mobileads.tiktok.BuildConfig;
 import com.bytedance.sdk.openadsdk.AdSlot;
 import com.bytedance.sdk.openadsdk.TTAdConstant;
 import com.bytedance.sdk.openadsdk.TTAdNative;
@@ -18,6 +17,7 @@ import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
+import com.openmediation.sdk.mobileads.tiktok.BuildConfig;
 import com.openmediation.sdk.utils.AdLog;
 
 import java.util.Map;
