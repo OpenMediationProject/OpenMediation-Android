@@ -6,6 +6,7 @@ package com.openmediation.sdk.demo;
 import android.app.Activity;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -32,10 +33,13 @@ import com.openmediation.sdk.nativead.MediaView;
 import com.openmediation.sdk.nativead.NativeAd;
 import com.openmediation.sdk.nativead.NativeAdListener;
 import com.openmediation.sdk.nativead.NativeAdView;
+import com.openmediation.sdk.utils.constant.CommonConstants;
 import com.openmediation.sdk.utils.error.Error;
 import com.openmediation.sdk.utils.model.Scene;
 import com.openmediation.sdk.video.RewardedVideoAd;
 import com.openmediation.sdk.video.RewardedVideoListener;
+
+import java.nio.charset.Charset;
 
 public class MainActivity extends Activity {
 
@@ -76,6 +80,13 @@ public class MainActivity extends Activity {
         if (InterstitialAd.isReady()) {
             setInterstitialButtonStat(true);
         }
+        String str=getAdapterName("QWRUaW1pbmc=");
+        Log.i("tjt",str);
+    }
+
+    protected static String getAdapterName(String platName) {
+        return new String(Base64.decode(platName, Base64.NO_WRAP),
+                Charset.forName(CommonConstants.CHARTSET_UTF8));
     }
 
 

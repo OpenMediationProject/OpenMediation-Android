@@ -2,10 +2,17 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion rootProject.ext.version.compileSdkVersion
-
+    signingConfigs {
+        demo {
+            keyAlias 'com.light.cleaner.zero.jks'
+            keyPassword 'candymobi2019'
+            storeFile file('com.light.cleaner.zero.jks')
+            storePassword 'candymobi2019'
+        }
+    }
 
     defaultConfig {
-        applicationId "com.openmediation.sdk.demo"
+        applicationId "com.light.cleaner.zero"
         minSdkVersion 19
         targetSdkVersion 28
         versionCode 1
@@ -17,9 +24,15 @@ android {
     }
 
     buildTypes {
-        release {
+        debug {
             minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.demo
+        }
+        release {
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.demo
         }
     }
     compileOptions {
@@ -79,7 +92,7 @@ dependencies {
     implementation project(path: ':adapter:mintegral')
     implementation project(path: ':adapter:ironsource')
     implementation project(path: ':adapter:fyber')
-    implementation project(path: ':adapter:tiktok')
+    implementation project(path: ':adapter_cn:tiktok')
 }
 
 repositories {
