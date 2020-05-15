@@ -11,7 +11,7 @@ public class NewApiUtils {
     public static boolean ENABLE_LOG = false;
     public static final String APPKEY = "kXDlKvOwFYf0inXBd65Pzo0vpF2utBim";
 
-    public static final String P_BANNER = "104";
+    public static final String P_BANNER = "256";
     public static final String P_NATIVE = "105";
 
     public static void printLog(String msg) {

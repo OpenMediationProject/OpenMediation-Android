@@ -93,6 +93,7 @@ dependencies {
     implementation project(path: ':adapter:ironsource')
     implementation project(path: ':adapter:fyber')
     implementation project(path: ':adapter_cn:tiktok')
+    implementation project(path: ':adapter:hyadxopen')
 }
 
 repositories {

@@ -46,6 +46,7 @@ public class AdapterUtil {
         mAdapterPaths.put(MediationInfo.MEDIATION_ID_13, getAdapterPath(MediationInfo.MEDIATION_ID_13));
         mAdapterPaths.put(MediationInfo.MEDIATION_ID_14, getAdapterPath(MediationInfo.MEDIATION_ID_14));
         mAdapterPaths.put(MediationInfo.MEDIATION_ID_15, getAdapterPath(MediationInfo.MEDIATION_ID_15));
+        mAdapterPaths.put(MediationInfo.MEDIATION_ID_18, getAdapterPath(MediationInfo.MEDIATION_ID_18));
     }
 
     /**
@@ -176,6 +177,9 @@ public class AdapterUtil {
                 break;
             case MediationInfo.MEDIATION_ID_15:
                 path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_15)).concat(ADAPTER);
+                break;
+            case MediationInfo.MEDIATION_ID_18:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_18)).concat(ADAPTER);
                 break;
             default:
                 break;
