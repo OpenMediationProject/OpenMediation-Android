@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.openmediation.sdk.demo.MainActivity">
+    tools:context="com.nbmediation.sdk.demo.MainActivity">
 
     <LinearLayout
         android:layout_width="match_parent"

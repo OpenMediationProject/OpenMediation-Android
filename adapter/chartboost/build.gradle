@@ -30,6 +30,6 @@ android.libraryVariants.all { variant ->
 
 dependencies {
     //chartoost
-    implementation project(':om-android-sdk')
+    implementation project(':nm-android-sdk')
     implementation rootProject.ext.dependencies.chartboost
 }

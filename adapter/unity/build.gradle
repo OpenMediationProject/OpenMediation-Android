@@ -28,5 +28,5 @@ android.libraryVariants.all { variant ->
 dependencies {
     //unity
     implementation rootProject.ext.dependencies.unity
-    implementation project(':om-android-sdk')
+    implementation project(':nm-android-sdk')
 }

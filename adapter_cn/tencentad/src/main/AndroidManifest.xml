@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.openmediation.sdk.mobileads.tencentad">
+    package="com.nbmediation.sdk.mobileads.tencentad">
     <application>
        <!-- <provider
             android:name="android.support.v4.content.FileProvider"

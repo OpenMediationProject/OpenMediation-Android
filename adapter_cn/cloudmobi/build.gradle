@@ -1,0 +1,43 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion rootProject.ext.version.compileSdkVersion
+
+
+    defaultConfig {
+        minSdkVersion rootProject.ext.version.minSdkVersion
+        targetSdkVersion rootProject.ext.version.targetSdkVersion
+        versionCode rootProject.ext.version.versionCode
+        versionName rootProject.ext.adapterVersion.cloudmobi_cn
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+android.libraryVariants.all { variant ->
+    variant.outputs.all {
+        outputFileName = project.name + '.aar'
+    }
+}
+
+dependencies {
+//    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation project(':nm-android-sdk')
+    compileOnly(name: 'suib_base_4.2.7_sucn', ext: 'jar')
+    compileOnly(name: 'suib_imageloader_4.2.7_sucn', ext: 'jar')
+    compileOnly(name: 'suib_video_4.2.7_sucn', ext: 'jar')
+//    implementation files('libs/suib_base_4.2.6_sucn.jar')
+//    implementation files('libs/suib_imageloader_4.2.6_sucn.jar')
+//    implementation files('libs/suib_video_4.2.6_sucn.jar')
+}
+
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}

@@ -4,15 +4,14 @@
     android:layout_height="wrap_content"
     android:background="#B9BEB9">
 
-
-    <com.openmediation.sdk.nativead.MediaView
+    <com.nbmediation.sdk.nativead.MediaView
         android:id="@+id/ad_media"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
 
-    <com.openmediation.sdk.nativead.AdIconView
+    <com.nbmediation.sdk.nativead.AdIconView
         android:id="@+id/ad_icon_media"
         android:layout_width="50dp"
         android:layout_height="50dp"

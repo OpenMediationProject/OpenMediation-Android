@@ -30,7 +30,7 @@ dependencies {
     implementation(rootProject.ext.dependencies.facebook) {
         exclude group: 'com.google.android.gms', module: 'play-services-ads'
     }
-    implementation project(':om-android-sdk')
+    implementation project(':nm-android-sdk')
     implementation(name: 'BiddingKit', ext: 'aar')
 }
 

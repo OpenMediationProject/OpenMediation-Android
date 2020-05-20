@@ -13,7 +13,7 @@
         tools:ignore="HardcodedDebugMode"
         android:theme="@style/AppTheme">
 
-        <activity android:name="com.openmediation.sdk.demo.MainActivity">
+        <activity android:name="com.nbmediation.sdk.demo.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

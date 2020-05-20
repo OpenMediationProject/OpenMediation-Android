@@ -1,7 +1,7 @@
 include ':adapter:applovin', ':adapter:chartboost', ':adapter:adcolony', ':adapter:mintegral', ':adapter:adtiming',
         ':adapter:tapjoy', ':adapter:vungle', ':adapter:tiktok', ':adapter:ironsource',
         ':adapter:unity', ':adapter:facebook', ':adapter:mopub', ':adapter:fyber',
-        ':om-android-sdk', ':adapter:admob', ':app',
+        ':nm-android-sdk', ':adapter:admob', ':app',
         ':adapter_cn:tiktok', ':adapter_cn:tencentad'
 rootProject.name = 'AdTiming-OpenMediation-Android'
-include ':adapter:hyadxopen'
+include ':adapter_cn:hyadxopen',':adapter_cn:cloudmobi'

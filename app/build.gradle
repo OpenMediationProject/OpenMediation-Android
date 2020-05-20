@@ -88,12 +88,14 @@ dependencies {
     implementation project(path: ':adapter:facebook')
     implementation project(path: ':adapter:vungle')
     implementation project(path: ':adapter:mopub')
-    implementation project(path: ':om-android-sdk')
+    implementation project(path: ':nm-android-sdk')
     implementation project(path: ':adapter:mintegral')
     implementation project(path: ':adapter:ironsource')
     implementation project(path: ':adapter:fyber')
     implementation project(path: ':adapter_cn:tiktok')
-    implementation project(path: ':adapter:hyadxopen')
+    implementation project(path: ':adapter_cn:tencentad')
+    implementation project(path: ':adapter_cn:hyadxopen')
+    implementation project(path: ':adapter_cn:cloudmobi')
 }
 
 repositories {

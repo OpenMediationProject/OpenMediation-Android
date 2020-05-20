@@ -15,6 +15,9 @@ ext {
             'ironsource'  : '1.0.0',
             'fyber'       : '1.0.0',
             'tiktok_cn'   : '1.0.0',
-            'tencentad_cn': '1.0.0'
+            'tencentad_cn': '1.0.0',
+            'hyadxopen_cn': '1.0.0',
+            'cloudmobi_cn': '1.0.0'
+
     ]
 }

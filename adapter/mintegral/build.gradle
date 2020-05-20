@@ -32,7 +32,7 @@ android.libraryVariants.all { variant ->
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation project(':om-android-sdk')
+    implementation project(':nm-android-sdk')
 
     implementation 'com.mintegral.msdk:videojs:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mintegral.msdk:mtgjscommon:' + rootProject.ext.dependencies.mtg_version

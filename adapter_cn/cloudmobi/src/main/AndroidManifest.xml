@@ -1,0 +1,29 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.nbmediation.sdk.mobileads.cloudmobi">
+
+    <!--Necessary Permissions-->
+    <application android:usesCleartextTraffic="true">
+
+        <!-- Necessary -->
+        <activity android:name="com.suib.base.view.InnerWebViewActivity" />
+
+
+        <activity
+            android:name="com.suib.video.view.RewardedVideoActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize" />
+
+        <meta-data
+            android:name="com.google.android.gms.ads.AD_MANAGER_APP"
+            android:value="true" />
+
+        <provider
+            android:name="com.suib.base.core.SuibProvider"
+            android:authorities="${applicationId}.xxprovider"
+            android:exported="false" />
+    </application>
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+</manifest>

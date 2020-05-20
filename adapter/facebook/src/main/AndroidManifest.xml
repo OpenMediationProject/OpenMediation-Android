@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.openmediation.sdk.mobileads.facebook">
+    package="com.nbmediation.sdk.mobileads.facebook">
 
 <!--    <application android:networkSecurityConfig="@xml/network_security_config" />-->
 </manifest>

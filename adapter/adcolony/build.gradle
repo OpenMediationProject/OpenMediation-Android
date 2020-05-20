@@ -30,5 +30,5 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     //AdColony
     implementation rootProject.ext.dependencies.adcolony
-    implementation project(':om-android-sdk')
+    implementation project(':nm-android-sdk')
 }

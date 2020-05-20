@@ -28,5 +28,5 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     //MoPub
     implementation(rootProject.ext.dependencies.mopub) { transitive = true }
-    implementation project(':om-android-sdk')
+    implementation project(':nm-android-sdk')
 }

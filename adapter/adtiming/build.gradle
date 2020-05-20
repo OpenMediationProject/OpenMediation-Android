@@ -29,7 +29,7 @@ android.libraryVariants.all { variant ->
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation project(':om-android-sdk')
+    implementation project(':nm-android-sdk')
     implementation rootProject.ext.dependencies.adtiming
 }
 
