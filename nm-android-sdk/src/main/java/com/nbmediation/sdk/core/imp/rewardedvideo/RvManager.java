@@ -12,7 +12,7 @@ import com.nbmediation.sdk.utils.error.ErrorCode;
 import com.nbmediation.sdk.utils.model.PlacementInfo;
 import com.nbmediation.sdk.video.RewardedVideoListener;
 import com.nbmediation.sdk.core.AbstractAdsManager;
-import com.nbmediation.sdk.core.OmManager;
+import com.nbmediation.sdk.core.NmManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,7 +33,7 @@ public final class RvManager extends AbstractAdsManager implements RvManagerList
     }
 
     public void loadRewardedVideo() {
-        loadAdWithAction(OmManager.LOAD_TYPE.MANUAL);
+        loadAdWithAction(NmManager.LOAD_TYPE.MANUAL);
     }
 
     public void showRewardedVideo(String scene) {

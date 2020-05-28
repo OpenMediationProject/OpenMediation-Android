@@ -7,7 +7,7 @@ import android.text.TextUtils;
 import android.util.SparseArray;
 
 import com.nbmediation.sdk.bid.AdTimingBidResponse;
-import com.nbmediation.sdk.core.OmManager;
+import com.nbmediation.sdk.core.NmManager;
 import com.nbmediation.sdk.utils.AdsUtil;
 import com.nbmediation.sdk.utils.AdtUtil;
 import com.nbmediation.sdk.utils.DeveloperLog;
@@ -78,7 +78,7 @@ public class WaterFallHelper {
      * @param callback     the callback
      * @throws Exception the exception
      */
-    public static void wfRequest(PlacementInfo info, OmManager.LOAD_TYPE type,
+    public static void wfRequest(PlacementInfo info, NmManager.LOAD_TYPE type,
                                  List<AdTimingBidResponse> responseList,
                                  Request.OnRequestCallback callback) throws Exception {
         AdsUtil.realLoadReport(Preconditions.checkNotNull(info) ? info.getId() : "");

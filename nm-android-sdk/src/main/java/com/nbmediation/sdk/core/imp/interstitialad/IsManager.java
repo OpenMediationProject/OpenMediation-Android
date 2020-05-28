@@ -4,7 +4,7 @@
 package com.nbmediation.sdk.core.imp.interstitialad;
 
 import com.nbmediation.sdk.utils.model.Instance;
-import com.nbmediation.sdk.core.OmManager;
+import com.nbmediation.sdk.core.NmManager;
 import com.nbmediation.sdk.interstitial.InterstitialAdListener;
 import com.nbmediation.sdk.mediation.MediationInterstitialListener;
 import com.nbmediation.sdk.utils.DeveloperLog;
@@ -26,7 +26,7 @@ public final class IsManager extends AbstractAdsManager implements IsManagerList
     }
 
     public void loadInterstitialAd() {
-        loadAdWithAction(OmManager.LOAD_TYPE.MANUAL);
+        loadAdWithAction(NmManager.LOAD_TYPE.MANUAL);
     }
 
     public void showInterstitialAd(String scene) {

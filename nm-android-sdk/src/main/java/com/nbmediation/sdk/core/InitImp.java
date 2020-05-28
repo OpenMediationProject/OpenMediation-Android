@@ -145,7 +145,7 @@ public final class InitImp {
 
     private static void doAfterGetConfig(String appKey, Configurations config) {
         try {
-            DeveloperLog.enableDebug(AdtUtil.getApplication(), config.getD() == 1);
+//            DeveloperLog.enableDebug(AdtUtil.getApplication(), config.getD() == 1);
             AdLog.getSingleton().init(AdtUtil.getApplication());
             EventUploadManager.getInstance().updateReportSettings(config);
             //reports error logs
@@ -278,6 +278,7 @@ public final class InitImp {
                 }
 
                 String requestData = new String(ConfigurationHelper.checkResponse(response), Charset.forName(CommonConstants.CHARTSET_UTF8));
+                DeveloperLog.LogD("AdtDebug", "init result=" + requestData);
                 if (TextUtils.isEmpty(requestData)) {
                     Error error = new Error(ErrorCode.CODE_INIT_SERVER_ERROR
                             , ErrorCode.MSG_INIT_SERVER_ERROR, ErrorCode.CODE_INTERNAL_SERVER_ERROR);

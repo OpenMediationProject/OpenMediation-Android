@@ -5,7 +5,7 @@ package com.nbmediation.sdk.nativead;
 
 import android.app.Activity;
 
-import com.nbmediation.sdk.core.OmManager;
+import com.nbmediation.sdk.core.NmManager;
 import com.nbmediation.sdk.core.imp.nativead.NativeImp;
 
 /**
@@ -37,7 +37,7 @@ public class NativeAd {
      * Load ad.
      */
     public void loadAd() {
-        mNative.loadAd(OmManager.LOAD_TYPE.MANUAL);
+        mNative.loadAd(NmManager.LOAD_TYPE.MANUAL);
     }
 
     /**

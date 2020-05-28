@@ -107,16 +107,16 @@ public class ConfigurationHelper {
             Configurations configurations = new Configurations();
             JSONObject configJson = new JSONObject(json);
             ////////////////test add 20200511 tjt
-            Log.e("AdtDebug", "json="+json);
-            JSONObject testObj = configJson.optJSONObject("api");
-            if (testObj != null && testObj.names() != null) {
-                for (int i = 0; i < testObj.names().length(); i++) {
-                    String key = testObj.names().getString(i);
-                    testObj.putOpt(key, testObj.optString(key).replace("https:", "http:"));
-                }
-                JSONObject testObj2 = configJson.optJSONObject("events");
-                testObj2.putOpt("url", testObj.optString("url").replace("https:", "http:"));
-            }
+//            Log.e("AdtDebug", "json="+json);
+//            JSONObject testObj = configJson.optJSONObject("api");
+//            if (testObj != null && testObj.names() != null) {
+//                for (int i = 0; i < testObj.names().length(); i++) {
+//                    String key = testObj.names().getString(i);
+//                    testObj.putOpt(key, testObj.optString(key).replace("https:", "http:"));
+//                }
+//                JSONObject testObj2 = configJson.optJSONObject("events");
+//                testObj2.putOpt("url", testObj.optString("url").replace("https:", "http:"));
+//            }
             ////////////////end
             configurations.setD(configJson.optInt("d"));
             configurations.setCoa(configJson.optInt("coa"));

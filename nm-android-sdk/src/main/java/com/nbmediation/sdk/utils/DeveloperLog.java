@@ -6,17 +6,20 @@ package com.nbmediation.sdk.utils;
 import android.content.Context;
 import android.util.Log;
 
+import com.nbmediation.sdk.BuildConfig;
+
 import java.io.File;
 
 /**
- * 
+ *
  */
 public class DeveloperLog {
     private static final String TAG = "OmDev";
-    private static boolean debug = false;
+    private static boolean debug = BuildConfig.DEBUG;
 
     public static void enableDebug(Context context, boolean enable) {
-        debug = enable || (context != null && new File(context.getFilesDir(), "log.txt").exists());
+//        debug = enable || (context != null && new File(context.getFilesDir(), "log.txt").exists());
+        debug = enable;
     }
 
     public static void LogD(String info) {

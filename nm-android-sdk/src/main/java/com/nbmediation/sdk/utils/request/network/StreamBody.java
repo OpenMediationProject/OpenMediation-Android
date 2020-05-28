@@ -6,6 +6,7 @@ package com.nbmediation.sdk.utils.request.network;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.nbmediation.sdk.utils.DeveloperLog;
 import com.nbmediation.sdk.utils.IOUtil;
 import com.nbmediation.sdk.utils.constant.CommonConstants;
 
@@ -27,7 +28,7 @@ public class StreamBody implements ResponseBody {
     public String string() throws IOException {
         String charset = Headers.parseSubValue(mContentType, "charset", CommonConstants.CHARTSET_UTF8);
         String result=TextUtils.isEmpty(charset) ? IOUtil.toString(mStream) : IOUtil.toString(mStream, charset);
-        Log.i("AdtDebug", "result=" + result);
+        DeveloperLog.LogD("AdtDebug", "result=" + result);
         return result;
     }
 

@@ -5,7 +5,7 @@ package com.nbmediation.sdk.banner;
 
 import android.app.Activity;
 
-import com.nbmediation.sdk.core.OmManager;
+import com.nbmediation.sdk.core.NmManager;
 import com.nbmediation.sdk.core.imp.banner.BannerImp;
 
 /**
@@ -34,7 +34,7 @@ public class BannerAd {
 
     public void loadAd() {
         if (mBanner != null) {
-            mBanner.loadAd(OmManager.LOAD_TYPE.MANUAL);
+            mBanner.loadAd(NmManager.LOAD_TYPE.MANUAL);
             mBanner.setManualTriggered(true);
         }
     }

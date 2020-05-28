@@ -5,12 +5,12 @@ package com.nbmediation.sdk;
 
 import android.app.Activity;
 
-import com.nbmediation.sdk.core.OmManager;
+import com.nbmediation.sdk.core.NmManager;
 
 /**
  * The type Om ads.
  */
-public abstract class OmAds {
+public abstract class NmAds {
 
     /**
      * mediation SDK init method
@@ -21,7 +21,7 @@ public abstract class OmAds {
      * @param types    optional param: ad types to be preloaded; null means preload all
      */
     public static void init(Activity activity, String appKey, InitCallback callback, AD_TYPE... types) {
-        OmManager.getInstance().init(activity, appKey, callback, types);
+        NmManager.getInstance().init(activity, appKey, callback, types);
     }
 
     /**
@@ -30,7 +30,7 @@ public abstract class OmAds {
      * @param activity current resume activity
      */
     public static void onResume(Activity activity) {
-        OmManager.getInstance().onResume(activity);
+        NmManager.getInstance().onResume(activity);
     }
 
     /**
@@ -39,7 +39,7 @@ public abstract class OmAds {
      * @param activity currently paused activity
      */
     public static void onPause(Activity activity) {
-        OmManager.getInstance().onPause(activity);
+        NmManager.getInstance().onPause(activity);
     }
 
     /**
@@ -48,7 +48,7 @@ public abstract class OmAds {
      * @return true : init OK; or false: init wrong
      */
     public static boolean isInit() {
-        return OmManager.getInstance().isInit();
+        return NmManager.getInstance().isInit();
     }
 
     /**
@@ -58,7 +58,7 @@ public abstract class OmAds {
      * @param currency the IAP currency unit
      */
     public static void setIAP(float iapCount, String currency) {
-        OmManager.getInstance().setIAP(iapCount, currency);
+        NmManager.getInstance().setIAP(iapCount, currency);
     }
 
     /**
@@ -67,7 +67,7 @@ public abstract class OmAds {
      * @return the sdk version
      */
     public static String getSDKVersion() {
-        return OmManager.getInstance().getSDKVersion();
+        return NmManager.getInstance().getSDKVersion();
     }
 
     /**

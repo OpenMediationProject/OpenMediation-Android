@@ -40,12 +40,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.nbmediation.sdk.OmAds.*;
+import static com.nbmediation.sdk.NmAds.*;
 
 /**
- * The type Om manager.
+ * The type Nm manager.
  */
-public final class OmManager implements InitCallback {
+public final class NmManager implements InitCallback {
     private Map<String, IsManager> mIsManagers;
     private Map<String, RvManager> mRvManagers;
     private ConcurrentMap<String, InterstitialAdListener> mIsListeners;
@@ -63,7 +63,7 @@ public final class OmManager implements InitCallback {
     private static ConcurrentLinkedQueue<InitCallback> mInitCallbacks = new ConcurrentLinkedQueue<>();
 
     private static final class OmHolder {
-        private static final OmManager INSTANCE = new OmManager();
+        private static final NmManager INSTANCE = new NmManager();
     }
 
     /**
@@ -107,7 +107,7 @@ public final class OmManager implements InitCallback {
         }
     }
 
-    private OmManager() {
+    private NmManager() {
         mIsManagers = new HashMap<>();
         mRvManagers = new HashMap<>();
         mIsListeners = new ConcurrentHashMap<>();
@@ -120,7 +120,7 @@ public final class OmManager implements InitCallback {
      *
      * @return the instance
      */
-    public static OmManager getInstance() {
+    public static NmManager getInstance() {
         return OmHolder.INSTANCE;
     }
 

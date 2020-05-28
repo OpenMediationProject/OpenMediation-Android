@@ -79,7 +79,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
     protected Scene mScene;
     private List<AdTimingBidResponse> mBidResponses;
 
-    private OmManager.LOAD_TYPE mLoadType;
+    private NmManager.LOAD_TYPE mLoadType;
     //Adapters to be loaded
     private CopyOnWriteArrayList<Instance> mTotalIns;
     //
@@ -184,13 +184,13 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
      * @param type load triggered by: Manual,Init,AdClose,Interval
      */
     @Override
-    protected void loadAdWithAction(OmManager.LOAD_TYPE type) {
+    protected void loadAdWithAction(NmManager.LOAD_TYPE type) {
         DeveloperLog.LogD("loadAdWithAction : " + mPlacement + " action: " + type.toString());
 
         int availableCount = InsUtil.instanceCount(mTotalIns, Instance.MEDIATION_STATE.AVAILABLE);
 
         //if load is manually triggered
-        if (type == OmManager.LOAD_TYPE.MANUAL) {
+        if (type == NmManager.LOAD_TYPE.MANUAL) {
             isManualTriggered = true;
             //only checks ScheduleTask when manually triggered
             checkScheduleTaskStarted();
@@ -411,7 +411,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
     @Override
     public void onSuccess() {
         //only trigged by manual 
-        delayLoad(OmManager.LOAD_TYPE.MANUAL);
+        delayLoad(NmManager.LOAD_TYPE.MANUAL);
     }
 
     @Override
@@ -469,7 +469,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
             }
 
             //when not trigged by init, checks cache before aReady reporting
-            if (mLoadType != OmManager.LOAD_TYPE.INIT) {
+            if (mLoadType != NmManager.LOAD_TYPE.INIT) {
                 int availableCount = InsUtil.instanceCount(mTotalIns, Instance.MEDIATION_STATE.AVAILABLE);
                 if (availableCount > 0) {
                     isAReadyReported.set(true);
@@ -533,7 +533,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
     }
 
     public void loadAdWithInterval() {
-        loadAdWithAction(OmManager.LOAD_TYPE.INTERVAL);
+        loadAdWithAction(NmManager.LOAD_TYPE.INTERVAL);
     }
 
     /**
@@ -548,7 +548,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
                 TimeUnit.SECONDS);
     }
 
-    private void delayLoad(final OmManager.LOAD_TYPE type) {
+    private void delayLoad(final NmManager.LOAD_TYPE type) {
         try {
             isInLoadingProgress = true;
             mLoadType = type;
@@ -711,7 +711,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
      * Called at ads close
      */
     private void checkShouldLoadsWhenClose() {
-        loadAdWithAction(OmManager.LOAD_TYPE.CLOSE);
+        loadAdWithAction(NmManager.LOAD_TYPE.CLOSE);
     }
 
     /**

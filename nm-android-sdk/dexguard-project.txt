@@ -30,8 +30,9 @@
 -keep class com.nbmediation.sdk.nativead.**{*;}
 -keep class com.nbmediation.sdk.utils.**{*;}
 -keep class com.nbmediation.sdk.video.**{*;}
--keep class com.nbmediation.sdk.OmAds{*;}
--keep class com.nbmediation.sdk.OmAds$AD_TYPE{*;}
+-keep class com.nbmediation.sdk.NmAds{*;}
+-keep class com.nbmediation.sdk.NmAds$AD_TYPE{*;}
 -keep class com.nbmediation.sdk.InitCallback{*;}
+-keep class com.nbmediation.sdk.api.**{*;}
 
 -keepattributes *Annotation*

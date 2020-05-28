@@ -7,6 +7,8 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.util.Log;
 
+import com.nbmediation.sdk.BuildConfig;
+
 /**
  * 
  */
@@ -19,7 +21,7 @@ public class AdLog {
         return AdLogHolder.INSTANCE;
     }
 
-    private boolean isDebug = false;
+    private boolean isDebug = BuildConfig.DEBUG;
     private static final String TAG = "Om";
 
     private AdLog() {

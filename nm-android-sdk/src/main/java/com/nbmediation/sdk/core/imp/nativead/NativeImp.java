@@ -9,7 +9,7 @@ import android.view.View;
 
 import com.nbmediation.sdk.bid.AuctionUtil;
 import com.nbmediation.sdk.core.AbstractHybridAd;
-import com.nbmediation.sdk.core.OmManager;
+import com.nbmediation.sdk.core.NmManager;
 import com.nbmediation.sdk.mediation.CustomNativeEvent;
 import com.nbmediation.sdk.nativead.AdInfo;
 import com.nbmediation.sdk.nativead.NativeAdListener;
@@ -40,7 +40,7 @@ public final class NativeImp extends AbstractHybridAd implements View.OnAttachSt
     }
 
     @Override
-    public void loadAd(OmManager.LOAD_TYPE type) {
+    public void loadAd(NmManager.LOAD_TYPE type) {
         AdsUtil.callActionReport(mPlacementId, 0, EventId.CALLED_LOAD);
         super.loadAd(type);
     }

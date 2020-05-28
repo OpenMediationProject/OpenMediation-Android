@@ -28,6 +28,11 @@
 # Mediation interface
 -keep class com.nbmediation.sdk.mobileads.**{*;}
 
+# u3d interface
+-keep class com.nbmediation.sdk.api.**{*;}
+
+-dontwarn androidx.**
+
  #R
  -keepclassmembers class **.R$* {
      public static <fields>;

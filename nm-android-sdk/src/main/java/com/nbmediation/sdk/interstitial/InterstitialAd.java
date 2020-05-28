@@ -3,8 +3,9 @@
 
 package com.nbmediation.sdk.interstitial;
 
-import com.nbmediation.sdk.core.OmManager;
+import com.nbmediation.sdk.core.NmManager;
 import com.nbmediation.sdk.core.BaseOmAds;
+import com.nbmediation.sdk.utils.HandlerUtil;
 import com.nbmediation.sdk.utils.constant.CommonConstants;
 import com.nbmediation.sdk.utils.model.Scene;
 
@@ -19,7 +20,7 @@ public class InterstitialAd extends BaseOmAds {
      * @return true or false
      */
     public static boolean isReady() {
-        return OmManager.getInstance().isInterstitialAdReady("");
+        return NmManager.getInstance().isInterstitialAdReady("");
     }
 
     /**
@@ -46,7 +47,7 @@ public class InterstitialAd extends BaseOmAds {
      * Load ad.
      */
     public static void loadAd() {
-        OmManager.getInstance().loadInterstitialAd("");
+        NmManager.getInstance().loadInterstitialAd("");
     }
 
     /**
@@ -61,8 +62,14 @@ public class InterstitialAd extends BaseOmAds {
      *
      * @param scene optional param ,if null, show default scene
      */
-    public static void showAd(String scene) {
-        OmManager.getInstance().showInterstitialAd("", scene);
+    public static void showAd(final String scene) {
+        HandlerUtil.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                NmManager.getInstance().showInterstitialAd("", scene);
+            }
+        });
+
     }
 
     /**
@@ -72,6 +79,6 @@ public class InterstitialAd extends BaseOmAds {
      * @param listener the listener
      */
     public static void setAdListener(InterstitialAdListener listener) {
-        OmManager.getInstance().setInterstitialAdListener("", listener);
+        NmManager.getInstance().setInterstitialAdListener("", listener);
     }
 }

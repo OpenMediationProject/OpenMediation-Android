@@ -3,8 +3,11 @@
 
 package com.nbmediation.sdk.video;
 
-import com.nbmediation.sdk.core.OmManager;
+import android.os.Looper;
+
+import com.nbmediation.sdk.core.NmManager;
 import com.nbmediation.sdk.core.BaseOmAds;
+import com.nbmediation.sdk.utils.HandlerUtil;
 import com.nbmediation.sdk.utils.constant.CommonConstants;
 import com.nbmediation.sdk.utils.model.Scene;
 
@@ -19,7 +22,7 @@ public final class RewardedVideoAd extends BaseOmAds {
      * @return true or false
      */
     public static boolean isReady() {
-        return OmManager.getInstance().isRewardedVideoReady("");
+        return NmManager.getInstance().isRewardedVideoReady("");
     }
 
     /**
@@ -46,7 +49,7 @@ public final class RewardedVideoAd extends BaseOmAds {
      * Loads ads with default placement
      */
     public static void loadAd() {
-        OmManager.getInstance().loadRewardedVideo("");
+        NmManager.getInstance().loadRewardedVideo("");
     }
 
     /**
@@ -61,8 +64,13 @@ public final class RewardedVideoAd extends BaseOmAds {
      *
      * @param scene optional param ,if null, shows default scene
      */
-    public static void showAd(String scene) {
-        OmManager.getInstance().showRewardedVideo("", scene);
+    public static void showAd(final String scene) {
+        HandlerUtil.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                NmManager.getInstance().showRewardedVideo("", scene);
+            }
+        });
     }
 
     /**
@@ -72,7 +80,7 @@ public final class RewardedVideoAd extends BaseOmAds {
      * @param extId custom id
      */
     public static void setExtId(String scene, String extId) {
-        OmManager.getInstance().setRewardedExtId("", scene, extId);
+        NmManager.getInstance().setRewardedExtId("", scene, extId);
     }
 
     /**
@@ -82,6 +90,6 @@ public final class RewardedVideoAd extends BaseOmAds {
      * @param listener the listener
      */
     public static void setAdListener(RewardedVideoListener listener) {
-        OmManager.getInstance().setRewardedVideoListener("", listener);
+        NmManager.getInstance().setRewardedVideoListener("", listener);
     }
 }

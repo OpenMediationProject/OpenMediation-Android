@@ -6,10 +6,11 @@ package com.nbmediation.sdk.utils;
 import android.app.Application;
 import android.content.Context;
 
+import com.nbmediation.sdk.BuildConfig;
 import com.nbmediation.sdk.utils.crash.CrashUtil;
 
 /**
- * 
+ *
  */
 public class AdtUtil {
     private static Application application;
@@ -17,7 +18,7 @@ public class AdtUtil {
     public static void init(Context context) {
         application = (Application) context.getApplicationContext();
 
-        DeveloperLog.enableDebug(application, true);
+        DeveloperLog.enableDebug(application, BuildConfig.DEBUG);
         CrashUtil.getSingleton().init();
     }
 

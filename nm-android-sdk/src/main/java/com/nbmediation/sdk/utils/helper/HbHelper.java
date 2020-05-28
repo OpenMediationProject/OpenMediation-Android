@@ -6,7 +6,7 @@ package com.nbmediation.sdk.utils.helper;
 import android.text.TextUtils;
 import android.util.SparseArray;
 
-import com.nbmediation.sdk.core.OmManager;
+import com.nbmediation.sdk.core.NmManager;
 import com.nbmediation.sdk.utils.AdtUtil;
 import com.nbmediation.sdk.utils.PlacementUtils;
 import com.nbmediation.sdk.utils.Preconditions;
@@ -35,7 +35,7 @@ import java.util.List;
 
 public class HbHelper {
 
-    public static void executeHb(final Placement placement, OmManager.LOAD_TYPE loadType, final OnHbCallback callback)
+    public static void executeHb(final Placement placement, NmManager.LOAD_TYPE loadType, final OnHbCallback callback)
             throws Exception {
         Configurations config = DataCache.getInstance().getFromMem(KeyConstants.KEY_CONFIGURATION, Configurations.class);
         if (config == null || config.getApi() == null || TextUtils.isEmpty(config.getApi().getHb())) {

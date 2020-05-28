@@ -15,7 +15,7 @@ import com.nbmediation.sdk.banner.BannerAdListener;
 import com.nbmediation.sdk.bid.AuctionUtil;
 import com.nbmediation.sdk.core.AbstractHybridAd;
 import com.nbmediation.sdk.core.AdManager;
-import com.nbmediation.sdk.core.OmManager;
+import com.nbmediation.sdk.core.NmManager;
 import com.nbmediation.sdk.mediation.CustomBannerEvent;
 import com.nbmediation.sdk.utils.AdsUtil;
 import com.nbmediation.sdk.utils.HandlerUtil;
@@ -56,7 +56,7 @@ public final class BannerImp extends AbstractHybridAd implements View.OnAttachSt
     }
 
     @Override
-    public void loadAd(OmManager.LOAD_TYPE type) {
+    public void loadAd(NmManager.LOAD_TYPE type) {
         AdsUtil.callActionReport(mPlacementId, 0, EventId.CALLED_LOAD);
         super.loadAd(type);
     }
@@ -262,7 +262,7 @@ public final class BannerImp extends AbstractHybridAd implements View.OnAttachSt
                     PlacementUtils.placementEventParams(mPlacement != null ? mPlacement.getId() : ""));
             isRefreshTriggered.set(true);
             setManualTriggered(false);
-            loadAd(OmManager.LOAD_TYPE.INTERVAL);
+            loadAd(NmManager.LOAD_TYPE.INTERVAL);
         }
     }
 }

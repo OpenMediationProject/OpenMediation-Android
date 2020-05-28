@@ -150,7 +150,7 @@ public abstract class AdsApi {
      *
      * @param type load triggered by: Manual,Init,AdClose,Interval
      */
-    protected void loadAdWithAction(OmManager.LOAD_TYPE type) {
+    protected void loadAdWithAction(NmManager.LOAD_TYPE type) {
     }
 
     /**
