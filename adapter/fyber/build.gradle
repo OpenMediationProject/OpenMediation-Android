@@ -21,20 +21,19 @@ android {
 }
 android.libraryVariants.all { variant ->
     variant.outputs.all {
-        outputFileName = project.name + '.aar'
+        outputFileName = rootProject.ext.pkg_prefix + project.name + '.aar'
     }
 }
 dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation project(':nm-android-sdk')
+    compileOnly(name: 'nm-android-sdk', ext: 'aar')
 
-    implementation "com.fyber.vamp:core-sdk:${rootProject.ext.dependencies.fyber}"
-    implementation "com.fyber.vamp:video-kit:${rootProject.ext.dependencies.fyber}"
-    implementation "com.fyber.vamp:mraid-kit:${rootProject.ext.dependencies.fyber}"
+    compileOnly "com.fyber.vamp:core-sdk:${rootProject.ext.dependencies.fyber}"
+    compileOnly "com.fyber.vamp:video-kit:${rootProject.ext.dependencies.fyber}"
+    compileOnly "com.fyber.vamp:mraid-kit:${rootProject.ext.dependencies.fyber}"
 }
 
 repositories {
     flatDir {
-        dirs 'libs'
+        dirs rootProject.ext.adapterDirs
     }
 }

@@ -20,15 +20,20 @@ android {
 }
 android.libraryVariants.all { variant ->
     variant.outputs.all {
-        outputFileName = project.name + '.aar'
+        outputFileName = rootProject.ext.pkg_prefix + project.name + '.aar'
     }
 }
 dependencies {
     configurations.all {
         resolutionStrategy.force 'com.android.support:support-core-utils:28.0.0'
     }
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    compileOnly(name: 'nm-android-sdk', ext: 'aar')
     //vungle
-    implementation(rootProject.ext.dependencies.vungle)
-    implementation project(':nm-android-sdk')
+    compileOnly(rootProject.ext.dependencies.vungle)
+}
+
+repositories {
+    flatDir {
+        dirs rootProject.ext.adapterDirs
+    }
 }

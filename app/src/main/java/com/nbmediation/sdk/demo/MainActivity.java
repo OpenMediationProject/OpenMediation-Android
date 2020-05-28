@@ -23,7 +23,7 @@ import com.adtiming.adt.demo.R;
 import com.nbmediation.sdk.banner.AdSize;
 import com.nbmediation.sdk.demo.utils.NewApiUtils;
 import com.nbmediation.sdk.InitCallback;
-import com.nbmediation.sdk.OmAds;
+import com.nbmediation.sdk.NmAds;
 import com.nbmediation.sdk.banner.BannerAd;
 import com.nbmediation.sdk.banner.BannerAdListener;
 import com.nbmediation.sdk.interstitial.InterstitialAd;
@@ -93,7 +93,7 @@ public class MainActivity extends Activity {
 
     private void initSDK() {
         NewApiUtils.printLog("start init sdk");
-        OmAds.init(this, NewApiUtils.APPKEY, new InitCallback() {
+        NmAds.init(this, NewApiUtils.APPKEY, new InitCallback() {
             @Override
             public void onSuccess() {
                 NewApiUtils.printLog("init success");

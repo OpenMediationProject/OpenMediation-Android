@@ -6,6 +6,7 @@ package com.nbmediation.sdk.mobileads;
 import android.app.Activity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 
 import com.bytedance.sdk.openadsdk.AdSlot;
 import com.bytedance.sdk.openadsdk.TTAdDislike;
@@ -20,6 +21,8 @@ import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Map;
 
+import static android.widget.ListPopupWindow.MATCH_PARENT;
+
 public class TikTokNative extends CustomNativeEvent implements TTAdNative.NativeExpressAdListener {
     private static String TAG = "OM-TikTok: ";
     private Activity mActivity;
@@ -30,7 +33,7 @@ public class TikTokNative extends CustomNativeEvent implements TTAdNative.Native
     private View mNativeView;
 
     @Override
-    public void loadAd(final Activity activity, Map<String, String> config) throws Throwable {
+    public void loadAd(final Activity activity, Map<String, String> config){
         super.loadAd(activity, config);
         if (!check(activity, config)) {
             return;
@@ -54,9 +57,9 @@ public class TikTokNative extends CustomNativeEvent implements TTAdNative.Native
                 .setCodeId(codeId)
                 .setSupportDeepLink(true)
                 .setAdCount(1)
-                .setImageAcceptedSize(width, height)
+                .setExpressViewAcceptedSize(width, height)
                 .build();
-        mTTAdNative.loadBannerExpressAd(adSlot, this);
+        mTTAdNative.loadNativeExpressAd(adSlot, this);
     }
 
     private void initTTSDKConfig(Activity activity, Map<String, String> config) {
@@ -70,7 +73,10 @@ public class TikTokNative extends CustomNativeEvent implements TTAdNative.Native
     public void registerNativeView(NativeAdView adView) {
         if (mNativeView == null) return;
         if (adView.getMediaView() != null) {
-            adView.getMediaView().addView(mNativeView);
+            adView.getMediaView().removeAllViews();
+            RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT);
+            adView.getMediaView().addView(mNativeView, lp);
+
         }
     }
 
@@ -160,7 +166,7 @@ public class TikTokNative extends CustomNativeEvent implements TTAdNative.Native
             banner.mNativeView = view;
             banner.mAdInfo.setDesc("");
             banner.mAdInfo.setType(2);
-            banner.mAdInfo.setCallToActionText("ad.getCTAText()");
+            banner.mAdInfo.setCallToActionText("");
             banner.mAdInfo.setTitle("");
             banner.onInsReady(banner.mAdInfo);
         }

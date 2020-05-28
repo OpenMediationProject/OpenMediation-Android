@@ -25,7 +25,7 @@ public class FacebookBanner extends CustomBannerEvent implements AdListener {
     private AdView adView;
 
     @Override
-    public void loadAd(Activity activity, Map<String, String> config) throws Throwable {
+    public void loadAd(Activity activity, Map<String, String> config){
         super.loadAd(activity, config);
 
         if (!check(activity, config)) {

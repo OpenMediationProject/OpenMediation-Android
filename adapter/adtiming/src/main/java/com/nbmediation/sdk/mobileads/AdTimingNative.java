@@ -25,7 +25,7 @@ public class AdTimingNative extends CustomNativeEvent implements NativeAdListene
     private AdIconView mIconView;
 
     @Override
-    public void loadAd(final Activity activity, Map<String, String> config) throws Throwable {
+    public void loadAd(final Activity activity, Map<String, String> config) {
         super.loadAd(activity, config);
         if (!check(activity, config)) {
             return;

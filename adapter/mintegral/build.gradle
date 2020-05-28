@@ -1,14 +1,14 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 29
-    buildToolsVersion "29.0.2"
+    compileSdkVersion rootProject.ext.version.compileSdkVersion
+    buildToolsVersion rootProject.ext.version.buildToolsVersion
 
 
     defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 29
-        versionCode 1
+        minSdkVersion rootProject.ext.version.minSdkVersion
+        targetSdkVersion rootProject.ext.version.targetSdkVersion
+        versionCode rootProject.ext.version.versionCode
         versionName rootProject.ext.adapterVersion.mintegral
 
         consumerProguardFiles 'consumer-rules.pro'
@@ -26,19 +26,24 @@ android {
 
 android.libraryVariants.all { variant ->
     variant.outputs.all {
-        outputFileName = project.name + '.aar'
+        outputFileName = rootProject.ext.pkg_prefix +  project.name + '.aar'
     }
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation project(':nm-android-sdk')
+    compileOnly(name: 'nm-android-sdk', ext: 'aar')
 
-    implementation 'com.mintegral.msdk:videojs:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mintegral.msdk:mtgjscommon:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mintegral.msdk:playercommon:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mintegral.msdk:reward:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mintegral.msdk:videocommon:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mintegral.msdk:interstitialvideo:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mintegral.msdk:common:' + rootProject.ext.dependencies.mtg_version
+    compileOnly 'com.mintegral.msdk:videojs:' + rootProject.ext.dependencies.mtg_version
+    compileOnly 'com.mintegral.msdk:mtgjscommon:' + rootProject.ext.dependencies.mtg_version
+    compileOnly 'com.mintegral.msdk:playercommon:' + rootProject.ext.dependencies.mtg_version
+    compileOnly 'com.mintegral.msdk:reward:' + rootProject.ext.dependencies.mtg_version
+    compileOnly 'com.mintegral.msdk:videocommon:' + rootProject.ext.dependencies.mtg_version
+    compileOnly 'com.mintegral.msdk:interstitialvideo:' + rootProject.ext.dependencies.mtg_version
+    compileOnly 'com.mintegral.msdk:common:' + rootProject.ext.dependencies.mtg_version
+}
+
+repositories {
+    flatDir {
+        dirs rootProject.ext.adapterDirs
+    }
 }

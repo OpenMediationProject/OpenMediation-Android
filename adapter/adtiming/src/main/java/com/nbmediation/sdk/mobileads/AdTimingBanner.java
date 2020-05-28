@@ -27,7 +27,7 @@ public class AdTimingBanner extends CustomBannerEvent implements BannerAdListene
     }
 
     @Override
-    public void loadAd(final Activity activity, Map<String, String> config) throws Throwable {
+    public void loadAd(final Activity activity, Map<String, String> config) {
         super.loadAd(activity, config);
         if (!check(activity, config)) {
             return;

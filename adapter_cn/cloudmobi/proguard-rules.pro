@@ -30,3 +30,4 @@
 -keepclassmembers class * {
     @android.webkit.JavascriptInterface <methods>;
 }
+-keep class com.bun.miitmdid.core.** {*;}

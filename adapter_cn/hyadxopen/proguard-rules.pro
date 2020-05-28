@@ -21,3 +21,4 @@
 #-renamesourcefileattribute SourceFile
 -keep class com.hytt.** { *; }
 -keep interface com.hytt.** { *; }
+-keep class com.bun.miitmdid.core.** {*;}

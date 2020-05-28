@@ -19,13 +19,3 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file n.
 #-renamesourcefileattribute SourceFile
--keep public class com.suib.**{*;}
--dontwarn com.suib.**
-
-#for gaid
--keep class **.AdvertisingIdClient$** { *; }
-
-#for js and webview interface
--keepclassmembers class * {
-    @android.webkit.JavascriptInterface <methods>;
-}

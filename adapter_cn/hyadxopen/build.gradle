@@ -9,6 +9,7 @@ android {
         targetSdkVersion rootProject.ext.version.targetSdkVersion
         versionCode rootProject.ext.version.versionCode
         versionName rootProject.ext.adapterVersion.hyadxopen_cn
+        consumerProguardFiles 'proguard-rules.pro'
     }
 
     buildTypes {
@@ -21,17 +22,16 @@ android {
 }
 android.libraryVariants.all { variant ->
     variant.outputs.all {
-        outputFileName = project.name + '.aar'
+        outputFileName = rootProject.ext.pkg_prefix + project.name + '.aar'
     }
 }
 dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation project(':nm-android-sdk')
-    implementation(name: 'hyadxopensdk', ext: 'aar')
+    compileOnly(name: 'nm-android-sdk', ext: 'aar')
+    compileOnly(name: 'hyadxopensdk', ext: 'aar')
 }
 
 repositories {
     flatDir {
-        dirs 'libs'
+        dirs rootProject.ext.adapterDirs
     }
 }

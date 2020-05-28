@@ -19,7 +19,7 @@ public class TencentAdBanner extends CustomBannerEvent implements UnifiedBannerA
     private UnifiedBannerView mBannerView;
 
     @Override
-    public void loadAd(Activity activity, Map<String, String> config) throws Throwable {
+    public void loadAd(Activity activity, Map<String, String> config) {
         super.loadAd(activity, config);
         if (activity == null || activity.isFinishing()) {
             return;

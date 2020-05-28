@@ -20,4 +20,8 @@ ext {
             'cloudmobi_cn': '1.0.0'
 
     ]
+
+    pkg_prefix = 'nb_'
+
+    adapterDirs = "../../libs"
 }

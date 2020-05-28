@@ -21,7 +21,7 @@ public class MopubBanner extends CustomBannerEvent implements MoPubView.BannerAd
     private MoPubView adView;
 
     @Override
-    public void loadAd(final Activity activity, final Map<String, String> config) throws Throwable {
+    public void loadAd(final Activity activity, final Map<String, String> config) {
         super.loadAd(activity, config);
         if (!check(activity, config)) {
             return;

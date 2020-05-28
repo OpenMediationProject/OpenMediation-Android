@@ -29,7 +29,7 @@ public class AppLovinBanner extends CustomBannerEvent implements AppLovinAdLoadL
     private static final String TAG = "OM-AppLovin";
 
     @Override
-    public void loadAd(Activity activity, Map<String, String> config) throws Throwable {
+    public void loadAd(Activity activity, Map<String, String> config) {
         super.loadAd(activity, config);
 
         if (!check(activity, config)) {

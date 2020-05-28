@@ -38,7 +38,7 @@ public class TencentAdNative extends CustomNativeEvent implements NativeADUnifie
     private Activity activity;
 
     @Override
-    public void loadAd(final Activity activity, Map<String, String> config) throws Throwable {
+    public void loadAd(final Activity activity, Map<String, String> config) {
         super.loadAd(activity, config);
         this.activity = activity;
         if (!check(activity, config)) {

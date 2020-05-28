@@ -25,7 +25,7 @@ public class CloudmobiBanner extends CustomBannerEvent {
     private Activity mActivity;
 
     @Override
-    public void loadAd(Activity activity, Map<String, String> config) throws Throwable {
+    public void loadAd(Activity activity, Map<String, String> config) {
         super.loadAd(activity, config);
         if (activity == null || activity.isFinishing()) {
             return;

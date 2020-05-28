@@ -12,15 +12,26 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.light.cleaner.zero"
+        applicationId "com.yangzhu.mi"
         minSdkVersion 19
-        targetSdkVersion 28
+        targetSdkVersion 29
         versionCode 1
         versionName "1.0"
         multiDexEnabled true
-
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
+        ndk {
+            abiFilters "armeabi", "armeabi-v7a", "x86", "arm64-v8a"
+        }
+
+    }
+
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        doNotStrip "*/armeabi-v7a/*.so"
+        doNotStrip "*/x86/*.so"
+        doNotStrip "*/arm64-v8a/*.so"
+        doNotStrip "armeabi.so"
     }
 
     buildTypes {
@@ -44,62 +55,120 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    //fb
-    implementation(rootProject.ext.dependencies.facebook) {
-        exclude group: 'com.google.android.gms', module: 'play-services-ads'
-    }
-    implementation(name: 'BiddingKit', ext: 'aar')
-
     implementation rootProject.ext.dependencies.multidex
-    //admob
-    implementation rootProject.ext.dependencies.admob
-    //vungle
-    implementation rootProject.ext.dependencies.vungle
-    //AdColony
-    implementation rootProject.ext.dependencies.adcolony
-    //Applovin
-    implementation rootProject.ext.dependencies.applovin
-    //MoPub
-    implementation(rootProject.ext.dependencies.mopub) { transitive = true }
-    //TapJoy
-    implementation rootProject.ext.dependencies.tapjoy
-    implementation rootProject.ext.dependencies.play_service_base
-    implementation rootProject.ext.dependencies.play_service_ads_identifier
-    //chartboost
-    implementation rootProject.ext.dependencies.chartboost
-    //unity
-    implementation rootProject.ext.dependencies.unity
-    //ironsource
-    implementation rootProject.ext.dependencies.ironsource
-
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
     implementation 'com.android.support:support-v4:28.0.0'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    implementation project(path: ':adapter:admob')
-    implementation project(path: ':adapter:tapjoy')
-    implementation project(path: ':adapter:applovin')
-    implementation project(path: ':adapter:unity')
-    implementation project(path: ':adapter:chartboost')
-    implementation project(path: ':adapter:adcolony')
-    implementation project(path: ':adapter:adtiming')
-    implementation project(path: ':adapter:facebook')
-    implementation project(path: ':adapter:vungle')
-    implementation project(path: ':adapter:mopub')
-    implementation project(path: ':nm-android-sdk')
-    implementation project(path: ':adapter:mintegral')
-    implementation project(path: ':adapter:ironsource')
-    implementation project(path: ':adapter:fyber')
-    implementation project(path: ':adapter_cn:tiktok')
-    implementation project(path: ':adapter_cn:tencentad')
-    implementation project(path: ':adapter_cn:hyadxopen')
+
+    //NBMediation
+//    implementation(name: 'nm-android-sdk', ext: 'aar')
+    implementation project(':nm-android-sdk')
+
+    //add oaid
+    implementation(name: 'msa_mdid_1.0.13', ext: 'aar')
+
+    //cloudmobi cn
+    implementation(name: 'suib_base_4.2.7_sucn', ext: 'jar')
+    implementation(name: 'suib_imageloader_4.2.7_sucn', ext: 'jar')
+    implementation(name: 'suib_video_4.2.7_sucn', ext: 'jar')
     implementation project(path: ':adapter_cn:cloudmobi')
+
+    //hyadxopen cn
+    implementation(name: 'hyadxopensdk', ext: 'aar')
+    implementation project(path: ':adapter_cn:hyadxopen')
+
+    //tencentad cn
+    implementation(name: 'GDTSDK.unionNormal.4.191.1061', ext: 'aar')
+    implementation(name: 'android-query-full.0.26.7', ext: 'jar')
+    implementation project(path: ':adapter_cn:tencentad')
+
+    //tiktok cn
+    implementation(name: 'open_ad_sdk_2.9.5.5', ext: 'aar')
+    implementation project(path: ':adapter_cn:tiktok')
+
+    //sigmob
+    implementation(name: 'windAd-2.18.2', ext: 'jar')
+    implementation project(path: ':adapter:sigmob')
+
+    //tc056d
+    implementation(name: 'tc-056d', ext: 'jar')
+    implementation project(path: ':adapter_cn:tc056d')
+
+    //AdColony
+    implementation rootProject.ext.dependencies.adcolony
+    implementation project(path: ':adapter:adcolony')
+
+    //admob
+    implementation rootProject.ext.dependencies.admob
+    implementation project(path: ':adapter:admob')
+
+    //adtiming
+    implementation rootProject.ext.dependencies.adtiming
+    implementation project(path: ':adapter:adtiming')
+
+    //Applovin
+    implementation rootProject.ext.dependencies.applovin
+    implementation project(path: ':adapter:applovin')
+
+    //chartboost
+    implementation rootProject.ext.dependencies.chartboost
+    implementation project(path: ':adapter:chartboost')
+
+    //facebook
+    implementation(rootProject.ext.dependencies.facebook) {
+        exclude group: 'com.google.android.gms', module: 'play-services-ads'
+    }
+    implementation(name: 'BiddingKit', ext: 'aar')
+    implementation project(path: ':adapter:facebook')
+
+    //fyber
+    implementation "com.fyber.vamp:core-sdk:${rootProject.ext.dependencies.fyber}"
+    implementation "com.fyber.vamp:video-kit:${rootProject.ext.dependencies.fyber}"
+    implementation "com.fyber.vamp:mraid-kit:${rootProject.ext.dependencies.fyber}"
+    implementation project(path: ':adapter:fyber')
+
+    //ironsource
+    implementation rootProject.ext.dependencies.ironsource
+    implementation project(path: ':adapter:ironsource')
+
+    //mintegral
+    implementation 'com.mintegral.msdk:videojs:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk:mtgjscommon:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk:playercommon:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk:reward:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk:videocommon:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk:interstitialvideo:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk:common:' + rootProject.ext.dependencies.mtg_version
+    implementation project(path: ':adapter:mintegral')
+
+    //mopub
+    implementation(rootProject.ext.dependencies.mopub) { transitive = true }
+    implementation project(path: ':adapter:mopub')
+
+    //TapJoy
+    implementation rootProject.ext.dependencies.tapjoy
+    implementation rootProject.ext.dependencies.play_service_base
+    implementation rootProject.ext.dependencies.play_service_ads_identifier
+    implementation project(path: ':adapter:tapjoy')
+
+    //tiktok en
+//    compileOnly(name: 'open_ad_sdk_en', ext: 'aar')
+
+    //unity
+    implementation rootProject.ext.dependencies.unity
+    implementation project(path: ':adapter:unity')
+
+    //vungle
+    implementation rootProject.ext.dependencies.vungle
+    implementation project(path: ':adapter:vungle')
+
 }
 
 repositories {
     flatDir {
-        dirs 'libs'
+        dirs '../libs'
     }
 }

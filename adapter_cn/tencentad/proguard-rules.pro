@@ -19,6 +19,10 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
--keep class com.bytedance.sdk.openadsdk.** { *; }
--keep public interface com.bytedance.sdk.openadsdk.downloadnew.** {*;}
--keep class com.pgl.sys.ces.* {*;}
+-dontwarn com.androidquery.**
+-keep class com.androidquery.** { *;}
+
+# 如果接入了Bugly，需要添加如下配置
+-dontwarn com.tencent.bugly.**
+-keep public class com.tencent.bugly.**{*;}
+-keep class com.bun.miitmdid.core.** {*;}

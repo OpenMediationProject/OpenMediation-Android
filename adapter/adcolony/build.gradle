@@ -15,6 +15,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            consumerProguardFiles 'proguard-rules.pro'
         }
     }
 
@@ -22,13 +23,18 @@ android {
 
 android.libraryVariants.all { variant ->
     variant.outputs.all {
-        outputFileName = project.name + '.aar'
+        outputFileName = rootProject.ext.pkg_prefix + project.name + '.aar'
     }
 }
 
 dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    compileOnly(name: 'nm-android-sdk', ext: 'aar')
     //AdColony
-    implementation rootProject.ext.dependencies.adcolony
-    implementation project(':nm-android-sdk')
+    compileOnly rootProject.ext.dependencies.adcolony
+}
+
+repositories {
+    flatDir {
+        dirs rootProject.ext.adapterDirs
+    }
 }

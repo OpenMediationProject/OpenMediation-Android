@@ -21,11 +21,17 @@ android {
 }
 android.libraryVariants.all { variant ->
     variant.outputs.all {
-        outputFileName = project.name + '.aar'
+        outputFileName = rootProject.ext.pkg_prefix + project.name + '.aar'
     }
 }
 dependencies {
-    implementation project(':nm-android-sdk')
+    compileOnly(name: 'nm-android-sdk', ext: 'aar')
     //Admob
-    implementation rootProject.ext.dependencies.admob
+    compileOnly rootProject.ext.dependencies.admob
+}
+
+repositories {
+    flatDir {
+        dirs rootProject.ext.adapterDirs
+    }
 }

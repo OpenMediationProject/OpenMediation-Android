@@ -24,12 +24,18 @@ android {
 
 android.libraryVariants.all { variant ->
     variant.outputs.all {
-        outputFileName = project.name + '.aar'
+        outputFileName = rootProject.ext.pkg_prefix + project.name + '.aar'
     }
 }
 
 dependencies {
     //chartoost
-    implementation project(':nm-android-sdk')
-    implementation rootProject.ext.dependencies.chartboost
+    compileOnly(name: 'nm-android-sdk', ext: 'aar')
+    compileOnly rootProject.ext.dependencies.chartboost
+}
+
+repositories {
+    flatDir {
+        dirs rootProject.ext.adapterDirs
+    }
 }
