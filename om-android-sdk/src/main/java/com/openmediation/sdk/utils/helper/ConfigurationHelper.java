@@ -211,8 +211,8 @@ public class ConfigurationHelper {
             if (mediation == null) {
                 continue;
             }
-            if (adType == 0 || adType == 1) {
-                instance.setPath(AdapterUtil.getAdapterPathWithType(adType, mediation.getN()));
+            if (adType == CommonConstants.BANNER || adType == CommonConstants.NATIVE || adType == CommonConstants.SPLASH) {
+                instance.setPath(AdapterUtil.getAdapterPathWithType(adType, mediation.getId()));
             }
             instance.setAppKey(mediation.getK());
 

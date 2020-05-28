@@ -36,7 +36,10 @@ public class IronSourceBanner extends CustomBannerEvent implements BannerListene
         }
         if (mIrBannerLayout == null || isFailed) {
             int[] size = getBannerSize(config);
-            ISBannerSize bannerSize = new ISBannerSize(size[0], size[1]);
+            ISBannerSize bannerSize = ISBannerSize.BANNER;
+            if (size[0] > 0 && size[1] > 0) {
+                bannerSize = new ISBannerSize(size[0], size[1]);
+            }
             mIrBannerLayout = IronSource.createBanner(activity, bannerSize);
             mIrBannerLayout.setBannerListener(this);
             IronSource.loadBanner(mIrBannerLayout);

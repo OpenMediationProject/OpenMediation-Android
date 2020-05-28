@@ -27,7 +27,7 @@ public class SdkUtil {
      * @return the error
      */
     public static Error banRun(Activity activity, String appKey) {
-        Error error = null;
+        Error error;
         //
         if (!DeviceUtil.isActivityAvailable(activity)) {
             error = new Error(ErrorCode.CODE_INIT_INVALID_REQUEST
@@ -35,6 +35,7 @@ public class SdkUtil {
             //init error activity is not available
             AdLog.getSingleton().LogE(error.toString());
             DeveloperLog.LogE(error.toString());
+            return error;
         }
         //
         if (TextUtils.isEmpty(appKey)) {
@@ -43,6 +44,7 @@ public class SdkUtil {
             //init error appKey is empty
             AdLog.getSingleton().LogE(error.toString());
             DeveloperLog.LogE(error.toString());
+            return error;
         }
         //
         if (GdprUtil.isGdprSubjected(activity)) {
@@ -51,6 +53,7 @@ public class SdkUtil {
             //init error gdpr is rejected
             AdLog.getSingleton().LogE(error.toString());
             DeveloperLog.LogE(error.toString());
+            return error;
         }
         //
         if (!PermissionUtil.isGranted(activity, ADT_PERMISSIONS)) {
@@ -59,6 +62,7 @@ public class SdkUtil {
             //init error permission is not granted
             AdLog.getSingleton().LogE(error.toString());
             DeveloperLog.LogE(error.toString());
+            return error;
         }
         //
         if (!NetworkChecker.isAvailable(activity)) {
@@ -67,7 +71,8 @@ public class SdkUtil {
             //init error network is not available
             AdLog.getSingleton().LogE(error.toString());
             DeveloperLog.LogE(error.toString());
+            return error;
         }
-        return error;
+        return null;
     }
 }

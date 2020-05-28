@@ -165,7 +165,7 @@ public class CrashUtil implements Thread.UncaughtExceptionHandler {
                     .format());
             for (Map.Entry<String, ?> nv : errorMap.entrySet()) {
                 String errorInfo = (String) nv.getValue();
-                if (TextUtils.isEmpty(errorInfo) || !errorInfo.contains("com.adtiming.mediationsdk")) {
+                if (TextUtils.isEmpty(errorInfo) || !errorInfo.contains(CommonConstants.PKG_SDK)) {
                     continue;
                 }
 

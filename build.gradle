@@ -39,7 +39,7 @@ ext {
 //support 包相关包的引用
     dependencies = [
             //fb
-            "facebook"                   : 'com.facebook.android:audience-network-sdk:5.8.0',
+            "facebook"                   : 'com.facebook.android:audience-network-sdk:5.9.0',
             //admob
             "admob"                      : 'com.google.android.gms:play-services-ads:19.1.0',
             //vungle
@@ -47,7 +47,7 @@ ext {
             //AdColony
             "adcolony"                   : 'com.adcolony:sdk:4.1.4',
             //Applovin
-            "applovin"                   : 'com.applovin:applovin-sdk:9.12.4',
+            "applovin"                   : 'com.applovin:applovin-sdk:9.12.6',
             //MoPub
             "mopub"                      : 'com.mopub:mopub-sdk:5.12.0@aar',
             //TapJoy
@@ -65,9 +65,9 @@ ext {
             //Mintegral
             "mtg_version"                : '10.2.41',
             // IronSource
-            "ironsource"                 : 'com.ironsource.sdk:mediationsdk:6.16.0',
+            "ironsource"                 : 'com.ironsource.sdk:mediationsdk:6.16.1',
 
-            "adtiming"                   : 'com.adtiming:mediation-sdk:6.3.3@aar',
+            "adtiming"                   : 'com.adtiming:mediation-sdk:6.3.4@aar',
             "fyber"                      : '7.5.3'
     ]
 }

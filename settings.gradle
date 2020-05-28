@@ -2,5 +2,6 @@ include ':adapter:applovin', ':adapter:chartboost', ':adapter:adcolony', ':adapt
         ':adapter:tapjoy', ':adapter:vungle', ':adapter:tiktok', ':adapter:ironsource',
         ':adapter:unity', ':adapter:facebook', ':adapter:mopub', ':adapter:fyber',
         ':om-android-sdk', ':adapter:admob', ':app',
-        ':adapter_cn:tiktok', ':adapter_cn:tencentad'
+        ':adapter_cn:tiktok', ':adapter_cn:tencentad',
+        ':miit_mdid_1.0.10'
 rootProject.name = 'AdTiming-OpenMediation-Android'

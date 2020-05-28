@@ -1,0 +1,2 @@
+configurations.maybeCreate("default")
+artifacts.add("default", file('miit_mdid_1.0.10.aar'))

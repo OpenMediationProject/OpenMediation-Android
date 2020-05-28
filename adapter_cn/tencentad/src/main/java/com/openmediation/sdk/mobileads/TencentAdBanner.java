@@ -10,6 +10,7 @@ import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.utils.AdLog;
 import com.qq.e.ads.banner2.UnifiedBannerADListener;
 import com.qq.e.ads.banner2.UnifiedBannerView;
+import com.qq.e.comm.managers.GDTADManager;
 import com.qq.e.comm.util.AdError;
 
 import java.util.Map;
@@ -27,7 +28,8 @@ public class TencentAdBanner extends CustomBannerEvent implements UnifiedBannerA
         if (!check(activity, config)) {
             return;
         }
-        loadBannerAd(activity, config.get("AppKey"), mInstancesKey);
+        GDTADManager.getInstance().initWith(activity.getApplicationContext(), config.get("AppKey"));
+        loadBannerAd(activity, mInstancesKey);
     }
 
     @Override
@@ -43,11 +45,11 @@ public class TencentAdBanner extends CustomBannerEvent implements UnifiedBannerA
         }
     }
 
-    private void loadBannerAd(Activity activity, String appId, String codeId) {
+    private void loadBannerAd(Activity activity, String codeId) {
         if (mBannerView != null) {
             mBannerView.destroy();
         }
-        mBannerView = new UnifiedBannerView(activity, appId, codeId, this);
+        mBannerView = new UnifiedBannerView(activity, codeId, this);
         mBannerView.loadAD();
     }
 

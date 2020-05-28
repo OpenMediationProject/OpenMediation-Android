@@ -5,6 +5,7 @@ package com.openmediation.sdk.mobileads;
 
 import android.content.Context;
 
+import com.facebook.ads.BidderTokenProvider;
 import com.openmediation.sdk.bid.AdTimingBidResponse;
 import com.openmediation.sdk.bid.BidAdapter;
 import com.openmediation.sdk.bid.BidCallback;
@@ -23,6 +24,11 @@ public class FacebookBidAdapter extends BidAdapter {
 
     public FacebookBidAdapter() {
         mFbBidResponses = new ConcurrentHashMap<>();
+    }
+
+    @Override
+    public void initBid(Context context, Map<String, Object> dataMap, BidCallback callback) {
+        super.initBid(context, dataMap, callback);
     }
 
     @Override
@@ -45,6 +51,11 @@ public class FacebookBidAdapter extends BidAdapter {
                 callback.bidFailed("Facebook bid sdk not integrated");
             }
         }
+    }
+
+    @Override
+    public String getBiddingToken(Context context) {
+        return BidderTokenProvider.getBidderToken(context);
     }
 
     @Override

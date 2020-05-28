@@ -61,6 +61,19 @@
                 android:text="Interstitial Ad Loading..."
                 android:textAllCaps="false"
                 android:textSize="20sp" />
+                android:background="@drawable/btn_background"/>
+
+            <Button
+                android:id="@+id/btn_splash"
+                android:layout_marginTop="20dp"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Show Splash Ad"
+                android:textSize="20sp"
+                android:textAllCaps="false"
+                android:onClick="showSplash"
+                android:background="@drawable/btn_background"/>
 
             <Button
                 android:id="@+id/btn_banner"

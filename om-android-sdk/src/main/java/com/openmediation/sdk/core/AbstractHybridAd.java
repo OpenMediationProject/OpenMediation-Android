@@ -6,7 +6,9 @@ package com.openmediation.sdk.core;
 import android.app.Activity;
 import android.os.Looper;
 
+import com.openmediation.sdk.bid.AdTimingBidResponse;
 import com.openmediation.sdk.bid.AuctionUtil;
+import com.openmediation.sdk.bid.BidLoseReason;
 import com.openmediation.sdk.mediation.CallbackManager;
 import com.openmediation.sdk.utils.AdRateUtil;
 import com.openmediation.sdk.utils.AdsUtil;
@@ -21,6 +23,8 @@ import com.openmediation.sdk.utils.event.EventId;
 import com.openmediation.sdk.utils.event.EventUploadManager;
 import com.openmediation.sdk.utils.model.BaseInstance;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -30,6 +34,7 @@ public abstract class AbstractHybridAd extends AbstractAd {
     private volatile int mCanCallbackIndex;//index of current callback
     protected AtomicBoolean isRefreshTriggered = new AtomicBoolean(false);
     private HandlerUtil.HandlerHolder mHandler;
+    private int mLoadedInsIndex = 0;
 
     protected abstract void loadInsOnUIThread(BaseInstance instances) throws Throwable;
 
@@ -47,6 +52,7 @@ public abstract class AbstractHybridAd extends AbstractAd {
     @Override
     protected void dispatchAdRequest() {
         mCanCallbackIndex = 0;
+        mLoadedInsIndex = 0;
         //starts loading the 1st
         startNextInstance(0);
     }
@@ -86,6 +92,7 @@ public abstract class AbstractHybridAd extends AbstractAd {
                 final BaseInstance i = mTotalIns[instanceIndex];
                 instanceIndex++;
                 pendingLoadInstanceCount--;
+                mLoadedInsIndex++;
 
                 if (i == null) {
                     continue;
@@ -128,6 +135,9 @@ public abstract class AbstractHybridAd extends AbstractAd {
             DeveloperLog.LogD("do ins useless report");
         }
         EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_LOAD_SUCCESS, instances.buildReportData());
+        if (!isManualTriggered) {
+            EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_RELOAD_SUCCESS, instances.buildReportData());
+        }
         //saves every instance's ready data, mainly for Banner and Native
         instances.setObject(o);
         if (isFo || instances.getIndex() <= mCanCallbackIndex) {
@@ -164,6 +174,10 @@ public abstract class AbstractHybridAd extends AbstractAd {
         }
         //handles load error only
         instances.onInsLoadFailed(error);
+        if (!isManualTriggered) {
+            instances.onInsReLoadFailed(error);
+        }
+        notifyLoadFailedInsBidLose(instances);
 
         if (getAdType() == CommonConstants.BANNER) {
             //MopubBanner registered a receiver, we need to take care of it
@@ -228,6 +242,39 @@ public abstract class AbstractHybridAd extends AbstractAd {
         callbackAdClickOnUiThread();
     }
 
+    @Override
+    protected synchronized void onInsShowSuccess(String instanceKey, String instanceId) {
+        super.onInsShowSuccess(instanceKey, instanceId);
+        BaseInstance instance = InsUtil.getInsById(mTotalIns, instanceId);
+        if (instance == null) {
+            return;
+        }
+        insImpReport(instance);
+        callbackAdShowedOnUiThread();
+    }
+
+    @Override
+    protected synchronized void onInsShowFailed(String instanceKey, String instanceId, String error) {
+        super.onInsShowFailed(instanceKey, instanceId, error);
+        BaseInstance instance = InsUtil.getInsById(mTotalIns, instanceId);
+        if (instance == null) {
+            return;
+        }
+        instance.onInsShowFailed(error, null);
+        callbackAdShowFailedOnUiThread(error);
+    }
+
+    @Override
+    protected synchronized void onInsClosed(String instanceKey, String instanceId) {
+        super.onInsClosed(instanceKey, instanceId);
+        BaseInstance instance = InsUtil.getInsById(mTotalIns, instanceId);
+        if (instance == null) {
+            return;
+        }
+        instance.onInsClose(null);
+        callbackAdCloseOnUiThread();
+    }
+
     /**
      * Releases all bu the ready instances' AdEvents. Currently for banner only
      */
@@ -255,14 +302,14 @@ public abstract class AbstractHybridAd extends AbstractAd {
             mCurrentIns = ins;
             cancelTimeout();
             aReadyReport();
-            instanceNotifyBidLose();
+            notifyUnLoadInsBidLose();
             callbackAdReadyOnUiThread();
         } else if (getAdType() == CommonConstants.BANNER) {
             mCurrentIns = ins;
             if (isRefreshTriggered.get()) {
                 cancelTimeout();
                 aReadyReport();
-                instanceNotifyBidLose();
+                notifyUnLoadInsBidLose();
             }
             callbackAdReadyOnUiThread();
         } else if (mCurrentIns.getIndex() > ins.getIndex()) {
@@ -305,11 +352,55 @@ public abstract class AbstractHybridAd extends AbstractAd {
         return false;
     }
 
-    private void instanceNotifyBidLose() {
-        if (mTotalIns == null) {
+    protected void notifyInsBidWin(BaseInstance instance) {
+        if (mTotalIns == null || mS2sBidResponses == null || instance == null) {
             return;
         }
-        AuctionUtil.instanceNotifyBidLose(mBidResponses, mPlacement);
+        if (!mS2sBidResponses.containsKey(instance.getId())) {
+            return;
+        }
+        AdTimingBidResponse bidResponse = mS2sBidResponses.get(instance.getId());
+        if (bidResponse == null) {
+            return;
+        }
+        AuctionUtil.s2sNotifyBidWin(bidResponse.getNurl(), instance);
+    }
+
+    private void notifyLoadFailedInsBidLose(BaseInstance instance) {
+        if (mTotalIns == null || mS2sBidResponses == null || instance == null) {
+            return;
+        }
+        if (!mS2sBidResponses.containsKey(instance.getId())) {
+            return;
+        }
+        AuctionUtil.s2sNotifyBidLose(mS2sBidResponses.get(instance.getId()), BidLoseReason.INTERNAL.getValue(),
+                instance);
+    }
+
+    private void notifyUnLoadInsBidLose() {
+        if (mTotalIns == null || mS2sBidResponses == null) {
+            return;
+        }
+
+        if (mLoadedInsIndex == mTotalIns.length) {
+            return;
+        }
+        Map<BaseInstance, AdTimingBidResponse> unLoadInsBidResponses = new HashMap<>();
+        int len = mTotalIns.length;
+        for (int i = mLoadedInsIndex; i < len; i++) {
+            BaseInstance instance = mTotalIns[i];
+            if (instance == null) {
+                continue;
+            }
+
+            if (!mS2sBidResponses.containsKey(instance.getId())) {
+                continue;
+            }
+            unLoadInsBidResponses.put(instance, mS2sBidResponses.get(instance.getId()));
+        }
+        if (!unLoadInsBidResponses.isEmpty()) {
+            AuctionUtil.s2sNotifyBidLose(unLoadInsBidResponses, BidLoseReason.LOST_TO_HIGHER_BIDDER.getValue());
+        }
     }
 
     private void startTimeout(int insIndex) {

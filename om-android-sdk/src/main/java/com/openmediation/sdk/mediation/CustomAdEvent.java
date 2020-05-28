@@ -14,7 +14,7 @@ public abstract class CustomAdEvent {
     protected String mInstancesKey;
     protected boolean isDestroyed;
 
-    private String mInsId;
+    protected String mInsId;
 
     public void loadAd(Activity activity, Map<String, String> config) throws Throwable {
         isDestroyed = false;

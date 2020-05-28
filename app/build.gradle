@@ -59,27 +59,47 @@ dependencies {
     //ironsource
     implementation rootProject.ext.dependencies.ironsource
 
-    implementation 'com.android.support:appcompat-v7:28.0.0'
-    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
-    implementation 'com.android.support:support-v4:28.0.0'
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    implementation rootProject.ext.dependencies.adtiming
+    implementation 'com.mintegral.msdk:videojs:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk:mtgjscommon:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk:playercommon:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk:reward:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk:videocommon:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk:interstitialvideo:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk:common:' + rootProject.ext.dependencies.mtg_version
+
+    implementation rootProject.ext.dependencies.ironsource
+
+    implementation "com.fyber.vamp:core-sdk:${rootProject.ext.dependencies.fyber}"
+    implementation "com.fyber.vamp:video-kit:${rootProject.ext.dependencies.fyber}"
+    implementation "com.fyber.vamp:mraid-kit:${rootProject.ext.dependencies.fyber}"
+
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation project(path: ':adapter:admob')
-    implementation project(path: ':adapter:tapjoy')
-    implementation project(path: ':adapter:applovin')
-    implementation project(path: ':adapter:unity')
-    implementation project(path: ':adapter:chartboost')
-    implementation project(path: ':adapter:adcolony')
     implementation project(path: ':adapter:adtiming')
-    implementation project(path: ':adapter:facebook')
+    implementation project(path: ':adapter:unity')
     implementation project(path: ':adapter:vungle')
-    implementation project(path: ':adapter:mopub')
     implementation project(path: ':om-android-sdk')
+    implementation project(path: ':adapter:mopub')
+    implementation project(path: ':adapter:adcolony')
+    implementation project(path: ':adapter:applovin')
+    implementation(name: 'BiddingKit', ext: 'aar')
+    implementation project(path: ':adapter:facebook')
+    implementation project(path: ':adapter:chartboost')
+    implementation project(path: ':adapter:tapjoy')
     implementation project(path: ':adapter:mintegral')
-    implementation project(path: ':adapter:ironsource')
-//    implementation project(path: ':adapter:fyber')
+//    implementation(name: 'open_ad_sdk_2.1.5.0', ext: 'aar')
 //    implementation project(path: ':adapter:tiktok')
+    implementation project(path: ':adapter:ironsource')
+
+    //
+    implementation(name: 'open_ad_sdk_3.0.0.1', ext: 'aar')
+    implementation project(path: ':adapter_cn:tiktok')
+    implementation(name: 'GDTSDK.unionNormal.4.211.1081', ext: 'aar')
+    implementation project(path: ':adapter_cn:tencentad')
+    implementation project(path: ':adapter:fyber')
+    implementation project(path: ':miit_mdid_1.0.10')
 }
 
 repositories {

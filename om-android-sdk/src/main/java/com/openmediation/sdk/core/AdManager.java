@@ -65,6 +65,8 @@ public class AdManager {
                     case CommonConstants.NATIVE:
                         adEvent = CustomEventFactory.createNative(instances.getPath());
                         break;
+                    case CommonConstants.SPLASH:
+                        adEvent = CustomEventFactory.createSplash(instances.getPath());
                     default:
                         break;
                 }

@@ -27,7 +27,7 @@ android.libraryVariants.all { variant ->
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation project(':om-android-sdk')
-    implementation(name: 'open_ad_sdk', ext: 'aar')
+    implementation(name: 'open_ad_sdk_2.1.5.0', ext: 'aar')
 }
 
 repositories {

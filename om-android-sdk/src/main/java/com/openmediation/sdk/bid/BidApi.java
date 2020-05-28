@@ -9,6 +9,10 @@ import java.util.Map;
 
 public interface BidApi {
 
+    void initBid(Context context, Map<String, Object> dataMap, BidCallback callback);
+
+    String getBiddingToken(Context context);
+
     void executeBid(Context context, Map<String, Object> dataMap, BidCallback callback);
 
     void notifyWin(String placementId);

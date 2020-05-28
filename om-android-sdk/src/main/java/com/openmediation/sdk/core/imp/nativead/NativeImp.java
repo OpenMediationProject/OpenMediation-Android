@@ -42,6 +42,7 @@ public final class NativeImp extends AbstractHybridAd implements View.OnAttachSt
     @Override
     public void loadAd(OmManager.LOAD_TYPE type) {
         AdsUtil.callActionReport(mPlacementId, 0, EventId.CALLED_LOAD);
+        setManualTriggered(true);
         super.loadAd(type);
     }
 
@@ -61,14 +62,13 @@ public final class NativeImp extends AbstractHybridAd implements View.OnAttachSt
             onInsError(instances, ErrorCode.ERROR_CREATE_MEDATION_ADAPTER);
             return;
         }
-        Map<String, String> config = PlacementUtils.getPlacementInfo(mPlacementId, instances,
-                AuctionUtil.generateStringRequestData(mBidResponses, instances));
-        instances.setStart(System.currentTimeMillis());
-        if (instances.getBidState() == BaseInstance.BID_STATE.BID_SUCCESS) {
-            AuctionUtil.instanceNotifyBidWin(mPlacement.getHbAbt(), instances);
-            AuctionUtil.removeBidResponse(mBidResponses, instances);
+        String payload = "";
+        if (mS2sBidResponses != null && mS2sBidResponses.containsKey(instances.getId())) {
+            payload = AuctionUtil.generateStringRequestData(mS2sBidResponses.get(instances.getId()));
         }
-        nativeEvent.loadAd(mActRef.get(), config);
+        Map<String, String> placementInfo = PlacementUtils.getPlacementInfo(mPlacementId, instances, payload);
+        instances.setStart(System.currentTimeMillis());
+        nativeEvent.loadAd(mActRef.get(), placementInfo);
         iLoadReport(instances);
     }
 
@@ -171,6 +171,7 @@ public final class NativeImp extends AbstractHybridAd implements View.OnAttachSt
 
         isImpressed = true;
         insImpReport(mCurrentIns);
+        notifyInsBidWin(mCurrentIns);
     }
 
     @Override

@@ -8,14 +8,14 @@ import java.util.Map;
 public abstract class CustomBannerEvent extends CustomAdEvent {
 
     protected int[] getBannerSize(Map<String, String> config) {
-        int width = 320, height = 50;
+        int width = -1, height = -1;
         if (config != null && config.containsKey("width") && config.containsKey("height")) {
             try {
                 width = Integer.parseInt(config.get("width"));
                 height = Integer.parseInt(config.get("height"));
             } catch (Exception e) {
-                width = 320;
-                height = 50;
+                width = -1;
+                height = -1;
             }
         }
         return new int[]{width, height};

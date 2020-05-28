@@ -205,21 +205,13 @@ public class Instance extends BaseInstance {
     }
 
     /**
-     * On ins show success.
-     *
-     * @param scene the scene
-     */
-    protected void onInsShowSuccess(Scene scene) {
-        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_SHOW_SUCCESS, buildReportDataWithScene(scene));
-    }
-
-    /**
      * On ins show failed.
      *
      * @param error the error
      * @param scene the scene
      */
-    protected void onInsShowFailed(String error, Scene scene) {
+    @Override
+    public void onInsShowFailed(String error, Scene scene) {
         setMediationState(MEDIATION_STATE.NOT_AVAILABLE);
         JSONObject data = buildReportDataWithScene(scene);
         JsonUtil.put(data, "msg", error);

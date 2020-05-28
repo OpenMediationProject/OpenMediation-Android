@@ -13,6 +13,7 @@ import com.fyber.inneractive.sdk.external.InneractiveAdViewEventsListenerWithImp
 import com.fyber.inneractive.sdk.external.InneractiveAdViewUnitController;
 import com.fyber.inneractive.sdk.external.InneractiveErrorCode;
 import com.fyber.inneractive.sdk.external.InneractiveUnitController.AdDisplayError;
+import com.openmediation.sdk.banner.AdSize;
 import com.openmediation.sdk.mediation.CustomBannerEvent;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.utils.AdLog;
@@ -40,8 +41,13 @@ public class FyberBanner extends CustomBannerEvent implements InneractiveAdSpot.
         if (mBannerView == null) {
             mBannerView = new RelativeLayout(activity);
             int[] adSize = getBannerSize(config);
+            int width = adSize[0], height = adSize[1];
+            if (adSize[0] < 0 || adSize[1] < 0) {
+                width = 320;
+                height = 50;
+            }
             mBannerView.setLayoutParams(new RelativeLayout.LayoutParams(
-                    FyberUtil.dpToPixels(activity, adSize[0]), FyberUtil.dpToPixels(activity, adSize[1])));
+                    FyberUtil.dpToPixels(activity, width), FyberUtil.dpToPixels(activity, height)));
         } else {
             mBannerView.removeAllViews();
         }

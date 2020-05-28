@@ -23,4 +23,12 @@ public class CustomEventFactory {
         nativeConstructor.setAccessible(true);
         return (CustomNativeEvent) nativeConstructor.newInstance();
     }
+
+    public static CustomSplashEvent createSplash(String className) throws Exception {
+        Class<? extends CustomSplashEvent> splashClass = Class.forName(className)
+                .asSubclass(CustomSplashEvent.class);
+        Constructor<?> splashConstructor = splashClass.getDeclaredConstructor((Class[]) null);
+        splashConstructor.setAccessible(true);
+        return (CustomSplashEvent) splashConstructor.newInstance();
+    }
 }

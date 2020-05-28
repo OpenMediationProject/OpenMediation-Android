@@ -6,15 +6,16 @@ package com.openmediation.sdk.core;
 import android.app.Activity;
 import android.text.TextUtils;
 
+import com.openmediation.sdk.InitCallback;
 import com.openmediation.sdk.core.imp.interstitialad.IsManager;
 import com.openmediation.sdk.core.imp.rewardedvideo.RvManager;
+import com.openmediation.sdk.core.imp.splash.SplashAdManager;
 import com.openmediation.sdk.interstitial.InterstitialAdListener;
 import com.openmediation.sdk.mediation.MediationInterstitialListener;
 import com.openmediation.sdk.mediation.MediationRewardVideoListener;
 import com.openmediation.sdk.utils.AdLog;
 import com.openmediation.sdk.utils.AdsUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
-import com.openmediation.sdk.utils.helper.IapHelper;
 import com.openmediation.sdk.utils.PlacementUtils;
 import com.openmediation.sdk.utils.SceneUtil;
 import com.openmediation.sdk.utils.cache.DataCache;
@@ -23,11 +24,11 @@ import com.openmediation.sdk.utils.constant.KeyConstants;
 import com.openmediation.sdk.utils.error.Error;
 import com.openmediation.sdk.utils.error.ErrorCode;
 import com.openmediation.sdk.utils.event.EventId;
+import com.openmediation.sdk.utils.helper.IapHelper;
 import com.openmediation.sdk.utils.model.Configurations;
 import com.openmediation.sdk.utils.model.Placement;
 import com.openmediation.sdk.utils.model.Scene;
 import com.openmediation.sdk.video.RewardedVideoListener;
-import com.openmediation.sdk.InitCallback;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,7 +41,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.openmediation.sdk.OmAds.*;
+import static com.openmediation.sdk.OmAds.AD_TYPE;
 
 /**
  * The type Om manager.
@@ -60,6 +61,7 @@ public final class OmManager implements InitCallback {
     private List<AD_TYPE> mPreloadAdTypes;
     private AtomicBoolean mDidRvInit = new AtomicBoolean(false);
     private AtomicBoolean mDidIsInit = new AtomicBoolean(false);
+    private boolean mIsInForeground = true;
     private static ConcurrentLinkedQueue<InitCallback> mInitCallbacks = new ConcurrentLinkedQueue<>();
 
     private static final class OmHolder {
@@ -129,10 +131,11 @@ public final class OmManager implements InitCallback {
      *
      * @param activity required param
      * @param appKey   required param, current app's identifier with Om
+     * @param channel  the Channel of App Store
      * @param callback the callback
      * @param types    Optional param, Ad types for preloading; preloads all if null
      */
-    public void init(Activity activity, String appKey, InitCallback callback, AD_TYPE... types) {
+    public void init(Activity activity, String appKey, String channel, InitCallback callback, AD_TYPE... types) {
         if (InitImp.isInit()) {
             setListeners();
             if (callback != null) {
@@ -145,10 +148,10 @@ public final class OmManager implements InitCallback {
             pendingInit(callback);
         } else {
             pendingInit(callback);
-            InitImp.init(activity, appKey, this);
+            InitImp.init(activity, appKey, channel, this);
         }
 
-        //adds for use after initialization 
+        //adds for use after initialization
         if (types != null && types.length > 0) {
             mPreloadAdTypes.addAll(Arrays.asList(types));
         }
@@ -171,6 +174,7 @@ public final class OmManager implements InitCallback {
      * @param activity the activity
      */
     public void onResume(Activity activity) {
+        mIsInForeground = true;
         if (!mIsManagers.isEmpty()) {
             Set<Map.Entry<String, IsManager>> isEntrys = mIsManagers.entrySet();
             for (Map.Entry<String, IsManager> isManagerEntry : isEntrys) {
@@ -195,6 +199,7 @@ public final class OmManager implements InitCallback {
      * @param activity the activity
      */
     public void onPause(Activity activity) {
+        mIsInForeground = false;
         if (!mIsManagers.isEmpty()) {
             Set<Map.Entry<String, IsManager>> isEntrys = mIsManagers.entrySet();
             for (Map.Entry<String, IsManager> isManagerEntry : isEntrys) {
@@ -250,6 +255,9 @@ public final class OmManager implements InitCallback {
         return CommonConstants.SDK_VERSION_NAME;
     }
 
+    public boolean isInForeground() {
+        return mIsInForeground;
+    }
 
     /**
      * Is scene capped boolean.
@@ -313,7 +321,7 @@ public final class OmManager implements InitCallback {
      * @param placementId the placement id
      */
     public void loadInterstitialAd(String placementId) {
-        callActionReport(EventId.CALLED_LOAD, placementId, null, CommonConstants.INTERSTITIAL);
+        AdsUtil.callActionReport(EventId.CALLED_LOAD, placementId, null, CommonConstants.INTERSTITIAL);
         IsManager isManager = getIsManager(placementId);
         if (isManager != null) {
             isManager.loadInterstitialAd();
@@ -348,13 +356,13 @@ public final class OmManager implements InitCallback {
         if (isManager != null) {
             boolean result = isManager.isInterstitialAdReady();
             if (result) {
-                callActionReport(EventId.CALLED_IS_READY_TRUE, placementId, null, CommonConstants.INTERSTITIAL);
+                AdsUtil.callActionReport(EventId.CALLED_IS_READY_TRUE, placementId, null, CommonConstants.INTERSTITIAL);
             } else {
-                callActionReport(EventId.CALLED_IS_READY_FALSE, placementId, null, CommonConstants.INTERSTITIAL);
+                AdsUtil.callActionReport(EventId.CALLED_IS_READY_FALSE, placementId, null, CommonConstants.INTERSTITIAL);
             }
             return result;
         }
-        callActionReport(EventId.CALLED_IS_READY_FALSE, placementId, null, CommonConstants.INTERSTITIAL);
+        AdsUtil.callActionReport(EventId.CALLED_IS_READY_FALSE, placementId, null, CommonConstants.INTERSTITIAL);
         return false;
     }
 
@@ -365,7 +373,7 @@ public final class OmManager implements InitCallback {
      * @param scene       scene name
      */
     public void showInterstitialAd(String placementId, String scene) {
-        callActionReport(EventId.CALLED_SHOW, placementId, scene, CommonConstants.INTERSTITIAL);
+        AdsUtil.callActionReport(EventId.CALLED_SHOW, placementId, scene, CommonConstants.INTERSTITIAL);
         IsManager isManager = getIsManager(placementId);
         if (isManager != null) {
             isManager.showInterstitialAd(scene);
@@ -450,7 +458,7 @@ public final class OmManager implements InitCallback {
      * @param placementId the placement id
      */
     public void loadRewardedVideo(String placementId) {
-        callActionReport(EventId.CALLED_LOAD, placementId, null, CommonConstants.VIDEO);
+        AdsUtil.callActionReport(EventId.CALLED_LOAD, placementId, null, CommonConstants.VIDEO);
         RvManager rvManager = getRvManager(placementId);
         if (rvManager != null) {
             rvManager.loadRewardedVideo();
@@ -485,13 +493,13 @@ public final class OmManager implements InitCallback {
         if (rvManager != null) {
             boolean result = rvManager.isRewardedVideoReady();
             if (result) {
-                callActionReport(EventId.CALLED_IS_READY_TRUE, placementId, null, CommonConstants.VIDEO);
+                AdsUtil.callActionReport(EventId.CALLED_IS_READY_TRUE, placementId, null, CommonConstants.VIDEO);
             } else {
-                callActionReport(EventId.CALLED_IS_READY_FALSE, placementId, null, CommonConstants.VIDEO);
+                AdsUtil.callActionReport(EventId.CALLED_IS_READY_FALSE, placementId, null, CommonConstants.VIDEO);
             }
             return result;
         }
-        callActionReport(EventId.CALLED_IS_READY_FALSE, placementId, null, CommonConstants.VIDEO);
+        AdsUtil.callActionReport(EventId.CALLED_IS_READY_FALSE, placementId, null, CommonConstants.VIDEO);
         return false;
     }
 
@@ -502,7 +510,7 @@ public final class OmManager implements InitCallback {
      * @param scene       scene name
      */
     public void showRewardedVideo(String placementId, String scene) {
-        callActionReport(EventId.CALLED_SHOW, placementId, scene, CommonConstants.VIDEO);
+        AdsUtil.callActionReport(EventId.CALLED_SHOW, placementId, scene, CommonConstants.VIDEO);
         RvManager rvManager = getRvManager(placementId);
         if (rvManager != null) {
             rvManager.showRewardedVideo(scene);
@@ -668,6 +676,8 @@ public final class OmManager implements InitCallback {
                             mRvManagers.put(placementId, rvManager);
                         }
                         break;
+                    case CommonConstants.SPLASH:
+                        SplashAdManager.getInstance().initSplashAd(placementId);
                     default:
                         break;
 

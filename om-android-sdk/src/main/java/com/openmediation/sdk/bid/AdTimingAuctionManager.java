@@ -5,17 +5,24 @@ package com.openmediation.sdk.bid;
 
 import android.content.Context;
 import android.os.Looper;
+import android.text.TextUtils;
+import android.util.SparseArray;
 
+import com.openmediation.sdk.utils.AdtUtil;
 import com.openmediation.sdk.utils.HandlerUtil;
 import com.openmediation.sdk.utils.JsonUtil;
 import com.openmediation.sdk.utils.event.EventId;
 import com.openmediation.sdk.utils.event.EventUploadManager;
 import com.openmediation.sdk.utils.model.BaseInstance;
+import com.openmediation.sdk.utils.model.Configurations;
+import com.openmediation.sdk.utils.model.Placement;
+import com.openmediation.sdk.utils.request.network.AdRequest;
 
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class AdTimingAuctionManager {
@@ -44,6 +51,47 @@ public class AdTimingAuctionManager {
         return BidHolder.INSTANCE;
     }
 
+    public void initBid(Context context, Configurations config) {
+        if (config == null) {
+            return;
+        }
+
+        Map<String, Placement> placementMap = config.getPls();
+        if (placementMap == null || placementMap.isEmpty()) {
+            return;
+        }
+
+        for (Map.Entry<String, Placement> placementEntry : placementMap.entrySet()) {
+            if (placementEntry == null) {
+                continue;
+            }
+            List<BaseInstance> bidInstances = new ArrayList<>();
+            SparseArray<BaseInstance> insMap = placementEntry.getValue().getInsMap();
+
+            if (insMap == null || insMap.size() <= 0) {
+                continue;
+            }
+
+            int size = insMap.size();
+            for (int i = 0; i < size; i++) {
+                BaseInstance instance = insMap.valueAt(i);
+                if (instance == null) {
+                    continue;
+                }
+
+                if (instance.getHb() == 1) {
+                    bidInstances.add(instance);
+                    BidAdapter bidAdapter = BidAdapterUtil.getBidAdapter(instance.getMediationId());
+                    if (bidAdapter != null) {
+                        bidAdapter.initBid(context, BidUtil.makeBidInitInfo(config, instance.getMediationId()),
+                                null);
+                    }
+                }
+            }
+//            mBidInstances.put(placementEntry.getKey(), bidInstances);
+        }
+    }
+
     public void bid(Context context, String placementId, BaseInstance[] instances, int abt, int adType,
                     AuctionCallback callback) {
         if (instances == null || instances.length <= 0) {
@@ -59,6 +107,7 @@ public class AdTimingAuctionManager {
         for (BaseInstance bidInstance : instances) {
             BidAdapter bidAdapter = BidAdapterUtil.getBidAdapter(bidInstance.getMediationId());
             if (bidAdapter == null) {
+                bidInstance.setBidState(BaseInstance.BID_STATE.BID_FAILED);
                 continue;
             }
             biding++;
@@ -79,7 +128,29 @@ public class AdTimingAuctionManager {
         }
     }
 
-    public void notifyWin(int abt, BaseInstance instance) {
+    public List<AdTimingBidResponse> getBidToken(Context context, BaseInstance[] instances) {
+        if (instances == null || instances.length <= 0) {
+            return null;
+        }
+        List<AdTimingBidResponse> result = new ArrayList<>();
+        for (BaseInstance bidInstance : instances) {
+            BidAdapter bidAdapter = BidAdapterUtil.getBidAdapter(bidInstance.getMediationId());
+            if (bidAdapter == null) {
+                continue;
+            }
+            String token = bidAdapter.getBiddingToken(context);
+            if (TextUtils.isEmpty(token)) {
+                continue;
+            }
+            AdTimingBidResponse bidResponse = new AdTimingBidResponse();
+            bidResponse.setIid(bidInstance.getId());
+            bidResponse.setToken(token);
+            result.add(bidResponse);
+        }
+        return result;
+    }
+
+    void notifyWin(int abt, BaseInstance instance) {
         if (BidAdapterUtil.hasBidAdapter(instance.getMediationId())) {
             BidAdapter bidAdapter = BidAdapterUtil.getBidAdapter(instance.getMediationId());
             if (bidAdapter != null) {
@@ -91,7 +162,14 @@ public class AdTimingAuctionManager {
         }
     }
 
-    public void notifyLose(int abt, BaseInstance instance) {
+    void notifyWin(String url, BaseInstance instance) {
+        AdRequest.get().url(url).performRequest(AdtUtil.getApplication());
+        JSONObject jsonObject = instance.buildReportData();
+        JsonUtil.put(jsonObject, "abt", instance.getWfAbt());
+        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_BID_WIN, jsonObject);
+    }
+
+    void notifyLose(int abt, BaseInstance instance) {
         if (BidAdapterUtil.hasBidAdapter(instance.getMediationId())) {
             BidAdapter bidAdapter = BidAdapterUtil.getBidAdapter(instance.getMediationId());
             if (bidAdapter != null) {
@@ -101,6 +179,13 @@ public class AdTimingAuctionManager {
                 EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_BID_LOSE, jsonObject);
             }
         }
+    }
+
+    void notifyLose(int abt, String url, BaseInstance instance) {
+        AdRequest.get().url(url).performRequest(AdtUtil.getApplication());
+        JSONObject jsonObject = instance.buildReportData();
+        JsonUtil.put(jsonObject, "abt", abt);
+        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_BID_LOSE, jsonObject);
     }
 
     private synchronized void bidSuccess(int abt, BaseInstance instance, AdTimingBidResponse response) {

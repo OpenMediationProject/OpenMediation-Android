@@ -7,16 +7,17 @@ import android.app.Activity;
 import android.os.SystemClock;
 import android.text.TextUtils;
 
-import com.openmediation.sdk.mobileads.tencentad.BuildConfig;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
+import com.openmediation.sdk.mobileads.tencentad.BuildConfig;
 import com.openmediation.sdk.utils.AdLog;
 import com.qq.e.ads.interstitial2.UnifiedInterstitialAD;
 import com.qq.e.ads.interstitial2.UnifiedInterstitialADListener;
 import com.qq.e.ads.rewardvideo.RewardVideoAD;
 import com.qq.e.ads.rewardvideo.RewardVideoADListener;
+import com.qq.e.comm.managers.GDTADManager;
 import com.qq.e.comm.managers.status.SDKStatus;
 import com.qq.e.comm.util.AdError;
 
@@ -24,8 +25,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public class TencentAdAdapter extends CustomAdsAdapter
-{
+public class TencentAdAdapter extends CustomAdsAdapter {
     private static String TAG = "OM-TencentAd: ";
     private ConcurrentMap<String, RewardVideoAD> mRvAds;
     private ConcurrentMap<String, UnifiedInterstitialAD> mIsAds;
@@ -60,6 +60,7 @@ public class TencentAdAdapter extends CustomAdsAdapter
         super.initRewardedVideo(activity, dataMap, callback);
         String error = check(activity);
         if (TextUtils.isEmpty(error)) {
+            GDTADManager.getInstance().initWith(activity.getApplicationContext(), mAppKey);
             if (callback != null) {
                 callback.onRewardedVideoInitSuccess();
             }
@@ -140,6 +141,7 @@ public class TencentAdAdapter extends CustomAdsAdapter
         super.initInterstitialAd(activity, dataMap, callback);
         String error = check(activity);
         if (TextUtils.isEmpty(error)) {
+            GDTADManager.getInstance().initWith(activity.getApplicationContext(), mAppKey);
             if (callback != null) {
                 callback.onInterstitialAdInitSuccess();
             }
@@ -196,7 +198,7 @@ public class TencentAdAdapter extends CustomAdsAdapter
             }
             UnifiedInterstitialAD ad = mIsAds.get(adUnitId);
             if (ad != null) {
-                ad.show(activity);
+                ad.showFullScreenAD(activity);
             }
             mIsAds.remove(adUnitId);
         } else {
@@ -220,9 +222,9 @@ public class TencentAdAdapter extends CustomAdsAdapter
         }
 
         InnerIsAdListener listener = new InnerIsAdListener(adUnitId);
-        UnifiedInterstitialAD ad = new UnifiedInterstitialAD(activity, mAppKey, adUnitId, listener);
+        UnifiedInterstitialAD ad = new UnifiedInterstitialAD(activity, adUnitId, listener);
         listener.setAdView(ad);
-        ad.loadAD();
+        ad.loadFullScreenAD();
     }
 
     private void realLoadRvAd(Activity activity, final String adUnitId, final RewardedVideoCallback callback) {
@@ -230,7 +232,7 @@ public class TencentAdAdapter extends CustomAdsAdapter
             mRvCallbacks.put(adUnitId, callback);
         }
         InnerRvAdListener listener = new InnerRvAdListener(adUnitId);
-        RewardVideoAD rewardVideoAD = new RewardVideoAD(activity, mAppKey, adUnitId, listener);
+        RewardVideoAD rewardVideoAD = new RewardVideoAD(activity, adUnitId, listener);
         listener.setAdView(rewardVideoAD);
         rewardVideoAD.loadAD();
     }
@@ -267,10 +269,10 @@ public class TencentAdAdapter extends CustomAdsAdapter
 
         @Override
         public void onNoAD(AdError adError) {
-            AdLog.getSingleton().LogE(TAG + "RewardedVideo  onError: " + adError.getErrorCode() + ", " + adError.getErrorMsg());
+            AdLog.getSingleton().LogE(TAG + "InterstitialAd  onError: " + adError.getErrorCode() + ", " + adError.getErrorMsg());
             InterstitialAdCallback callback = mIsCallbacks.get(mAdUnitId);
             if (callback != null) {
-                callback.onInterstitialAdLoadFailed(TAG + "RewardedVideo load failed : " + adError.getErrorCode() + ", " + adError.getErrorMsg());
+                callback.onInterstitialAdLoadFailed(TAG + "InterstitialAd load failed : " + adError.getErrorCode() + ", " + adError.getErrorMsg());
             }
         }
 

@@ -5,6 +5,8 @@ package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
 import android.content.res.Configuration;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 
 import com.bytedance.sdk.openadsdk.AdSlot;
@@ -97,26 +99,36 @@ public class TikTokAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void showRewardedVideo(final Activity activity, final String adUnitId, final RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
-
-        String error = check(activity, adUnitId);
-        if (!TextUtils.isEmpty(error)) {
-            if (callback != null) {
-                callback.onRewardedVideoAdShowFailed(error);
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String error = check(activity, adUnitId);
+                    if (!TextUtils.isEmpty(error)) {
+                        if (callback != null) {
+                            callback.onRewardedVideoAdShowFailed(error);
+                        }
+                        return;
+                    }
+                    TTRewardVideoAd rewardedVideoAd = mTTRvAds.get(adUnitId);
+                    if (rewardedVideoAd != null) {
+                        rewardedVideoAd.setRewardAdInteractionListener(new InnerRvAdShowListener(callback));
+                        rewardedVideoAd.showRewardVideoAd(activity);
+                        mTTRvAds.remove(adUnitId);
+                    } else {
+                        if (callback != null) {
+                            callback.onRewardedVideoAdShowFailed("TikTok RewardedVideo is not ready");
+                        }
+                    }
+                } catch (Exception e) {
+                    if (callback != null) {
+                        callback.onRewardedVideoAdShowFailed("TikTok RewardedVideo is not ready");
+                    }
+                }
             }
-            return;
-        }
-        TTRewardVideoAd rewardedVideoAd = mTTRvAds.get(adUnitId);
-        if (rewardedVideoAd != null) {
-            rewardedVideoAd.setRewardAdInteractionListener(new InnerRvAdShowListener(callback));
-            rewardedVideoAd.showRewardVideoAd(activity);
-            mTTRvAds.remove(adUnitId);
-        } else {
-            if (callback != null) {
-                callback.onRewardedVideoAdShowFailed("TikTok RewardedVideo is not ready");
-            }
-        }
+        });
     }
 
     @Override
@@ -175,25 +187,36 @@ public class TikTokAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    public void showInterstitialAd(final Activity activity, final String adUnitId, final InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
-        String error = check(activity, adUnitId);
-        if (!TextUtils.isEmpty(error)) {
-            if (callback != null) {
-                callback.onInterstitialAdShowFailed(error);
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String error = check(activity, adUnitId);
+                    if (!TextUtils.isEmpty(error)) {
+                        if (callback != null) {
+                            callback.onInterstitialAdShowFailed(error);
+                        }
+                        return;
+                    }
+                    TTFullScreenVideoAd ad = mTTFvAds.get(adUnitId);
+                    if (ad != null) {
+                        ad.setFullScreenVideoAdInteractionListener(new InnerAdInteractionListener(callback));
+                        ad.showFullScreenVideoAd(activity);
+                        mTTFvAds.remove(adUnitId);
+                    } else {
+                        if (callback != null) {
+                            callback.onInterstitialAdShowFailed("TikTok InterstitialAd is not ready");
+                        }
+                    }
+                } catch (Exception e) {
+                    if (callback != null) {
+                        callback.onInterstitialAdShowFailed("TikTok InterstitialAd is not ready");
+                    }
+                }
             }
-            return;
-        }
-        TTFullScreenVideoAd ad = mTTFvAds.get(adUnitId);
-        if (ad != null) {
-            ad.setFullScreenVideoAdInteractionListener(new InnerAdInteractionListener(callback));
-            ad.showFullScreenVideoAd(activity);
-            mTTFvAds.remove(adUnitId);
-        } else {
-            if (callback != null) {
-                callback.onInterstitialAdShowFailed("TikTok InterstitialAd is not ready");
-            }
-        }
+        });
     }
 
     @Override

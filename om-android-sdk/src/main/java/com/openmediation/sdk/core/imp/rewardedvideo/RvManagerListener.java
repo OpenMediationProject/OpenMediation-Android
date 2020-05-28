@@ -27,6 +27,4 @@ public interface RvManagerListener {
     void onRewardedVideoAdRewarded(RvInstance rvInstance);
 
     void onRewardedVideoAdClicked(RvInstance rvInstance);
-
-    void onRewardedVideoAdCaped(RvInstance rvInstance);
 }

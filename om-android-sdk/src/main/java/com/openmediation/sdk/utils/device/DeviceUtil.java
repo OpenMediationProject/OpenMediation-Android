@@ -19,6 +19,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
 import android.os.SystemClock;
+import android.text.TextUtils;
 import android.webkit.WebSettings;
 
 import com.openmediation.sdk.utils.constant.CommonConstants;
@@ -564,13 +565,14 @@ public class DeviceUtil {
         } catch (Exception e) {
             androidId = "";
         }
-        String serial = "";
+        String serial = "serial";
         try {
             serial = android.os.Build.class.getField("SERIAL").get(null).toString();
         } catch (Exception exception) {
+        }
+        if (TextUtils.isEmpty(serial)) {
             serial = "serial";
         }
-
         // cobines the above with UUID
         return new UUID(androidId.hashCode(), serial.hashCode()).toString();
     }

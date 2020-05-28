@@ -5,17 +5,21 @@ package com.openmediation.sdk.core;
 
 import android.app.Activity;
 
+import com.openmediation.sdk.utils.ActLifecycle;
 import com.openmediation.sdk.utils.error.Error;
 import com.openmediation.sdk.utils.model.Instance;
 import com.openmediation.sdk.utils.model.Placement;
 import com.openmediation.sdk.utils.model.PlacementInfo;
 
+import java.lang.ref.WeakReference;
 import java.util.Map;
 
 /**
  * The type Ads api.
  */
 public abstract class AdsApi {
+    protected WeakReference<Activity> mActivityReference = new WeakReference<>(null);
+
     /**
      * Returns placement info for the ad type
      *
@@ -28,7 +32,11 @@ public abstract class AdsApi {
      *
      * @param instance the instance
      */
-    protected abstract void initInsAndSendEvent(Instance instance);
+    protected void initInsAndSendEvent(Instance instance) {
+        if (mActivityReference == null || mActivityReference.get() == null) {
+            mActivityReference = new WeakReference<Activity>(ActLifecycle.getInstance().getActivity());
+        }
+    }
 
     /**
      * Checks if an instance is available
@@ -119,14 +127,6 @@ public abstract class AdsApi {
      * @param error the error
      */
     protected void callbackShowError(Error error) {
-    }
-
-    /**
-     * Callback capped error.
-     *
-     * @param instance the instance
-     */
-    protected void callbackCappedError(Instance instance) {
     }
 
     /**

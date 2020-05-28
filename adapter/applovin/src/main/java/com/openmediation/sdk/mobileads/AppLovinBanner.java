@@ -46,11 +46,9 @@ public class AppLovinBanner extends CustomBannerEvent implements AppLovinAdLoadL
             mAppLovinAdView.loadNextAd();
             return;
         }
-
         AppLovinAdSize adSize = getAdSize(config);
         mAppLovinAdView = new AppLovinAdView(mAppLovinSdk, adSize, mInstancesKey, activity);
-        int heightPx = AppLovinSdkUtils.dpToPx(activity.getApplication(), adSize.getHeight());
-        mAppLovinAdView.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, heightPx));
+        mAppLovinAdView.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         mAppLovinAdView.setAdLoadListener(this);
         mAppLovinAdView.setAdClickListener(this);
         mAppLovinAdView.setAdDisplayListener(this);

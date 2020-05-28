@@ -271,6 +271,16 @@ public class BaseInstance extends Frequency {
         }
     }
 
+    public void onInsReLoadFailed(String error) {
+        JSONObject data = buildReportData();
+        JsonUtil.put(data, "msg", error);
+        if (mLoadStart > 0) {
+            int dur = (int) (System.currentTimeMillis() - mLoadStart) / 1000;
+            JsonUtil.put(data, "duration", dur);
+        }
+        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_RELOAD_ERROR, data);
+    }
+
     public void onInsShow(Scene scene) {
         mShowStart = System.currentTimeMillis();
         AdRateUtil.onInstancesShowed(mPlacementId, key);
@@ -292,6 +302,25 @@ public class BaseInstance extends Frequency {
 
     public void onInsClick(Scene scene) {
         EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_CLICKED, buildReportDataWithScene(scene));
+    }
+
+    public void onInsShowSuccess(Scene scene) {
+        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_SHOW_SUCCESS, buildReportDataWithScene(scene));
+    }
+
+    public void onInsShowFailed(String error, Scene scene) {
+        JSONObject data = buildReportDataWithScene(scene);
+        JsonUtil.put(data, "msg", error);
+        if (mShowStart > 0) {
+            int dur = (int) (System.currentTimeMillis() - mShowStart) / 1000;
+            JsonUtil.put(data, "duration", dur);
+            mShowStart = 0;
+        }
+        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_SHOW_FAILED, data);
+    }
+
+    public void onInsClose(Scene scene) {
+        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_CLOSED, buildReportDataWithScene(scene));
     }
 
     public enum BID_STATE {

@@ -35,7 +35,10 @@ public interface EventId {
     int INSTANCE_LOAD_TIMEOUT = 211;
 
     /****************************************/
-
+    int INSTANCE_RELOAD = 260;
+    int INSTANCE_RELOAD_ERROR = 261;
+    int INSTANCE_RELOAD_NO_FILL = 262;
+    int INSTANCE_RELOAD_SUCCESS = 263;
 
     int INSTANCE_BID_REQUEST = 270;
     int INSTANCE_BID_RESPONSE = 271;

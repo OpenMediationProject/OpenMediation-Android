@@ -9,6 +9,9 @@ public class AdTimingBidResponse {
     private String cur;
     private String original;
     private String payLoad;
+    private String token;
+    private String nurl;
+    private String lurl;
 
     public void setIid(int iid) {
         this.iid = iid;
@@ -48,5 +51,29 @@ public class AdTimingBidResponse {
 
     public String getPayLoad() {
         return payLoad;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public String getNurl() {
+        return nurl;
+    }
+
+    public void setNurl(String nurl) {
+        this.nurl = nurl;
+    }
+
+    public String getLurl() {
+        return lurl;
+    }
+
+    public void setLurl(String lurl) {
+        this.lurl = lurl;
     }
 }

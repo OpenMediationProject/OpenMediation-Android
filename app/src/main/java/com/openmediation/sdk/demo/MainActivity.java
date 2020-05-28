@@ -4,6 +4,7 @@
 package com.openmediation.sdk.demo;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -18,12 +19,11 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.adtiming.adt.demo.R;
-import com.openmediation.sdk.demo.utils.NewApiUtils;
 import com.openmediation.sdk.InitCallback;
 import com.openmediation.sdk.OmAds;
 import com.openmediation.sdk.banner.BannerAd;
 import com.openmediation.sdk.banner.BannerAdListener;
+import com.openmediation.sdk.demo.utils.NewApiUtils;
 import com.openmediation.sdk.interstitial.InterstitialAd;
 import com.openmediation.sdk.interstitial.InterstitialAdListener;
 import com.openmediation.sdk.nativead.AdIconView;
@@ -43,16 +43,14 @@ public class MainActivity extends Activity {
     private Button interstitialButton;
     private Button bannerButton;
     private Button nativeButton;
-
+    private Button splashButton;
 
     private LinearLayout adContainer;
     private View adView;
     private NativeAdView nativeAdView;
 
-
     private BannerAd bannerAd;
     private NativeAd nativeAd;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +64,7 @@ public class MainActivity extends Activity {
         }
         rewardVideoButton = findViewById(R.id.btn_reward_video);
         interstitialButton = findViewById(R.id.btn_interstitial);
+        splashButton = findViewById(R.id.btn_splash);
         bannerButton = findViewById(R.id.btn_banner);
         nativeButton = findViewById(R.id.btn_native);
         adContainer = findViewById(R.id.ad_container);
@@ -77,7 +76,6 @@ public class MainActivity extends Activity {
             setInterstitialButtonStat(true);
         }
     }
-
 
     private void initSDK() {
         NewApiUtils.printLog("start init sdk");
@@ -92,7 +90,6 @@ public class MainActivity extends Activity {
             @Override
             public void onError(Error result) {
                 NewApiUtils.printLog("init failed " + result.toString());
-
             }
         });
     }
@@ -183,6 +180,11 @@ public class MainActivity extends Activity {
     public void showInterstitial(View view) {
         InterstitialAd.showAd();
         setInterstitialButtonStat(false);
+    }
+
+
+    public void showSplash(View view) {
+        startActivity(new Intent(MainActivity.this, SplashAdActivity.class));
     }
 
     public void loadAndShowBanner(View view) {
@@ -303,13 +305,23 @@ public class MainActivity extends Activity {
         }
     }
 
-
     private void setInterstitialButtonStat(boolean isEnable) {
         interstitialButton.setEnabled(isEnable);
         if (isEnable) {
             interstitialButton.setText("Show Interstitial Ad");
         } else {
             interstitialButton.setText("Interstitial Ad Loading...");
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (bannerAd != null) {
+            bannerAd.destroy();
+        }
+        if (nativeAd != null) {
+            nativeAd.destroy();
         }
     }
 }

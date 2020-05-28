@@ -114,12 +114,12 @@ public class AdTimingAdapter extends CustomAdsAdapter {
         if (!mRvListeners.containsKey(adUnitId)) {
             mRvListeners.put(adUnitId, new RvListener(adUnitId));
         }
+        AdTimingManager.getInstance().setMediationRewardedVideoListener(adUnitId, mRvListeners.get(adUnitId));
         if (AdTimingManager.getInstance().isRewardedVideoReady(adUnitId)) {
             if (callback != null) {
                 callback.onRewardedVideoLoadSuccess();
             }
         } else {
-            AdTimingManager.getInstance().setMediationRewardedVideoListener(adUnitId, mRvListeners.get(adUnitId));
             AdTimingManager.getInstance().loadRewardedVideo(adUnitId);
         }
     }
@@ -140,7 +140,7 @@ public class AdTimingAdapter extends CustomAdsAdapter {
             }
             return;
         }
-
+        AdTimingManager.getInstance().setMediationRewardedVideoListener(adUnitId, mRvListeners.get(adUnitId));
         AdTimingManager.getInstance().showRewardedVideo(adUnitId, "");
     }
 
@@ -196,12 +196,12 @@ public class AdTimingAdapter extends CustomAdsAdapter {
         if (!mIsListeners.containsKey(adUnitId)) {
             mIsListeners.put(adUnitId, new IsListener(adUnitId));
         }
+        AdTimingManager.getInstance().setMediationInterstitialAdListener(adUnitId, mIsListeners.get(adUnitId));
         if (AdTimingManager.getInstance().isInterstitialAdReady(adUnitId)) {
             if (callback != null) {
                 callback.onInterstitialAdLoadSuccess();
             }
         } else {
-            AdTimingManager.getInstance().setMediationInterstitialAdListener(adUnitId, mIsListeners.get(adUnitId));
             AdTimingManager.getInstance().loadInterstitialAd(adUnitId);
         }
     }
@@ -222,7 +222,7 @@ public class AdTimingAdapter extends CustomAdsAdapter {
                 return;
             }
         }
-
+        AdTimingManager.getInstance().setMediationInterstitialAdListener(adUnitId, mIsListeners.get(adUnitId));
         AdTimingManager.getInstance().showInterstitialAd(adUnitId, "");
     }
 

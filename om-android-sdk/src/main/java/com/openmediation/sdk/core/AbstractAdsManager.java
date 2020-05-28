@@ -7,8 +7,8 @@ import android.app.Activity;
 
 import com.openmediation.sdk.bid.AdTimingAuctionManager;
 import com.openmediation.sdk.bid.AdTimingBidResponse;
-import com.openmediation.sdk.bid.AuctionCallback;
 import com.openmediation.sdk.bid.AuctionUtil;
+import com.openmediation.sdk.bid.BidLoseReason;
 import com.openmediation.sdk.core.runnable.AdsScheduleTask;
 import com.openmediation.sdk.utils.ActLifecycle;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
@@ -46,8 +46,9 @@ import com.openmediation.sdk.InitCallback;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -55,7 +56,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * The type Abstract ads manager.
  */
-public abstract class AbstractAdsManager extends AdsApi implements InitCallback, AuctionCallback,
+public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
         Request.OnRequestCallback, HbHelper.OnHbCallback {
     /**
      * The M activity.
@@ -77,7 +78,8 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
      * The M scene.
      */
     protected Scene mScene;
-    private List<AdTimingBidResponse> mBidResponses;
+    //    private List<AdTimingBidResponse> mBidResponses;
+    private Map<Integer, AdTimingBidResponse> mS2sBidResponses;
 
     private OmManager.LOAD_TYPE mLoadType;
     //Adapters to be loaded
@@ -100,7 +102,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
     public AbstractAdsManager() {
         mTotalIns = new CopyOnWriteArrayList<>();
         mListenerWrapper = new ListenerWrapper();
-        mBidResponses = new ArrayList<>();
+//        mBidResponses = new ArrayList<>();
     }
 
     /**
@@ -129,15 +131,15 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
     protected void loadInsAndSendEvent(Instance instance) {
         if (AdRateUtil.shouldBlockInstance(Preconditions.checkNotNull(mPlacement) ?
                 mPlacement.getId() : "" + instance.getKey(), instance)) {
-            callbackCappedError(instance);
+            instance.setMediationState(Instance.MEDIATION_STATE.CAPPED);
+            onInsCapped(instance);
             return;
         }
         LrReportHelper.report(instance, mLoadType.getValue(), mPlacement.getWfAbt(), CommonConstants.INSTANCE_LOAD);
         instance.reportInsLoad();
-        if (instance.getBidState() == BaseInstance.BID_STATE.BID_SUCCESS) {
-            AuctionUtil.instanceNotifyBidWin(mPlacement.getHbAbt(), instance);
-            inLoadWithBid(instance, AuctionUtil.generateMapRequestData(mBidResponses, instance));
-            AuctionUtil.removeBidResponse(mBidResponses, instance);
+        if (mS2sBidResponses != null && mS2sBidResponses.containsKey(instance.getId())) {
+            inLoadWithBid(instance, AuctionUtil.generateMapRequestData(mS2sBidResponses.get(instance.getId())));
+//            AuctionUtil.removeBidResponse(mBidResponses, instance);
         } else {
             insLoad(instance);
         }
@@ -243,9 +245,12 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
         }
         for (Instance in : mTotalIns) {
             if (!isInsAvailable(in)) {
+                resetMediationStateAndNotifyLose(in);
                 continue;
             }
             insShow(in);
+
+            notifyInsBidWin(in);
             return;
         }
         error = ErrorBuilder.build(ErrorCode.CODE_SHOW_NO_AD_READY
@@ -262,6 +267,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
 
         for (Instance in : mTotalIns) {
             if (!isInsAvailable(in)) {
+                resetMediationStateAndNotifyLose(in);
                 continue;
             }
             return true;
@@ -305,6 +311,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
 
     @Override
     protected void onInsInitFailed(Instance instance, Error error) {
+        notifyLoadFailedInsBidLose(instance);
         if (shouldFinishLoad()) {
             boolean hasCache = hasAvailableCache();
             if (isManualTriggered && !hasCache) {
@@ -317,7 +324,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
             if (shouldNotifyAvailableChanged(hasCache)) {
                 onAvailabilityChanged(hasCache, error);
             }
-            instanceNotifyBidLose();
+            notifyUnLoadInsBidLose();
         } else {
             initOrFetchNextAdapter();
         }
@@ -329,7 +336,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
         if (!shouldFinishLoad()) {
             initOrFetchNextAdapter();
         } else {
-            instanceNotifyBidLose();
+            notifyUnLoadInsBidLose();
         }
         if (isManualTriggered) {
             callbackLoadSuccessOnManual();
@@ -346,6 +353,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
 
     @Override
     protected synchronized void onInsLoadFailed(Instance instance, Error error) {
+        notifyLoadFailedInsBidLose(instance);
         if (shouldFinishLoad()) {
             boolean hasCache = hasAvailableCache();
             if (isManualTriggered && !hasCache) {
@@ -360,7 +368,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
                 onAvailabilityChanged(hasCache, error);
             }
 
-            instanceNotifyBidLose();
+            notifyUnLoadInsBidLose();
         } else {
             initOrFetchNextAdapter();
         }
@@ -397,15 +405,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
     @Override
     protected void onInsCapped(Instance instance) {
         Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_CAPPED, "load ad failed", -1);
-        if (shouldFinishLoad()) {
-            boolean hasCache = hasAvailableCache();
-            if (shouldNotifyAvailableChanged(hasCache)) {
-                onAvailabilityChanged(hasCache, error);
-            }
-            instanceNotifyBidLose();
-        } else {
-            initOrFetchNextAdapter();
-        }
+        onInsLoadFailed(instance, error);
     }
 
     @Override
@@ -422,15 +422,21 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
 
     @Override
     public void onHbSuccess(int abt, BaseInstance[] instances) {
-        mPlacement.setHbAbt(abt);
-        AdTimingAuctionManager.getInstance().bid(mActivity, mPlacement.getId(), instances, abt,
-                mPlacement.getT(), this);
+        try {
+            mPlacement.setHbAbt(abt);
+//        AdTimingAuctionManager.getInstance().bid(mActivity, mPlacement.getId(), instances, abt,
+//                mPlacement.getT(), this);
+            List<AdTimingBidResponse> tokens = AdTimingAuctionManager.getInstance().getBidToken(mActivity, instances);
+            WaterFallHelper.wfRequest(getPlacementInfo(), mLoadType, null, tokens, this);
+        } catch (Exception e) {
+            CrashUtil.getSingleton().saveException(e);
+        }
     }
 
     @Override
     public void onHbFailed(String error) {
         try {
-            WaterFallHelper.wfRequest(getPlacementInfo(), mLoadType, null, this);
+            WaterFallHelper.wfRequest(getPlacementInfo(), mLoadType, null, null, this);
         } catch (Exception e) {
             Error adTimingError = ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
                     , ErrorCode.MSG_LOAD_INVALID_REQUEST, ErrorCode.CODE_LOAD_UNKNOWN_INTERNAL_ERROR);
@@ -440,21 +446,21 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
         }
     }
 
-    @Override
-    public void onBidComplete(List<AdTimingBidResponse> responses) {
-        try {
-            if (responses != null) {
-                mBidResponses.addAll(responses);
-            }
-            WaterFallHelper.wfRequest(getPlacementInfo(), mLoadType, responses, this);
-        } catch (Exception e) {
-            Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
-                    , ErrorCode.MSG_LOAD_INVALID_REQUEST, ErrorCode.CODE_LOAD_UNKNOWN_INTERNAL_ERROR);
-            callbackLoadError(error);
-            DeveloperLog.LogD("load ad error", e);
-            CrashUtil.getSingleton().saveException(e);
-        }
-    }
+//    @Override
+//    public void onBidComplete(List<AdTimingBidResponse> responses) {
+//        try {
+//            if (responses != null) {
+////                mBidResponses.addAll(responses);
+//            }
+//            WaterFallHelper.wfRequest(mPlacement.getId(), mLoadType, responses, null, this);
+//        } catch (Exception e) {
+//            Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
+//                    , ErrorCode.MSG_LOAD_INVALID_REQUEST, ErrorCode.CODE_LOAD_UNKNOWN_INTERNAL_ERROR);
+//            callbackLoadError(error);
+//            DeveloperLog.LogD("load ad error", e);
+//            CrashUtil.getSingleton().saveException(e);
+//        }
+//    }
 
     @Override
     public void onRequestSuccess(Response response) {
@@ -478,11 +484,22 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
                 }
             }
 
+            List<Instance> lastAvailableIns = InsUtil.getInsWithStatus(mTotalIns, Instance.MEDIATION_STATE.AVAILABLE);
             JSONObject clInfo = new JSONObject(response.body().string());
+            int code = clInfo.optInt("code");
+            if (code != 0) {
+                if (lastAvailableIns == null || lastAvailableIns.isEmpty()) {
+                    String msg = clInfo.optString("msg");
+                    Error error = new Error(ErrorCode.CODE_LOAD_NO_AVAILABLE_AD
+                            , msg, ErrorCode.CODE_INTERNAL_SERVER_ERROR);
+                    DeveloperLog.LogE(error.toString());
+                    callbackLoadError(error);
+                }
+                return;
+            }
             mPlacement.setWfAbt(clInfo.optInt("abt"));
             List<Instance> tmp = WaterFallHelper.getListInsResult(clInfo, mPlacement);
             if (tmp == null || tmp.isEmpty()) {
-                List<Instance> lastAvailableIns = InsUtil.getInsWithStatus(mTotalIns, Instance.MEDIATION_STATE.AVAILABLE);
                 if (lastAvailableIns == null || lastAvailableIns.isEmpty()) {
                     Error error = new Error(ErrorCode.CODE_LOAD_NO_AVAILABLE_AD
                             , ErrorCode.MSG_LOAD_NO_AVAILABLE_AD, ErrorCode.CODE_INTERNAL_SERVER_ERROR);
@@ -493,8 +510,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
                     isInLoadingProgress = false;
                 }
             } else {
-                List<Instance> lastAvailableIns = InsUtil.getInsWithStatus(mTotalIns, Instance.MEDIATION_STATE.AVAILABLE);
-                if (!lastAvailableIns.isEmpty()) {
+                if (lastAvailableIns != null && !lastAvailableIns.isEmpty()) {
                     InsUtil.reOrderIns(lastAvailableIns, tmp);
                 }
                 mTotalIns.clear();
@@ -506,9 +522,17 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
                 DeveloperLog.LogD("after cl, cache size is : " + mCacheSize);
                 //if availableCount == mCacheSize, do not load any new instance
                 if (availableCount == mCacheSize) {
-                    DeveloperLog.LogD("no new ins should be loaded, current load progress finishes");
+                    DeveloperLog.LogD("no new ins should be loaded, current load progress finish");
                     isInLoadingProgress = false;
                 } else {
+                    Map<Integer, AdTimingBidResponse> bidResponseMap = WaterFallHelper.getS2sBidResponse(clInfo);
+                    if (bidResponseMap != null && !bidResponseMap.isEmpty()) {
+                        if (mS2sBidResponses == null) {
+                            mS2sBidResponses = new HashMap<>();
+                        }
+
+                        mS2sBidResponses.putAll(bidResponseMap);
+                    }
                     doLoadOnUiThread();
                 }
             }
@@ -553,11 +577,14 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
             isInLoadingProgress = true;
             mLoadType = type;
             isAReadyReported.set(false);
-            mBidResponses.clear();
+//            mBidResponses.clear();
+            if (mS2sBidResponses != null) {
+                mS2sBidResponses.clear();
+            }
             if (mPlacement.hasHb()) {
                 HbHelper.executeHb(mPlacement, type, this);
             } else {
-                WaterFallHelper.wfRequest(getPlacementInfo(), mLoadType, null, this);
+                WaterFallHelper.wfRequest(getPlacementInfo(), mLoadType, null, null, this);
             }
         } catch (Exception e) {
             Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
@@ -762,15 +789,74 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
      * re-calculates cached ads count
      */
     private void reSizeCacheSize() {
-        mCacheSize = Math.min(mCacheSize, mTotalIns.size());
+        int size = mCacheSize;
+        if (mPlacement != null) {
+            size = mPlacement.getCs();
+        }
+        mCacheSize = Math.min(size, mTotalIns.size());
     }
 
-    private void instanceNotifyBidLose() {
-        if (mTotalIns == null) {
+    private void resetMediationStateAndNotifyLose(Instance instance) {
+        if (instance.getMediationState() == Instance.MEDIATION_STATE.AVAILABLE) {
+            instance.setMediationState(Instance.MEDIATION_STATE.NOT_AVAILABLE);
+        }
+        notifyUnShowedBidLose(instance);
+    }
+
+    private void notifyInsBidWin(BaseInstance instance) {
+        if (mTotalIns == null || mS2sBidResponses == null || instance == null) {
             return;
         }
+        if (!mS2sBidResponses.containsKey(instance.getId())) {
+            return;
+        }
+        AdTimingBidResponse bidResponse = mS2sBidResponses.get(instance.getId());
+        if (bidResponse == null) {
+            return;
+        }
+        AuctionUtil.s2sNotifyBidWin(bidResponse.getNurl(), instance);
+    }
 
-        AuctionUtil.instanceNotifyBidLose(mBidResponses, mPlacement);
+    private void notifyUnShowedBidLose(BaseInstance instance) {
+        if (mTotalIns == null || mS2sBidResponses == null || instance == null) {
+            return;
+        }
+        if (!mS2sBidResponses.containsKey(instance.getId())) {
+            return;
+        }
+        AuctionUtil.s2sNotifyBidLose(mS2sBidResponses.get(instance.getId()),
+                BidLoseReason.INVENTORY_DID_NOT_MATERIALISE.getValue(), instance);
+    }
+
+    private void notifyLoadFailedInsBidLose(BaseInstance instance) {
+        if (mTotalIns == null || mS2sBidResponses == null || instance == null) {
+            return;
+        }
+        if (!mS2sBidResponses.containsKey(instance.getId())) {
+            return;
+        }
+        AuctionUtil.s2sNotifyBidLose(mS2sBidResponses.get(instance.getId()),
+                BidLoseReason.INTERNAL.getValue(), instance);
+    }
+
+    private void notifyUnLoadInsBidLose() {
+        if (mTotalIns == null || mS2sBidResponses == null) {
+            return;
+        }
+        Map<BaseInstance, AdTimingBidResponse> unLoadInsBidResponses = new HashMap<>();
+        for (Instance in : mTotalIns) {
+            if (in == null) {
+                continue;
+            }
+            if ((in.getMediationState() == Instance.MEDIATION_STATE.NOT_INITIATED ||
+                    in.getMediationState() == Instance.MEDIATION_STATE.NOT_AVAILABLE) &&
+                    mS2sBidResponses.containsKey(in.getId())) {
+                unLoadInsBidResponses.put(in, mS2sBidResponses.get(in.getId()));
+            }
+        }
+        if (!unLoadInsBidResponses.isEmpty()) {
+            AuctionUtil.s2sNotifyBidLose(unLoadInsBidResponses, BidLoseReason.LOST_TO_HIGHER_BIDDER.getValue());
+        }
     }
 
     private void reportEvent(int eventId, JSONObject data) {

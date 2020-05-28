@@ -38,7 +38,12 @@ public class TikTokBanner extends CustomBannerEvent implements TTAdNative.Native
         this.mActivity = activity;
         initTTSDKConfig(activity, config);
         int[] size = getBannerSize(config);
-        loadBannerAd(mInstancesKey, size[0], size[1]);
+        int width = size[0], height = size[1];
+        if (width < 0 || height < 0) {
+            width = 320;
+            height = 50;
+        }
+        loadBannerAd(mInstancesKey, width, height);
     }
 
     @Override

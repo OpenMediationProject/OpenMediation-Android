@@ -6,12 +6,14 @@ package com.openmediation.sdk.core;
 import android.app.Activity;
 import android.text.TextUtils;
 
+import com.openmediation.sdk.bid.AdTimingAuctionManager;
 import com.openmediation.sdk.utils.ActLifecycle;
 import com.openmediation.sdk.utils.AdLog;
 import com.openmediation.sdk.utils.AdtUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.HandlerUtil;
 import com.openmediation.sdk.utils.IOUtil;
+import com.openmediation.sdk.utils.OaidHelper;
 import com.openmediation.sdk.utils.helper.ConfigurationHelper;
 import com.openmediation.sdk.utils.JsonUtil;
 import com.openmediation.sdk.utils.SdkUtil;
@@ -54,7 +56,7 @@ public final class InitImp {
      * @param appKey   the app key
      * @param callback the callback
      */
-    public static void init(final Activity activity, final String appKey, final InitCallback callback) {
+    public static void init(final Activity activity, final String appKey, String channel, final InitCallback callback) {
         //
         if (hasInit.get()) {
             return;
@@ -80,7 +82,7 @@ public final class InitImp {
         ActLifecycle.getInstance().init(activity);
         EventUploadManager.getInstance().init(activity.getApplicationContext());
         EventUploadManager.getInstance().uploadEvent(EventId.INIT_START);
-        WorkExecutor.execute(new InitAsyncRunnable(appKey));
+        WorkExecutor.execute(new InitAsyncRunnable(appKey, channel));
     }
 
     /**
@@ -90,9 +92,10 @@ public final class InitImp {
      * @param callback the callback
      */
     static void reInitSDK(Activity activity, final InitCallback callback) {
-        if (DataCache.getInstance().containsKey("AppKey")) {
-            String appKey = DataCache.getInstance().get("AppKey", String.class);
-            InitImp.init(activity, appKey, new InitCallback() {
+        if (DataCache.getInstance().containsKey(KeyConstants.KEY_APP_KEY)) {
+            String appKey = DataCache.getInstance().get(KeyConstants.KEY_APP_KEY, String.class);
+            String appChannel = DataCache.getInstance().get(KeyConstants.KEY_APP_CHANNEL, String.class);
+            InitImp.init(activity, appKey, appChannel, new InitCallback() {
                 @Override
                 public void onSuccess() {
                     DeveloperLog.LogD("reInitSDK success");
@@ -141,10 +144,12 @@ public final class InitImp {
     private static void initUtil() throws Exception {
         DataCache.getInstance().init(AdtUtil.getApplication());
         DataCache.getInstance().set(DeviceUtil.preFetchDeviceInfo(AdtUtil.getApplication()));
+        OaidHelper.initOaidServer(AdtUtil.getApplication());
     }
 
     private static void doAfterGetConfig(String appKey, Configurations config) {
         try {
+            AdTimingAuctionManager.getInstance().initBid(AdtUtil.getApplication(), config);
             DeveloperLog.enableDebug(AdtUtil.getApplication(), config.getD() == 1);
             AdLog.getSingleton().init(AdtUtil.getApplication());
             EventUploadManager.getInstance().updateReportSettings(config);
@@ -193,14 +198,16 @@ public final class InitImp {
     private static class InitAsyncRunnable implements Runnable {
 
         private String appKey;
+        private String appChannel;
 
         /**
          * Instantiates a new Init async runnable.
          *
          * @param appKey the app key
          */
-        InitAsyncRunnable(String appKey) {
+        InitAsyncRunnable(String appKey, String appChannel) {
             this.appKey = appKey;
+            this.appChannel = appChannel;
         }
 
         @Override
@@ -215,6 +222,10 @@ public final class InitImp {
                 }
                 initUtil();
                 DataCache.getInstance().set(KeyConstants.KEY_APP_KEY, appKey);
+                if (TextUtils.isEmpty(appChannel)) {
+                    appChannel = "";
+                }
+                DataCache.getInstance().set(KeyConstants.KEY_APP_CHANNEL, appChannel);
                 requestConfig(appKey);
             } catch (Exception e) {
                 DeveloperLog.LogD("initOnAsyncThread  exception : ", e);

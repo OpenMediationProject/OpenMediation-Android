@@ -55,4 +55,35 @@ public final class CallbackManager {
             callback.onInsError(instanceKey, instanceId, error);
         }
     }
+
+    public synchronized void onInsShowSuccess(String placementId, String instanceKey, String instanceId) {
+        Callback callback = getCallback(placementId);
+        if (callback != null) {
+            callback.onInsShowSuccess(instanceKey, instanceId);
+        }
+    }
+
+    public synchronized void onInsShowFailed(String placementId, String instanceKey, String instanceId, String error) {
+        Callback callback = getCallback(placementId);
+        if (callback != null) {
+            callback.onInsShowFailed(instanceKey, instanceId, error);
+        }
+    }
+
+    public synchronized void onInsClosed(String placementId, String instanceKey, String instanceId) {
+        Callback callback = getCallback(placementId);
+        if (callback != null) {
+            callback.onInsClosed(instanceKey, instanceId);
+        }
+    }
+
+    /**
+     * only SplashAd
+     */
+    void onInsTick(String placementId, String instanceKey, String instanceId, long millisUntilFinished) {
+        Callback callback = getCallback(placementId);
+        if (callback != null) {
+            callback.onInsTick(instanceKey, instanceId, millisUntilFinished);
+        }
+    }
 }

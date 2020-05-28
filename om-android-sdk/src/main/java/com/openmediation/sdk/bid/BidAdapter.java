@@ -10,6 +10,16 @@ import java.util.Map;
 public abstract class BidAdapter implements BidApi {
 
     @Override
+    public void initBid(Context context, Map<String, Object> dataMap, BidCallback callback) {
+
+    }
+
+    @Override
+    public String getBiddingToken(Context context) {
+        return null;
+    }
+
+    @Override
     public void executeBid(Context context, Map<String, Object> dataMap, BidCallback callback) {
 
     }

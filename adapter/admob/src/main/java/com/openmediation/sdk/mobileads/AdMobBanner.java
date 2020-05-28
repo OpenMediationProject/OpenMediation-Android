@@ -32,7 +32,13 @@ public class AdMobBanner extends CustomBannerEvent {
         mBannerView = new AdView(activity.getApplicationContext());
         mBannerView.setAdUnitId(mInstancesKey);
         int[] size = getBannerSize(config);
-        mBannerView.setAdSize(new AdSize(size[0], size[1]));
+        AdSize adSize;
+        if (size[0] < 0 || size[1] < 0) {
+            adSize = new AdSize(320, 50);
+        } else {
+            adSize = new AdSize(size[0], size[1]);
+        }
+        mBannerView.setAdSize(adSize);
         mBannerView.setAdListener(new AdListener() {
 
             @Override

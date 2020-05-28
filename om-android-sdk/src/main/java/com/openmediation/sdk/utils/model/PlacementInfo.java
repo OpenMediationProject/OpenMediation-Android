@@ -60,6 +60,13 @@ public class PlacementInfo {
         return this;
     }
 
+    public PlacementInfo getBannerPlacementInfo(int width, int height) {
+        mAdType = CommonConstants.BANNER;
+        mWidth = width;
+        mHeight = height;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "PlacementInfo{" +

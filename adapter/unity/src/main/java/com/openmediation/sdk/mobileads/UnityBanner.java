@@ -37,7 +37,7 @@ public class UnityBanner extends CustomBannerEvent implements BannerView.IListen
             mDidInit = true;
         }
 
-        BannerView bannerView = new BannerView(activity, mInstancesKey, getAdSize(config));
+        BannerView bannerView = new BannerView(activity, mInstancesKey, getAdSize(activity, config));
         bannerView.setListener(this);
         bannerView.load();
     }
@@ -101,11 +101,17 @@ public class UnityBanner extends CustomBannerEvent implements BannerView.IListen
 
     }
 
-    private UnityBannerSize getAdSize(Map<String, String> config) {
+    private UnityBannerSize getAdSize(Activity activity, Map<String, String> config) {
         int[] size = getBannerSize(config);
         int width = size[0];
         int height = size[1];
-        return new UnityBannerSize(width, height);
+        UnityBannerSize bannerSize;
+        if (size[0] < 0 || size[1] < 0) {
+            bannerSize = UnityBannerSize.getDynamicSize(activity);
+        } else {
+            bannerSize = new UnityBannerSize(width, height);
+        }
+        return bannerSize;
     }
 
 }

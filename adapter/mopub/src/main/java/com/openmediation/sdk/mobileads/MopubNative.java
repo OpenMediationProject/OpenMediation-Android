@@ -19,7 +19,6 @@ import com.openmediation.sdk.utils.AdLog;
 import com.mopub.common.MoPub;
 import com.mopub.common.SdkConfiguration;
 import com.mopub.common.SdkInitializationListener;
-import com.mopub.nativeads.MoPubNative;
 import com.mopub.nativeads.MoPubStaticNativeAdRenderer;
 import com.mopub.nativeads.NativeAd;
 import com.mopub.nativeads.NativeErrorCode;
@@ -34,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class MopubNative extends CustomNativeEvent implements MoPubNative.MoPubNativeNetworkListener,
+public class MoPubNative extends CustomNativeEvent implements com.mopub.nativeads.MoPubNative.MoPubNativeNetworkListener,
         NativeAd.MoPubNativeEventListener {
     private static final AtomicInteger sNextGeneratedId = new AtomicInteger(1);
 
@@ -187,7 +186,7 @@ public class MopubNative extends CustomNativeEvent implements MoPubNative.MoPubN
         mAdInfo.setType(3);
         mAdInfo.setCallToActionText(staticNativeAd.getCallToAction());
         mAdInfo.setTitle(staticNativeAd.getTitle());
-        MopubUtil.Request(mActRef.get(), staticNativeAd.getIconImageUrl(), new Response.Listener<Bitmap>() {
+        MoPubUtil.Request(mActRef.get(), staticNativeAd.getIconImageUrl(), new Response.Listener<Bitmap>() {
             @Override
             public void onResponse(Bitmap bitmap) {
                 mIcon = bitmap;
@@ -198,7 +197,7 @@ public class MopubNative extends CustomNativeEvent implements MoPubNative.MoPubN
 
             }
         });
-        MopubUtil.Request(mActRef.get(), staticNativeAd.getMainImageUrl(), new Response.Listener<Bitmap>() {
+        MoPubUtil.Request(mActRef.get(), staticNativeAd.getMainImageUrl(), new Response.Listener<Bitmap>() {
             @Override
             public void onResponse(Bitmap bitmap) {
                 mContent = bitmap;
@@ -246,7 +245,7 @@ public class MopubNative extends CustomNativeEvent implements MoPubNative.MoPubN
                 .build();
         MoPubStaticNativeAdRenderer moPubStaticNativeAdRenderer = new MoPubStaticNativeAdRenderer(viewBinder);
 
-        MoPubNative moPubNative = new MoPubNative(activity, mInstancesKey, this);
+        com.mopub.nativeads.MoPubNative moPubNative = new com.mopub.nativeads.MoPubNative(activity, mInstancesKey, this);
         moPubNative.registerAdRenderer(moPubStaticNativeAdRenderer);
         moPubNative.makeRequest();
     }
@@ -264,7 +263,7 @@ public class MopubNative extends CustomNativeEvent implements MoPubNative.MoPubN
             privacy_img.setId(PID);
             parent.addView(privacy_img);
 
-            int size = MopubUtil.dip2px(parent.getContext(), 15);
+            int size = MoPubUtil.dip2px(parent.getContext(), 15);
             privacy_img.getLayoutParams().width = size;
             privacy_img.getLayoutParams().height = size;
 

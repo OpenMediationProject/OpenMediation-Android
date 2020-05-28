@@ -12,7 +12,7 @@ import com.mopub.volley.VolleyError;
 import com.mopub.volley.toolbox.ImageRequest;
 import com.mopub.volley.toolbox.Volley;
 
-final class MopubUtil {
+final class MoPubUtil {
     static void Request(Context context, String url, Response.Listener listener,
                         Response.ErrorListener errorListener) {
         try {

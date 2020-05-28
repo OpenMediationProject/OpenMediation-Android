@@ -37,4 +37,5 @@ android.libraryVariants.all { variant ->
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     testImplementation 'junit:junit:4.12'
+    implementation project(path: ':miit_mdid_1.0.10')
 }

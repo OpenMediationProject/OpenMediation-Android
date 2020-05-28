@@ -3,6 +3,8 @@
 
 package com.openmediation.sdk.utils;
 
+import android.text.TextUtils;
+
 import com.openmediation.sdk.utils.error.Error;
 import com.openmediation.sdk.utils.event.EventId;
 import com.openmediation.sdk.utils.event.EventUploadManager;
@@ -46,5 +48,16 @@ public class AdsUtil {
         JsonUtil.put(object, "pid", placementId);
         JsonUtil.put(object, "scene", sceneId);
         EventUploadManager.getInstance().uploadEvent(eventId, object);
+    }
+
+    public static void callActionReport(int eventId, String placementId, String scene, int adType) {
+        if (TextUtils.isEmpty(placementId)) {
+            Placement placement = PlacementUtils.getPlacement(adType);
+            if (placement != null) {
+                placementId = placement.getId();
+            }
+        }
+        Scene s = SceneUtil.getScene(PlacementUtils.getPlacement(placementId), scene);
+        callActionReport(placementId, s != null ? s.getId() : 0, eventId);
     }
 }

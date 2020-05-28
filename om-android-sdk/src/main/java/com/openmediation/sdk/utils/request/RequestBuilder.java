@@ -5,12 +5,16 @@ package com.openmediation.sdk.utils.request;
 
 import android.content.Context;
 import android.os.Build;
+import android.text.TextUtils;
 
 import com.openmediation.sdk.bid.AdTimingBidResponse;
+import com.openmediation.sdk.utils.OaidHelper;
 import com.openmediation.sdk.utils.constant.CommonConstants;
 import com.openmediation.sdk.utils.constant.KeyConstants;
 import com.openmediation.sdk.utils.device.DeviceUtil;
+import com.openmediation.sdk.utils.device.ImeiUtil;
 import com.openmediation.sdk.utils.device.SensorManager;
+import com.openmediation.sdk.utils.model.PlacementInfo;
 import com.openmediation.sdk.utils.request.network.util.NetworkChecker;
 import com.openmediation.sdk.utils.AdtUtil;
 import com.openmediation.sdk.utils.DensityUtil;
@@ -300,8 +304,6 @@ public class RequestBuilder {
     public static byte[] buildConfigRequestBody(JSONArray adapters) throws Exception {
         Context context = AdtUtil.getApplication();
         JSONObject body = getRequestBodyBaseJson();
-        body.put(KeyConstants.RequestBody.KEY_W, DensityUtil.getPhoneWidth(context));
-        body.put(KeyConstants.RequestBody.KEY_H, DensityUtil.getPhoneHeight(context));
         body.put(KeyConstants.RequestBody.KEY_TZ, DeviceUtil.getTimeZone());
         body.put(KeyConstants.RequestBody.KEY_LANG_NAME, DeviceUtil.getLocaleInfo().get(KeyConstants.RequestBody.KEY_LANG_NAME));
         body.put(KeyConstants.RequestBody.KEY_BUILD, Build.DISPLAY);
@@ -326,8 +328,24 @@ public class RequestBuilder {
         body.put(KeyConstants.RequestBody.KEY_ZO, DeviceUtil.getTimeZoneOffset());
         body.put(KeyConstants.RequestBody.KEY_SESSION, DeviceUtil.getSessionId());
         body.put(KeyConstants.RequestBody.KEY_UID, DeviceUtil.getUid());
-        body.put(KeyConstants.RequestBody.KEY_DID, DataCache.getInstance().get("AdvertisingId", String.class));
-        body.put(KeyConstants.RequestBody.KEY_DTYPE, 2);
+        int dType;
+        String did;
+        String gaid = DataCache.getInstance().get("AdvertisingId", String.class);
+        if (!TextUtils.isEmpty(gaid)) {
+            did = gaid;
+            dType = 2;
+        } else if (!TextUtils.isEmpty(ImeiUtil.getIMEI(context))) {
+            did = ImeiUtil.getIMEI(context);
+            dType = 5;
+        } else if (!TextUtils.isEmpty(OaidHelper.getOaid())) {
+            did = OaidHelper.getOaid();
+            dType = 4;
+        } else {
+            did = "";
+            dType = 0;
+        }
+        body.put(KeyConstants.RequestBody.KEY_DID, did);
+        body.put(KeyConstants.RequestBody.KEY_DTYPE, dType);
         body.put(KeyConstants.RequestBody.KEY_JB, DeviceUtil.isRoot() ? 1 : 0);
         body.put(KeyConstants.RequestBody.KEY_LANG, map.get(KeyConstants.RequestBody.KEY_LANG));
         body.put(KeyConstants.RequestBody.KEY_LCOUNTRY, map.get(KeyConstants.RequestBody.KEY_LCOUNTRY));
@@ -340,6 +358,8 @@ public class RequestBuilder {
         body.put(KeyConstants.RequestBody.KEY_CONT, NetworkChecker.getConnectType(context));
         body.put(KeyConstants.RequestBody.KEY_CARRIER, NetworkChecker.getNetworkOperator(context));
         body.put(KeyConstants.RequestBody.KEY_FM, DeviceUtil.getFm());
+        String channel = DataCache.getInstance().get(KeyConstants.KEY_APP_CHANNEL, String.class);
+        body.put(KeyConstants.RequestBody.KEY_CHANNEL, channel);
         Map<String, Integer> battery = DeviceUtil.getBatteryInfo(context);
         if (battery == null || battery.isEmpty()) {
             body.put(KeyConstants.RequestBody.KEY_BATTERY, 0);
@@ -356,28 +376,35 @@ public class RequestBuilder {
                 body.put(KeyConstants.RequestBody.KEY_BATTERY, 0);
             }
         }
+        body.put(KeyConstants.RequestBody.KEY_W, DensityUtil.getPhoneWidth(context));
+        body.put(KeyConstants.RequestBody.KEY_H, DensityUtil.getPhoneHeight(context));
         return body;
     }
 
     /**
      * Build wf request body byte [ ].
      *
-     * @param responses the responses
+     * @param c2sResult the responses
      * @param extras    the extras
      * @return the byte [ ]
      * @throws Exception the exception
      */
-    public static byte[] buildWfRequestBody(List<AdTimingBidResponse> responses, String... extras) throws Exception {
+    public static byte[] buildWfRequestBody(PlacementInfo info, List<AdTimingBidResponse> c2sResult, List<AdTimingBidResponse> s2sResult,
+                                            String... extras) throws Exception {
         JSONObject body = getRequestBodyBaseJson();
-        body.put(KeyConstants.RequestBody.KEY_PID, extras[0]);
-        body.put(KeyConstants.RequestBody.KEY_W, extras[1]);
-        body.put(KeyConstants.RequestBody.KEY_H, extras[2]);
-        body.put(KeyConstants.RequestBody.KEY_IAP, extras[5]);
-        body.put("act", extras[3]);
-        body.put(KeyConstants.RequestBody.KEY_IMPRTIMES, Integer.valueOf(extras[4]));
-        if (responses != null && !responses.isEmpty()) {
+        if (info.getWidth() != 0) {
+            body.put(KeyConstants.RequestBody.KEY_W, info.getWidth());
+        }
+        if (info.getHeight() != 0) {
+            body.put(KeyConstants.RequestBody.KEY_H, info.getHeight());
+        }
+        body.put(KeyConstants.RequestBody.KEY_PID, info.getId());
+        body.put(KeyConstants.RequestBody.KEY_IAP, extras[0]);
+        body.put(KeyConstants.RequestBody.KEY_IMPRTIMES, Integer.valueOf(extras[1]));
+        body.put("act", extras[2]);
+        if (c2sResult != null && !c2sResult.isEmpty()) {
             JSONArray array = new JSONArray();
-            for (AdTimingBidResponse response : responses) {
+            for (AdTimingBidResponse response : c2sResult) {
                 if (response == null) {
                     continue;
                 }
@@ -388,6 +415,20 @@ public class RequestBuilder {
                 array.put(object);
             }
             body.put("bid", array);
+        }
+
+        if (s2sResult != null && !s2sResult.isEmpty()) {
+            JSONArray array = new JSONArray();
+            for (AdTimingBidResponse response : s2sResult) {
+                if (response == null) {
+                    continue;
+                }
+                JSONObject object = new JSONObject();
+                JsonUtil.put(object, "iid", response.getIid());
+                JsonUtil.put(object, "token", response.getToken());
+                array.put(object);
+            }
+            body.put("bids2s", array);
         }
         DeveloperLog.LogD("request wf params : " + body.toString());
         return Gzip.inGZip(body.toString().getBytes(Charset.forName(CommonConstants.CHARTSET_UTF8)));

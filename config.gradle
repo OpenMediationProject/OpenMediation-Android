@@ -1,20 +1,20 @@
 ext {
     adapterVersion = [
-            'adtiming'    : '1.1.0',
-            'admob'       : '1.1.0',
-            'facebook'    : '1.1.0',
-            'unity'       : '1.1.0',
-            'vungle'      : '1.1.0',
-            'adcolony'    : '1.1.0',
-            'applovin'    : '1.1.0',
-            'mopub'       : '1.1.0',
-            'tapjoy'      : '1.1.0',
-            'chartboost'  : '1.1.0',
-            'tiktok'      : '1.0.0',
-            'mintegral'   : '1.1.0',
-            'ironsource'  : '1.0.0',
-            'fyber'       : '1.0.0',
-            'tiktok_cn'   : '1.0.0',
-            'tencentad_cn': '1.0.0'
+            'adtiming'    : '1.2.0',
+            'admob'       : '1.2.0',
+            'facebook'    : '1.2.0',
+            'unity'       : '1.2.0',
+            'vungle'      : '1.2.0',
+            'adcolony'    : '1.2.0',
+            'applovin'    : '1.2.0',
+            'mopub'       : '1.2.0',
+            'tapjoy'      : '1.2.0',
+            'chartboost'  : '1.2.0',
+            'tiktok'      : '1.1.0',
+            'mintegral'   : '1.2.0',
+            'ironsource'  : '1.1.0',
+            'fyber'       : '1.1.0',
+            'tiktok_cn'   : '1.1.0',
+            'tencentad_cn': '1.1.0'
     ]
 }

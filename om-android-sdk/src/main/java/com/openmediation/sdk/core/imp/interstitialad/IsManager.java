@@ -134,12 +134,6 @@ public final class IsManager extends AbstractAdsManager implements IsManagerList
     }
 
     @Override
-    protected void callbackCappedError(Instance instance) {
-        super.callbackCappedError(instance);
-        onInterstitialAdCaped((IsInstance) instance);
-    }
-
-    @Override
     public void onInterstitialAdInitSuccess(IsInstance isInstance) {
         loadInsAndSendEvent(isInstance);
     }
@@ -181,10 +175,5 @@ public final class IsManager extends AbstractAdsManager implements IsManagerList
     public void onInterstitialAdLoadFailed(Error error, IsInstance isInstance) {
         DeveloperLog.LogD("IsManager onInterstitialAdLoadFailed : " + isInstance + " error : " + error);
         onInsLoadFailed(isInstance, error);
-    }
-
-    @Override
-    public void onInterstitialAdCaped(IsInstance isInstance) {
-        onInsCapped(isInstance);
     }
 }

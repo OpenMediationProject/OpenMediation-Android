@@ -9,27 +9,24 @@ import android.text.TextUtils;
 import com.openmediation.sdk.InitCallback;
 import com.openmediation.sdk.bid.AdTimingAuctionManager;
 import com.openmediation.sdk.bid.AdTimingBidResponse;
-import com.openmediation.sdk.bid.AuctionCallback;
-import com.openmediation.sdk.utils.ActLifecycle;
 import com.openmediation.sdk.mediation.Callback;
+import com.openmediation.sdk.utils.ActLifecycle;
 import com.openmediation.sdk.utils.AdRateUtil;
 import com.openmediation.sdk.utils.AdsUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.HandlerUtil;
-import com.openmediation.sdk.utils.helper.HbHelper;
 import com.openmediation.sdk.utils.IOUtil;
-import com.openmediation.sdk.utils.helper.LrReportHelper;
 import com.openmediation.sdk.utils.PlacementUtils;
 import com.openmediation.sdk.utils.Preconditions;
-import com.openmediation.sdk.utils.helper.WaterFallHelper;
 import com.openmediation.sdk.utils.constant.CommonConstants;
 import com.openmediation.sdk.utils.crash.CrashUtil;
 import com.openmediation.sdk.utils.device.DeviceUtil;
 import com.openmediation.sdk.utils.error.Error;
 import com.openmediation.sdk.utils.error.ErrorBuilder;
 import com.openmediation.sdk.utils.error.ErrorCode;
-import com.openmediation.sdk.utils.event.EventId;
-import com.openmediation.sdk.utils.event.EventUploadManager;
+import com.openmediation.sdk.utils.helper.HbHelper;
+import com.openmediation.sdk.utils.helper.LrReportHelper;
+import com.openmediation.sdk.utils.helper.WaterFallHelper;
 import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.Placement;
 import com.openmediation.sdk.utils.model.PlacementInfo;
@@ -42,8 +39,9 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -51,7 +49,7 @@ import javax.net.ssl.HttpsURLConnection;
  * The type Abstract ad.
  */
 public abstract class AbstractAd extends Callback implements Request.OnRequestCallback,
-        AuctionCallback, InitCallback, HbHelper.OnHbCallback {
+        InitCallback, HbHelper.OnHbCallback {
 
     /**
      * The M placement.
@@ -76,7 +74,8 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
     /**
      * The M bid responses.
      */
-    protected List<AdTimingBidResponse> mBidResponses;
+    protected Map<Integer, AdTimingBidResponse> mS2sBidResponses;
+
     /**
      * The Is manual triggered.
      */
@@ -146,6 +145,21 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
     protected abstract void onAdClickCallback();
 
     /**
+     * On ad show success callback.
+     */
+    protected void onAdShowedCallback() {}
+
+    /**
+     * On ad show failed callback.
+     */
+    protected void onAdShowFailedCallback(String error) {}
+
+    /**
+     * On ad close callback.
+     */
+    protected void onAdCloseCallback() {}
+
+    /**
      * Instantiates a new Abstract ad.
      *
      * @param activity    the activity
@@ -155,7 +169,6 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
         isDestroyed = false;
         mActRef = new WeakReference<>(activity);
         mPlacementId = placementId;
-        mBidResponses = new ArrayList<>();
     }
 
     /**
@@ -204,33 +217,42 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
 
     @Override
     public void onHbSuccess(int abt, BaseInstance[] instances) {
-        mPlacement.setHbAbt(abt);
-        AdTimingAuctionManager.getInstance().bid(mActRef.get(), mPlacement.getId(), instances, abt,
-                mPlacement.getT(), this);
+        try {
+            mPlacement.setHbAbt(abt);
+//        AdTimingAuctionManager.getInstance().bid(mActivity, mPlacement.getId(), instances, abt,
+//                mPlacement.getT(), this);
+            List<AdTimingBidResponse> tokens = AdTimingAuctionManager.getInstance().getBidToken(mActRef.get(), instances);
+            WaterFallHelper.wfRequest(getPlacementInfo(), mLoadType, null, tokens, this);
+        } catch (Exception e) {
+            CrashUtil.getSingleton().saveException(e);
+        }
     }
 
     @Override
     public void onHbFailed(String error) {
         try {
-            WaterFallHelper.wfRequest(getPlacementInfo(), mLoadType, null, this);
+            WaterFallHelper.wfRequest(getPlacementInfo(), mLoadType, null, null, this);
         } catch (Exception e) {
-            callbackAdErrorOnUiThread(error);
+            Error adTimingError = ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
+                    , ErrorCode.MSG_LOAD_INVALID_REQUEST, ErrorCode.CODE_LOAD_UNKNOWN_INTERNAL_ERROR);
+            callbackAdErrorOnUiThread(adTimingError.toString());
+            DeveloperLog.LogD("load ad error", e);
             CrashUtil.getSingleton().saveException(e);
         }
     }
 
-    @Override
-    public void onBidComplete(List<AdTimingBidResponse> responses) {
-        try {
-            if (responses != null) {
-                mBidResponses.addAll(responses);
-            }
-            WaterFallHelper.wfRequest(getPlacementInfo(), mLoadType, responses, this);
-        } catch (Exception e) {
-            callbackAdErrorOnUiThread(e.getMessage());
-            CrashUtil.getSingleton().saveException(e);
-        }
-    }
+//    @Override
+//    public void onBidComplete(List<AdTimingBidResponse> responses) {
+//        try {
+//            if (responses != null) {
+//                mBidResponses.addAll(responses);
+//            }
+//            WaterFallHelper.wfRequest(mPlacement.getId(), mLoadType, responses, null, this);
+//        } catch (Exception e) {
+//            callbackAdErrorOnUiThread(e.getMessage());
+//            CrashUtil.getSingleton().saveException(e);
+//        }
+//    }
 
     @Override
     public void onRequestSuccess(Response response) {
@@ -242,6 +264,13 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
             }
 
             JSONObject clInfo = new JSONObject(response.body().string());
+            int code = clInfo.optInt("code");
+            if (code != 0) {
+                String msg = clInfo.optString("msg");
+                DeveloperLog.LogE(msg);
+                callbackAdErrorOnUiThread(msg);
+                return;
+            }
 
             mPlacement.setWfAbt(clInfo.optInt("abt"));
             BaseInstance[] tmp = WaterFallHelper.getArrayInstances(clInfo, mPlacement, mBs);
@@ -250,6 +279,14 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
                 callbackAdErrorOnUiThread(ErrorCode.ERROR_NO_FILL);
             } else {
                 mTotalIns = tmp;
+                Map<Integer, AdTimingBidResponse> bidResponseMap = WaterFallHelper.getS2sBidResponse(clInfo);
+                if (bidResponseMap != null && !bidResponseMap.isEmpty()) {
+                    if (mS2sBidResponses == null) {
+                        mS2sBidResponses = new HashMap<>();
+                    }
+
+                    mS2sBidResponses.putAll(bidResponseMap);
+                }
                 doLoadOnUiThread();
             }
         } catch (IOException | JSONException e) {
@@ -338,9 +375,52 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
         HandlerUtil.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                EventUploadManager.getInstance().uploadEvent(EventId.CALLBACK_CLICK,
-                        PlacementUtils.placementEventParams(mPlacementId));
-                onAdClickCallback();
+               onAdClickCallback();
+            }
+        });
+    }
+
+    /**
+     * Ad open callback
+     */
+    void callbackAdShowedOnUiThread() {
+        if (isDestroyed) {
+            return;
+        }
+        HandlerUtil.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                onAdShowedCallback();
+            }
+        });
+    }
+
+    /**
+     * Ad open callback
+     */
+    void callbackAdShowFailedOnUiThread(final String error) {
+        if (isDestroyed) {
+            return;
+        }
+        HandlerUtil.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                onAdShowFailedCallback(error);
+            }
+        });
+    }
+
+    /**
+     * Ad open callback
+     */
+    void callbackAdCloseOnUiThread() {
+        if (isDestroyed) {
+            return;
+        }
+        HandlerUtil.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                onAdCloseCallback();
             }
         });
     }
@@ -407,7 +487,7 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
             if (isDestroyed) {
                 return;
             }
-            mCurrentIns.onInsShow(null);
+            instances.onInsShow(null);
             if (isManualTriggered) {
                 LrReportHelper.report(instances, OmManager.LOAD_TYPE.MANUAL.getValue(), mPlacement.getWfAbt(),
                         CommonConstants.INSTANCE_IMPR);
@@ -498,11 +578,14 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
             if (mBs == 0) {
                 mBs = 3;
             }
-            mBidResponses.clear();
+//            mBidResponses.clear();
+            if (mS2sBidResponses != null) {
+                mS2sBidResponses.clear();
+            }
             if (mPlacement.hasHb()) {
                 HbHelper.executeHb(mPlacement, type, this);
             } else {
-                WaterFallHelper.wfRequest(getPlacementInfo(), mLoadType, null, this);
+                WaterFallHelper.wfRequest(getPlacementInfo(), mLoadType, null, null, this);
             }
         } catch (Exception e) {
             callbackAdErrorOnUiThread(e.getMessage());

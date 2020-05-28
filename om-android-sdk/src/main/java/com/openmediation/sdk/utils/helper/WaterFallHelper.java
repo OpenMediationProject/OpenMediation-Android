@@ -13,7 +13,6 @@ import com.openmediation.sdk.utils.AdtUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.JsonUtil;
 import com.openmediation.sdk.utils.PlacementUtils;
-import com.openmediation.sdk.utils.Preconditions;
 import com.openmediation.sdk.utils.model.Instance;
 import com.openmediation.sdk.utils.cache.DataCache;
 import com.openmediation.sdk.utils.constant.KeyConstants;
@@ -44,6 +43,7 @@ import java.util.Map;
  * The type Water fall helper.
  */
 public class WaterFallHelper {
+    private static final String AUCTION_PRICE = "${AUCTION_PRICE}";
     //testing instance
     private static Map<String, BaseInstance[]> testInstanceMap = new HashMap<>();
 
@@ -72,16 +72,15 @@ public class WaterFallHelper {
     /**
      * Wf request.
      *
-     * @param info         the info
-     * @param type         the type
-     * @param responseList the response list
-     * @param callback     the callback
+     * @param type      the type
+     * @param s2sResult the response list
+     * @param callback  the callback
      * @throws Exception the exception
      */
     public static void wfRequest(PlacementInfo info, OmManager.LOAD_TYPE type,
-                                 List<AdTimingBidResponse> responseList,
+                                 List<AdTimingBidResponse> c2sResult,
+                                 List<AdTimingBidResponse> s2sResult,
                                  Request.OnRequestCallback callback) throws Exception {
-        AdsUtil.realLoadReport(Preconditions.checkNotNull(info) ? info.getId() : "");
         Configurations config = DataCache.getInstance().getFromMem(KeyConstants.KEY_CONFIGURATION, Configurations.class);
         if (config == null || config.getApi() == null || TextUtils.isEmpty(config.getApi().getWf())) {
             callback.onRequestFailed("empty Url");
@@ -89,22 +88,60 @@ public class WaterFallHelper {
         }
         String url = RequestBuilder.buildWfUrl(config.getApi().getWf());
 
-        byte[] bytes = RequestBuilder.buildWfRequestBody(responseList, info.getId(),
-                String.valueOf(info.getWidth()),
-                String.valueOf(info.getHeight()),
-                String.valueOf(type.getValue()),
+        byte[] bytes = RequestBuilder.buildWfRequestBody(info, c2sResult, s2sResult,
+                IapHelper.getIap(),
                 String.valueOf(PlacementUtils.getPlacementImprCount(info.getId())),
-                IapHelper.getIap());
+                String.valueOf(type.getValue())
+        );
 
         if (bytes == null) {
             callback.onRequestFailed("build request data error");
             return;
         }
-
+        AdsUtil.realLoadReport(info.getId());
         ByteRequestBody requestBody = new ByteRequestBody(bytes);
         Headers headers = HeaderUtils.getBaseHeaders();
         AdRequest.post().url(url).body(requestBody).headers(headers).connectTimeout(30000).readTimeout(60000)
                 .callback(callback).performRequest(AdtUtil.getApplication());
+    }
+
+    public static Map<Integer, AdTimingBidResponse> getS2sBidResponse(JSONObject clInfo) {
+        JSONArray bidresp = clInfo.optJSONArray("bidresp");
+        if (bidresp == null || bidresp.length() == 0) {
+            return null;
+        }
+        Map<Integer, AdTimingBidResponse> bidResponses = new HashMap<>();
+        int len = bidresp.length();
+        for (int i = 0; i < len; i++) {
+            JSONObject object = bidresp.optJSONObject(i);
+            if (object == null) {
+                continue;
+            }
+            int iid = object.optInt("iid");
+            String adm = object.optString("adm");
+            if (TextUtils.isEmpty(adm)) {
+                int nbr = object.optInt("nbr");
+                String err = object.optString("err");
+                DeveloperLog.LogD("Ins : " + iid + " bid failed cause" + " nbr : " + nbr + " err : " + err);
+                continue;
+            }
+            AdTimingBidResponse response = new AdTimingBidResponse();
+            response.setIid(iid);
+            response.setPayLoad(adm);
+            double price = object.optDouble("price");
+            String nurl = object.optString("nurl");
+            if (nurl.contains(AUCTION_PRICE)) {
+                nurl = nurl.replace(AUCTION_PRICE, String.valueOf(price));
+            }
+            response.setNurl(nurl);
+            String lurl = object.optString("lurl");
+            if (lurl.contains(AUCTION_PRICE)) {
+                lurl = lurl.replace(AUCTION_PRICE, String.valueOf(price + 0.1));
+            }
+            response.setLurl(lurl);
+            bidResponses.put(iid, response);
+        }
+        return bidResponses;
     }
 
     /**

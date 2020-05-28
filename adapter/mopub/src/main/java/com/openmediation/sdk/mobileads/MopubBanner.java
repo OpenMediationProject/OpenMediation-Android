@@ -16,7 +16,7 @@ import com.mopub.mobileads.MoPubView;
 
 import java.util.Map;
 
-public class MopubBanner extends CustomBannerEvent implements MoPubView.BannerAdListener {
+public class MoPubBanner extends CustomBannerEvent implements MoPubView.BannerAdListener {
 
     private MoPubView adView;
 

@@ -92,7 +92,9 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
         super.loadRewardedVideo(activity, adUnitId, callback);
         String checkError = check(activity, adUnitId);
         if (TextUtils.isEmpty(checkError)) {
-            mRvCallbacks.put(adUnitId, callback);
+            if (callback != null) {
+                mRvCallbacks.put(adUnitId, callback);
+            }
             if (UnityAds.isReady(adUnitId)) {
                 if (callback != null) {
                     callback.onRewardedVideoLoadSuccess();
@@ -162,7 +164,9 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
         super.loadInterstitialAd(activity, adUnitId, callback);
         String checkError = check(activity, adUnitId);
         if (TextUtils.isEmpty(checkError)) {
-            mIsCallbacks.put(adUnitId, callback);
+            if (callback != null) {
+                mIsCallbacks.put(adUnitId, callback);
+            }
             if (UnityAds.isReady(adUnitId)) {
                 if (callback != null) {
                     callback.onInterstitialAdLoadSuccess();
