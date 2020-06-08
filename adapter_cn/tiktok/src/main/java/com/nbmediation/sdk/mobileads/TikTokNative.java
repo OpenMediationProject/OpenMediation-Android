@@ -33,7 +33,7 @@ public class TikTokNative extends CustomNativeEvent implements TTAdNative.Native
     private View mNativeView;
 
     @Override
-    public void loadAd(final Activity activity, Map<String, String> config){
+    public void loadAd(final Activity activity, Map<String, String> config) {
         super.loadAd(activity, config);
         if (!check(activity, config)) {
             return;
@@ -48,7 +48,7 @@ public class TikTokNative extends CustomNativeEvent implements TTAdNative.Native
         this.mActivity = activity;
         initTTSDKConfig(activity, config);
         int[] size = getNativeSize(config);
-        loadNativeAd(mInstancesKey, size[0], size[1]);
+        loadNativeAd(mInstancesKey, 640, 320);
     }
 
 
@@ -168,6 +168,7 @@ public class TikTokNative extends CustomNativeEvent implements TTAdNative.Native
             banner.mAdInfo.setType(2);
             banner.mAdInfo.setCallToActionText("");
             banner.mAdInfo.setTitle("");
+            banner.mAdInfo.setTemplate(true);
             banner.onInsReady(banner.mAdInfo);
         }
     }

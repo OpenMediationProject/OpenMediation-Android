@@ -846,11 +846,18 @@ public final class NmManager implements InitCallback {
         if (mDelayLoadIs != null) {
             for (String delayLoadI : mDelayLoadIs) {
                 if (mIsListeners != null && !mIsListeners.isEmpty()) {
-                    mIsListeners.get(delayLoadI).onInterstitialAdAvailabilityChanged(false);
+                    InterstitialAdListener isListener = mIsListeners.get(delayLoadI);
+                    if (isListener != null) {
+                        isListener.onInterstitialAdAvailabilityChanged(false);
+                    }
                 }
 
                 if (mMediationIsListeners != null && !mMediationIsListeners.isEmpty()) {
-                    mMediationIsListeners.get(delayLoadI).onInterstitialAdLoadFailed(error);
+                    MediationInterstitialListener misListener = mMediationIsListeners.get(delayLoadI);
+                    if (misListener != null) {
+                        misListener.onInterstitialAdLoadFailed(error);
+                    }
+
                 }
             }
         }
@@ -858,11 +865,19 @@ public final class NmManager implements InitCallback {
         if (mDelayLoadRv != null) {
             for (String s : mDelayLoadRv) {
                 if (mRvListeners != null && !mRvListeners.isEmpty()) {
-                    mRvListeners.get(s).onRewardedVideoAvailabilityChanged(false);
+                    RewardedVideoListener rvListener = mRvListeners.get(s);
+                    if (rvListener != null) {
+                        rvListener.onRewardedVideoAvailabilityChanged(false);
+                    }
+
                 }
 
                 if (mMediationRvListeners != null && !mMediationRvListeners.isEmpty()) {
-                    mMediationRvListeners.get(s).onRewardedVideoLoadFailed(error);
+                    MediationRewardVideoListener mrvListener = mMediationRvListeners.get(s);
+                    if (mrvListener != null) {
+                        mrvListener.onRewardedVideoLoadFailed(error);
+                    }
+
                 }
             }
         }

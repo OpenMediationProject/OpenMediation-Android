@@ -25,6 +25,9 @@ public interface MediationInfo {
     int MEDIATION_ID_18 = 18;
     int MEDIATION_ID_19 = 19;
     int MEDIATION_ID_20 = 20;
+    int MEDIATION_ID_21 = 21;
+    int MEDIATION_ID_22 = 22;
+    int MEDIATION_ID_23 = 23;
     int MEDIATION_ID_30 = 30;
 
 
@@ -46,5 +49,8 @@ public interface MediationInfo {
     String MEDIATION_NAME_18 = "SHlBZFhPcGVu";
     String MEDIATION_NAME_19 = "VEM=";
     String MEDIATION_NAME_20 = "U2lnbW9i";
+    String MEDIATION_NAME_21 = "WllU";//ZYT
+    String MEDIATION_NAME_22 = "S1M=";//KS
+    String MEDIATION_NAME_23 = "QWxpb24=";//Alion
     String MEDIATION_NAME_30 = "RnliZXI=";
 }

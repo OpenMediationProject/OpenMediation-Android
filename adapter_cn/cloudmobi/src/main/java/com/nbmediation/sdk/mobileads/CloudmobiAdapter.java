@@ -99,11 +99,10 @@ public class CloudmobiAdapter extends CustomAdsAdapter {
             mRvAds.remove(adUnitId);
         } else {
             if (callback != null) {
-                callback.onRewardedVideoAdShowFailed("Cloudmobi RewardedVideo is not ready");
+                callback.onRewardedVideoAdShowFailed(TAG + "RewardedVideo is not ready");
             }
         }
     }
-
 
 
     public static class VideoAdListenerImpl extends RewardedVideoAdListener {
@@ -134,7 +133,7 @@ public class CloudmobiAdapter extends CustomAdsAdapter {
         public void videoError(Exception e) {
             AdLog.getSingleton().LogD(TAG + "onAdFailed: " + e.getMessage());
             if (mCallback != null) {
-                mCallback.onRewardedVideoLoadFailed("Cloudmobi RewardedVideo load failed : " + e.getMessage());
+                mCallback.onRewardedVideoLoadFailed(TAG + " RewardedVideo load failed : " + e.getMessage());
             }
         }
 
@@ -220,7 +219,7 @@ public class CloudmobiAdapter extends CustomAdsAdapter {
                 }
                 AdLog.getSingleton().LogD(TAG + "onAdFailed: " + message);
                 if (callback != null) {
-                    callback.onRewardedVideoLoadFailed("TikTok RewardedVideo load failed : " + message);
+                    callback.onRewardedVideoLoadFailed(TAG + "RewardedVideo load failed : " + message);
                 }
             }
         };

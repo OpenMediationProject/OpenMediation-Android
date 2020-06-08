@@ -1,12 +1,13 @@
 package com.nbmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
-import com.androidquery.AQuery;
+import com.bumptech.glide.Glide;
 import com.nbmediation.sdk.mediation.CustomNativeEvent;
 import com.nbmediation.sdk.mediation.MediationInfo;
 import com.nbmediation.sdk.nativead.NativeAdView;
@@ -31,7 +32,7 @@ public class TencentAdNative extends CustomNativeEvent implements NativeADUnifie
 
     private NativeUnifiedADData mAdData;
     private NativeUnifiedAD mAdManager;
-    private AQuery mAQuery;
+//    private AQuery mAQuery;
     private NativeAdView adView;
 
 
@@ -258,15 +259,21 @@ public class TencentAdNative extends CustomNativeEvent implements NativeADUnifie
         onInsError(adError.getErrorMsg());
     }
 
-    private void renderAdUi(NativeAdView adView) {
-        mAQuery = new AQuery(adView);
+    private void renderAdUi(final NativeAdView adView) {
+//        mAQuery = new AQuery(adView);
         ImageView imageView = null;
         if (adView.getMediaView() != null) {
             adView.getMediaView().removeAllViews();
             imageView = new ImageView(adView.getContext());
             adView.getMediaView().addView(imageView);
+
+            float width = mAdData.getPictureWidth();
+            float height = mAdData.getPictureHeight();
+            DisplayMetrics displayMetrics = activity.getResources().getDisplayMetrics();
+            int viewWidth = displayMetrics.widthPixels;
+            float scale = height / width;
             imageView.getLayoutParams().width = RelativeLayout.LayoutParams.MATCH_PARENT;
-            imageView.getLayoutParams().height = RelativeLayout.LayoutParams.MATCH_PARENT;
+            imageView.getLayoutParams().height = (int) (viewWidth * scale);
 
         }
         ImageView iconImageView = null;
@@ -281,10 +288,17 @@ public class TencentAdNative extends CustomNativeEvent implements NativeADUnifie
 
         int patternType = mAdData.getAdPatternType();
         if (patternType == AdPatternType.NATIVE_2IMAGE_2TEXT || patternType == AdPatternType.NATIVE_VIDEO) {
-            mAQuery.id(iconImageView).image(mAdData.getIconUrl(), false, true);
-            mAQuery.id(imageView).image(mAdData.getImgUrl(), false, true);
-            mAQuery.id(adView.getTitleView()).text(mAdData.getTitle());
-            mAQuery.id(adView.getDescView()).text(mAdData.getDesc());
+//            mAQuery.id(iconImageView).image(mAdData.getIconUrl(), false, true);
+//            mAQuery.id(imageView).image(mAdData.getImgUrl(), false, true);
+//            mAQuery.id(adView.getTitleView()).text(mAdData.getTitle());
+//            mAQuery.id(adView.getDescView()).text(mAdData.getDesc());
+
+            Glide.with(activity).load(mAdData.getIconUrl()).into(iconImageView);
+            Glide.with(activity).load(mAdData.getImgUrl()).into(imageView);
+//            Glide.with(activity).load(mAdData.getIconUrl()).into(iconImageView);
+//            Glide.with(activity).load(mAdData.getIconUrl()).into(iconImageView);
+
+
         }
     }
 
@@ -296,21 +310,26 @@ public class TencentAdNative extends CustomNativeEvent implements NativeADUnifie
         int patternType = mAdData.getAdPatternType();
         if (patternType == AdPatternType.NATIVE_2IMAGE_2TEXT || patternType == AdPatternType.NATIVE_VIDEO) {
             if (adView.getAdIconView() != null) {
-                mAQuery.id(adView.getAdIconView()).clear();
+                Glide.with(activity).clear(adView.getAdIconView());
+//                mAQuery.id(adView.getAdIconView()).clear();
             }
             if (adView.getMediaView() != null) {
-                mAQuery.id(adView.getMediaView()).clear();
+                Glide.with(activity).clear(adView.getMediaView());
+//                mAQuery.id(adView.getMediaView()).clear();
             }
             if (adView.getCallToActionView() != null) {
-                mAQuery.id(adView.getCallToActionView()).clear();
+                Glide.with(activity).clear(adView.getCallToActionView());
+//                mAQuery.id(adView.getCallToActionView()).clear();
             }
 
             if (adView.getTitleView() != null) {
-                mAQuery.id(adView.getTitleView()).clear();
+                Glide.with(activity).clear(adView.getTitleView());
+//                mAQuery.id(adView.getTitleView()).clear();
             }
 
             if (adView.getDescView() != null) {
-                mAQuery.id(adView.getDescView()).clear();
+                Glide.with(activity).clear(adView.getDescView());
+//                mAQuery.id(adView.getDescView()).clear();
             }
 
         }

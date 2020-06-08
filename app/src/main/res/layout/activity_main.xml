@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="#B9BEB9"
     tools:context="com.nbmediation.sdk.demo.MainActivity">
 
     <LinearLayout
@@ -90,9 +91,9 @@
                 android:id="@+id/ad_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
                 android:gravity="center"
-                android:orientation="horizontal"
-                android:padding="20dp"></LinearLayout>
+                android:orientation="horizontal"></LinearLayout>
 
 
         </LinearLayout>

@@ -4,4 +4,5 @@ include ':adapter:applovin', ':adapter:chartboost', ':adapter:adcolony', ':adapt
         ':nm-android-sdk', ':adapter:admob', ':adapter:sigmob', ':app',
         ':adapter_cn:tiktok', ':adapter_cn:tencentad'
 rootProject.name = 'AdTiming-OpenMediation-Android'
-include ':adapter_cn:hyadxopen', ':adapter_cn:cloudmobi', ':adapter_cn:tc056d'
+include ':adapter_cn:hyadxopen', ':adapter_cn:cloudmobi', ':adapter_cn:tc056d',
+        ':adapter_cn:alion',':adapter_cn:zyt',':adapter_cn:ks'

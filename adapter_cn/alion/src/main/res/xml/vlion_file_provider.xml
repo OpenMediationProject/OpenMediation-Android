@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <external-path
+        name="external_files"
+        path="."/>
+
+    <cache-path
+        name="apk1"
+        path="."/>
+    <external-path
+        name="apk"
+        path="."/>
+    <external-path
+        name="gdt_sdk_download_path"
+        path="GDTDOWNLOAD"/>
+    <cache-path
+        name="gdt_sdk_download_path2"
+        path="com_qq_e_download"/>
+    <external-path
+        name="tt_external_root"
+        path="."/>
+    <external-path
+        name="tt_external_download"
+        path="Download"/>
+    <external-files-path
+        name="tt_external_files_download"
+        path="Download"/>
+    <files-path
+        name="tt_internal_file_download"
+        path="Download"/>
+    <cache-path
+        name="tt_internal_cache_download"
+        path="Download"/>
+    <external-files-path
+        name="external_files_path"
+        path="Download" />
+
+    <external-files-path
+        name="bdpath"
+        path="bddownload/"/>
+    <external-path
+        name="bdpathsd"
+        path="bddownload/"/>
+    <external-path
+        name="files_root"
+        path="mimoDownload"/>
+    <external-path
+        name="external_storage_root"
+        path="."/>
+    <external-path
+        name="sigmob_download_path"
+        path="SIGTDOWNLOAD"/>
+
+    <external-path
+        name="external_storage_root"
+        path="."/>
+    <external-path
+        name="external_storage_download"
+        path="Download"/>
+    <files-path
+        path="images/"
+        name="my_images"/>
+    <files-path name="files_path" path="hy_sdk_download" />
+    <external-files-path name="external_files_path" path="hy_sdk_download" />
+    <external-path name="external_files_path" path="hy_sdk_download" />
+</paths>

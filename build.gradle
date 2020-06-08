@@ -61,14 +61,27 @@ ext {
             //gp-ads-identifier
             "play_service_ads_identifier": 'com.google.android.gms:play-services-ads-identifier:17.0.0',
             //multidex
-            "multidex"                   : 'com.android.support:multidex:1.0.1',
+            "multidex"                   : 'com.android.support:multidex:1.0.2',
             //Mintegral
             "mtg_version"                : '10.2.41',
             // IronSource
             "ironsource"                 : 'com.ironsource.sdk:mediationsdk:6.16.0',
 
             "adtiming"                   : 'com.adtiming:mediation-sdk:6.3.3@aar',
-            "fyber"                      : '7.5.3'
+            "fyber"                      : '7.5.3',
+            'tiktok'                     : 'open_ad_sdk_en',
+            'tiktok_cn'                  : 'open_ad_sdk_2.9.5.5',
+            "tc056d"                     : 'tc-056d',
+            "sigmob"                     : 'windAd-2.18.2',
+            "hyadxopen"                  : 'hyadxopensdk',
+            "tencentad"                  : 'GDTSDK.unionNormal.4.191.1061',
+            "zyt"                        : 'com.zyt:mediation-only:1.1.1',
+            "alion"                      : 'cn.vlion.inland:inlandmix:7.4',
+            'ks'                         : 'ks_adsdk-2.6.9-publish-release',
+
+            "glide"                      : 'com.github.bumptech.glide:glide:4.8.0',
+            'design'                     : "com.android.support:design:28.0.0",
+            "android_query"              : 'android-query-full.0.26.7'
     ]
 }
 
@@ -101,6 +114,17 @@ allprojects {
         }
         maven {
             url "https://fyber.bintray.com/marketplace"
+        }
+
+        // mediation 仓库
+        maven { url "http://maven.mediamvp.cn/repository/maven-releases/" }
+
+        maven {
+            url "https://dl.bintray.com/sunjiangrong/maven"
+        }
+
+        maven {
+            url "http://test.vlion.cn:8081/nexus/content/repositories/inland/"
         }
     }
 }

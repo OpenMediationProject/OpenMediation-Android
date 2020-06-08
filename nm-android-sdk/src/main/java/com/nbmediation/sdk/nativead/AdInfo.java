@@ -5,13 +5,12 @@ package com.nbmediation.sdk.nativead;
 
 /**
  * Provides basic ad info
- *
- * 
  */
 public class AdInfo {
     private String title;
     private String desc;
     private String callToActionText;
+    private boolean isTemplate = false;
     private double starRating;
     private int type;
 
@@ -53,5 +52,14 @@ public class AdInfo {
 
     public void setType(int type) {
         this.type = type;
+    }
+
+    public boolean isTemplate() {
+        return isTemplate;
+    }
+
+    public AdInfo setTemplate(boolean template) {
+        isTemplate = template;
+        return this;
     }
 }

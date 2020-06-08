@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import com.nbmediation.sdk.utils.ActLifecycle;
 import com.nbmediation.sdk.utils.AdLog;
 import com.nbmediation.sdk.utils.AdtUtil;
+import com.nbmediation.sdk.utils.DebugSwitchApi;
 import com.nbmediation.sdk.utils.DeveloperLog;
 import com.nbmediation.sdk.utils.HandlerUtil;
 import com.nbmediation.sdk.utils.IOUtil;
@@ -76,6 +77,7 @@ public final class InitImp {
         sInitStart = System.currentTimeMillis();
         mCallback = callback;
         AdtUtil.init(activity);
+        DebugSwitchApi.registerReceiver(activity.getApplicationContext());
         SensorManager.getSingleton();
         ActLifecycle.getInstance().init(activity);
         EventUploadManager.getInstance().init(activity.getApplicationContext());
@@ -145,7 +147,7 @@ public final class InitImp {
 
     private static void doAfterGetConfig(String appKey, Configurations config) {
         try {
-//            DeveloperLog.enableDebug(AdtUtil.getApplication(), config.getD() == 1);
+            DeveloperLog.enableDebug(AdtUtil.getApplication(), config.getD() == 1);
             AdLog.getSingleton().init(AdtUtil.getApplication());
             EventUploadManager.getInstance().updateReportSettings(config);
             //reports error logs

@@ -533,6 +533,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
     }
 
     public void loadAdWithInterval() {
+
         loadAdWithAction(NmManager.LOAD_TYPE.INTERVAL);
     }
 

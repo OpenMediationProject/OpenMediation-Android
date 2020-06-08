@@ -27,7 +27,7 @@ android.libraryVariants.all { variant ->
 }
 dependencies {
     compileOnly(name: 'nm-android-sdk', ext: 'aar')
-    compileOnly(name: 'hyadxopensdk', ext: 'aar')
+    compileOnly(name: rootProject.ext.dependencies.hyadxopen, ext: 'aar')
 }
 
 repositories {

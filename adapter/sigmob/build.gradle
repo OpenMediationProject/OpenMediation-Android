@@ -8,7 +8,8 @@ android {
         minSdkVersion rootProject.ext.version.minSdkVersion
         targetSdkVersion rootProject.ext.version.targetSdkVersion
         versionCode rootProject.ext.version.versionCode
-        versionName rootProject.ext.adapterVersion.tiktok
+        versionName rootProject.ext.adapterVersion.sigmob
+        consumerProguardFiles 'proguard-rules.pro'
     }
 
     buildTypes {
@@ -26,7 +27,7 @@ android.libraryVariants.all { variant ->
 }
 dependencies {
     compileOnly(name: 'nm-android-sdk', ext: 'aar')
-    compileOnly(name: 'windAd-2.18.2', ext: 'jar')
+    compileOnly(name: rootProject.ext.dependencies.sigmob, ext: 'jar')
 }
 
 repositories {

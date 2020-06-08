@@ -4,13 +4,13 @@
 package com.nbmediation.sdk.mobileads;
 
 import android.app.Activity;
-import android.util.Log;
 
 import com.nbmediation.sdk.mediation.CustomAdsAdapter;
 import com.nbmediation.sdk.mediation.InterstitialAdCallback;
 import com.nbmediation.sdk.mediation.MediationInfo;
 import com.nbmediation.sdk.mediation.RewardedVideoCallback;
 import com.nbmediation.sdk.mobileads.tc056d.BuildConfig;
+import com.nbmediation.sdk.utils.AdLog;
 
 import java.util.Map;
 
@@ -117,7 +117,7 @@ public class TCAdapter extends CustomAdsAdapter {
 
     private void initSdk(final Activity activity) {
         WorkInit.getInstance().init(activity.getApplicationContext());
-        Log.i(TAG, "tc is init..");
+        AdLog.getSingleton().LogD(TAG, "tc is init..");
     }
 
 

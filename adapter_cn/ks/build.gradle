@@ -1,0 +1,36 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion rootProject.ext.version.compileSdkVersion
+
+    defaultConfig {
+        minSdkVersion rootProject.ext.version.minSdkVersion
+        targetSdkVersion rootProject.ext.version.targetSdkVersion
+        versionCode rootProject.ext.version.versionCode
+        versionName rootProject.ext.adapterVersion.zyt
+        consumerProguardFiles 'proguard-rules.pro'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+android.libraryVariants.all { variant ->
+    variant.outputs.all {
+        outputFileName = rootProject.ext.pkg_prefix + project.name + '.aar'
+    }
+}
+dependencies {
+    compileOnly(name: rootProject.ext.dependencies.ks, ext: 'aar')
+    compileOnly(name: 'nm-android-sdk', ext: 'aar')
+}
+
+repositories {
+    flatDir {
+        dirs rootProject.ext.adapterDirs
+    }
+}

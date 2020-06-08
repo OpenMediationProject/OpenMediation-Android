@@ -7,7 +7,6 @@ import android.app.Activity;
 import android.text.TextUtils;
 
 import com.nbmediation.sdk.mediation.CustomAdsAdapter;
-import com.nbmediation.sdk.mediation.InterstitialAdCallback;
 import com.nbmediation.sdk.mediation.MediationInfo;
 import com.nbmediation.sdk.mediation.RewardedVideoCallback;
 import com.nbmediation.sdk.mobileads.sigmob.BuildConfig;
@@ -121,7 +120,7 @@ public class SigmobAdapter extends CustomAdsAdapter {
             mSigAds.remove(adUnitId);
         } else {
             if (callback != null) {
-                callback.onRewardedVideoAdShowFailed("TikTok RewardedVideo is not ready");
+                callback.onRewardedVideoAdShowFailed(TAG + "RewardedVideo is not ready");
             }
         }
     }
@@ -135,84 +134,6 @@ public class SigmobAdapter extends CustomAdsAdapter {
         return mSigAds.get(adUnitId) != null && windRewardedVideoAd.isReady(adUnitId);
     }
 
-    @Override
-    public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
-        super.initInterstitialAd(activity, dataMap, callback);
-//        String error = check(activity);
-//        if (TextUtils.isEmpty(error)) {
-//            initSdk(activity);
-//            if (callback != null) {
-//                callback.onInterstitialAdInitSuccess();
-//            }
-//        } else {
-//            if (callback != null) {
-//                callback.onInterstitialAdInitFailed(error);
-//            }
-//        }
-    }
-
-    @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
-        super.loadInterstitialAd(activity, adUnitId, callback);
-        loadInterstitial(activity, adUnitId, callback);
-    }
-
-    @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, Map<String, Object> extras,
-                                   InterstitialAdCallback callback) {
-        super.loadInterstitialAd(activity, adUnitId, extras, callback);
-        loadInterstitial(activity, adUnitId, callback);
-    }
-
-    private void loadInterstitial(Activity activity, String adUnitId, InterstitialAdCallback callback) {
-//        String error = check(activity, adUnitId);
-//        if (TextUtils.isEmpty(error)) {
-//            TTFullScreenVideoAd ad = mTTFvAds.get(adUnitId);
-//            if (ad != null) {
-//                if (callback != null) {
-//                    callback.onInterstitialAdLoadSuccess();
-//                }
-//            } else {
-//                realLoadFullScreenVideoAd(activity, adUnitId, callback);
-//            }
-//        } else {
-//            if (callback != null) {
-//                callback.onInterstitialAdLoadFailed(error);
-//            }
-//        }
-    }
-
-    @Override
-    public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
-        super.showInterstitialAd(activity, adUnitId, callback);
-//        String error = check(activity, adUnitId);
-//        if (!TextUtils.isEmpty(error)) {
-//            if (callback != null) {
-//                callback.onInterstitialAdShowFailed(error);
-//            }
-//            return;
-//        }
-//        TTFullScreenVideoAd ad = mTTFvAds.get(adUnitId);
-//        if (ad != null) {
-//            ad.setFullScreenVideoAdInteractionListener(new InnerAdInteractionListener(callback));
-//            ad.showFullScreenVideoAd(activity);
-//            mTTFvAds.remove(adUnitId);
-//        } else {
-//            if (callback != null) {
-//                callback.onInterstitialAdShowFailed("TikTok InterstitialAd is not ready");
-//            }
-//        }
-    }
-
-    @Override
-    public boolean isInterstitialAdAvailable(String adUnitId) {
-//        if (TextUtils.isEmpty(adUnitId)) {
-//            return false;
-//        }
-//        return mTTFvAds.get(adUnitId) != null;
-        return false;
-
-    }
 
     private void initSdk(final Activity activity, String appId, String appKey) {
         WindAds ads = WindAds.sharedAds();
@@ -281,8 +202,7 @@ public class SigmobAdapter extends CustomAdsAdapter {
         public void onVideoAdPlayEnd(String s) {
             AdLog.getSingleton().LogD(TAG + "rewardVideoAd onVideoAdPlayEnd s=" + s);
             if (mCallback != null) {
-                mCallback.onRewardedVideoAdShowSuccess();
-                mCallback.onRewardedVideoAdStarted();
+                mCallback.onRewardedVideoAdEnded();
             }
         }
 
@@ -301,7 +221,7 @@ public class SigmobAdapter extends CustomAdsAdapter {
                 AdLog.getSingleton().LogD(TAG + "激励视频广告完整播放，给予奖励");
                 if (mCallback != null) {
                     mCallback.onRewardedVideoAdRewarded();
-                    mCallback.onRewardedVideoAdEnded();
+                    mCallback.onRewardedVideoAdClosed();
                 }
             } else {
                 AdLog.getSingleton().LogD(TAG + "激励视频广告关闭");
@@ -322,7 +242,7 @@ public class SigmobAdapter extends CustomAdsAdapter {
         public void onVideoAdLoadError(WindAdError windAdError, String placementId) {
             AdLog.getSingleton().LogD(TAG + "RewardedVideo  onVideoAdLoadError: " + windAdError.getErrorCode() + ", " + windAdError.getMessage());
             if (mCallback != null) {
-                mCallback.onRewardedVideoLoadFailed("TikTok RewardedVideo load failed : " + windAdError.getErrorCode() + ", " + windAdError.getMessage());
+                mCallback.onRewardedVideoLoadFailed(TAG + "RewardedVideo load failed : " + windAdError.getErrorCode() + ", " + windAdError.getMessage());
             }
         }
 
@@ -341,104 +261,5 @@ public class SigmobAdapter extends CustomAdsAdapter {
         }
 
     }
-//
-//    private static class InnerLoadRvAdListener implements TTAdNative.RewardVideoAdListener {
-//
-//        private RewardedVideoCallback mCallback;
-//        private String mCodeId;
-//        private ConcurrentMap<String, TTRewardVideoAd> mTTRvAds;
-//
-//        private InnerLoadRvAdListener(RewardedVideoCallback callback, String codeId, ConcurrentMap<String, TTRewardVideoAd> tTRvAds) {
-//            this.mCallback = callback;
-//            this.mCodeId = codeId;
-//            this.mTTRvAds = tTRvAds;
-//        }
-//
-//        @Override
-//        public void onError(int code, String message) {
-//            AdLog.getSingleton().LogE("OM-TikTok: RewardedVideo  onError: " + code + ", " + message);
-//            if (mCallback != null) {
-//                mCallback.onRewardedVideoLoadFailed("TikTok RewardedVideo load failed : " + code + ", " + message);
-//            }
-//        }
-//
-//        @Override
-//        public void onRewardVideoCached() {
-//            AdLog.getSingleton().LogD("OM-TikTok: RewardedVideo onRewardVideoCached");
-//        }
-//
-//        @Override
-//        public void onRewardVideoAdLoad(TTRewardVideoAd ad) {
-//            if (ad == null) {
-//                if (mCallback != null) {
-//                    mCallback.onRewardedVideoLoadFailed("TikTok RewardedVideo load failed");
-//                }
-//                return;
-//            }
-//            mTTRvAds.put(mCodeId, ad);
-//            if (mCallback != null) {
-//                mCallback.onRewardedVideoLoadSuccess();
-//            }
-//            AdLog.getSingleton().LogD("OM-TikTok: rewardedVideo  onRewardVideoAdLoad");
-//        }
-//    }
-//
-//    private static class InnerRvAdShowListener implements TTRewardVideoAd.RewardAdInteractionListener {
-//
-//        private RewardedVideoCallback callback;
-//
-//        private InnerRvAdShowListener(RewardedVideoCallback callback) {
-//            this.callback = callback;
-//        }
-//
-//        @Override
-//        public void onAdShow() {
-//            AdLog.getSingleton().LogD("OM-TikTok: rewardVideoAd show");
-//            if (callback != null) {
-//                callback.onRewardedVideoAdShowSuccess();
-//                callback.onRewardedVideoAdStarted();
-//            }
-//        }
-//
-//        @Override
-//        public void onAdVideoBarClick() {
-//            AdLog.getSingleton().LogD("OM-TikTok: rewardVideoAd bar click");
-//            if (callback != null) {
-//                callback.onRewardedVideoAdClicked();
-//            }
-//        }
-//
-//        @Override
-//        public void onAdClose() {
-//            AdLog.getSingleton().LogD("OM-TikTok: rewardVideoAd close");
-//            if (callback != null) {
-//                callback.onRewardedVideoAdClosed();
-//            }
-//        }
-//
-//        @Override
-//        public void onVideoComplete() {
-//            AdLog.getSingleton().LogD("OM-TikTok: rewardVideoAd complete");
-//            if (callback != null) {
-//                callback.onRewardedVideoAdRewarded();
-//                callback.onRewardedVideoAdEnded();
-//            }
-//        }
-//
-//        @Override
-//        public void onVideoError() {
-//            AdLog.getSingleton().LogE("OM-TikTok: rewardVideoAd error");
-//            if (callback != null) {
-//                callback.onRewardedVideoAdShowFailed("TikTok rewardedVideo play failed");
-//            }
-//        }
-//
-//        @Override
-//        public void onRewardVerify(boolean rewardVerify, int rewardAmount, String rewardName) {
-//            AdLog.getSingleton().LogD("OM-TikTok:  verify:" + rewardVerify + " amount:" + rewardAmount +
-//                    " name:" + rewardName);
-//        }
-//
-//    }
 
 }

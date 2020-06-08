@@ -27,8 +27,9 @@ android.libraryVariants.all { variant ->
 }
 dependencies {
     compileOnly(name: 'nm-android-sdk', ext: 'aar')
-    compileOnly(name: 'GDTSDK.unionNormal.4.191.1061', ext: 'aar')
-    compileOnly(name: 'android-query-full.0.26.7', ext: 'jar')
+    compileOnly(name: rootProject.ext.dependencies.tencentad, ext: 'aar')
+//    compileOnly(name: rootProject.ext.dependencies.android_query, ext: 'jar')
+    compileOnly 'com.github.bumptech.glide:glide:4.8.0'
 }
 
 repositories {

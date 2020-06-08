@@ -17,8 +17,11 @@ ext {
             'tiktok_cn'   : '1.0.0',
             'tencentad_cn': '1.0.0',
             'hyadxopen_cn': '1.0.0',
-            'cloudmobi_cn': '1.0.0'
-
+            'cloudmobi_cn': '1.0.0',
+            'sigmob'      : '1.0.0',
+            'tc056d'      : '1.0.0',
+            'alion'       : '1.0.0',
+            'zyt'         : '1.0.0'
     ]
 
     pkg_prefix = 'nb_'

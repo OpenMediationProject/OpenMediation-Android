@@ -3,10 +3,12 @@
 
 package com.nbmediation.sdk.demo;
 
+import android.Manifest;
 import android.app.Activity;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Base64;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,13 +21,15 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.adtiming.adt.demo.R;
-import com.nbmediation.sdk.banner.AdSize;
-import com.nbmediation.sdk.demo.utils.NewApiUtils;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import com.nbmediation.sdk.InitCallback;
 import com.nbmediation.sdk.NmAds;
+import com.nbmediation.sdk.banner.AdSize;
 import com.nbmediation.sdk.banner.BannerAd;
 import com.nbmediation.sdk.banner.BannerAdListener;
+import com.nbmediation.sdk.demo.utils.NewApiUtils;
 import com.nbmediation.sdk.interstitial.InterstitialAd;
 import com.nbmediation.sdk.interstitial.InterstitialAdListener;
 import com.nbmediation.sdk.nativead.AdIconView;
@@ -34,13 +38,10 @@ import com.nbmediation.sdk.nativead.MediaView;
 import com.nbmediation.sdk.nativead.NativeAd;
 import com.nbmediation.sdk.nativead.NativeAdListener;
 import com.nbmediation.sdk.nativead.NativeAdView;
-import com.nbmediation.sdk.utils.constant.CommonConstants;
 import com.nbmediation.sdk.utils.error.Error;
 import com.nbmediation.sdk.utils.model.Scene;
 import com.nbmediation.sdk.video.RewardedVideoAd;
 import com.nbmediation.sdk.video.RewardedVideoListener;
-
-import java.nio.charset.Charset;
 
 public class MainActivity extends Activity {
 
@@ -58,6 +59,7 @@ public class MainActivity extends Activity {
     private BannerAd bannerAd;
     private NativeAd nativeAd;
 
+    private final static int WRITE_EXTERNAL_STORAGE_CODE = 102;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,15 +83,12 @@ public class MainActivity extends Activity {
         if (InterstitialAd.isReady()) {
             setInterstitialButtonStat(true);
         }
-        String str=getAdapterName("QWRUaW1pbmc=");
-        Log.i("tjt",str);
-    }
+        if (PackageManager.PERMISSION_GRANTED
+                != ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_EXTERNAL_STORAGE_CODE);
+        }
 
-    protected static String getAdapterName(String platName) {
-        return new String(Base64.decode(platName, Base64.NO_WRAP),
-                Charset.forName(CommonConstants.CHARTSET_UTF8));
     }
-
 
     private void initSDK() {
         NewApiUtils.printLog("start init sdk");
@@ -259,15 +258,25 @@ public class MainActivity extends Activity {
                 adContainer.removeAllViews();
                 adView = LayoutInflater.from(MainActivity.this).inflate(R.layout.native_ad_layout, null);
 
-
                 TextView title = adView.findViewById(R.id.ad_title);
-                title.setText(info.getTitle());
+                if (!TextUtils.isEmpty(info.getTitle())) {
+                    title.setText(info.getTitle());
+                }
+
 
                 TextView desc = adView.findViewById(R.id.ad_desc);
-                desc.setText(info.getDesc());
+                if (!TextUtils.isEmpty(info.getDesc())) {
+                    desc.setText(info.getDesc());
+                }
+
 
                 Button btn = adView.findViewById(R.id.ad_btn);
-                btn.setText(info.getCallToActionText());
+
+                if (!TextUtils.isEmpty(info.getCallToActionText())) {
+                    btn.setText(info.getCallToActionText());
+                } else {
+                    btn.setVisibility(View.GONE);
+                }
 
 
                 MediaView mediaView = adView.findViewById(R.id.ad_media);
@@ -276,10 +285,10 @@ public class MainActivity extends Activity {
 
 
                 AdIconView adIconView = adView.findViewById(R.id.ad_icon_media);
-
-
-                DisplayMetrics displayMetrics = MainActivity.this.getResources().getDisplayMetrics();
-                mediaView.getLayoutParams().height = (int) (displayMetrics.widthPixels / (1200.0 / 627.0));
+                RelativeLayout adDescRl = adView.findViewById(R.id.ad_desc_rl);
+                if (info.isTemplate()) {
+                    adDescRl.setVisibility(View.GONE);
+                }
 
                 nativeAdView.addView(adView);
 
@@ -289,13 +298,13 @@ public class MainActivity extends Activity {
                 nativeAdView.setCallToActionView(btn);
                 nativeAdView.setMediaView(mediaView);
 
-
                 nativeAd.registerNativeAdView(nativeAdView);
                 RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
                         RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
                 adContainer.addView(nativeAdView, layoutParams);
                 nativeButton.setEnabled(true);
                 nativeButton.setText("Load And Show Native Ad");
+
             }
 
             @Override
@@ -325,4 +334,5 @@ public class MainActivity extends Activity {
             interstitialButton.setText("Interstitial Ad Loading...");
         }
     }
+
 }

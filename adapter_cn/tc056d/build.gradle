@@ -7,7 +7,7 @@ android {
         minSdkVersion rootProject.ext.version.minSdkVersion
         targetSdkVersion rootProject.ext.version.targetSdkVersion
         versionCode rootProject.ext.version.versionCode
-        versionName rootProject.ext.adapterVersion.tiktok_cn
+        versionName rootProject.ext.adapterVersion.tc056d
         consumerProguardFiles 'proguard-rules.pro'
     }
 
@@ -25,7 +25,7 @@ android.libraryVariants.all { variant ->
     }
 }
 dependencies {
-    compileOnly(name: 'tc-056d', ext: 'jar')
+    compileOnly(name: rootProject.ext.dependencies.tc056d, ext: 'jar')
     compileOnly(name: 'nm-android-sdk', ext: 'aar')
 }
 
