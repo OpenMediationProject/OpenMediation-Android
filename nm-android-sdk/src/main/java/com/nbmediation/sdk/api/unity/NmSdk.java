@@ -338,4 +338,92 @@ public class NmSdk {
             Log.e(TAG, paramString);
         }
     }
+
+    //*********支持开发者管理placement加载***********//
+    public static void loadRewardedVideo(String placementId){
+        NmManager.getInstance().loadRewardedVideo(placementId);
+    }
+
+    public static void setRewardedVideoListener(String placementId, final VideoListener paramVideoListener){
+        NmManager.getInstance().setRewardedVideoListener(placementId, new RewardedVideoListener() {
+            public void onRewardedVideoAvailabilityChanged(boolean paramAnonymousBoolean) {
+                paramVideoListener.onRewardedVideoAvailabilityChanged(paramAnonymousBoolean);
+            }
+
+            public void onRewardedVideoAdShowed(Scene paramAnonymousScene) {
+                paramVideoListener.onRewardedVideoAdShowed(paramAnonymousScene.getN());
+            }
+
+            @Override
+            public void onRewardedVideoAdShowFailed(Scene scene, Error error) {
+                paramVideoListener.onRewardedVideoAdShowFailed(scene.getN(), error.toString());
+            }
+
+
+            public void onRewardedVideoAdClicked(Scene paramAnonymousScene) {
+                paramVideoListener.onRewardedVideoAdClicked(paramAnonymousScene.getN());
+            }
+
+            public void onRewardedVideoAdClosed(Scene paramAnonymousScene) {
+                paramVideoListener.onRewardedVideoAdClosed(paramAnonymousScene.getN());
+            }
+
+            public void onRewardedVideoAdStarted(Scene paramAnonymousScene) {
+                paramVideoListener.onRewardedVideoAdStarted(paramAnonymousScene.getN());
+            }
+
+            public void onRewardedVideoAdEnded(Scene paramAnonymousScene) {
+                paramVideoListener.onRewardedVideoAdEnded(paramAnonymousScene.getN());
+            }
+
+            public void onRewardedVideoAdRewarded(Scene paramAnonymousScene) {
+                paramVideoListener.onRewardedVideoAdRewarded(paramAnonymousScene.getN());
+            }
+        });
+    }
+
+    public static boolean isRewardedVideoReady(String placementId){
+       return NmManager.getInstance().isRewardedVideoReady(placementId);
+    }
+
+    public static void showRewardedVideo(String placementId, String scene){
+        NmManager.getInstance().showRewardedVideo(placementId, scene);
+    }
+
+
+    public static void loadInterstitial(String placementId){
+        NmManager.getInstance().loadInterstitialAd(placementId);
+    }
+
+    public static void setInterstitialListener(String placementId, final InterstitialListener paramInterstitialListener){
+        NmManager.getInstance().setInterstitialAdListener(placementId, new InterstitialAdListener() {
+            public void onInterstitialAdAvailabilityChanged(boolean paramAnonymousBoolean) {
+                paramInterstitialListener.onInterstitialAdAvailabilityChanged(paramAnonymousBoolean);
+            }
+
+            public void onInterstitialAdShowed(Scene paramAnonymousScene) {
+                paramInterstitialListener.onInterstitialAdShowed(paramAnonymousScene.getN());
+            }
+
+            public void onInterstitialAdShowFailed(Scene paramAnonymousScene, Error paramAnonymousAdTimingError) {
+                paramInterstitialListener.onInterstitialAdShowFailed(paramAnonymousScene.getN(), paramAnonymousAdTimingError.toString());
+            }
+
+            public void onInterstitialAdClosed(Scene paramAnonymousScene) {
+                paramInterstitialListener.onInterstitialAdClosed(paramAnonymousScene.getN());
+            }
+
+            public void onInterstitialAdClicked(Scene paramAnonymousScene) {
+                paramInterstitialListener.onInterstitialAdClicked(paramAnonymousScene.getN());
+            }
+        });
+    }
+
+    public static boolean isInterstitialReady(String placementId){
+        return NmManager.getInstance().isInterstitialAdReady(placementId);
+    }
+
+    public static void showInterstitial(String placementId, String scene){
+        NmManager.getInstance().showInterstitialAd(placementId, scene);
+    }
 }
