@@ -386,8 +386,13 @@ public class NmSdk {
        return NmManager.getInstance().isRewardedVideoReady(placementId);
     }
 
-    public static void showRewardedVideo(String placementId, String scene){
-        NmManager.getInstance().showRewardedVideo(placementId, scene);
+    public static void showRewardedVideo(final String placementId, final String scene){
+        HandlerUtil.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                NmManager.getInstance().showRewardedVideo(placementId, scene);
+            }
+        });
     }
 
 
@@ -423,7 +428,12 @@ public class NmSdk {
         return NmManager.getInstance().isInterstitialAdReady(placementId);
     }
 
-    public static void showInterstitial(String placementId, String scene){
-        NmManager.getInstance().showInterstitialAd(placementId, scene);
+    public static void showInterstitial(final String placementId, final String scene){
+            HandlerUtil.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    NmManager.getInstance().showInterstitialAd(placementId, scene);
+                }
+            });
     }
 }
