@@ -17,10 +17,10 @@ android {
 }
 
 dependencies {
-  implementation 'com.adtiming.om:om-android-sdk:1.2.0'
+  implementation 'com.adtiming.om:om-android-sdk:1.2.1'
 
   // AdTiming-Adapter
-  implementation 'com.adtiming.adapters.om:adtiming:1.2.0'  
+  implementation 'com.adtiming.adapters.om:adtiming:1.2.1'  
   // AdMob-Adapter
   implementation 'com.adtiming.adapters.om:admob:1.2.0'
   // Facebook-Adapter
@@ -40,7 +40,7 @@ dependencies {
   // Chartboost-Adapter
   implementation 'com.adtiming.adapters.om:chartboost:1.2.0'  
   // Mintegral-Adapter
-  implementation 'com.adtiming.adapters.om:mintegral:1.2.0'
+  implementation 'com.adtiming.adapters.om:mintegral:1.3.0'
   //TikTok-Adapter
   implementation 'com.adtiming.adapters.om:tiktok:1.1.0'
   //IronSource-Adapter
