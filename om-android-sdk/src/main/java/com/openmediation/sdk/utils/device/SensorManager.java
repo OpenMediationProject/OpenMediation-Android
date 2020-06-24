@@ -53,7 +53,6 @@ public class SensorManager {
         }
     }
 
-
     public JSONArray getSensorData() {
         if (mSensorArrays != null && mSensorArrays.length() > 0) {
             return mSensorArrays;

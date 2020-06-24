@@ -22,11 +22,11 @@ import android.os.SystemClock;
 import android.text.TextUtils;
 import android.webkit.WebSettings;
 
-import com.openmediation.sdk.utils.constant.CommonConstants;
-import com.openmediation.sdk.utils.constant.KeyConstants;
 import com.openmediation.sdk.utils.AdtUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.cache.DataCache;
+import com.openmediation.sdk.utils.constant.CommonConstants;
+import com.openmediation.sdk.utils.constant.KeyConstants;
 import com.openmediation.sdk.utils.crash.CrashUtil;
 
 import org.json.JSONObject;

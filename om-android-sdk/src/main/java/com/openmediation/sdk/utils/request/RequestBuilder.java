@@ -8,21 +8,20 @@ import android.os.Build;
 import android.text.TextUtils;
 
 import com.openmediation.sdk.bid.AdTimingBidResponse;
-import com.openmediation.sdk.utils.OaidHelper;
-import com.openmediation.sdk.utils.constant.CommonConstants;
-import com.openmediation.sdk.utils.constant.KeyConstants;
-import com.openmediation.sdk.utils.device.DeviceUtil;
-import com.openmediation.sdk.utils.device.ImeiUtil;
-import com.openmediation.sdk.utils.device.SensorManager;
-import com.openmediation.sdk.utils.model.PlacementInfo;
-import com.openmediation.sdk.utils.request.network.util.NetworkChecker;
 import com.openmediation.sdk.utils.AdtUtil;
 import com.openmediation.sdk.utils.DensityUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.Gzip;
 import com.openmediation.sdk.utils.JsonUtil;
-import com.openmediation.sdk.utils.event.Event;
+import com.openmediation.sdk.utils.OaidHelper;
 import com.openmediation.sdk.utils.cache.DataCache;
+import com.openmediation.sdk.utils.constant.CommonConstants;
+import com.openmediation.sdk.utils.constant.KeyConstants;
+import com.openmediation.sdk.utils.device.DeviceUtil;
+import com.openmediation.sdk.utils.device.ImeiUtil;
+import com.openmediation.sdk.utils.event.Event;
+import com.openmediation.sdk.utils.model.PlacementInfo;
+import com.openmediation.sdk.utils.request.network.util.NetworkChecker;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -225,7 +224,7 @@ public class RequestBuilder {
                 .p(KeyConstants.Request.KEY_API_VERSION, CommonConstants.API_VERSION)
                 .p(KeyConstants.Request.KEY_PLATFORM, CommonConstants.PLAT_FORM_ANDROID)
                 .p(KeyConstants.Request.KEY_SDK_VERSION, CommonConstants.SDK_VERSION_NAME)
-                .p(KeyConstants.Request.KEY_APP_KEY, DataCache.getInstance().get(KeyConstants.KEY_APP_KEY, String.class))
+                .p(KeyConstants.Request.KEY_APP_KEY, DataCache.getInstance().getFromMem(KeyConstants.KEY_APP_KEY, String.class))
                 .format());
     }
 
@@ -240,7 +239,7 @@ public class RequestBuilder {
                 .p(KeyConstants.Request.KEY_API_VERSION, CommonConstants.API_VERSION)
                 .p(KeyConstants.Request.KEY_PLATFORM, CommonConstants.PLAT_FORM_ANDROID)
                 .p(KeyConstants.Request.KEY_SDK_VERSION, CommonConstants.SDK_VERSION_NAME)
-                .p(KeyConstants.Request.KEY_APP_KEY, DataCache.getInstance().get(KeyConstants.KEY_APP_KEY, String.class))
+                .p(KeyConstants.Request.KEY_APP_KEY, DataCache.getInstance().getFromMem(KeyConstants.KEY_APP_KEY, String.class))
                 .format());
     }
 
@@ -358,7 +357,7 @@ public class RequestBuilder {
         body.put(KeyConstants.RequestBody.KEY_CONT, NetworkChecker.getConnectType(context));
         body.put(KeyConstants.RequestBody.KEY_CARRIER, NetworkChecker.getNetworkOperator(context));
         body.put(KeyConstants.RequestBody.KEY_FM, DeviceUtil.getFm());
-        String channel = DataCache.getInstance().get(KeyConstants.KEY_APP_CHANNEL, String.class);
+        String channel = DataCache.getInstance().getFromMem(KeyConstants.KEY_APP_CHANNEL, String.class);
         body.put(KeyConstants.RequestBody.KEY_CHANNEL, channel);
         Map<String, Integer> battery = DeviceUtil.getBatteryInfo(context);
         if (battery == null || battery.isEmpty()) {
@@ -461,7 +460,7 @@ public class RequestBuilder {
      */
     public static byte[] buildEventRequestBody(ConcurrentLinkedQueue<Event> events) throws Exception {
         JSONObject body = getRequestBodyBaseJson();
-        body.put(KeyConstants.RequestBody.KEY_APPK, DataCache.getInstance().get(KeyConstants.KEY_APP_KEY, String.class));
+        body.put(KeyConstants.RequestBody.KEY_APPK, DataCache.getInstance().getFromMem(KeyConstants.KEY_APP_KEY, String.class));
         JSONArray jsonEvents = new JSONArray();
         for (Event e : events) {
             jsonEvents.put(e.toJSONObject());
@@ -537,12 +536,12 @@ public class RequestBuilder {
         androidBody.put(KeyConstants.Android.KEY_KERNEL_QEMU, DeviceUtil.getSystemProperties(KeyConstants.Device.KEY_RO_KERNEL_QEMU));
         androidBody.put(KeyConstants.Android.KEY_HARDWARE, DeviceUtil.getSystemProperties(KeyConstants.Device.KEY_RO_HARDWARE));
 
-        JSONArray sensorArray = SensorManager.getSingleton().getSensorData();
-        androidBody.put(KeyConstants.Android.KEY_SENSOR_SIZE, sensorArray != null ? sensorArray.length() : 0);
-        androidBody.put(KeyConstants.Android.KEY_SENSORS, sensorArray);
-
-        androidBody.put(KeyConstants.Android.KEY_AS, DeviceUtil.getInstallVending(context));
-        androidBody.put(KeyConstants.Android.KEY_FB_ID, DeviceUtil.getFacebookId(context));
+//        JSONArray sensorArray = SensorManager.getSingleton().getSensorData();
+//        androidBody.put(KeyConstants.Android.KEY_SENSOR_SIZE, sensorArray != null ? sensorArray.length() : 0);
+//        androidBody.put(KeyConstants.Android.KEY_SENSORS, sensorArray);
+//
+//        androidBody.put(KeyConstants.Android.KEY_AS, DeviceUtil.getInstallVending(context));
+//        androidBody.put(KeyConstants.Android.KEY_FB_ID, DeviceUtil.getFacebookId(context));
         androidBody.put(KeyConstants.RequestBody.KEY_TDM, DeviceUtil.disk());
         return androidBody;
     }

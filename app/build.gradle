@@ -38,6 +38,7 @@ dependencies {
     implementation(name: 'BiddingKit', ext: 'aar')
 
     implementation rootProject.ext.dependencies.multidex
+
     //admob
     implementation rootProject.ext.dependencies.admob
     //vungle

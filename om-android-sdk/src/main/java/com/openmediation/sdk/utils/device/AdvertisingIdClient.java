@@ -17,6 +17,7 @@ import android.os.RemoteException;
 import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.crash.CrashUtil;
 
+import java.lang.reflect.Method;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class AdvertisingIdClient {
@@ -75,13 +76,13 @@ public class AdvertisingIdClient {
         return null;
     }
 
-
     private static final class AdvertisingConnection implements
             ServiceConnection {
         boolean retrieved = false;
         private final LinkedBlockingQueue<IBinder> queue = new LinkedBlockingQueue<IBinder>(
                 1);
 
+        @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             try {
                 this.queue.put(service);
@@ -91,12 +92,14 @@ public class AdvertisingIdClient {
             }
         }
 
+        @Override
         public void onServiceDisconnected(ComponentName name) {
         }
 
         IBinder getBinder() throws InterruptedException {
-            if (this.retrieved)
+            if (this.retrieved) {
                 throw new IllegalStateException();
+            }
             this.retrieved = true;
             return this.queue.take();
         }

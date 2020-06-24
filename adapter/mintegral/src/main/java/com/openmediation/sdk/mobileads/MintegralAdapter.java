@@ -7,17 +7,19 @@ import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.openmediation.sdk.mediation.CustomAdsAdapter;
-import com.openmediation.sdk.mediation.InterstitialAdCallback;
-import com.openmediation.sdk.mediation.MediationInfo;
-import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.mintegral.msdk.MIntegralSDK;
 import com.mintegral.msdk.interstitialvideo.out.InterstitialVideoListener;
 import com.mintegral.msdk.interstitialvideo.out.MTGInterstitialVideoHandler;
 import com.mintegral.msdk.out.MIntegralSDKFactory;
+import com.mintegral.msdk.out.MTGConfiguration;
 import com.mintegral.msdk.out.MTGRewardVideoHandler;
 import com.mintegral.msdk.out.RewardVideoListener;
+import com.openmediation.sdk.mediation.CustomAdsAdapter;
+import com.openmediation.sdk.mediation.InterstitialAdCallback;
+import com.openmediation.sdk.mediation.MediationInfo;
+import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.openmediation.sdk.mobileads.mintegral.BuildConfig;
+import com.openmediation.sdk.utils.HandlerUtil;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,6 +28,8 @@ public class MintegralAdapter extends CustomAdsAdapter {
     private boolean mDidInitSdk;
     private ConcurrentHashMap<String, MTGInterstitialVideoHandler> mInterstitialAds;
     private ConcurrentHashMap<String, MTGRewardVideoHandler> mRvAds;
+    private MtgRvAdListener mRvAdListener;
+    private MtgInterstitialAdListener mIsAdListener;
 
     public MintegralAdapter() {
         mInterstitialAds = new ConcurrentHashMap<>();
@@ -34,7 +38,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
 
     @Override
     public String getMediationVersion() {
-        return "";
+        return MTGConfiguration.SDK_VERSION;
     }
 
     @Override
@@ -66,28 +70,36 @@ public class MintegralAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void loadRewardedVideo(final Activity activity, final String adUnitId, final RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, callback);
-        String error = check(activity, adUnitId);
-        if (TextUtils.isEmpty(error)) {
-            MTGRewardVideoHandler rewardVideoHandler = mRvAds.get(adUnitId);
-            if (rewardVideoHandler == null) {
-                rewardVideoHandler = new MTGRewardVideoHandler(activity, adUnitId);
-                mRvAds.put(adUnitId, rewardVideoHandler);
-            }
-            if (rewardVideoHandler.isReady()) {
-                if (callback != null) {
-                    callback.onRewardedVideoLoadSuccess();
+        HandlerUtil.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                String error = check(activity, adUnitId);
+                if (TextUtils.isEmpty(error)) {
+                    MTGRewardVideoHandler rewardVideoHandler = mRvAds.get(adUnitId);
+                    if (rewardVideoHandler == null) {
+                        rewardVideoHandler = new MTGRewardVideoHandler(activity, "", adUnitId);
+                        mRvAds.put(adUnitId, rewardVideoHandler);
+                    }
+                    if (mRvAdListener == null) {
+                        mRvAdListener = new MtgRvAdListener(callback);
+                    }
+                    rewardVideoHandler.setRewardVideoListener(mRvAdListener);
+                    if (rewardVideoHandler.isReady()) {
+                        if (callback != null) {
+                            callback.onRewardedVideoLoadSuccess();
+                        }
+                    } else {
+                        rewardVideoHandler.load();
+                    }
+                } else {
+                    if (callback != null) {
+                        callback.onRewardedVideoLoadFailed(error);
+                    }
                 }
-            } else {
-                rewardVideoHandler.setRewardVideoListener(new MtgRvAdListener(callback));
-                rewardVideoHandler.load();
             }
-        } else {
-            if (callback != null) {
-                callback.onRewardedVideoLoadFailed(error);
-            }
-        }
+        });
     }
 
     @Override
@@ -138,29 +150,37 @@ public class MintegralAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    public void loadInterstitialAd(final Activity activity, final String adUnitId, final InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, callback);
-        String error = check(activity, adUnitId);
-        if (TextUtils.isEmpty(error)) {
-            MTGInterstitialVideoHandler mtgInterstitialVideoHandler = mInterstitialAds.get(adUnitId);
-            if (mtgInterstitialVideoHandler == null) {
-                mtgInterstitialVideoHandler = new MTGInterstitialVideoHandler(activity, adUnitId);
-                mInterstitialAds.put(adUnitId, mtgInterstitialVideoHandler);
-            }
+        HandlerUtil.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                String error = check(activity, adUnitId);
+                if (TextUtils.isEmpty(error)) {
+                    MTGInterstitialVideoHandler mtgInterstitialVideoHandler = mInterstitialAds.get(adUnitId);
+                    if (mtgInterstitialVideoHandler == null) {
+                        mtgInterstitialVideoHandler = new MTGInterstitialVideoHandler(activity, "", adUnitId);
+                        mInterstitialAds.put(adUnitId, mtgInterstitialVideoHandler);
+                    }
 
-            if (mtgInterstitialVideoHandler.isReady()) {
-                if (callback != null) {
-                    callback.onInterstitialAdLoadSuccess();
+                    if (mIsAdListener == null) {
+                        mIsAdListener = new MtgInterstitialAdListener(callback);
+                    }
+                    mtgInterstitialVideoHandler.setInterstitialVideoListener(mIsAdListener);
+                    if (mtgInterstitialVideoHandler.isReady()) {
+                        if (callback != null) {
+                            callback.onInterstitialAdLoadSuccess();
+                        }
+                    } else {
+                        mtgInterstitialVideoHandler.load();
+                    }
+                } else {
+                    if (callback != null) {
+                        callback.onInterstitialAdLoadFailed(error);
+                    }
                 }
-            } else {
-                mtgInterstitialVideoHandler.setInterstitialVideoListener(new MtgInterstitialAdListener(callback));
-                mtgInterstitialVideoHandler.load();
             }
-        } else {
-            if (callback != null) {
-                callback.onInterstitialAdLoadFailed(error);
-            }
-        }
+        });
     }
 
     @Override
@@ -213,21 +233,21 @@ public class MintegralAdapter extends CustomAdsAdapter {
         }
 
         @Override
-        public void onLoadSuccess(String s) {
+        public void onLoadSuccess(String placementId, String unitId) {
 
         }
 
         @Override
-        public void onVideoLoadSuccess(String s) {
+        public void onVideoLoadSuccess(String placementId, String unitId) {
             if (mCallback != null) {
                 mCallback.onInterstitialAdLoadSuccess();
             }
         }
 
         @Override
-        public void onVideoLoadFail(String s) {
+        public void onVideoLoadFail(String errorMsg) {
             if (mCallback != null) {
-                mCallback.onInterstitialAdLoadFailed(s);
+                mCallback.onInterstitialAdLoadFailed(errorMsg);
             }
         }
 
@@ -253,18 +273,23 @@ public class MintegralAdapter extends CustomAdsAdapter {
         }
 
         @Override
-        public void onVideoAdClicked(String s) {
+        public void onVideoAdClicked(String placementId, String unitId) {
             if (mCallback != null) {
                 mCallback.onInterstitialAdClick();
             }
         }
 
         @Override
-        public void onVideoComplete(String s) {
+        public void onVideoComplete(String placementId, String unitId) {
         }
 
         @Override
-        public void onEndcardShow(String s) {
+        public void onAdCloseWithIVReward(boolean isComplete, int rewardAlertStatus) {
+
+        }
+
+        @Override
+        public void onEndcardShow(String placementId, String unitId) {
         }
     }
 
@@ -277,21 +302,21 @@ public class MintegralAdapter extends CustomAdsAdapter {
         }
 
         @Override
-        public void onVideoLoadSuccess(String s) {
+        public void onVideoLoadSuccess(String placementId, String unitId) {
             if (mRvCallback != null) {
                 mRvCallback.onRewardedVideoLoadSuccess();
             }
         }
 
         @Override
-        public void onLoadSuccess(String s) {
+        public void onLoadSuccess(String placementId, String unitId) {
 
         }
 
         @Override
-        public void onVideoLoadFail(String s) {
+        public void onVideoLoadFail(String errorMsg) {
             if (mRvCallback != null) {
-                mRvCallback.onRewardedVideoLoadFailed(s);
+                mRvCallback.onRewardedVideoLoadFailed(errorMsg);
             }
         }
 
@@ -304,35 +329,35 @@ public class MintegralAdapter extends CustomAdsAdapter {
         }
 
         @Override
-        public void onAdClose(boolean b, String s, float v) {
+        public void onAdClose(boolean isCompleteView, String rewardName, float rewardAmount) {
             if (mRvCallback != null) {
                 mRvCallback.onRewardedVideoAdClosed();
             }
         }
 
         @Override
-        public void onShowFail(String s) {
+        public void onShowFail(String errorMsg) {
             if (mRvCallback != null) {
-                mRvCallback.onRewardedVideoAdShowFailed(s);
+                mRvCallback.onRewardedVideoAdShowFailed(errorMsg);
             }
         }
 
         @Override
-        public void onVideoAdClicked(String s) {
+        public void onVideoAdClicked(String placementId, String unitId) {
             if (mRvCallback != null) {
                 mRvCallback.onRewardedVideoAdClicked();
             }
         }
 
         @Override
-        public void onVideoComplete(String s) {
+        public void onVideoComplete(String placementId, String unitId) {
             if (mRvCallback != null) {
                 mRvCallback.onRewardedVideoAdRewarded();
             }
         }
 
         @Override
-        public void onEndcardShow(String s) {
+        public void onEndcardShow(String placementId, String unitId) {
 
         }
     }

@@ -47,7 +47,7 @@ ext {
             //AdColony
             "adcolony"                   : 'com.adcolony:sdk:4.1.4',
             //Applovin
-            "applovin"                   : 'com.applovin:applovin-sdk:9.12.6',
+            "applovin"                   : 'com.applovin:applovin-sdk:9.12.7',
             //MoPub
             "mopub"                      : 'com.mopub:mopub-sdk:5.12.0@aar',
             //TapJoy
@@ -55,19 +55,19 @@ ext {
             //chartboost
             "chartboost"                 : 'com.chartboost:chartboost-sdk:8.0.2',
             //unity
-            "unity"                      : 'com.unity3d.ads:unity-ads:3.4.2',
+            "unity"                      : 'com.unity3d.ads:unity-ads:3.4.6',
             //gp-base
-            "play_service_base"          : 'com.google.android.gms:play-services-base:17.2.1',
+            "play_service_base"          : 'com.google.android.gms:play-services-base:17.3.0',
             //gp-ads-identifier
             "play_service_ads_identifier": 'com.google.android.gms:play-services-ads-identifier:17.0.0',
             //multidex
             "multidex"                   : 'com.android.support:multidex:1.0.1',
             //Mintegral
-            "mtg_version"                : '10.2.41',
+            "mtg_version"                : '14.1.01',
             // IronSource
-            "ironsource"                 : 'com.ironsource.sdk:mediationsdk:6.16.1',
+            "ironsource"                 : 'com.ironsource.sdk:mediationsdk:6.17.0',
 
-            "adtiming"                   : 'com.adtiming:mediation-sdk:6.3.4@aar',
+            "adtiming"                   : 'com.adtiming:mediation-sdk:6.4.0@aar',
             "fyber"                      : '7.5.3'
     ]
 }

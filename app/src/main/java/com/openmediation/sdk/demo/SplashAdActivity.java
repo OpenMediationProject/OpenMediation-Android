@@ -22,8 +22,13 @@ public class SplashAdActivity extends Activity implements SplashAdListener {
         setContentView(R.layout.activity_ad_splash);
         mSplashContainer = findViewById(R.id.splash_container);
         SplashAd.setSplashAdListener(this);
-        SplashAd.setLoadTimeout(3000);
-        SplashAd.loadAd();
+        mSplashContainer.post(() -> {
+            int width = mSplashContainer.getWidth();
+            int height = mSplashContainer.getHeight();
+            SplashAd.setSize(width, height);
+            SplashAd.setLoadTimeout(3000);
+            SplashAd.loadAd();
+        });
     }
 
     @Override

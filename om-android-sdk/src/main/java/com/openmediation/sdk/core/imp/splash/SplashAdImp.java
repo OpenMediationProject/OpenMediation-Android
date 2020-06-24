@@ -28,6 +28,8 @@ public class SplashAdImp extends AbstractHybridAd {
 
     private long mLoadTimeout;
 
+    private int mWidth, mHeight;
+
     SplashAdImp(Activity activity, String placementId) {
         super(activity, placementId);
     }
@@ -65,6 +67,8 @@ public class SplashAdImp extends AbstractHybridAd {
         }
         Map<String, String> placementInfo = PlacementUtils.getPlacementInfo(mPlacementId, instances, payload);
         placementInfo.put("Timeout", String.valueOf(mLoadTimeout));
+        placementInfo.put("Width", String.valueOf(mWidth));
+        placementInfo.put("Height", String.valueOf(mHeight));
         splashEvent.loadAd(mActRef.get(), placementInfo);
         iLoadReport(instances);
     }
@@ -198,5 +202,10 @@ public class SplashAdImp extends AbstractHybridAd {
 
     private CustomSplashEvent getAdEvent(BaseInstance instances) {
         return (CustomSplashEvent) AdManager.getInstance().getInsAdEvent(CommonConstants.SPLASH, instances);
+    }
+
+    void setSize(int width, int height) {
+        this.mWidth = width;
+        this.mHeight = height;
     }
 }

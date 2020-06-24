@@ -19,6 +19,10 @@ public class SplashAd {
         SplashAdManager.getInstance().load();
     }
 
+    public static void setSize(int width, int height) {
+        SplashAdManager.getInstance().setSize(width, height);
+    }
+
     public static void setSplashAdListener(SplashAdListener listener) {
         SplashAdManager.getInstance().setSplashAdListener(listener);
     }

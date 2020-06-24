@@ -20,6 +20,18 @@ public class SplashAdManager {
 
     private ConcurrentMap<String, SplashAdImp> mSplashAds;
 
+    public void setSize(int width, int height) {
+        setSize("", width, height);
+    }
+
+    public void setSize(String placementId, int width, int height) {
+        SplashAdImp splashAdImp = getSplashAd(placementId);
+        if (splashAdImp == null) {
+            return;
+        }
+        splashAdImp.setSize(width, height);
+    }
+
     private static final class SplashHolder {
         private static final SplashAdManager INSTANCE = new SplashAdManager();
     }

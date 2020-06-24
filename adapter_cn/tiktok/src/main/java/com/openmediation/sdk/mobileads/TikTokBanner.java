@@ -151,18 +151,13 @@ public class TikTokBanner extends CustomBannerEvent implements TTAdNative.Native
         }
     }
 
-    /**
-     * 设置广告的不喜欢，注意：强烈建议设置该逻辑，如果不设置dislike处理逻辑，则模板广告中的 dislike区域不响应dislike事件。
-     */
     private void bindDislike(Activity activity, TTNativeExpressAd ad) {
         if (activity == null || ad == null) {
             return;
         }
-        //使用默认模板中默认dislike弹出样式
         ad.setDislikeCallback(activity, new TTAdDislike.DislikeInteractionCallback() {
             @Override
             public void onSelected(int position, String value) {
-                //用户选择不喜欢原因后，移除广告展示
                 if (mBannerView != null && mBannerView.getParent() instanceof ViewGroup) {
                     ((ViewGroup) mBannerView.getParent()).removeView(mBannerView);
                     mBannerView = null;

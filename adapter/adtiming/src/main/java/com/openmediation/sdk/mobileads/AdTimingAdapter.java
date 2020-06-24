@@ -11,7 +11,6 @@ import com.adtiming.mediationsdk.InitCallback;
 import com.adtiming.mediationsdk.core.AdTimingManager;
 import com.adtiming.mediationsdk.mediation.MediationInterstitialListener;
 import com.adtiming.mediationsdk.mediation.MediationRewardVideoListener;
-import com.adtiming.mediationsdk.utils.Constants;
 import com.adtiming.mediationsdk.utils.error.AdTimingError;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
@@ -43,7 +42,7 @@ public class AdTimingAdapter extends CustomAdsAdapter {
 
     @Override
     public String getMediationVersion() {
-        return Constants.SDK_V;
+        return AdTimingAds.getSDKVersion();
     }
 
     @Override

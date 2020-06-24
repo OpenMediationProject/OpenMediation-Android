@@ -4,6 +4,7 @@
 package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +23,10 @@ import java.util.concurrent.ConcurrentMap;
 public class TikTokSplash extends CustomSplashEvent implements TTAdNative.SplashAdListener, TTSplashAd.AdInteractionListener {
     private static String TAG = "OM-TikTok: ";
 
+    private static final String CONFIG_TIMEOUT = "Timeout";
+    private static final String CONFIG_WIDTH = "Width";
+    private static final String CONFIG_HEIGHT = "Height";
+
     private TTAdNative mTTAdNative;
     private ConcurrentMap<String, TTSplashAd> mSplashAdMap;
 
@@ -34,7 +39,7 @@ public class TikTokSplash extends CustomSplashEvent implements TTAdNative.Splash
             mSplashAdMap = new ConcurrentHashMap<>();
         }
         initTTSDKConfig(activity, config);
-        loadSplashAd(mInstancesKey, config.get("Timeout"));
+        loadSplashAd(activity, mInstancesKey, config);
     }
 
     private void initTTSDKConfig(Activity activity, Map<String, String> config) {
@@ -51,23 +56,47 @@ public class TikTokSplash extends CustomSplashEvent implements TTAdNative.Splash
         mTTAdNative = null;
     }
 
-    private void loadSplashAd(String codeId, String timeout) {
+    private void loadSplashAd(Activity activity, String codeId, Map<String, String> config) {
         int fetchDelay;
         try {
-            fetchDelay = Integer.parseInt(timeout);
+            fetchDelay = Integer.parseInt(config.get(CONFIG_TIMEOUT));
         } catch (Exception e) {
             fetchDelay = 0;
+        }
+        int width = 0;
+        try {
+            width = Integer.parseInt(config.get(CONFIG_WIDTH));
+        } catch (Exception ignored) {
+        }
+        if (width <= 0) {
+            width = getScreenWidth(activity);
+        }
+        int height = 0;
+        try {
+            height = Integer.parseInt(config.get(CONFIG_HEIGHT));
+        } catch (Exception ignored) {
+        }
+        if (height <= 0) {
+            height = getScreenHeight(activity);
         }
         AdSlot adSlot = new AdSlot.Builder()
                 .setCodeId(codeId)
                 .setSupportDeepLink(true)
-                .setImageAcceptedSize(1080, 1920)
+                .setImageAcceptedSize(width, height)
                 .build();
         if (fetchDelay <= 0) {
             mTTAdNative.loadSplashAd(adSlot, this);
         } else {
             mTTAdNative.loadSplashAd(adSlot, this, fetchDelay);
         }
+    }
+
+    private static int getScreenWidth(Context context) {
+        return context.getResources().getDisplayMetrics().widthPixels;
+    }
+
+    private static int getScreenHeight(Context context) {
+        return context.getResources().getDisplayMetrics().heightPixels;
     }
 
     @Override

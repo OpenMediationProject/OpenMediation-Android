@@ -6,6 +6,7 @@ package com.openmediation.sdk.core;
 import android.app.Activity;
 import android.text.TextUtils;
 
+import com.openmediation.sdk.InitCallback;
 import com.openmediation.sdk.bid.AdTimingAuctionManager;
 import com.openmediation.sdk.utils.ActLifecycle;
 import com.openmediation.sdk.utils.AdLog;
@@ -13,9 +14,8 @@ import com.openmediation.sdk.utils.AdtUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.HandlerUtil;
 import com.openmediation.sdk.utils.IOUtil;
-import com.openmediation.sdk.utils.OaidHelper;
-import com.openmediation.sdk.utils.helper.ConfigurationHelper;
 import com.openmediation.sdk.utils.JsonUtil;
+import com.openmediation.sdk.utils.OaidHelper;
 import com.openmediation.sdk.utils.SdkUtil;
 import com.openmediation.sdk.utils.WorkExecutor;
 import com.openmediation.sdk.utils.cache.DataCache;
@@ -23,16 +23,15 @@ import com.openmediation.sdk.utils.constant.CommonConstants;
 import com.openmediation.sdk.utils.constant.KeyConstants;
 import com.openmediation.sdk.utils.crash.CrashUtil;
 import com.openmediation.sdk.utils.device.DeviceUtil;
-import com.openmediation.sdk.utils.device.SensorManager;
 import com.openmediation.sdk.utils.error.Error;
 import com.openmediation.sdk.utils.error.ErrorBuilder;
 import com.openmediation.sdk.utils.error.ErrorCode;
 import com.openmediation.sdk.utils.event.EventId;
 import com.openmediation.sdk.utils.event.EventUploadManager;
+import com.openmediation.sdk.utils.helper.ConfigurationHelper;
 import com.openmediation.sdk.utils.model.Configurations;
 import com.openmediation.sdk.utils.request.network.Request;
 import com.openmediation.sdk.utils.request.network.Response;
-import com.openmediation.sdk.InitCallback;
 
 import org.json.JSONObject;
 
@@ -78,11 +77,21 @@ public final class InitImp {
         sInitStart = System.currentTimeMillis();
         mCallback = callback;
         AdtUtil.init(activity);
-        SensorManager.getSingleton();
+//        SensorManager.getSingleton();
         ActLifecycle.getInstance().init(activity);
         EventUploadManager.getInstance().init(activity.getApplicationContext());
         EventUploadManager.getInstance().uploadEvent(EventId.INIT_START);
-        WorkExecutor.execute(new InitAsyncRunnable(appKey, channel));
+        try {
+            DataCache.getInstance().init(AdtUtil.getApplication());
+            DataCache.getInstance().setMEM(KeyConstants.KEY_APP_KEY, appKey);
+            if (TextUtils.isEmpty(channel)) {
+                channel = "";
+            }
+            DataCache.getInstance().setMEM(KeyConstants.KEY_APP_CHANNEL, channel);
+        } catch (Exception ignored) {
+        }
+        WorkExecutor.execute(new InitAsyncRunnable());
+        WorkExecutor.execute(new RequestConfigRunnable(appKey));
     }
 
     /**
@@ -93,8 +102,8 @@ public final class InitImp {
      */
     static void reInitSDK(Activity activity, final InitCallback callback) {
         if (DataCache.getInstance().containsKey(KeyConstants.KEY_APP_KEY)) {
-            String appKey = DataCache.getInstance().get(KeyConstants.KEY_APP_KEY, String.class);
-            String appChannel = DataCache.getInstance().get(KeyConstants.KEY_APP_CHANNEL, String.class);
+            String appKey = DataCache.getInstance().getFromMem(KeyConstants.KEY_APP_KEY, String.class);
+            String appChannel = DataCache.getInstance().getFromMem(KeyConstants.KEY_APP_CHANNEL, String.class);
             InitImp.init(activity, appKey, appChannel, new InitCallback() {
                 @Override
                 public void onSuccess() {
@@ -142,7 +151,7 @@ public final class InitImp {
      * Inits global utils
      */
     private static void initUtil() throws Exception {
-        DataCache.getInstance().init(AdtUtil.getApplication());
+//        DataCache.getInstance().init(AdtUtil.getApplication());
         DataCache.getInstance().set(DeviceUtil.preFetchDeviceInfo(AdtUtil.getApplication()));
         OaidHelper.initOaidServer(AdtUtil.getApplication());
     }
@@ -197,35 +206,32 @@ public final class InitImp {
 
     private static class InitAsyncRunnable implements Runnable {
 
-        private String appKey;
-        private String appChannel;
+        @Override
+        public void run() {
+            try {
+                initUtil();
+            } catch (Exception ignored) {
+            }
+        }
+    }
 
-        /**
-         * Instantiates a new Init async runnable.
-         *
-         * @param appKey the app key
-         */
-        InitAsyncRunnable(String appKey, String appChannel) {
+    private static class RequestConfigRunnable implements Runnable {
+
+        private String appKey;
+
+        private RequestConfigRunnable(String appKey) {
             this.appKey = appKey;
-            this.appChannel = appChannel;
         }
 
         @Override
         public void run() {
             try {
                 Activity activity = ActLifecycle.getInstance().getActivity();
-                //filters banning conditions
                 Error error = SdkUtil.banRun(activity, appKey);
                 if (error != null) {
                     callbackInitErrorOnUIThread(error);
                     return;
                 }
-                initUtil();
-                DataCache.getInstance().set(KeyConstants.KEY_APP_KEY, appKey);
-                if (TextUtils.isEmpty(appChannel)) {
-                    appChannel = "";
-                }
-                DataCache.getInstance().set(KeyConstants.KEY_APP_CHANNEL, appChannel);
                 requestConfig(appKey);
             } catch (Exception e) {
                 DeveloperLog.LogD("initOnAsyncThread  exception : ", e);
@@ -303,7 +309,6 @@ public final class InitImp {
                     DeveloperLog.LogD("Om init request config success");
                     DataCache.getInstance().setMEM(KeyConstants.KEY_CONFIGURATION, config);
                     callbackInitSuccessOnUIThread();
-
                     doAfterGetConfig(appKey, config);
                 } else {
                     Error error = new Error(ErrorCode.CODE_INIT_SERVER_ERROR
