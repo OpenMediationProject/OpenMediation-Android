@@ -195,6 +195,8 @@ public class MintegralAdapter extends CustomAdsAdapter {
         if (!mDidInitSdk) {
             mDidInitSdk = true;
             String[] tmp = mAppKey.split("#");
+            if(tmp.length < 2)
+                return;
             String appId = tmp[0];
             String key = tmp[1];
             MIntegralSDK sdk = MIntegralSDKFactory.getMIntegralSDK();
