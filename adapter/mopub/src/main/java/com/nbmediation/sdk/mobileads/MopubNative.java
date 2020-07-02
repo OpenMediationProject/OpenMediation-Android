@@ -10,12 +10,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
-import com.nbmediation.sdk.mediation.CustomNativeEvent;
-import com.nbmediation.sdk.mediation.MediationInfo;
-import com.nbmediation.sdk.nativead.AdIconView;
-import com.nbmediation.sdk.nativead.MediaView;
-import com.nbmediation.sdk.nativead.NativeAdView;
-import com.nbmediation.sdk.utils.AdLog;
 import com.mopub.common.MoPub;
 import com.mopub.common.SdkConfiguration;
 import com.mopub.common.SdkInitializationListener;
@@ -27,6 +21,12 @@ import com.mopub.nativeads.StaticNativeAd;
 import com.mopub.nativeads.ViewBinder;
 import com.mopub.volley.Response;
 import com.mopub.volley.VolleyError;
+import com.nbmediation.sdk.mediation.CustomNativeEvent;
+import com.nbmediation.sdk.mediation.MediationInfo;
+import com.nbmediation.sdk.nativead.AdIconView;
+import com.nbmediation.sdk.nativead.MediaView;
+import com.nbmediation.sdk.nativead.NativeAdView;
+import com.nbmediation.sdk.utils.AdLog;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;

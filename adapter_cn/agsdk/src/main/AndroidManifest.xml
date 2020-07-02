@@ -1,0 +1,27 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.nbmediation.sdk.mobileads.plugin1">
+
+    <application>
+        <!-- Necessary -->
+        <activity android:name="com.adsgreat.base.view.InnerWebViewActivity" />
+
+        <activity
+            android:name="com.adsgreat.video.view.RewardedVideoActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize" />
+
+        <meta-data
+            android:name="com.google.android.gms.ads.AD_MANAGER_APP"
+            android:value="true" />
+
+        <provider
+            android:name="com.adsgreat.base.core.AdsgreatProvider"
+            android:authorities="${applicationId}.xxprovider"
+            android:exported="false" />
+
+    </application>
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+</manifest>

@@ -5,26 +5,24 @@ package com.nbmediation.sdk.core;
 
 import android.app.Activity;
 
+import com.nbmediation.sdk.InitCallback;
 import com.nbmediation.sdk.bid.AdTimingAuctionManager;
 import com.nbmediation.sdk.bid.AdTimingBidResponse;
 import com.nbmediation.sdk.bid.AuctionCallback;
 import com.nbmediation.sdk.bid.AuctionUtil;
 import com.nbmediation.sdk.core.runnable.AdsScheduleTask;
-import com.nbmediation.sdk.utils.ActLifecycle;
 import com.nbmediation.sdk.mediation.CustomAdsAdapter;
+import com.nbmediation.sdk.utils.ActLifecycle;
 import com.nbmediation.sdk.utils.AdRateUtil;
 import com.nbmediation.sdk.utils.AdapterUtil;
 import com.nbmediation.sdk.utils.AdsUtil;
 import com.nbmediation.sdk.utils.DeveloperLog;
 import com.nbmediation.sdk.utils.HandlerUtil;
-import com.nbmediation.sdk.utils.helper.HbHelper;
 import com.nbmediation.sdk.utils.IOUtil;
 import com.nbmediation.sdk.utils.InsUtil;
-import com.nbmediation.sdk.utils.helper.LrReportHelper;
 import com.nbmediation.sdk.utils.PlacementUtils;
 import com.nbmediation.sdk.utils.Preconditions;
 import com.nbmediation.sdk.utils.SceneUtil;
-import com.nbmediation.sdk.utils.helper.WaterFallHelper;
 import com.nbmediation.sdk.utils.WorkExecutor;
 import com.nbmediation.sdk.utils.constant.CommonConstants;
 import com.nbmediation.sdk.utils.crash.CrashUtil;
@@ -34,6 +32,9 @@ import com.nbmediation.sdk.utils.error.ErrorBuilder;
 import com.nbmediation.sdk.utils.error.ErrorCode;
 import com.nbmediation.sdk.utils.event.EventId;
 import com.nbmediation.sdk.utils.event.EventUploadManager;
+import com.nbmediation.sdk.utils.helper.HbHelper;
+import com.nbmediation.sdk.utils.helper.LrReportHelper;
+import com.nbmediation.sdk.utils.helper.WaterFallHelper;
 import com.nbmediation.sdk.utils.model.BaseInstance;
 import com.nbmediation.sdk.utils.model.Instance;
 import com.nbmediation.sdk.utils.model.Placement;
@@ -41,7 +42,6 @@ import com.nbmediation.sdk.utils.model.Scene;
 import com.nbmediation.sdk.utils.request.network.Request;
 import com.nbmediation.sdk.utils.request.network.Response;
 import com.nbmediation.sdk.utils.request.network.util.NetworkChecker;
-import com.nbmediation.sdk.InitCallback;
 
 import org.json.JSONObject;
 

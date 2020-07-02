@@ -1,0 +1,70 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion project.COMPILE_SDK_VERSION
+    defaultConfig {
+        applicationId project.HOST_APP_APPLICATION_ID //applicationId不重要
+        minSdkVersion project.MIN_SDK_VERSION
+        targetSdkVersion project.TARGET_SDK_VERSION
+        versionCode project.VERSION_CODE
+        versionName project.VERSION_NAME
+    }
+    buildTypes {
+        debug {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            signingConfig signingConfigs.create("release")
+            signingConfig.initWith(buildTypes.debug.signingConfig)
+        }
+    }
+}
+
+//这段buildscript配置的dependencies是为了apply plugin: 'com.tencent.shadow.plugin'能找到实现
+buildscript {
+    repositories {
+        google()
+        jcenter()
+        mavenLocal()
+    }
+
+    dependencies {
+        classpath "com.tencent.shadow.core:gradle-plugin:$shadow_version"
+    }
+}
+
+apply plugin: 'com.tencent.shadow.plugin'
+
+shadow {
+    packagePlugin {
+        pluginTypes {
+            debug {
+                loaderApkConfig = new Tuple2('plugin-loader-debug.apk', ':adapter_plugin:plugin-loader:assembleDebug')
+                runtimeApkConfig = new Tuple2('plugin-runtime-debug.apk', ':adapter_plugin:plugin-runtime:assembleDebug')
+            }
+
+            release {
+                loaderApkConfig = new Tuple2('plugin-loader-release.apk', ':adapter_plugin:plugin-loader:assembleRelease')
+                runtimeApkConfig = new Tuple2('plugin-runtime-release.apk', ':adapter_plugin:plugin-runtime:assembleRelease')
+            }
+        }
+        archivePrefix = 'plugin-main'
+        archiveSuffix = project.MAIN_PLUGIN
+        loaderApkProjectPath = 'adapter_plugin/plugin-loader'
+
+        runtimeApkProjectPath = 'adapter_plugin/plugin-runtime'
+
+        version = 4
+        compactVersion = [1, 2, 3]
+        uuidNickName = project.MAIN_PLUGIN
+        uuid = '57457678-2A73-4C48-8837-C584C9963619'
+    }
+}
+
+
+

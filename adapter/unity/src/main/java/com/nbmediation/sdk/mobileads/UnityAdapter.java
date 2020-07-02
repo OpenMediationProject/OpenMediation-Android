@@ -4,6 +4,7 @@
 package com.nbmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 
 import com.nbmediation.sdk.mediation.CustomAdsAdapter;
@@ -54,7 +55,7 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
         return MediationInfo.MEDIATION_ID_4;
     }
 
-    private synchronized void initSDK(Activity activity) {
+    private synchronized void initSDK(Context activity) {
         if (!mDidInit) {
             AdLog.getSingleton().LogD("UnityAdapter", "initSDK, appkey:" + mAppKey);
             MediationMetaData mediationMetaData = new MediationMetaData(activity);
@@ -62,13 +63,13 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
             mediationMetaData.setVersion(BuildConfig.VERSION_NAME);
             mediationMetaData.commit();
 
-            UnityAds.initialize(activity, mAppKey, this);
+            UnityAds.initialize((Activity) activity, mAppKey, this);
             mDidInit = true;
         }
     }
 
     @Override
-    public void initRewardedVideo(Activity activity, Map<String, Object> dataMap
+    public void initRewardedVideo(Context activity, Map<String, Object> dataMap
             , RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
         AdLog.getSingleton().LogD("UnityAdapter", "initRewardedVideo, appkey:" + mAppKey);
@@ -88,7 +89,7 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void loadRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, callback);
         String checkError = check(activity, adUnitId);
         if (TextUtils.isEmpty(checkError)) {
@@ -114,7 +115,7 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
     }
 
     @Override
-    public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void showRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (!TextUtils.isEmpty(error)) {
@@ -124,7 +125,7 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
             return;
         }
         if (UnityAds.isReady(adUnitId)) {
-            UnityAds.show(activity, adUnitId);
+            UnityAds.show((Activity) activity, adUnitId);
         } else {
             AdLog.getSingleton().LogE(TAG + ": Unity Video show() called but ad not ready");
             if (callback != null) {
@@ -139,7 +140,7 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
     }
 
     @Override
-    public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
+    public void initInterstitialAd(Context activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
         AdLog.getSingleton().LogD("UnityAdapter", "initInterstitialAd, appkey:" + mAppKey);
         String error = check(activity);
@@ -158,7 +159,7 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
     }
 
     @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    public void loadInterstitialAd(Context activity, String adUnitId, InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, callback);
         String checkError = check(activity, adUnitId);
         if (TextUtils.isEmpty(checkError)) {
@@ -189,7 +190,7 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
     }
 
     @Override
-    public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    public void showInterstitialAd(Context activity, String adUnitId, InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (!TextUtils.isEmpty(error)) {
@@ -199,7 +200,7 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
             return;
         }
         if (UnityAds.isReady(adUnitId)) {
-            UnityAds.show(activity, adUnitId);
+            UnityAds.show((Activity) activity, adUnitId);
         } else {
             AdLog.getSingleton().LogE(TAG + ": Unity interstitial show() called but ad not ready");
             if (callback != null) {

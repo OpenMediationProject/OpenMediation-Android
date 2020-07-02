@@ -3,14 +3,15 @@
 
 package com.nbmediation.sdk.mediation;
 
-import android.app.Activity;
+
+import android.content.Context;
 
 import java.util.Map;
 
 public interface BannerAdApi {
-    void initBannerAd(Activity activity, Map<String, Object> dataMap, BannerAdCallback callback);
+    void initBannerAd(Context activity, Map<String, Object> dataMap, BannerAdCallback callback);
 
-    void loadBannerAd(Activity activity, String adUnitId, BannerAdCallback callback);
+    void loadBannerAd(Context activity, String adUnitId, BannerAdCallback callback);
 
     void destroyBannerAd();
 }

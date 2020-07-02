@@ -4,6 +4,7 @@
 package com.nbmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 
 import com.nbmediation.sdk.mediation.CustomAdsAdapter;
@@ -47,7 +48,7 @@ public class AlionAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void initRewardedVideo(Activity activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
+    public void initRewardedVideo(Context activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
         String error = check(activity);
         if (TextUtils.isEmpty(error)) {
@@ -63,19 +64,19 @@ public class AlionAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void loadRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, callback);
         loadRvAd(activity, adUnitId, callback);
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras,
+    public void loadRewardedVideo(Context activity, String adUnitId, Map<String, Object> extras,
                                   RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
         loadRvAd(activity, adUnitId, callback);
     }
 
-    private void loadRvAd(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    private void loadRvAd(Context activity, String adUnitId, RewardedVideoCallback callback) {
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
             String rewardedVideoAd = mTTRvAds.get(adUnitId);
@@ -94,7 +95,7 @@ public class AlionAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void showRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (!TextUtils.isEmpty(error)) {
@@ -123,11 +124,11 @@ public class AlionAdapter extends CustomAdsAdapter {
     }
 
 
-    private void initSdk(final Activity activity, final String appId, String tid) {
+    private void initSdk(final Context activity, final String appId, String tid) {
         HandlerUtil.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                ADManager.getInstance().init(activity.getApplication(), appId).setException(true);//对接加载聚合广告需要申请appid(加载聚合广告和新闻需要appid)
+                ADManager.getInstance().init(((Activity) activity).getApplication(), appId).setException(true);//对接加载聚合广告需要申请appid(加载聚合广告和新闻需要appid)
 //                .setTtId(tid); //可选。向瑞狮运营申请tid
             }
         });
@@ -137,7 +138,7 @@ public class AlionAdapter extends CustomAdsAdapter {
     }
 
 
-    private void realLoadRvAd(final Activity activity, final String adUnitId, final RewardedVideoCallback rvCallback) {
+    private void realLoadRvAd(final Context activity, final String adUnitId, final RewardedVideoCallback rvCallback) {
         VideoManager.getInstance().setVideoOrientation(Config.AD_HORIZONTAL_SCREEN_DISPLAY);
         VideoManager.getInstance().setAdScalingModel(Config.AD_SCALING_MODE_SCALE_TO_FIT);
         //视频的尺寸
@@ -147,7 +148,8 @@ public class AlionAdapter extends CustomAdsAdapter {
         HandlerUtil.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                VideoManager.getInstance().getVLionVideoView(activity, adUnitId, new InnerLoadRvAdListener(rvCallback, adUnitId, mTTRvAds));
+                VideoManager.getInstance().getVLionVideoView((Activity) activity, adUnitId, new InnerLoadRvAdListener(rvCallback, adUnitId,
+                        mTTRvAds));
             }
         });
     }

@@ -4,6 +4,7 @@
 package com.nbmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 
 import com.kwad.sdk.KsAdSDK;
@@ -47,7 +48,7 @@ public class KSAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void initRewardedVideo(Activity activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
+    public void initRewardedVideo(Context activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
         String error = check(activity);
         if (TextUtils.isEmpty(error)) {
@@ -76,19 +77,19 @@ public class KSAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void loadRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, callback);
         loadRvAd(activity, adUnitId, callback);
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras,
+    public void loadRewardedVideo(Context activity, String adUnitId, Map<String, Object> extras,
                                   RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
         loadRvAd(activity, adUnitId, callback);
     }
 
-    private void loadRvAd(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    private void loadRvAd(Context activity, String adUnitId, RewardedVideoCallback callback) {
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
             KsRewardVideoAd rewardedVideoAd = mTTRvAds.get(adUnitId);
@@ -107,7 +108,7 @@ public class KSAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void showRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (!TextUtils.isEmpty(error)) {
@@ -121,7 +122,7 @@ public class KSAdapter extends CustomAdsAdapter {
             VideoPlayConfig videoPlayConfig = new VideoPlayConfig.Builder().showLandscape(true) // 横屏播放
                     .build();
             rewardedVideoAd.setRewardAdInteractionListener(new InnerRvAdShowListener(callback));
-            rewardedVideoAd.showRewardVideoAd(activity, videoPlayConfig);
+            rewardedVideoAd.showRewardVideoAd((Activity) activity, videoPlayConfig);
             mTTRvAds.remove(adUnitId);
         } else {
             if (callback != null) {
@@ -140,7 +141,7 @@ public class KSAdapter extends CustomAdsAdapter {
     }
 
 
-    private void initSdk(final Activity activity, String appId, String appName, boolean isDebug) {
+    private void initSdk(final Context activity, String appId, String appName, boolean isDebug) {
         KsAdSDK.init(activity, new SdkConfig.Builder()
                 .appId(appId) // 测试aapId，请联系快⼿手平台申请正式AppId，必填
                 .appName(appName) // 测试appName，请填写您应⽤用的名称，⾮非必填

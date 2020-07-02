@@ -4,6 +4,7 @@
 package com.nbmediation.sdk.mediation;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Build;
 import android.text.TextUtils;
 
@@ -23,26 +24,26 @@ public abstract class CustomAdsAdapter implements RewardedVideoApi, Interstitial
     protected String mAppKey;
 
     @Override
-    public void initRewardedVideo(Activity activity, Map<String, Object> dataMap
+    public void initRewardedVideo(Context activity, Map<String, Object> dataMap
             , RewardedVideoCallback callback) {
         initData(activity, dataMap);
     }
 
     @Override
-    public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
+    public void initInterstitialAd(Context activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
         initData(activity, dataMap);
     }
 
     @Override
-    public void initBannerAd(Activity activity, Map<String, Object> dataMap, BannerAdCallback callback) {
+    public void initBannerAd(Context activity, Map<String, Object> dataMap, BannerAdCallback callback) {
         initData(activity, dataMap);
     }
 
-    public void onResume(Activity activity) {
+    public void onResume(Context activity) {
 
     }
 
-    public void onPause(Activity activity) {
+    public void onPause(Context activity) {
 
     }
 
@@ -67,19 +68,23 @@ public abstract class CustomAdsAdapter implements RewardedVideoApi, Interstitial
      */
     public abstract int getAdNetworkId();
 
+    public String getPartKey(){
+        return "";
+    }
+
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void loadRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
 
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
+    public void loadRewardedVideo(Context activity, String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
 
     }
 
     @Override
-    public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void showRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
 
     }
 
@@ -90,17 +95,17 @@ public abstract class CustomAdsAdapter implements RewardedVideoApi, Interstitial
 
 
     @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    public void loadInterstitialAd(Context activity, String adUnitId, InterstitialAdCallback callback) {
 
     }
 
     @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback) {
+    public void loadInterstitialAd(Context activity, String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback) {
 
     }
 
     @Override
-    public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    public void showInterstitialAd(Context activity, String adUnitId, InterstitialAdCallback callback) {
 
     }
 
@@ -111,7 +116,7 @@ public abstract class CustomAdsAdapter implements RewardedVideoApi, Interstitial
 
 
     @Override
-    public void loadBannerAd(Activity activity, String adUnitId, BannerAdCallback callback) {
+    public void loadBannerAd(Context activity, String adUnitId, BannerAdCallback callback) {
 
     }
 
@@ -120,7 +125,7 @@ public abstract class CustomAdsAdapter implements RewardedVideoApi, Interstitial
 
     }
 
-    protected String check(Activity activity, String adUnitId) {
+    protected String check(Context activity, String adUnitId) {
         if (activity == null) {
             return "activity is null";
         }
@@ -136,7 +141,7 @@ public abstract class CustomAdsAdapter implements RewardedVideoApi, Interstitial
         return "";
     }
 
-    protected String check(Activity activity) {
+    protected String check(Context activity) {
         if (activity == null) {
             return "activity is null";
         }
@@ -149,7 +154,7 @@ public abstract class CustomAdsAdapter implements RewardedVideoApi, Interstitial
         return "";
     }
 
-    private void initData(Activity activity, Map<String, Object> dataMap) {
+    private void initData(Context activity, Map<String, Object> dataMap) {
         if (!TextUtils.isEmpty(mAppKey)) {
             return;
         }
@@ -157,19 +162,25 @@ public abstract class CustomAdsAdapter implements RewardedVideoApi, Interstitial
     }
 
     /**
-     * Checks if an Activity is available
+     * Checks if an Context is available
      *
-     * @param activity the given activity
+     * @param context the given activity
      * @return activity availability
      */
-    private boolean isDestroyed(Activity activity) {
+    private boolean isDestroyed(Context context) {
         boolean flage = false;
+        Activity activity;
+        if (context instanceof Activity) {
+            activity = (Activity) context;
+        } else {
+            return true;
+        }
         if (Build.VERSION.SDK_INT >= 17) {
-            if (activity == null || activity.isDestroyed()) {
+            if (activity.isDestroyed()) {
                 flage = true;
             }
         } else {
-            if (activity == null || activity.isFinishing()) {
+            if (activity.isFinishing()) {
                 flage = true;
             }
         }

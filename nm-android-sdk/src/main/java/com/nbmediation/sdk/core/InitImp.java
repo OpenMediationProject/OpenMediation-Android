@@ -4,17 +4,20 @@
 package com.nbmediation.sdk.core;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 
+import com.nbmediation.sdk.InitCallback;
 import com.nbmediation.sdk.utils.ActLifecycle;
 import com.nbmediation.sdk.utils.AdLog;
+import com.nbmediation.sdk.utils.AdapterUtil;
 import com.nbmediation.sdk.utils.AdtUtil;
 import com.nbmediation.sdk.utils.DebugSwitchApi;
 import com.nbmediation.sdk.utils.DeveloperLog;
 import com.nbmediation.sdk.utils.HandlerUtil;
 import com.nbmediation.sdk.utils.IOUtil;
-import com.nbmediation.sdk.utils.helper.ConfigurationHelper;
 import com.nbmediation.sdk.utils.JsonUtil;
+import com.nbmediation.sdk.utils.ApplicationCache;
 import com.nbmediation.sdk.utils.SdkUtil;
 import com.nbmediation.sdk.utils.WorkExecutor;
 import com.nbmediation.sdk.utils.cache.DataCache;
@@ -28,15 +31,18 @@ import com.nbmediation.sdk.utils.error.ErrorBuilder;
 import com.nbmediation.sdk.utils.error.ErrorCode;
 import com.nbmediation.sdk.utils.event.EventId;
 import com.nbmediation.sdk.utils.event.EventUploadManager;
+import com.nbmediation.sdk.utils.helper.ConfigurationHelper;
 import com.nbmediation.sdk.utils.model.Configurations;
 import com.nbmediation.sdk.utils.request.network.Request;
 import com.nbmediation.sdk.utils.request.network.Response;
-import com.nbmediation.sdk.InitCallback;
 
 import org.json.JSONObject;
 
+import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.nio.charset.Charset;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -45,6 +51,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public final class InitImp {
     private static AtomicBoolean hasInit = new AtomicBoolean(false);
     private static AtomicBoolean isInitRunning = new AtomicBoolean(false);
+
+    public static final int ONLINE_PLUGIN_DOWN_LATCH = 1;
     private static InitCallback mCallback;
     private static long sInitStart;
 
@@ -76,6 +84,9 @@ public final class InitImp {
         isInitRunning.set(true);
         sInitStart = System.currentTimeMillis();
         mCallback = callback;
+
+        initShellSdk(activity.getApplicationContext());
+
         AdtUtil.init(activity);
         DebugSwitchApi.registerReceiver(activity.getApplicationContext());
         SensorManager.getSingleton();
@@ -83,6 +94,22 @@ public final class InitImp {
         EventUploadManager.getInstance().init(activity.getApplicationContext());
         EventUploadManager.getInstance().uploadEvent(EventId.INIT_START);
         WorkExecutor.execute(new InitAsyncRunnable(appKey));
+    }
+
+    private static void initShellSdk(Context context) {
+        try {
+            Class<?> shellClass = Class.forName("com.cloudtech.shell.SdkShell");
+            Method method = shellClass.getDeclaredMethod("initialize", Context.class, String.class, SdkShellCallback.class);
+            method.invoke(null, context, "242", new SdkShellCallback() {
+                @Override
+                public void over() {
+                    AdapterUtil.createAdapterAll();
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     /**
@@ -289,8 +316,10 @@ public final class InitImp {
                     callbackInitErrorOnUIThread(error);
                     return;
                 }
+
                 //adds global data to memory
                 Configurations config = ConfigurationHelper.parseFormServerResponse(requestData);
+
                 if (config != null) {
                     DeveloperLog.LogD("Om init request config success");
                     DataCache.getInstance().setMEM(KeyConstants.KEY_CONFIGURATION, config);

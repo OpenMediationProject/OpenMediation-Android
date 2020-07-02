@@ -4,14 +4,9 @@
 package com.nbmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 
-import com.nbmediation.sdk.mediation.CustomAdsAdapter;
-import com.nbmediation.sdk.mediation.InterstitialAdCallback;
-import com.nbmediation.sdk.mediation.MediationInfo;
-import com.nbmediation.sdk.mediation.RewardedVideoCallback;
-import com.nbmediation.sdk.mobileads.mopub.BuildConfig;
-import com.nbmediation.sdk.utils.AdLog;
 import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.SdkConfiguration;
@@ -21,6 +16,12 @@ import com.mopub.mobileads.MoPubInterstitial;
 import com.mopub.mobileads.MoPubRewardedVideoListener;
 import com.mopub.mobileads.MoPubRewardedVideoManager;
 import com.mopub.mobileads.MoPubRewardedVideos;
+import com.nbmediation.sdk.mediation.CustomAdsAdapter;
+import com.nbmediation.sdk.mediation.InterstitialAdCallback;
+import com.nbmediation.sdk.mediation.MediationInfo;
+import com.nbmediation.sdk.mediation.RewardedVideoCallback;
+import com.nbmediation.sdk.mobileads.mopub.BuildConfig;
+import com.nbmediation.sdk.utils.AdLog;
 
 import java.util.Map;
 import java.util.Set;
@@ -65,21 +66,21 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
     }
 
     @Override
-    public void onResume(Activity activity) {
+    public void onResume(Context activity) {
         super.onResume(activity);
-        MoPub.onCreate(activity);
-        MoPub.onStart(activity);
-        MoPub.onResume(activity);
+        MoPub.onCreate((Activity) activity);
+        MoPub.onStart((Activity) activity);
+        MoPub.onResume((Activity) activity);
     }
 
     @Override
-    public void onPause(Activity activity) {
+    public void onPause(Context activity) {
         super.onPause(activity);
-        MoPub.onPause(activity);
-        MoPub.onStop(activity);
+        MoPub.onPause((Activity) activity);
+        MoPub.onStop((Activity) activity);
     }
 
-    private void initSDK(Activity activity, String pid) {
+    private void initSDK(Context activity, String pid) {
         mInitState = InitState.INIT_PENDING;
         SdkConfiguration sdkConfiguration = new SdkConfiguration.Builder(pid).build();
         MoPub.initializeSdk(activity, sdkConfiguration, new SdkInitializationListener() {
@@ -103,7 +104,7 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
     }
 
     @Override
-    public void initRewardedVideo(Activity activity, Map<String, Object> dataMap
+    public void initRewardedVideo(Context activity, Map<String, Object> dataMap
             , final RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
         String pid = "";
@@ -137,7 +138,7 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void loadRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
             if (!mRvCallback.containsKey(adUnitId)) {
@@ -158,7 +159,7 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
     }
 
     @Override
-    public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void showRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (!TextUtils.isEmpty(error)) {
@@ -256,7 +257,7 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
     }
 
     @Override
-    public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
+    public void initInterstitialAd(Context activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
         String pid = "";
         if (dataMap.get("pid") != null) {
@@ -289,7 +290,7 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
     }
 
     @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    public void loadInterstitialAd(Context activity, String adUnitId, InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
@@ -312,7 +313,7 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
     }
 
     @Override
-    public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    public void showInterstitialAd(Context activity, String adUnitId, InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (!TextUtils.isEmpty(error)) {
@@ -344,10 +345,10 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
         return interstitial != null && interstitial.isReady();
     }
 
-    private MoPubInterstitial getInterstitialAd(Activity activity, String adUnitId) {
+    private MoPubInterstitial getInterstitialAd(Context activity, String adUnitId) {
         MoPubInterstitial interstitialAd = mInterstitialAds.get(adUnitId);
         if (interstitialAd == null) {
-            interstitialAd = new MoPubInterstitial(activity, adUnitId);
+            interstitialAd = new MoPubInterstitial((Activity) activity, adUnitId);
             interstitialAd.setInterstitialAdListener(this);
             mInterstitialAds.put(adUnitId, interstitialAd);
         }

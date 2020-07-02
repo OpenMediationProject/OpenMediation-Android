@@ -3,11 +3,11 @@ package com.nbmediation.sdk.mobileads;
 import android.app.Activity;
 import android.text.TextUtils;
 
-import com.nbmediation.sdk.mobileads.ironsource.BuildConfig;
 import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.logger.IronSourceError;
 import com.ironsource.mediationsdk.sdk.ISDemandOnlyInterstitialListener;
 import com.ironsource.mediationsdk.sdk.ISDemandOnlyRewardedVideoListener;
+import com.nbmediation.sdk.mobileads.ironsource.BuildConfig;
 import com.nbmediation.sdk.utils.AdLog;
 
 import java.lang.ref.WeakReference;

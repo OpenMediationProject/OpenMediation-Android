@@ -1,0 +1,50 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.cloudtech.shell">
+
+    <application>
+        <activity
+            android:name="com.tencent.shadow.sample.runtime.PluginDefaultProxyActivity"
+            android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|screenLayout|fontScale|uiMode|orientation|screenSize|smallestScreenSize|layoutDirection"
+            android:hardwareAccelerated="true"
+            android:launchMode="standard"
+            android:multiprocess="true"
+            android:theme="@style/troop_Transparent" />
+
+        <activity
+            android:name="com.tencent.shadow.sample.runtime.PluginSingleInstance1ProxyActivity"
+            android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|screenLayout|fontScale|uiMode|orientation|screenSize|smallestScreenSize|layoutDirection"
+            android:hardwareAccelerated="true"
+            android:launchMode="singleInstance"
+            android:multiprocess="true"
+            android:theme="@style/troop_Transparent" />
+        <!--container 注册
+          注意configChanges需要全注册
+          theme需要注册成透明
+
+          这些类不打包在host中，打包在runtime中，以便减少宿主方法数增量
+          -->
+        <activity
+            android:name="com.tencent.shadow.sample.runtime.PluginSingleTask1ProxyActivity"
+            android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|screenLayout|fontScale|uiMode|orientation|screenSize|smallestScreenSize|layoutDirection"
+            android:hardwareAccelerated="true"
+            android:launchMode="singleTask"
+            android:multiprocess="true"
+            android:theme="@style/troop_Transparent" />
+
+        <provider
+            android:name="com.tencent.shadow.core.runtime.container.PluginContainerContentProvider"
+            android:authorities="com.tencent.shadow.contentprovider.authority.dynamic" />
+
+        <service android:name="com.cloudtech.shell.shadow.MainPluginProcessService" />
+
+        <service
+            android:name="com.cloudtech.shell.shadow.Plugin2ProcessPPS"
+            android:process=":plugin2" />
+        <!--container 注册 end -->
+    </application>
+
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+</manifest>
+

@@ -7,10 +7,17 @@ import android.app.Activity;
 
 import com.nbmediation.sdk.core.NmManager;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * The type Om ads.
  */
 public abstract class NmAds {
+
+
+    public static Map<String, ClassLoader> PLUGIN_LOADERS = new ConcurrentHashMap<>();
 
     /**
      * mediation SDK init method

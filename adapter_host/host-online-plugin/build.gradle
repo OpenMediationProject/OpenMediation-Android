@@ -1,0 +1,75 @@
+apply plugin: 'com.android.library'
+apply plugin: 'com.kezong.fat-aar'
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('extend.properties').newDataInputStream())
+android {
+    compileSdkVersion 27
+
+    defaultConfig {
+        minSdkVersion 15
+        targetSdkVersion 27
+        versionCode 1
+        versionName '1.1'
+        buildConfigField "String", "VERSION_NUMBER", "\"${version}\""
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles 'consumer-rules.pro'
+        buildConfigField("String", "managerMd5", properties.getProperty("manager.md5"))
+        buildConfigField("String", "managerModuleName", properties.getProperty("manager.moduleName"))
+        buildConfigField("String", "managerClassName", properties.getProperty("manager.className"))
+        buildConfigField("String", "managerMethodName", properties.getProperty("manager.methodName"))
+        buildConfigField("String", "managerFileName", properties.getProperty("manager.fileName"))
+        buildConfigField("String", "managerVersion", properties.getProperty("manager.version"))
+        buildConfigField("String", "mainMd5", properties.getProperty("main.md5"))
+        buildConfigField("String", "mainModuleName", properties.getProperty("main.moduleName"))
+        buildConfigField("String", "mainClassName", properties.getProperty("main.className"))
+        buildConfigField("String", "mainMethodName", properties.getProperty("main.methodName"))
+        buildConfigField("String", "mainFileName", properties.getProperty("main.fileName"))
+        buildConfigField("String", "mainVersion", properties.getProperty("main.version"))
+
+
+    }
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+
+        debug {
+            minifyEnabled false
+        }
+    }
+}
+
+def SDK_BASENAME = "cloudshell_1.1"
+def normalPath = "release/"
+def sourceJar = file('build/intermediates/packaged-classes/release/classes.jar')
+
+task makeAdLibJar(type: Jar, dependsOn: ['build']) {
+    def taskNames = gradle.startParameter.taskNames
+    println('makeAdLibJar taskNames -> ' + taskNames)
+    if ('makeAdLibJar' in taskNames) {
+        from zipTree(sourceJar)
+        from fileTree(dir: 'src/main', includes: ['assets/**'])
+        baseName = SDK_BASENAME
+        destinationDir = file(normalPath)
+    }
+}
+
+dependencies {
+    compileOnly 'com.android.support:appcompat-v7:27.1.1'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    androidTestImplementation 'com.android.support.test:rules:1.0.2'
+    compileOnly(name: 'host-2.0.13', ext: 'jar')
+    compileOnly(name: 'common-2.0.13', ext: 'jar')
+//    api "com.tencent.shadow.dynamic:host:$shadow_version"
+    compileOnly project(":nm-android-sdk")
+}
+
+repositories {
+    flatDir {
+        dirs '../../libs'
+    }
+}

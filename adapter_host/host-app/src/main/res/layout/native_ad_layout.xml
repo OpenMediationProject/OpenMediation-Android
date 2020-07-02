@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#ffffff">
+
+    <RelativeLayout
+        android:id="@+id/ad_desc_rl"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_below="@id/ad_media">
+
+        <Button
+            android:id="@+id/ad_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:text="calltoaction"
+            android:textAllCaps="false" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="8dp"
+            android:layout_toEndOf="@id/ad_icon_media"
+            android:layout_toRightOf="@id/ad_btn"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/ad_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="title"
+                android:textColor="@android:color/black" />
+
+            <TextView
+                android:id="@+id/ad_desc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="2"
+                android:text="desc"
+                android:textColor="@android:color/black" />
+        </LinearLayout>
+
+        <com.nbmediation.sdk.nativead.AdIconView
+            android:id="@+id/ad_icon_media"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="4dp"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true" />
+    </RelativeLayout>
+
+    <com.nbmediation.sdk.nativead.MediaView
+        android:id="@+id/ad_media"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
+
+</RelativeLayout>
+

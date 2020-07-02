@@ -1,0 +1,108 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion project.COMPILE_SDK_VERSION
+    defaultConfig {
+        applicationId project.HOST_APP_APPLICATION_ID
+        minSdkVersion project.MIN_SDK_VERSION
+        targetSdkVersion project.TARGET_SDK_VERSION
+        versionCode project.VERSION_CODE
+        versionName project.AGSDK_PLUGIN
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            signingConfig signingConfigs.create("release")
+            signingConfig.initWith(buildTypes.debug.signingConfig)
+        }
+        debug {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+        }
+    }
+}
+
+dependencies {
+    implementation project(':adapter_plugin:plugin-main-lib')
+
+    //Shadow Transform后业务代码会有一部分实际引用runtime中的类
+    //如果不以compileOnly方式依赖，会导致其他Transform或者Proguard找不到这些类
+    compileOnly "com.tencent.shadow.core:runtime:$shadow_version"
+    implementation(name: 'adsgreat_base_4.2.5_ag', ext: 'jar')
+    implementation(name: 'adsgreat_imageloader_4.2.5_ag', ext: 'jar')
+    implementation(name: 'adsgreat_video_4.2.5_ag', ext: 'jar')
+    compileOnly project(':nm-android-sdk')
+}
+
+repositories {
+    flatDir {
+        dirs '../../libs'
+    }
+}
+
+//这段buildscript配置的dependencies是为了apply plugin: 'com.tencent.shadow.plugin'能找到实现
+buildscript {
+    repositories {
+        google()
+        jcenter()
+        mavenLocal()
+    }
+
+    dependencies {
+        classpath "com.tencent.shadow.core:gradle-plugin:$shadow_version"
+    }
+}
+
+apply plugin: 'com.tencent.shadow.plugin'
+
+shadow {
+    packagePlugin {
+        pluginTypes {
+            debug {
+//                loaderApkConfig = new Tuple2('sample-loader-debug.apk', ':adapter_plugin:sample-loader:assembleDebug')
+//                runtimeApkConfig = new Tuple2('sample-runtime-debug.apk', ':adapter_plugin:sample-runtime:assembleDebug')
+                pluginApks {
+                    pluginApk1 {
+                        businessName = 'agsdk'
+//businessName相同的插件，context获取的Dir是相同的。businessName留空，表示和宿主相同业务，直接使用宿主的Dir。
+                        partKey = 'Plugin1'
+                        buildTask = 'assembleDebug'
+                        apkName = 'plugin-agsdk-plugin1-apk-debug.apk'
+                        apkPath = 'adapter_plugin/plugin-agsdk-plugin1-apk/build/outputs/apk/debug/plugin-agsdk-plugin1-apk-debug.apk'
+                        hostWhiteList = ["com.cloudtech.shell.shadow.share", "com.nbmediation.sdk.mediation", "com.nbmediation.sdk.utils", "com.nbmediation.sdk.video"]
+                    }
+                }
+            }
+
+            release {
+//                loaderApkConfig = new Tuple2('plugin-loader-release.apk', ':adapter_plugin:plugin-loader:assembleRelease')
+//                runtimeApkConfig = new Tuple2('plugin-runtime-release.apk', ':adapter_plugin:plugin-runtime:assembleRelease')
+                pluginApks {
+                    pluginApk1 {
+                        businessName = 'agsdk'
+                        partKey = 'Plugin1'
+                        buildTask = 'assembleRelease'
+                        apkName = 'plugin-agsdk-plugin1-apk-release.apk'
+                        apkPath = 'adapter_plugin/plugin-agsdk-plugin1-apk/build/outputs/apk/release/plugin-agsdk-plugin1-apk-release.apk'
+                        hostWhiteList = ["com.cloudtech.shell.shadow.share", "com.nbmediation.sdk.mediation", "com.nbmediation.sdk.utils", "com.nbmediation.sdk.video"]
+                    }
+                }
+            }
+        }
+
+        archivePrefix = 'agsdk'
+        archiveSuffix = project.AGSDK_PLUGIN
+//        loaderApkProjectPath = 'adapter_plugin/plugin-loader'
+//
+//        runtimeApkProjectPath = 'adapter_plugin/plugin-runtime'
+
+        version = 4
+        compactVersion = [1, 2, 3]
+        uuidNickName = project.AGSDK_PLUGIN
+        uuid = '57457678-2A73-4C48-8837-C584C9963619'
+    }
+}

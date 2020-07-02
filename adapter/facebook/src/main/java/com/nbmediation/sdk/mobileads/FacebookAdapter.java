@@ -3,22 +3,23 @@
 
 package com.nbmediation.sdk.mobileads;
 
-import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 
-import com.facebook.ads.AdSettings;
-import com.nbmediation.sdk.mediation.CustomAdsAdapter;
-import com.nbmediation.sdk.mediation.MediationInfo;
-import com.nbmediation.sdk.mediation.InterstitialAdCallback;
-import com.nbmediation.sdk.mediation.RewardedVideoCallback;
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
+import com.facebook.ads.AdSettings;
 import com.facebook.ads.AudienceNetworkAds;
 import com.facebook.ads.BuildConfig;
 import com.facebook.ads.InterstitialAd;
 import com.facebook.ads.InterstitialAdListener;
 import com.facebook.ads.RewardedVideoAd;
 import com.facebook.ads.RewardedVideoAdListener;
+import com.nbmediation.sdk.mediation.CustomAdsAdapter;
+import com.nbmediation.sdk.mediation.InterstitialAdCallback;
+import com.nbmediation.sdk.mediation.MediationInfo;
+import com.nbmediation.sdk.mediation.RewardedVideoCallback;
+import com.nbmediation.sdk.utils.HandlerUtil;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -60,7 +61,7 @@ public class FacebookAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void initRewardedVideo(Activity activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
+    public void initRewardedVideo(Context activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
         String error = check(activity);
         if (TextUtils.isEmpty(error)) {
@@ -81,19 +82,19 @@ public class FacebookAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void loadRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, callback);
         loadRv(activity, adUnitId, null, callback);
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras,
+    public void loadRewardedVideo(Context activity, String adUnitId, Map<String, Object> extras,
                                   RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
         loadRv(activity, adUnitId, extras, callback);
     }
 
-    private void loadRv(Activity activity, String adUnitId, Map<String, Object> extras,
+    private void loadRv(Context activity, String adUnitId, Map<String, Object> extras,
                         RewardedVideoCallback callback) {
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
@@ -119,7 +120,7 @@ public class FacebookAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void showRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
         if (isRewardedVideoAvailable(adUnitId)) {
             RewardedVideoAd rewardedVideoAd = mFbRvAds.get(adUnitId);
@@ -141,7 +142,7 @@ public class FacebookAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
+    public void initInterstitialAd(Context activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
         String error = check(activity);
         if (TextUtils.isEmpty(error)) {
@@ -163,19 +164,19 @@ public class FacebookAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    public void loadInterstitialAd(Context activity, String adUnitId, InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, callback);
         loadInterstitial(activity, adUnitId, null, callback);
     }
 
     @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, Map<String, Object> extras,
+    public void loadInterstitialAd(Context activity, String adUnitId, Map<String, Object> extras,
                                    InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, extras, callback);
         loadInterstitial(activity, adUnitId, extras, callback);
     }
 
-    private void loadInterstitial(Activity activity, String adUnitId, Map<String, Object> extras,
+    private void loadInterstitial(Context activity, String adUnitId, Map<String, Object> extras,
                                   InterstitialAdCallback callback) {
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
@@ -203,7 +204,7 @@ public class FacebookAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    public void showInterstitialAd(Context activity, String adUnitId, InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
         if (isInterstitialAdAvailable(adUnitId)) {
             InterstitialAd interstitialAd = mFbIsAds.get(adUnitId);
@@ -224,7 +225,7 @@ public class FacebookAdapter extends CustomAdsAdapter {
         return interstitialAd != null && interstitialAd.isAdLoaded();
     }
 
-    private RewardedVideoAd getRv(Activity activity, String adUnitId) {
+    private RewardedVideoAd getRv(Context activity, String adUnitId) {
         RewardedVideoAd rewardedVideoAd = mFbRvAds.get(adUnitId);
         if (rewardedVideoAd == null) {
             rewardedVideoAd = new RewardedVideoAd(activity, adUnitId);
@@ -233,7 +234,7 @@ public class FacebookAdapter extends CustomAdsAdapter {
         return rewardedVideoAd;
     }
 
-    private InterstitialAd getIs(Activity activity, String adUnitId) {
+    private InterstitialAd getIs(Context activity, String adUnitId) {
         InterstitialAd interstitialAd = mFbIsAds.get(adUnitId);
         if (interstitialAd == null) {
             interstitialAd = new InterstitialAd(activity, adUnitId);
@@ -242,7 +243,7 @@ public class FacebookAdapter extends CustomAdsAdapter {
         return interstitialAd;
     }
 
-    private void initSdk(final Activity activity) {
+    private void initSdk(final Context activity) {
         AdSettings.setIntegrationErrorMode(AdSettings.IntegrationErrorMode.INTEGRATION_ERROR_CALLBACK_MODE);
         if (mDidCallInit.compareAndSet(false, true)) {
             if (AudienceNetworkAds.isInAdsProcess(activity.getApplicationContext())) {
@@ -257,7 +258,7 @@ public class FacebookAdapter extends CustomAdsAdapter {
                     .withInitListener(new AudienceNetworkAds.InitListener() {
                         @Override
                         public void onInitialized(final AudienceNetworkAds.InitResult result) {
-                            activity.runOnUiThread(new Runnable() {
+                            HandlerUtil.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
                                     if (result.isSuccess()) {

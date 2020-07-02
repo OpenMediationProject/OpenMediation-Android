@@ -3,7 +3,7 @@
 
 package com.nbmediation.sdk.mediation;
 
-import android.app.Activity;
+import android.content.Context;
 
 import java.util.Map;
 
@@ -19,7 +19,7 @@ public interface InterstitialAdApi {
      * @param dataMap  some configs for third-party ad networks on dashboard
      * @param callback {@link InterstitialAdCallback}
      */
-    void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback);
+    void initInterstitialAd(Context activity, Map<String, Object> dataMap, InterstitialAdCallback callback);
 
     /**
      * Calls third-party ad networks to get ads
@@ -28,7 +28,7 @@ public interface InterstitialAdApi {
      * @param adUnitId ad unit id on third-party ad networks
      * @param callback {@link InterstitialAdCallback}
      */
-    void loadInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback);
+    void loadInterstitialAd(Context activity, String adUnitId, InterstitialAdCallback callback);
 
     /**
      * Calls third-party ad networks to get ads
@@ -38,7 +38,7 @@ public interface InterstitialAdApi {
      * @param extras   the extras
      * @param callback {@link InterstitialAdCallback}
      */
-    void loadInterstitialAd(Activity activity, String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback);
+    void loadInterstitialAd(Context activity, String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback);
 
     /**
      * Calls third-party ad networks to show ads
@@ -47,7 +47,7 @@ public interface InterstitialAdApi {
      * @param adUnitId ad unit id on third-party ad networks
      * @param callback {@link InterstitialAdCallback}
      */
-    void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback);
+    void showInterstitialAd(Context activity, String adUnitId, InterstitialAdCallback callback);
 
     /**
      * Checks if third-party ad networks have available ads

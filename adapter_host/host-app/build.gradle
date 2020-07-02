@@ -1,0 +1,91 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 28
+    buildToolsVersion "29.0.3"
+    signingConfigs {
+        demo {
+            keyAlias 'com.light.cleaner.zero.jks'
+            keyPassword 'candymobi2019'
+            storeFile file('com.light.cleaner.zero.jks')
+            storePassword 'candymobi2019'
+        }
+    }
+    defaultConfig {
+        applicationId project.HOST_APP_APPLICATION_ID
+        minSdkVersion 16
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+        multiDexEnabled true
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        ndk {
+            abiFilters "armeabi", "armeabi-v7a", "x86", "arm64-v8a"
+        }
+    }
+
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        doNotStrip "*/armeabi-v7a/*.so"
+        doNotStrip "*/x86/*.so"
+        doNotStrip "*/arm64-v8a/*.so"
+        doNotStrip "armeabi.so"
+    }
+
+    buildTypes {
+
+        debug {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.demo
+        }
+
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.demo
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = rootProject.ext.compileOptions.sourceCompatibility
+        targetCompatibility = rootProject.ext.compileOptions.targetCompatibility
+    }
+
+}
+
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation rootProject.ext.dependencies.multidex
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    implementation 'com.android.support:support-v4:28.0.0'
+    implementation rootProject.ext.dependencies.design
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+
+//    //添加Shadow
+    debugImplementation project(':adapter_host:host-online-plugin')
+    releaseImplementation(name: 'host-online-plugin-release', ext: 'aar')
+
+    //NBMediation
+    releaseImplementation(name: 'nm-android-sdk', ext: 'aar')
+    debugImplementation project(':nm-android-sdk')
+
+    //add oaid
+    implementation(name: 'msa_mdid_1.0.13', ext: 'aar')
+
+    implementation(name: 'host-2.0.13', ext: 'jar')
+    implementation(name: 'common-2.0.13', ext: 'jar')
+
+}
+
+repositories {
+    flatDir {
+        dirs '../../libs'
+    }
+}

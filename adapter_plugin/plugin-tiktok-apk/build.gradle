@@ -1,0 +1,118 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion project.COMPILE_SDK_VERSION
+    signingConfigs {
+        demo {
+            keyAlias 'com.light.cleaner.zero.jks'
+            keyPassword 'candymobi2019'
+            storeFile file('com.light.cleaner.zero.jks')
+            storePassword 'candymobi2019'
+        }
+    }
+    defaultConfig {
+        applicationId project.HOST_APP_APPLICATION_ID
+        minSdkVersion project.MIN_SDK_VERSION
+        targetSdkVersion project.TARGET_SDK_VERSION
+        versionCode project.VERSION_CODE
+        versionName project.TIKTOk_PLUGIN
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+//            signingConfig signingConfigs.create("release")
+//            signingConfig.initWith(buildTypes.debug.signingConfig)
+            signingConfig signingConfigs.demo
+        }
+        debug {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+//            signingConfig signingConfigs.create("release")
+//            signingConfig.initWith(buildTypes.debug.signingConfig)
+            signingConfig signingConfigs.demo
+        }
+    }
+}
+
+dependencies {
+    implementation project(':adapter_plugin:plugin-main-lib')
+    implementation 'com.google.android.gms:play-services-ads:17.2.0'
+
+    //Shadow Transform后业务代码会有一部分实际引用runtime中的类
+    //如果不以compileOnly方式依赖，会导致其他Transform或者Proguard找不到这些类
+    compileOnly "com.tencent.shadow.core:runtime:$shadow_version"
+    implementation(name: 'open_ad_sdk_2.9.5.5', ext: 'aar')
+    compileOnly project(':nm-android-sdk')
+}
+
+repositories {
+    flatDir {
+        dirs '../../libs'
+    }
+}
+
+//这段buildscript配置的dependencies是为了apply plugin: 'com.tencent.shadow.plugin'能找到实现
+buildscript {
+    repositories {
+        google()
+        jcenter()
+        mavenLocal()
+    }
+
+    dependencies {
+        classpath "com.tencent.shadow.core:gradle-plugin:$shadow_version"
+    }
+}
+
+apply plugin: 'com.tencent.shadow.plugin'
+
+shadow {
+    packagePlugin {
+        pluginTypes {
+            debug {
+//                loaderApkConfig = new Tuple2('sample-loader-debug.apk', ':adapter_plugin:sample-loader:assembleDebug')
+//                runtimeApkConfig = new Tuple2('sample-runtime-debug.apk', ':adapter_plugin:sample-runtime:assembleDebug')
+                pluginApks {
+                    pluginApk1 {
+                        businessName = 'tiktok'
+//businessName相同的插件，context获取的Dir是相同的。businessName留空，表示和宿主相同业务，直接使用宿主的Dir。
+                        partKey = 'tiktok'
+                        buildTask = 'assembleDebug'
+                        apkName = 'plugin-tiktok-apk-debug.apk'
+                        apkPath = 'adapter_plugin/plugin-tiktok-apk/build/outputs/apk/debug/plugin-tiktok-apk-debug.apk'
+                        hostWhiteList = ["com.cloudtech.shell.shadow.share", "com.nbmediation.sdk.mediation", "com.nbmediation.sdk.utils", "com.nbmediation.sdk.video"]
+                    }
+                }
+            }
+
+            release {
+//                loaderApkConfig = new Tuple2('plugin-loader-release.apk', ':adapter_plugin:plugin-loader:assembleRelease')
+//                runtimeApkConfig = new Tuple2('plugin-runtime-release.apk', ':adapter_plugin:plugin-runtime:assembleRelease')
+                pluginApks {
+                    pluginApk1 {
+                        businessName = 'tiktok'
+                        partKey = 'tiktok'
+                        buildTask = 'assembleRelease'
+                        apkName = 'plugin-tiktok-apk-release.apk'
+                        apkPath = 'adapter_plugin/plugin-tiktok-apk/build/outputs/apk/release/plugin-tiktok-apk-release.apk'
+                    }
+                }
+            }
+        }
+
+        archivePrefix = 'tiktok'
+        archiveSuffix = project.TIKTOk_PLUGIN
+//        loaderApkProjectPath = 'adapter_plugin/plugin-loader'
+//
+//        runtimeApkProjectPath = 'adapter_plugin/plugin-runtime'
+
+        version = 4
+        compactVersion = [1, 2, 3]
+        uuidNickName = project.TIKTOk_PLUGIN
+        uuid = '57457678-2A73-4C48-8837-C584C9963619'
+    }
+}

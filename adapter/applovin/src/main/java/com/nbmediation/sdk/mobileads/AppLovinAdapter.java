@@ -3,15 +3,9 @@
 
 package com.nbmediation.sdk.mobileads;
 
-import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 
-import com.nbmediation.sdk.mediation.CustomAdsAdapter;
-import com.nbmediation.sdk.mediation.InterstitialAdCallback;
-import com.nbmediation.sdk.mediation.MediationInfo;
-import com.nbmediation.sdk.mediation.RewardedVideoCallback;
-import com.nbmediation.sdk.mobileads.applovin.BuildConfig;
-import com.nbmediation.sdk.utils.AdLog;
 import com.applovin.adview.AppLovinIncentivizedInterstitial;
 import com.applovin.adview.AppLovinInterstitialAd;
 import com.applovin.adview.AppLovinInterstitialAdDialog;
@@ -22,6 +16,12 @@ import com.applovin.sdk.AppLovinAdLoadListener;
 import com.applovin.sdk.AppLovinAdVideoPlaybackListener;
 import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdkSettings;
+import com.nbmediation.sdk.mediation.CustomAdsAdapter;
+import com.nbmediation.sdk.mediation.InterstitialAdCallback;
+import com.nbmediation.sdk.mediation.MediationInfo;
+import com.nbmediation.sdk.mediation.RewardedVideoCallback;
+import com.nbmediation.sdk.mobileads.applovin.BuildConfig;
+import com.nbmediation.sdk.utils.AdLog;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -65,7 +65,7 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
     }
 
     @Override
-    public void initRewardedVideo(Activity activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
+    public void initRewardedVideo(Context activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
         AdLog.getSingleton().LogD("AppLovinAdapter", "initsdk:" + mAppKey);
         String error = check(activity);
@@ -81,7 +81,7 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
         }
     }
 
-    private synchronized void initSDK(Activity activity) {
+    private synchronized void initSDK(Context activity) {
         if (!mDidInited) {
             AdLog.getSingleton().LogD("AppLovinAdapter", "initsdk:" + mAppKey);
             AppLovinSdk lovinSdk = AppLovinSdk.getInstance(mAppKey
@@ -96,7 +96,7 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
         }
     }
 
-    private AppLovinIncentivizedInterstitial getVideo(Activity activity, String adUnitId) {
+    private AppLovinIncentivizedInterstitial getVideo(Context activity, String adUnitId) {
         AppLovinIncentivizedInterstitial videoAd = mRvAds.get(adUnitId);
         if (videoAd == null) {
             AppLovinSdk lovinSdk = AppLovinSdk.getInstance(mAppKey, new AppLovinSdkSettings()
@@ -112,7 +112,7 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
 
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, final RewardedVideoCallback callback) {
+    public void loadRewardedVideo(Context activity, String adUnitId, final RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
@@ -155,7 +155,7 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
     }
 
     @Override
-    public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void showRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (!TextUtils.isEmpty(error)) {
@@ -188,7 +188,7 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
     }
 
     @Override
-    public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
+    public void initInterstitialAd(Context activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
         String error = check(activity);
         if (TextUtils.isEmpty(error)) {
@@ -215,7 +215,7 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
     }
 
     @Override
-    public void loadInterstitialAd(Activity activity, final String adUnitId, final InterstitialAdCallback callback) {
+    public void loadInterstitialAd(Context activity, final String adUnitId, final InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
@@ -248,7 +248,7 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
     }
 
     @Override
-    public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    public void showInterstitialAd(Context activity, String adUnitId, InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (!TextUtils.isEmpty(error)) {

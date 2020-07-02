@@ -4,8 +4,10 @@
 package com.nbmediation.sdk.utils;
 
 import android.util.Base64;
+import android.util.Log;
 import android.util.SparseArray;
 
+import com.nbmediation.sdk.NmAds;
 import com.nbmediation.sdk.mediation.CustomAdsAdapter;
 import com.nbmediation.sdk.mediation.MediationInfo;
 import com.nbmediation.sdk.utils.constant.CommonConstants;
@@ -53,6 +55,30 @@ public class AdapterUtil {
         mAdapterPaths.put(MediationInfo.MEDIATION_ID_21, getAdapterPath(MediationInfo.MEDIATION_ID_21));
         mAdapterPaths.put(MediationInfo.MEDIATION_ID_22, getAdapterPath(MediationInfo.MEDIATION_ID_22));
         mAdapterPaths.put(MediationInfo.MEDIATION_ID_23, getAdapterPath(MediationInfo.MEDIATION_ID_23));
+
+        //plugin
+        mAdapterPaths.put(MediationInfo.MEDIATION_ID_32, getAdapterPath(MediationInfo.MEDIATION_ID_32));
+        mAdapterPaths.put(MediationInfo.MEDIATION_ID_33, getAdapterPath(MediationInfo.MEDIATION_ID_33));
+        mAdapterPaths.put(MediationInfo.MEDIATION_ID_34, getAdapterPath(MediationInfo.MEDIATION_ID_34));
+        mAdapterPaths.put(MediationInfo.MEDIATION_ID_35, getAdapterPath(MediationInfo.MEDIATION_ID_35));
+        mAdapterPaths.put(MediationInfo.MEDIATION_ID_36, getAdapterPath(MediationInfo.MEDIATION_ID_36));
+        mAdapterPaths.put(MediationInfo.MEDIATION_ID_37, getAdapterPath(MediationInfo.MEDIATION_ID_37));
+        mAdapterPaths.put(MediationInfo.MEDIATION_ID_38, getAdapterPath(MediationInfo.MEDIATION_ID_38));
+        mAdapterPaths.put(MediationInfo.MEDIATION_ID_39, getAdapterPath(MediationInfo.MEDIATION_ID_39));
+        mAdapterPaths.put(MediationInfo.MEDIATION_ID_40, getAdapterPath(MediationInfo.MEDIATION_ID_40));
+        mAdapterPaths.put(MediationInfo.MEDIATION_ID_41, getAdapterPath(MediationInfo.MEDIATION_ID_41));
+        mAdapterPaths.put(MediationInfo.MEDIATION_ID_42, getAdapterPath(MediationInfo.MEDIATION_ID_42));
+        mAdapterPaths.put(MediationInfo.MEDIATION_ID_43, getAdapterPath(MediationInfo.MEDIATION_ID_43));
+        mAdapterPaths.put(MediationInfo.MEDIATION_ID_44, getAdapterPath(MediationInfo.MEDIATION_ID_44));
+        mAdapterPaths.put(MediationInfo.MEDIATION_ID_45, getAdapterPath(MediationInfo.MEDIATION_ID_45));
+        mAdapterPaths.put(MediationInfo.MEDIATION_ID_46, getAdapterPath(MediationInfo.MEDIATION_ID_46));
+        mAdapterPaths.put(MediationInfo.MEDIATION_ID_47, getAdapterPath(MediationInfo.MEDIATION_ID_47));
+        mAdapterPaths.put(MediationInfo.MEDIATION_ID_48, getAdapterPath(MediationInfo.MEDIATION_ID_48));
+        mAdapterPaths.put(MediationInfo.MEDIATION_ID_49, getAdapterPath(MediationInfo.MEDIATION_ID_49));
+        mAdapterPaths.put(MediationInfo.MEDIATION_ID_50, getAdapterPath(MediationInfo.MEDIATION_ID_50));
+        mAdapterPaths.put(MediationInfo.MEDIATION_ID_51, getAdapterPath(MediationInfo.MEDIATION_ID_51));
+        mAdapterPaths.put(MediationInfo.MEDIATION_ID_52, getAdapterPath(MediationInfo.MEDIATION_ID_52));
+        mAdapterPaths.put(MediationInfo.MEDIATION_ID_53, getAdapterPath(MediationInfo.MEDIATION_ID_53));
     }
 
     /**
@@ -67,19 +93,92 @@ public class AdapterUtil {
         }
         //traverses to get adapters
         for (int i = 0; i < mAdapterPaths.size(); i++) {
+            CustomAdsAdapter adapter = null;
+            String className = mAdapterPaths.get(mAdapterPaths.keyAt(i));
+            Throwable exception = null;
+//            if (mAdapterPaths.keyAt(i) == 32) {
+//                Log.i("tjt", "进来了");
+//            }
             try {
-                CustomAdsAdapter adapter = createAdapter(CustomAdsAdapter.class, mAdapterPaths.get(mAdapterPaths.keyAt(i)));
+                adapter = createAdapter(CustomAdsAdapter.class, className);
+            } catch (Exception e) {
+                if (e instanceof ClassNotFoundException) {
+                    try {
+                        String[] strSplit = className.split("\\.");
+                        String str = strSplit[strSplit.length - 1];
+                        String pluginName = str.substring(0, str.indexOf(ADAPTER));
 
+                        ClassLoader pluginClassLoader = NmAds.PLUGIN_LOADERS.get(pluginName);//获取插件的ClassLoader
+                        if (pluginClassLoader == null) {
+                            exception = e;
+                        } else {
+                            adapter = pluginClassLoader.loadClass(className).asSubclass(CustomAdsAdapter.class).newInstance();
+                        }
+                    } catch (Throwable ex) {
+                        exception = ex;
+                    }
+                } else {
+                    exception = e;
+                }
+            }
+            if (exception != null) {
+                CrashUtil.getSingleton().saveException(exception);
+                DeveloperLog.LogD("AdapterUtil getAdns : ", exception);
+            } else {
                 mAdapters.put(adapter.getAdNetworkId(), adapter);
                 AdNetwork unityAdNetwork = getAdNetWork(adapter);
                 jsonArray.put(unityAdNetwork.toJson());
-            } catch (Exception e) {
-                CrashUtil.getSingleton().saveException(e);
-                DeveloperLog.LogD("AdapterUtil getAdns : ", e);
             }
+
         }
         return jsonArray;
     }
+
+    public synchronized static void createAdapterAll() {
+        //traverses to get adapters
+        for (int i = 0; i < mAdapterPaths.size(); i++) {
+            int adNetworkId = mAdapterPaths.keyAt(i);
+            if (mAdapters.get(adNetworkId) != null) {
+                return;
+            }
+            CustomAdsAdapter adapter = null;
+            String className = mAdapterPaths.get(adNetworkId);
+            Throwable exception = null;
+//            if (mAdapterPaths.keyAt(i) == 13) {
+//                Log.i("tjt", "进来了");
+//            }
+            try {
+                adapter = createAdapter(CustomAdsAdapter.class, className);
+            } catch (Exception e) {
+                if (e instanceof ClassNotFoundException) {
+                    try {
+                        String[] strSplit = className.split("\\.");
+                        String str = strSplit[strSplit.length - 1];
+                        String pluginName = str.substring(0, str.indexOf(ADAPTER));
+
+                        ClassLoader pluginClassLoader = NmAds.PLUGIN_LOADERS.get(pluginName);//获取插件的ClassLoader
+                        if (pluginClassLoader == null) {
+                            exception = e;
+                        } else {
+                            adapter = pluginClassLoader.loadClass(className).asSubclass(CustomAdsAdapter.class).newInstance();
+                        }
+                    } catch (Throwable ex) {
+                        exception = ex;
+                    }
+                } else {
+                    exception = e;
+                }
+            }
+            if (exception != null) {
+                CrashUtil.getSingleton().saveException(exception);
+                DeveloperLog.LogD("AdapterUtil createPluginAll : ", exception);
+            } else {
+                mAdapters.put(adapter.getAdNetworkId(), adapter);
+            }
+
+        }
+    }
+
 
     /**
      * Gets adapter map.
@@ -204,6 +303,74 @@ public class AdapterUtil {
                 break;
             case MediationInfo.MEDIATION_ID_23:
                 path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_23)).concat(ADAPTER);
+                break;
+
+            //plugin
+            case MediationInfo.MEDIATION_ID_32:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_32)).concat(ADAPTER);
+                break;
+            case MediationInfo.MEDIATION_ID_33:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_33)).concat(ADAPTER);
+                break;
+            case MediationInfo.MEDIATION_ID_34:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_34)).concat(ADAPTER);
+                break;
+            case MediationInfo.MEDIATION_ID_35:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_35)).concat(ADAPTER);
+                break;
+            case MediationInfo.MEDIATION_ID_36:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_36)).concat(ADAPTER);
+                break;
+            case MediationInfo.MEDIATION_ID_37:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_37)).concat(ADAPTER);
+                break;
+            case MediationInfo.MEDIATION_ID_38:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_38)).concat(ADAPTER);
+                break;
+            case MediationInfo.MEDIATION_ID_39:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_39)).concat(ADAPTER);
+                break;
+            case MediationInfo.MEDIATION_ID_40:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_40)).concat(ADAPTER);
+                break;
+            case MediationInfo.MEDIATION_ID_41:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_41)).concat(ADAPTER);
+                break;
+            case MediationInfo.MEDIATION_ID_42:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_42)).concat(ADAPTER);
+                break;
+            case MediationInfo.MEDIATION_ID_43:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_43)).concat(ADAPTER);
+                break;
+            case MediationInfo.MEDIATION_ID_44:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_44)).concat(ADAPTER);
+                break;
+            case MediationInfo.MEDIATION_ID_45:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_45)).concat(ADAPTER);
+                break;
+            case MediationInfo.MEDIATION_ID_46:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_46)).concat(ADAPTER);
+                break;
+            case MediationInfo.MEDIATION_ID_47:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_47)).concat(ADAPTER);
+                break;
+            case MediationInfo.MEDIATION_ID_48:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_48)).concat(ADAPTER);
+                break;
+            case MediationInfo.MEDIATION_ID_49:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_49)).concat(ADAPTER);
+                break;
+            case MediationInfo.MEDIATION_ID_50:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_50)).concat(ADAPTER);
+                break;
+            case MediationInfo.MEDIATION_ID_51:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_51)).concat(ADAPTER);
+                break;
+            case MediationInfo.MEDIATION_ID_52:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_52)).concat(ADAPTER);
+                break;
+            case MediationInfo.MEDIATION_ID_53:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_53)).concat(ADAPTER);
                 break;
             default:
                 break;

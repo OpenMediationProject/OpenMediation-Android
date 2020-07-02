@@ -4,6 +4,7 @@
 package com.nbmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 
 import com.nbmediation.sdk.mediation.CustomAdsAdapter;
@@ -48,7 +49,7 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
         return MediationInfo.MEDIATION_ID_5;
     }
 
-    private void initSDK(Activity activity) {
+    private void initSDK(Context activity) {
         mInitState = InitState.INIT_PENDING;
         Vungle.init(mAppKey, activity.getApplicationContext(), new InitCallback() {
             @Override
@@ -90,7 +91,7 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
     }
 
     @Override
-    public void initRewardedVideo(Activity activity, Map<String, Object> dataMap
+    public void initRewardedVideo(Context activity, Map<String, Object> dataMap
             , final RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
         String error = check(activity, (String) dataMap.get("pid"));
@@ -125,7 +126,7 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, final String adUnitId, final RewardedVideoCallback callback) {
+    public void loadRewardedVideo(Context activity, final String adUnitId, final RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
@@ -148,7 +149,7 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
     }
 
     @Override
-    public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void showRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
@@ -172,7 +173,7 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
     }
 
     @Override
-    public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
+    public void initInterstitialAd(Context activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
         String error = check(activity, (String) dataMap.get("pid"));
         if (TextUtils.isEmpty(error)) {
@@ -206,7 +207,7 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
     }
 
     @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    public void loadInterstitialAd(Context activity, String adUnitId, InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
@@ -229,7 +230,7 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
     }
 
     @Override
-    public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    public void showInterstitialAd(Context activity, String adUnitId, InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {

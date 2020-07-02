@@ -4,6 +4,7 @@
 package com.nbmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 
 import com.adcolony.sdk.AdColony;
@@ -49,7 +50,7 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
     }
 
     @Override
-    public void initRewardedVideo(Activity activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
+    public void initRewardedVideo(Context activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
         String error = check(activity);
         if (TextUtils.isEmpty(error)) {
@@ -65,7 +66,7 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void loadRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
@@ -83,7 +84,7 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
     }
 
     @Override
-    public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void showRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
         if (isRewardedVideoAvailable(adUnitId)) {
             AdColonyInterstitial interstitial = mAdColonyAds.get(adUnitId);
@@ -116,7 +117,7 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
         }
     }
 
-    private synchronized void initAdColony(Activity activity, Map<String, Object> dataMap) {
+    private synchronized void initAdColony(Context activity, Map<String, Object> dataMap) {
         if (!mDidInited) {
             List<String> idList = null;
             if (dataMap.get("zoneIds") instanceof List) {
@@ -125,9 +126,9 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
             String[] zoneIds;
             if (idList != null) {
                 zoneIds = idList.toArray(new String[idList.size()]);
-                AdColony.configure(activity.getApplication(), mAppKey, zoneIds);
+                AdColony.configure(((Activity) activity).getApplication(), mAppKey, zoneIds);
             } else {
-                AdColony.configure(activity.getApplication(), mAppKey);
+                AdColony.configure(((Activity) activity).getApplication(), mAppKey);
             }
             mDidInited = true;
         }

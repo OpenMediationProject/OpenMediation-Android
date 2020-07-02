@@ -1,6 +1,7 @@
 package com.nbmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -23,8 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class IronSourceAdapter extends CustomAdsAdapter
-{
+public class IronSourceAdapter extends CustomAdsAdapter {
 
     private static final String TAG = "AdTiming-IronSource";
 
@@ -68,19 +68,19 @@ public class IronSourceAdapter extends CustomAdsAdapter
     }
 
     @Override
-    public void onResume(Activity activity) {
+    public void onResume(Context activity) {
         super.onResume(activity);
-        IronSource.onResume(activity);
+        IronSource.onResume((Activity) activity);
     }
 
     @Override
-    public void onPause(Activity activity) {
-        IronSource.onPause(activity);
+    public void onPause(Context activity) {
+        IronSource.onPause((Activity) activity);
         super.onPause(activity);
     }
 
     @Override
-    public void initRewardedVideo(Activity activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
+    public void initRewardedVideo(Context activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
         String error = check(activity);
         if (!TextUtils.isEmpty(error)) {
@@ -90,7 +90,7 @@ public class IronSourceAdapter extends CustomAdsAdapter
             return;
         }
         if (!mDidInitRewardedVideo.getAndSet(true)) {
-            IronSourceManager.getInstance().initIronSourceSDK(activity, mAppKey, mRvAdUnitsToInit);
+            IronSourceManager.getInstance().initIronSourceSDK((Activity) activity, mAppKey, mRvAdUnitsToInit);
         }
         if (callback != null) {
             callback.onRewardedVideoInitSuccess();
@@ -98,7 +98,7 @@ public class IronSourceAdapter extends CustomAdsAdapter
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void loadRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, callback);
         String checkError = check(activity, adUnitId);
         if (TextUtils.isEmpty(checkError)) {
@@ -118,7 +118,7 @@ public class IronSourceAdapter extends CustomAdsAdapter
     }
 
     @Override
-    public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void showRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
         String checkError = check(activity, adUnitId);
         if (TextUtils.isEmpty(checkError)) {
@@ -139,7 +139,7 @@ public class IronSourceAdapter extends CustomAdsAdapter
     }
 
     @Override
-    public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
+    public void initInterstitialAd(Context activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
         String error = check(activity);
         if (!TextUtils.isEmpty(error)) {
@@ -149,7 +149,7 @@ public class IronSourceAdapter extends CustomAdsAdapter
             return;
         }
         if (!mDidInitInterstitial.getAndSet(true)) {
-            IronSourceManager.getInstance().initIronSourceSDK(activity, mAppKey, mIsAdUnitsToInit);
+            IronSourceManager.getInstance().initIronSourceSDK((Activity) activity, mAppKey, mIsAdUnitsToInit);
         }
         if (callback != null) {
             callback.onInterstitialAdInitSuccess();
@@ -157,7 +157,7 @@ public class IronSourceAdapter extends CustomAdsAdapter
     }
 
     @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    public void loadInterstitialAd(Context activity, String adUnitId, InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, callback);
         String checkError = check(activity, adUnitId);
         if (TextUtils.isEmpty(checkError)) {
@@ -177,7 +177,7 @@ public class IronSourceAdapter extends CustomAdsAdapter
     }
 
     @Override
-    public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    public void showInterstitialAd(Context activity, String adUnitId, InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
         String checkError = check(activity, adUnitId);
         if (TextUtils.isEmpty(checkError)) {

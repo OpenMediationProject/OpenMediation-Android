@@ -44,6 +44,11 @@ android.libraryVariants.all { variant ->
 }
 
 dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
     testImplementation 'junit:junit:4.12'
+}
+
+repositories {
+    flatDir {
+        dirs '../libs'
+    }
 }

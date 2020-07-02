@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.tencent.shadow.sample.plugin">
+
+    <application
+        android:name="com.nbmediation.sdk.mobileads.PluginApplication"
+        android:icon="@android:drawable/sym_def_app_icon"
+        android:theme="@android:style/Theme.NoTitleBar">
+
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-8244307161105625~9398130412" />
+
+
+    </application>
+
+</manifest>

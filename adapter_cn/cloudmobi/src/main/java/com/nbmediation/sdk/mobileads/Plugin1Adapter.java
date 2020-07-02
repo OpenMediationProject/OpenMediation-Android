@@ -1,37 +1,40 @@
 package com.nbmediation.sdk.mobileads;
 
-import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 
+import com.adsgreat.base.callback.VideoAdLoadListener;
+import com.adsgreat.base.config.Const;
+import com.adsgreat.base.core.AGError;
+import com.adsgreat.base.core.AGVideo;
+import com.adsgreat.base.core.AdsgreatSDK;
+import com.adsgreat.video.core.RewardedVideoAdListener;
+import com.adsgreat.video.core.ZcoupVideo;
 import com.nbmediation.sdk.mediation.CustomAdsAdapter;
 import com.nbmediation.sdk.mediation.MediationInfo;
 import com.nbmediation.sdk.mediation.RewardedVideoCallback;
-import com.nbmediation.sdk.mobileads.cloudmobi.BuildConfig;
+import com.nbmediation.sdk.mobileads.plugin1.BuildConfig;
 import com.nbmediation.sdk.utils.AdLog;
-import com.suib.base.callback.VideoAdLoadListener;
-import com.suib.base.config.Const;
-import com.suib.base.core.SuibSDK;
-import com.suib.base.core.ZCError;
-import com.suib.base.core.ZCVideo;
-import com.suib.video.core.RewardedVideoAdListener;
-import com.suib.video.core.SuibVideo;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
  * Created by jiantao.tu on 2020/5/14.
  */
-public class CloudmobiAdapter extends CustomAdsAdapter {
+public class Plugin1Adapter extends CustomAdsAdapter {
 
-    private static String TAG = "OM-Cloudmobi: ";
+    private static String TAG = "OM-Cloudmobi-Plugin1: ";
 
-    private ConcurrentMap<String, ZCVideo> mRvAds;
+    private ConcurrentMap<String, AGVideo> mRvAds;
+
+    private AtomicBoolean isPreload = new AtomicBoolean();
 
 
-    public CloudmobiAdapter() {
+    public Plugin1Adapter() {
         mRvAds = new ConcurrentHashMap<>();
     }
 
@@ -47,17 +50,17 @@ public class CloudmobiAdapter extends CustomAdsAdapter {
 
     @Override
     public int getAdNetworkId() {
-        return MediationInfo.MEDIATION_ID_17;
+        return MediationInfo.MEDIATION_ID_32;
     }
 
     @Override
-    public void initRewardedVideo(Activity activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
+    public void initRewardedVideo(Context activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
         Object appKey = dataMap.get("AppKey");
         String error = check(activity);
         if (TextUtils.isEmpty(error)) {
             if (appKey instanceof String) {
-                SuibSDK.initialize(activity, (String) appKey);
+                AdsgreatSDK.initialize(activity, (String) appKey);
                 if (callback != null) {
                     callback.onRewardedVideoInitSuccess();
                 }
@@ -71,20 +74,20 @@ public class CloudmobiAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void loadRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, callback);
         loadRvAd(activity, adUnitId, callback);
 
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
+    public void loadRewardedVideo(Context activity, String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
         loadRvAd(activity, adUnitId, callback);
     }
 
     @Override
-    public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void showRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (!TextUtils.isEmpty(error)) {
@@ -93,9 +96,9 @@ public class CloudmobiAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        ZCVideo zcVideo = mRvAds.get(adUnitId);
-        if (zcVideo != null) {
-            SuibVideo.showRewardedVideo(zcVideo, new VideoAdListenerImpl(callback));
+        AGVideo agVideo = mRvAds.get(adUnitId);
+        if (agVideo != null) {
+            ZcoupVideo.showRewardedVideo(agVideo, new VideoAdListenerImpl(callback));
             mRvAds.remove(adUnitId);
         } else {
             if (callback != null) {
@@ -163,10 +166,14 @@ public class CloudmobiAdapter extends CustomAdsAdapter {
         }
     }
 
-    private void loadRvAd(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    private void loadRvAd(Context activity, String adUnitId, RewardedVideoCallback callback) {
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
-            ZCVideo zcVideo = mRvAds.get(adUnitId);
+            if (!isPreload.compareAndSet(false, true)) {
+                callback.onRewardedVideoLoadFailed(TAG + "ad loading, no need to load repeatedly");
+                return;
+            }
+            AGVideo zcVideo = mRvAds.get(adUnitId);
             if (zcVideo == null) {
                 realLoadRvAd(activity, adUnitId, callback);
             } else {
@@ -181,9 +188,9 @@ public class CloudmobiAdapter extends CustomAdsAdapter {
         }
     }
 
-    private void realLoadRvAd(Activity activity, final String adUnitId, RewardedVideoCallback callback) {
+    private void realLoadRvAd(Context activity, final String adUnitId, RewardedVideoCallback callback) {
         VideoAdLoadListener videoAdLoadListener = create(adUnitId, callback);
-        SuibVideo.preloadRewardedVideo(activity, adUnitId, videoAdLoadListener);
+        ZcoupVideo.preloadRewardedVideo(activity, adUnitId, videoAdLoadListener);
     }
 
     @Override
@@ -192,10 +199,10 @@ public class CloudmobiAdapter extends CustomAdsAdapter {
             return false;
         }
 
-        ZCVideo video = mRvAds.get(adUnitId);
+        AGVideo video = mRvAds.get(adUnitId);
         if (video == null) return false;
 
-        return SuibVideo.isRewardedVideoAvailable(video);
+        return ZcoupVideo.isRewardedVideoAvailable(video);
     }
 
     private VideoAdLoadListener create(final String adUnitId, final RewardedVideoCallback callback) {
@@ -203,7 +210,7 @@ public class CloudmobiAdapter extends CustomAdsAdapter {
         return new VideoAdLoadListener() {
 
             @Override
-            public void onVideoAdLoadSucceed(ZCVideo zcVideo) {
+            public void onVideoAdLoadSucceed(AGVideo zcVideo) {
                 AdLog.getSingleton().LogD(TAG + "onVideoAdLoadSucceed: ");
                 mRvAds.put(adUnitId, zcVideo);
                 if (callback != null) {
@@ -212,7 +219,7 @@ public class CloudmobiAdapter extends CustomAdsAdapter {
             }
 
             @Override
-            public void onVideoAdLoadFailed(ZCError zcError) {
+            public void onVideoAdLoadFailed(AGError zcError) {
                 String message = "";
                 if (zcError != null) {
                     message = zcError.getMsg();

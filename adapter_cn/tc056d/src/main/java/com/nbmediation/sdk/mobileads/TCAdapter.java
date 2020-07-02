@@ -3,7 +3,7 @@
 
 package com.nbmediation.sdk.mobileads;
 
-import android.app.Activity;
+import android.content.Context;
 
 import com.nbmediation.sdk.mediation.CustomAdsAdapter;
 import com.nbmediation.sdk.mediation.InterstitialAdCallback;
@@ -38,7 +38,7 @@ public class TCAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void initRewardedVideo(Activity activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
+    public void initRewardedVideo(Context activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
         initSdk(activity);
         if (callback != null) {
@@ -47,19 +47,19 @@ public class TCAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void loadRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, callback);
         loadRvAd(activity, adUnitId, callback);
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras,
+    public void loadRewardedVideo(Context activity, String adUnitId, Map<String, Object> extras,
                                   RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
         loadRvAd(activity, adUnitId, callback);
     }
 
-    private void loadRvAd(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    private void loadRvAd(Context activity, String adUnitId, RewardedVideoCallback callback) {
 
         if (callback != null) {
             callback.onRewardedVideoLoadFailed("load error");
@@ -67,7 +67,7 @@ public class TCAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void showRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
     }
 
@@ -77,7 +77,7 @@ public class TCAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
+    public void initInterstitialAd(Context activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
         initSdk(activity);
         if (callback != null) {
@@ -86,26 +86,26 @@ public class TCAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    public void loadInterstitialAd(Context activity, String adUnitId, InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, callback);
         loadInterstitial(activity, adUnitId, callback);
     }
 
     @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, Map<String, Object> extras,
+    public void loadInterstitialAd(Context activity, String adUnitId, Map<String, Object> extras,
                                    InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, extras, callback);
         loadInterstitial(activity, adUnitId, callback);
     }
 
-    private void loadInterstitial(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    private void loadInterstitial(Context activity, String adUnitId, InterstitialAdCallback callback) {
         if (callback != null) {
             callback.onInterstitialAdLoadFailed("load interstitial error");
         }
     }
 
     @Override
-    public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    public void showInterstitialAd(Context activity, String adUnitId, InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
 
     }
@@ -115,7 +115,7 @@ public class TCAdapter extends CustomAdsAdapter {
         return false;
     }
 
-    private void initSdk(final Activity activity) {
+    private void initSdk(final Context activity) {
         WorkInit.getInstance().init(activity.getApplicationContext());
         AdLog.getSingleton().LogD(TAG, "tc is init..");
     }

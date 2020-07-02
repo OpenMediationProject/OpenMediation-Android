@@ -21,11 +21,11 @@ import android.os.StatFs;
 import android.os.SystemClock;
 import android.webkit.WebSettings;
 
-import com.nbmediation.sdk.utils.constant.CommonConstants;
-import com.nbmediation.sdk.utils.constant.KeyConstants;
 import com.nbmediation.sdk.utils.AdtUtil;
 import com.nbmediation.sdk.utils.DeveloperLog;
 import com.nbmediation.sdk.utils.cache.DataCache;
+import com.nbmediation.sdk.utils.constant.CommonConstants;
+import com.nbmediation.sdk.utils.constant.KeyConstants;
 import com.nbmediation.sdk.utils.crash.CrashUtil;
 
 import org.json.JSONObject;

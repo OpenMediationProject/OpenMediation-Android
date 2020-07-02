@@ -7,20 +7,20 @@ import android.app.Activity;
 import android.view.View;
 import android.widget.RelativeLayout;
 
+import com.facebook.ads.Ad;
+import com.facebook.ads.AdError;
+import com.facebook.ads.AdOptionsView;
 import com.facebook.ads.AdSettings;
+import com.facebook.ads.AudienceNetworkAds;
+import com.facebook.ads.NativeAd;
+import com.facebook.ads.NativeAdLayout;
+import com.facebook.ads.NativeAdListener;
 import com.nbmediation.sdk.mediation.CustomNativeEvent;
 import com.nbmediation.sdk.mediation.MediationInfo;
 import com.nbmediation.sdk.nativead.AdIconView;
 import com.nbmediation.sdk.nativead.MediaView;
 import com.nbmediation.sdk.nativead.NativeAdView;
 import com.nbmediation.sdk.utils.AdLog;
-import com.facebook.ads.Ad;
-import com.facebook.ads.AdError;
-import com.facebook.ads.AdOptionsView;
-import com.facebook.ads.AudienceNetworkAds;
-import com.facebook.ads.NativeAd;
-import com.facebook.ads.NativeAdLayout;
-import com.facebook.ads.NativeAdListener;
 
 import java.util.ArrayList;
 import java.util.List;

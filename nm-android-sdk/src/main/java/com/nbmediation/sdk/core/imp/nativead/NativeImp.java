@@ -9,6 +9,7 @@ import android.view.View;
 
 import com.nbmediation.sdk.bid.AuctionUtil;
 import com.nbmediation.sdk.core.AbstractHybridAd;
+import com.nbmediation.sdk.core.AdManager;
 import com.nbmediation.sdk.core.NmManager;
 import com.nbmediation.sdk.mediation.CustomNativeEvent;
 import com.nbmediation.sdk.nativead.AdInfo;
@@ -22,7 +23,6 @@ import com.nbmediation.sdk.utils.event.EventId;
 import com.nbmediation.sdk.utils.event.EventUploadManager;
 import com.nbmediation.sdk.utils.model.BaseInstance;
 import com.nbmediation.sdk.utils.model.PlacementInfo;
-import com.nbmediation.sdk.core.AdManager;
 
 import java.util.Map;
 

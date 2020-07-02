@@ -5,13 +5,13 @@ package com.nbmediation.sdk.core.imp.interstitialad;
 
 import android.app.Activity;
 
-import com.nbmediation.sdk.utils.model.Instance;
 import com.nbmediation.sdk.core.runnable.LoadTimeoutRunnable;
 import com.nbmediation.sdk.mediation.InterstitialAdCallback;
 import com.nbmediation.sdk.utils.AdLog;
 import com.nbmediation.sdk.utils.DeveloperLog;
 import com.nbmediation.sdk.utils.error.Error;
 import com.nbmediation.sdk.utils.error.ErrorCode;
+import com.nbmediation.sdk.utils.model.Instance;
 import com.nbmediation.sdk.utils.model.Scene;
 
 import java.util.Map;

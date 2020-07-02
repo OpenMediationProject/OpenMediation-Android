@@ -4,6 +4,7 @@
 package com.nbmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -11,21 +12,22 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.InterstitialAd;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.initialization.InitializationStatus;
 import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
+import com.google.android.gms.ads.rewarded.RewardedAd;
+import com.google.android.gms.ads.rewarded.RewardedAdCallback;
+import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 import com.nbmediation.sdk.mediation.CustomAdsAdapter;
 import com.nbmediation.sdk.mediation.InterstitialAdCallback;
 import com.nbmediation.sdk.mediation.MediationInfo;
 import com.nbmediation.sdk.mediation.RewardedVideoCallback;
 import com.nbmediation.sdk.mobileads.admob.BuildConfig;
 import com.nbmediation.sdk.utils.AdLog;
-import com.google.android.gms.ads.AdListener;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.InterstitialAd;
-import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.rewarded.RewardedAd;
-import com.google.android.gms.ads.rewarded.RewardedAdCallback;
-import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
+import com.nbmediation.sdk.utils.HandlerUtil;
 
 import java.lang.ref.WeakReference;
 import java.util.Map;
@@ -40,7 +42,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
     private ConcurrentMap<String, RewardedVideoCallback> mRvInitCallbacks;
     private ConcurrentMap<String, InterstitialAdCallback> mIsInitCallbacks;
     private volatile InitState mInitState = InitState.NOT_INIT;
-    private WeakReference<Activity> mRefAct;
+    private WeakReference<Context> mRefAct;
 
     public AdMobAdapter() {
         mRewardedAds = new ConcurrentHashMap<>();
@@ -69,7 +71,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
     }
 
     // All calls to MobileAds must be on the main thread --> run all calls to initSDK in a thread.
-    private synchronized void initSDK(final Activity activity) {
+    private synchronized void initSDK(final Context activity) {
         mInitState = InitState.INIT_PENDING;
         String adMobAppKey = null;
         try {
@@ -92,7 +94,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
             MobileAds.initialize(activity.getApplicationContext(), new OnInitializationCompleteListener() {
                 @Override
                 public void onInitializationComplete(InitializationStatus initializationStatus) {
-                    activity.runOnUiThread(new Runnable() {
+                    HandlerUtil.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             onInitSuccess();
@@ -117,7 +119,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
 
     /*********************************RewardedVideoAd***********************************/
     @Override
-    public void initRewardedVideo(Activity activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
+    public void initRewardedVideo(Context activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
         if (Looper.myLooper() != Looper.getMainLooper()) {
             if (callback != null) {
@@ -155,7 +157,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void loadRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         if (Looper.myLooper() != Looper.getMainLooper()) {
             if (callback != null) {
                 callback.onRewardedVideoLoadFailed("Must be called on the main UI thread. ");
@@ -183,7 +185,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void showRewardedVideo(final Activity activity, final String adUnitId
+    public void showRewardedVideo(final Context activity, final String adUnitId
             , final RewardedVideoCallback callback) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
@@ -199,7 +201,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 if (rewardedAd != null && rewardedAd.isLoaded()) {
                     mAdUnitReadyStatus.remove(adUnitId);
                     mRefAct = new WeakReference<>(activity);
-                    rewardedAd.show(mRefAct.get(), createRvCallback(adUnitId, callback));
+                    rewardedAd.show((Activity)mRefAct.get(), createRvCallback(adUnitId, callback));
                 } else {
                     if (callback != null) {
                         callback.onRewardedVideoAdShowFailed("");
@@ -220,7 +222,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
     /**
      * Creates a new one everytime for it can't be re-used.
      */
-    private RewardedAd getRewardedAd(Activity activity, String adUnitId) {
+    private RewardedAd getRewardedAd(Context activity, String adUnitId) {
         mRefAct = new WeakReference<>(activity);
         RewardedAd rewardedAd = new RewardedAd(mRefAct.get(), adUnitId);
         mRewardedAds.put(adUnitId, rewardedAd);
@@ -290,7 +292,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
 
     /*********************************Interstitial***********************************/
     @Override
-    public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
+    public void initInterstitialAd(Context activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
         if (Looper.myLooper() != Looper.getMainLooper()) {
             if (callback != null) {
@@ -328,7 +330,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    public void loadInterstitialAd(Context activity, String adUnitId, InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, callback);
         if (Looper.myLooper() != Looper.getMainLooper()) {
             if (callback != null) {
@@ -357,7 +359,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void showInterstitialAd(final Activity activity, final String adUnitId, final InterstitialAdCallback callback) {
+    public void showInterstitialAd(final Context activity, final String adUnitId, final InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
@@ -396,7 +398,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
         return mAdUnitReadyStatus.containsKey(adUnitId);
     }
 
-    private InterstitialAd getInterstitialAd(Activity activity, String adUnitId) {
+    private InterstitialAd getInterstitialAd(Context activity, String adUnitId) {
         mRefAct = new WeakReference<>(activity);
         InterstitialAd interstitialAd = new InterstitialAd(mRefAct.get());
         interstitialAd.setAdUnitId(adUnitId);

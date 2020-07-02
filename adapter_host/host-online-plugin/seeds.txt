@@ -1,0 +1,442 @@
+com.tencent.shadow.core.common.Logger
+com.cloudtech.shell.R$style
+com.tencent.shadow.core.runtime.container.PluginContainerContentProvider: void checkHostContentProviderDelegate()
+com.tencent.shadow.dynamic.host.FailedException$1: java.lang.Object createFromParcel(android.os.Parcel)
+com.tencent.shadow.dynamic.host.DynamicRuntime: <clinit>()
+com.tencent.shadow.core.common.Logger: boolean isErrorEnabled()
+com.cloudtech.shell.R$string: int app_name
+com.tencent.shadow.dynamic.host.PpsController: void loadRuntime(java.lang.String)
+com.tencent.shadow.dynamic.host.PluginProcessService: com.tencent.shadow.dynamic.host.PpsBinder mPpsControllerBinder
+com.tencent.shadow.core.common.Logger: void trace(java.lang.String,java.lang.Object,java.lang.Object)
+com.tencent.shadow.dynamic.host.LoaderImplLoader: java.lang.String[] sInterfaces
+com.tencent.shadow.dynamic.host.BasePluginProcessService$ActivityHolder: void finishAll()
+com.tencent.shadow.core.runtime.container.PluginContainerContentProvider: void onTrimMemory(int)
+com.cloudtech.shell.shadow.share.LoadPluginCallback$Callback: void beforeLoadPlugin(java.lang.String)
+com.tencent.shadow.core.common.BuildConfig: boolean DEBUG
+com.tencent.shadow.core.common.Logger: void warn(java.lang.String,java.lang.Object)
+com.tencent.shadow.dynamic.host.ImplLoader: java.lang.String[] concatenate(java.lang.String[],java.lang.String[])
+com.tencent.shadow.dynamic.host.DynamicRuntime: boolean loadRuntime(com.tencent.shadow.core.common.InstalledApk)
+com.tencent.shadow.dynamic.host.PpsBinder: <clinit>()
+com.tencent.shadow.dynamic.host.BinderUuidManager: void checkException(android.os.Parcel)
+com.cloudtech.shell.SdkShell: void initialize(android.content.Context,java.lang.String,com.nbmediation.sdk.core.SdkShellCallback)
+com.tencent.shadow.core.common.Logger: void debug(java.lang.String,java.lang.Object,java.lang.Object)
+com.tencent.shadow.dynamic.host.FailedException$1: FailedException$1()
+com.tencent.shadow.dynamic.host.DynamicPluginManager: long mLastModified
+com.tencent.shadow.dynamic.host.LoaderImplLoader
+com.tencent.shadow.core.common.InstalledApk$1: com.tencent.shadow.core.common.InstalledApk createFromParcel(android.os.Parcel)
+com.tencent.shadow.dynamic.host.ChangeApkContextWrapper: java.lang.ClassLoader mClassloader
+com.tencent.shadow.dynamic.host.PpsStatus: <clinit>()
+com.cloudtech.shell.gp.AdvertisingIdClient$AdvertisingInterface: java.lang.String getId()
+com.tencent.shadow.dynamic.host.PpsBinder: int TRANSACTION_setUuidManager
+com.tencent.shadow.dynamic.host.DynamicPluginManager: com.tencent.shadow.core.common.Logger mLogger
+com.tencent.shadow.dynamic.host.ManagerImplLoader
+com.cloudtech.shell.shadow.share.LoadPluginCallback: LoadPluginCallback()
+com.tencent.shadow.core.common.Logger: void warn(java.lang.String,java.lang.Object,java.lang.Object)
+com.tencent.shadow.dynamic.host.ManagerImplLoader: com.tencent.shadow.core.common.InstalledApk installedApk
+com.tencent.shadow.dynamic.host.PpsStatus
+com.tencent.shadow.dynamic.host.PluginProcessService
+com.cloudtech.shell.receiver.DexCloseBroadcastReceiver
+com.tencent.shadow.dynamic.host.PpsStatus$1: java.lang.Object[] newArray(int)
+com.tencent.shadow.dynamic.host.PpsController: void setUuidManager(android.os.IBinder)
+com.tencent.shadow.dynamic.host.DynamicRuntime: java.lang.String KEY_RUNTIME_LIB
+com.tencent.shadow.core.runtime.container.PluginContainerContentProvider: void onLowMemory()
+com.cloudtech.shell.gp.AdvertisingIdClient$1
+com.tencent.shadow.core.common.Logger: void debug(java.lang.String)
+com.cloudtech.shell.gp.AdvertisingIdClient$AdInfo: java.lang.String advertisingId
+com.tencent.shadow.dynamic.host.BasePluginProcessService: void onRebind(android.content.Intent)
+com.tencent.shadow.dynamic.host.DynamicPluginManager: void updateManagerImpl(android.content.Context)
+com.tencent.shadow.dynamic.host.DynamicPluginManager: <clinit>()
+com.tencent.shadow.core.common.BuildConfig: java.lang.String APPLICATION_ID
+com.tencent.shadow.core.common.InstalledApk: InstalledApk(java.lang.String,java.lang.String,java.lang.String)
+com.tencent.shadow.dynamic.host.BinderUuidManager: com.tencent.shadow.core.common.InstalledApk getPlugin(java.lang.String,java.lang.String)
+com.tencent.shadow.dynamic.host.FailedException: int ERROR_CODE_UUID_MANAGER_DEAD_EXCEPTION
+com.tencent.shadow.dynamic.host.PluginManagerUpdater
+com.tencent.shadow.dynamic.host.NotFoundException$1: com.tencent.shadow.dynamic.host.NotFoundException createFromParcel(android.os.Parcel)
+com.tencent.shadow.core.runtime.container.ContentProviderDelegateProvider: com.tencent.shadow.core.runtime.container.HostContentProviderDelegate getHostContentProviderDelegate()
+com.tencent.shadow.dynamic.host.PluginProcessService: void setUuid(java.lang.String)
+com.tencent.shadow.dynamic.host.ChangeApkContextWrapper: ChangeApkContextWrapper(android.content.Context,java.lang.String,java.lang.ClassLoader)
+com.tencent.shadow.dynamic.host.FailedException: int errorCode
+com.tencent.shadow.dynamic.host.BasePluginProcessService$ActivityHolder: java.util.List mActivities
+com.tencent.shadow.dynamic.host.ImplLoader: java.lang.String WHITE_LIST_CLASS_NAME
+com.tencent.shadow.core.common.Logger: void warn(java.lang.String,java.lang.Object[])
+com.tencent.shadow.core.runtime.container.PluginContainerContentProvider: android.net.Uri insert(android.net.Uri,android.content.ContentValues)
+com.tencent.shadow.dynamic.host.UuidManager: int TRANSACTION_CODE_NO_EXCEPTION
+com.tencent.shadow.dynamic.host.PluginProcessService: com.tencent.shadow.dynamic.host.UuidManager mUuidManager
+com.tencent.shadow.core.common.InstalledApk: InstalledApk(java.lang.String,java.lang.String,java.lang.String,byte[])
+com.cloudtech.shell.shadow.share.LoadPluginCallback
+com.tencent.shadow.core.common.InstalledApk$1: java.lang.Object createFromParcel(android.os.Parcel)
+com.tencent.shadow.dynamic.host.FailedException: int ERROR_CODE_RESET_UUID_EXCEPTION
+com.tencent.shadow.dynamic.host.ChangeApkContextWrapper: android.content.res.Resources mResources
+com.tencent.shadow.dynamic.host.BuildConfig: int VERSION_CODE
+com.tencent.shadow.dynamic.host.FailedException: int ERROR_CODE_REMOTE_EXCEPTION
+com.tencent.shadow.core.runtime.container.PluginContainerContentProvider$1: com.tencent.shadow.core.runtime.container.PluginContainerContentProvider this$0
+com.cloudtech.shell.shadow.share.LoadPluginCallback$Callback: void afterLoadPlugin(java.lang.String,android.content.pm.ApplicationInfo,java.lang.ClassLoader,android.content.res.Resources)
+com.tencent.shadow.dynamic.host.FailedException$1: com.tencent.shadow.dynamic.host.FailedException createFromParcel(android.os.Parcel)
+com.tencent.shadow.core.runtime.container.PluginContainerContentProvider: android.os.Bundle call(java.lang.String,java.lang.String,android.os.Bundle)
+com.tencent.shadow.dynamic.host.NotFoundException$1
+com.tencent.shadow.dynamic.host.PpsBinder: int TRANSACTION_CODE_FAILED_EXCEPTION
+com.cloudtech.shell.shadow.AndroidLoggerFactory: AndroidLoggerFactory()
+com.tencent.shadow.core.runtime.container.PluginContainerContentProvider$1: void onPrepare()
+com.cloudtech.shell.shadow.AndroidLoggerFactory: <clinit>()
+com.tencent.shadow.dynamic.host.ImplLoader: java.lang.String WHITE_LIST_FIELD_NAME
+com.tencent.shadow.dynamic.host.PpsBinder: com.tencent.shadow.dynamic.host.PluginProcessService mPps
+com.tencent.shadow.dynamic.host.PluginProcessService: android.os.IBinder getPluginLoader()
+com.tencent.shadow.dynamic.host.ManagerImplLoader: android.content.Context applicationContext
+com.tencent.shadow.dynamic.host.DynamicPluginManager: void release()
+com.cloudtech.shell.shadow.AndroidLoggerFactory: int LOG_LEVEL_INFO
+com.tencent.shadow.core.common.Logger: void error(java.lang.String,java.lang.Object)
+com.tencent.shadow.dynamic.host.PluginManagerUpdater: java.util.concurrent.Future isAvailable(java.io.File)
+com.tencent.shadow.dynamic.host.ManagerImplLoader: ManagerImplLoader(android.content.Context,java.io.File)
+com.tencent.shadow.dynamic.host.BasePluginProcessService$ActivityHolder: void onActivityStopped(android.app.Activity)
+com.tencent.shadow.dynamic.host.PpsController: PpsController(android.os.IBinder)
+com.cloudtech.shell.gp.AdvertisingIdClient$AdvertisingInterface: android.os.IBinder asBinder()
+com.tencent.shadow.dynamic.host.FailedException: FailedException(android.os.Parcel)
+com.tencent.shadow.dynamic.host.PluginProcessService: void checkUuidManagerNotNull()
+com.tencent.shadow.core.common.Logger: boolean isDebugEnabled()
+com.tencent.shadow.dynamic.host.NotFoundException$1: com.tencent.shadow.dynamic.host.NotFoundException[] newArray(int)
+com.tencent.shadow.core.common.Logger: boolean isWarnEnabled()
+com.tencent.shadow.dynamic.host.NotFoundException: void writeToParcel(android.os.Parcel,int)
+com.tencent.shadow.core.runtime.container.PluginContainerContentProvider$1
+com.tencent.shadow.dynamic.host.DynamicRuntime: DynamicRuntime()
+com.tencent.shadow.core.runtime.container.ContentProviderDelegateProviderHolder: ContentProviderDelegateProviderHolder()
+com.cloudtech.shell.R
+com.tencent.shadow.dynamic.host.ApkClassLoader: java.lang.Object getInterface(java.lang.Class,java.lang.String)
+com.tencent.shadow.dynamic.host.PpsBinder: int TRANSACTION_loadPluginLoader
+com.tencent.shadow.dynamic.host.PluginProcessService: void loadPluginLoader(java.lang.String)
+com.tencent.shadow.core.runtime.container.ContentProviderDelegateProviderHolder: com.tencent.shadow.core.runtime.container.ContentProviderDelegateProvider contentProviderDelegateProvider
+com.tencent.shadow.core.runtime.container.PluginContainerContentProvider
+com.tencent.shadow.core.runtime.container.PluginContainerContentProvider: PluginContainerContentProvider()
+com.tencent.shadow.dynamic.host.UuidManager: int TRANSACTION_getPlugin
+com.tencent.shadow.dynamic.host.NotFoundException$1: NotFoundException$1()
+com.tencent.shadow.core.runtime.container.HostContentProviderDelegate: android.os.ParcelFileDescriptor openFile(android.net.Uri,java.lang.String,android.os.CancellationSignal)
+com.tencent.shadow.dynamic.host.PluginManager: void enter(android.content.Context,long,android.os.Bundle,com.tencent.shadow.dynamic.host.EnterCallback)
+com.tencent.shadow.dynamic.host.PpsStatus$1
+com.tencent.shadow.dynamic.host.PpsController
+com.cloudtech.shell.shadow.InitApplication: com.tencent.shadow.dynamic.host.PluginManager sPluginManager
+com.cloudtech.shell.gp.GpsHelper: java.lang.String getAdvertisingId()
+com.cloudtech.shell.shadow.InitApplication: boolean isProcess(android.content.Context,java.lang.String)
+com.tencent.shadow.core.runtime.container.ContentProviderDelegateProviderHolder: void notifyDelegateProviderHolderPrepare()
+com.tencent.shadow.core.common.BuildConfig: java.lang.String LIBRARY_PACKAGE_NAME
+com.tencent.shadow.dynamic.host.UuidManager: com.tencent.shadow.core.common.InstalledApk getPlugin(java.lang.String,java.lang.String)
+com.cloudtech.shell.shadow.ShadowLoader: void loadManagerPlugin(android.content.Context,com.cloudtech.shell.entity.ModuleData)
+com.tencent.shadow.dynamic.host.BasePluginProcessService: void onDestroy()
+com.cloudtech.shell.gp.AdvertisingIdClient$AdvertisingConnection
+com.tencent.shadow.core.runtime.container.HostContentProviderDelegate: android.net.Uri insert(android.net.Uri,android.content.ContentValues)
+com.tencent.shadow.dynamic.host.PluginProcessService: boolean mRuntimeLoaded
+com.cloudtech.shell.shadow.FixedPathPmUpdater: boolean wasUpdating()
+com.tencent.shadow.core.common.Logger: void warn(java.lang.String)
+com.cloudtech.shell.R$style: int PluginContainerActivity
+com.tencent.shadow.dynamic.host.FailedException: int ERROR_CODE_FILE_NOT_FOUND_EXCEPTION
+com.cloudtech.shell.shadow.ShadowLoader
+com.tencent.shadow.core.runtime.container.PluginContainerContentProvider: int update(android.net.Uri,android.content.ContentValues,java.lang.String,java.lang.String[])
+com.cloudtech.shell.receiver.AlarmReceiver
+com.tencent.shadow.dynamic.host.BasePluginProcessService: java.lang.Object sSingleInstanceFlag
+com.tencent.shadow.core.common.InstalledApk: java.lang.String oDexPath
+com.cloudtech.shell.gp.AdvertisingIdClient$AdvertisingConnection: void onServiceDisconnected(android.content.ComponentName)
+com.tencent.shadow.dynamic.host.UuidManager: int TRANSACTION_CODE_NOT_FOUND_EXCEPTION
+com.cloudtech.shell.gp.AdvertisingIdClient$AdInfo: java.lang.String getId()
+com.tencent.shadow.core.common.Logger: boolean isInfoEnabled()
+com.tencent.shadow.core.common.Logger: void debug(java.lang.String,java.lang.Throwable)
+com.cloudtech.shell.gp.AdvertisingIdClient$AdvertisingInterface: AdvertisingIdClient$AdvertisingInterface(android.os.IBinder)
+com.cloudtech.shell.gp.AdvertisingIdClient$AdvertisingConnection: android.os.IBinder getBinder()
+com.tencent.shadow.dynamic.host.DynamicRuntime: com.tencent.shadow.core.common.InstalledApk getLastRuntimeInfo(android.content.Context)
+com.tencent.shadow.dynamic.host.PpsBinder: boolean onTransact(int,android.os.Parcel,android.os.Parcel,int)
+com.tencent.shadow.core.common.BuildConfig
+com.cloudtech.shell.shadow.AndroidLoggerFactory: int LOG_LEVEL_DEBUG
+com.cloudtech.shell.shadow.InitApplication
+com.tencent.shadow.dynamic.host.PpsStatus: java.lang.String uuid
+com.tencent.shadow.dynamic.host.NotFoundException$1: java.lang.Object[] newArray(int)
+com.tencent.shadow.core.common.InstalledApk$1: InstalledApk$1()
+com.tencent.shadow.core.common.InstalledApk$1: com.tencent.shadow.core.common.InstalledApk[] newArray(int)
+com.cloudtech.shell.shadow.AndroidLoggerFactory: int LOG_LEVEL_WARN
+com.tencent.shadow.core.runtime.container.HostContentProviderDelegate: android.database.Cursor query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String)
+com.tencent.shadow.dynamic.host.PluginProcessService: void setUuidManager(com.tencent.shadow.dynamic.host.UuidManager)
+com.tencent.shadow.dynamic.host.BuildConfig
+com.tencent.shadow.dynamic.host.DynamicPluginManager: DynamicPluginManager(com.tencent.shadow.dynamic.host.PluginManagerUpdater)
+com.tencent.shadow.dynamic.host.UuidManager: com.tencent.shadow.core.common.InstalledApk getRuntime(java.lang.String)
+com.tencent.shadow.dynamic.host.NotFoundException$1: java.lang.Object createFromParcel(android.os.Parcel)
+com.tencent.shadow.core.common.InstalledApk: android.os.Parcelable$Creator CREATOR
+com.tencent.shadow.dynamic.host.DynamicPluginManager: com.tencent.shadow.dynamic.host.PluginManagerImpl mManagerImpl
+com.tencent.shadow.dynamic.host.PluginManagerUpdater: java.util.concurrent.Future update()
+com.cloudtech.shell.gp.AdvertisingIdClient$AdInfo: boolean limitAdTrackingEnabled
+com.tencent.shadow.core.common.InstalledApk: void writeToParcel(android.os.Parcel,int)
+com.tencent.shadow.dynamic.host.BuildConfig: BuildConfig()
+com.tencent.shadow.dynamic.host.LoaderImplLoader: java.lang.String sLoaderFactoryImplClassName
+com.tencent.shadow.dynamic.host.UuidManager: int TRANSACTION_getRuntime
+com.tencent.shadow.dynamic.host.FailedException: int ERROR_CODE_RELOAD_RUNTIME_EXCEPTION
+com.cloudtech.shell.gp.AdvertisingIdClient$AdvertisingInterface: boolean isLimitAdTrackingEnabled(boolean)
+com.tencent.shadow.core.runtime.container.PluginContainerContentProvider: java.lang.String getType(android.net.Uri)
+com.tencent.shadow.dynamic.host.ApkClassLoader
+com.tencent.shadow.dynamic.host.PpsStatus$1: PpsStatus$1()
+com.tencent.shadow.dynamic.host.FailedException: int ERROR_CODE_RELOAD_LOADER_EXCEPTION
+com.cloudtech.shell.gp.AdvertisingIdClient$AdvertisingConnection: java.util.concurrent.LinkedBlockingQueue queue
+com.tencent.shadow.core.runtime.container.PluginContainerContentProvider: android.database.Cursor query(android.net.Uri,java.lang.String[],java.lang.String,java.lang.String[],java.lang.String)
+com.cloudtech.shell.TimingJobService
+com.tencent.shadow.dynamic.host.UuidManager: <clinit>()
+com.tencent.shadow.dynamic.host.DynamicRuntime: void saveLastRuntimeInfo(android.content.Context,com.tencent.shadow.core.common.InstalledApk)
+com.tencent.shadow.dynamic.host.BasePluginProcessService$ActivityHolder: void onActivityCreated(android.app.Activity,android.os.Bundle)
+com.tencent.shadow.dynamic.host.PpsStatus: boolean loaderLoaded
+com.tencent.shadow.core.common.Logger: void warn(java.lang.String,java.lang.Throwable)
+com.tencent.shadow.dynamic.host.DynamicPluginManager: void enter(android.content.Context,long,android.os.Bundle,com.tencent.shadow.dynamic.host.EnterCallback)
+com.tencent.shadow.dynamic.host.BasePluginProcessService: BasePluginProcessService()
+com.tencent.shadow.dynamic.host.DynamicRuntime: java.lang.String KEY_RUNTIME_ODEX
+com.cloudtech.shell.shadow.AndroidLoggerFactory
+com.tencent.shadow.dynamic.host.PpsBinder: java.lang.String DESCRIPTOR
+com.tencent.shadow.dynamic.host.BinderUuidManager: com.tencent.shadow.core.common.InstalledApk getRuntime(java.lang.String)
+com.tencent.shadow.dynamic.host.PluginProcessService: com.tencent.shadow.dynamic.host.PpsStatus getPpsStatus()
+com.tencent.shadow.dynamic.host.PluginProcessService: com.tencent.shadow.dynamic.host.PluginLoaderImpl mPluginLoader
+com.tencent.shadow.core.common.Logger: void error(java.lang.String,java.lang.Throwable)
+com.tencent.shadow.core.runtime.container.PluginContainerContentProvider: int bulkInsert(android.net.Uri,android.content.ContentValues[])
+com.tencent.shadow.dynamic.host.PluginManagerImpl: void onDestroy()
+com.tencent.shadow.dynamic.host.BasePluginProcessService: void onTaskRemoved(android.content.Intent)
+com.tencent.shadow.core.common.InstalledApk: <clinit>()
+com.tencent.shadow.dynamic.host.BasePluginProcessService: boolean onUnbind(android.content.Intent)
+com.tencent.shadow.core.runtime.container.PluginContainerContentProvider: void onConfigurationChanged(android.content.res.Configuration)
+com.tencent.shadow.dynamic.host.PpsBinder: PpsBinder(com.tencent.shadow.dynamic.host.PluginProcessService)
+com.tencent.shadow.dynamic.host.FailedException: int ERROR_CODE_UUID_MANAGER_NULL_EXCEPTION
+com.tencent.shadow.dynamic.host.PluginLoaderImpl: void setUuidManager(com.tencent.shadow.dynamic.host.UuidManager)
+com.tencent.shadow.dynamic.host.BasePluginProcessService: void onCreate()
+com.tencent.shadow.dynamic.host.ImplLoader: java.lang.String[] loadWhiteList(com.tencent.shadow.core.common.InstalledApk)
+com.cloudtech.shell.shadow.FixedPathPmUpdater: java.io.File getLatest()
+com.tencent.shadow.dynamic.host.BasePluginProcessService$ActivityHolder
+com.tencent.shadow.dynamic.host.PluginProcessService: java.lang.String mUuid
+com.tencent.shadow.core.runtime.container.HostContentProviderDelegate: boolean onCreate()
+com.tencent.shadow.dynamic.host.DynamicRuntime$RuntimeClassLoader: DynamicRuntime$RuntimeClassLoader(java.lang.String,java.lang.String,java.lang.String,java.lang.ClassLoader)
+com.tencent.shadow.dynamic.host.PpsStatus: android.os.Parcelable$Creator CREATOR
+com.tencent.shadow.dynamic.host.PluginProcessService: <clinit>()
+com.tencent.shadow.core.common.BuildConfig: java.lang.String FLAVOR
+com.tencent.shadow.dynamic.host.BuildConfig: java.lang.String VERSION_NAME
+com.cloudtech.shell.shadow.InitApplication: void onApplicationCreate(android.content.Context,java.io.File)
+com.tencent.shadow.dynamic.host.ImplLoader: ImplLoader()
+com.tencent.shadow.dynamic.host.PpsStatus: PpsStatus(android.os.Parcel)
+com.tencent.shadow.dynamic.host.PpsStatus: boolean uuidManagerSet
+com.tencent.shadow.core.common.BuildConfig: java.lang.String VERSION_NAME
+com.tencent.shadow.dynamic.host.FailedException: void writeToParcel(android.os.Parcel,int)
+com.tencent.shadow.dynamic.host.ApkClassLoader: ApkClassLoader(com.tencent.shadow.core.common.InstalledApk,java.lang.ClassLoader,java.lang.String[],int)
+com.cloudtech.shell.shadow.InitApplication: InitApplication()
+com.tencent.shadow.dynamic.host.ChangeApkContextWrapper: java.lang.Object getSystemService(java.lang.String)
+com.tencent.shadow.dynamic.host.FailedException: int describeContents()
+com.tencent.shadow.core.runtime.container.PluginContainerContentProvider: com.tencent.shadow.core.runtime.container.HostContentProviderDelegate hostContentProviderDelegate
+com.tencent.shadow.dynamic.host.PpsStatus: int describeContents()
+com.tencent.shadow.dynamic.host.PpsStatus: void writeToParcel(android.os.Parcel,int)
+com.tencent.shadow.dynamic.host.LoaderImplLoader: LoaderImplLoader()
+com.tencent.shadow.dynamic.host.ManagerImplLoader: com.tencent.shadow.dynamic.host.PluginManagerImpl load()
+com.tencent.shadow.dynamic.host.BasePluginProcessService$ActivityHolder: void onActivityResumed(android.app.Activity)
+com.tencent.shadow.dynamic.host.PluginLoaderImpl
+com.tencent.shadow.dynamic.host.BasePluginProcessService$ActivityHolder: void onActivityStarted(android.app.Activity)
+com.tencent.shadow.core.common.LoggerFactory: LoggerFactory()
+com.tencent.shadow.core.runtime.container.ContentProviderDelegateProviderHolder$DelegateProviderHolderPrepareListener
+com.tencent.shadow.dynamic.host.UuidManager
+com.tencent.shadow.dynamic.host.DynamicRuntime: com.tencent.shadow.dynamic.host.DynamicRuntime$RuntimeClassLoader getRuntimeClassLoader()
+com.tencent.shadow.dynamic.host.PluginManagerUpdater: boolean wasUpdating()
+com.cloudtech.shell.R$string: R$string()
+com.tencent.shadow.dynamic.host.BuildConfig: java.lang.String LIBRARY_PACKAGE_NAME
+com.tencent.shadow.dynamic.host.DynamicRuntime: java.lang.String SP_NAME
+com.cloudtech.shell.gp.AdvertisingIdClient$AdvertisingConnection: boolean retrieved
+com.tencent.shadow.core.runtime.container.HostContentProviderDelegate: android.os.Bundle call(java.lang.String,java.lang.String,android.os.Bundle)
+com.tencent.shadow.dynamic.host.FailedException: FailedException(android.os.RemoteException)
+com.cloudtech.shell.shadow.AndroidLoggerFactory: java.util.concurrent.ConcurrentMap loggerMap
+com.tencent.shadow.core.common.Logger: void trace(java.lang.String)
+com.tencent.shadow.core.common.Logger: void debug(java.lang.String,java.lang.Object)
+com.tencent.shadow.dynamic.host.NotFoundException: int describeContents()
+com.tencent.shadow.core.common.Logger: void info(java.lang.String,java.lang.Object,java.lang.Object)
+com.cloudtech.shell.shadow.ShadowLoader: ShadowLoader()
+com.tencent.shadow.dynamic.host.NotFoundException
+com.cloudtech.shell.shadow.ShadowLoader: void loadPlugin(android.content.Context,com.cloudtech.shell.entity.ModulePo)
+com.tencent.shadow.dynamic.host.PluginProcessService: android.os.IBinder onBind(android.content.Intent)
+com.cloudtech.shell.shadow.AndroidLoggerFactory: int LOG_LEVEL_TRACE
+com.cloudtech.shell.gp.AdvertisingIdClient$AdvertisingInterface: android.os.IBinder binder
+com.cloudtech.shell.shadow.share.LoadPluginCallback: com.cloudtech.shell.shadow.share.LoadPluginCallback$Callback sCallback
+com.cloudtech.shell.R$style: int troop_Transparent
+com.cloudtech.shell.shadow.ShadowLoader: void loadOtherPlugin(android.content.Context,com.cloudtech.shell.entity.ModuleData)
+com.cloudtech.shell.receiver.AlarmReceiver: AlarmReceiver()
+com.tencent.shadow.core.common.Logger: void error(java.lang.String)
+com.tencent.shadow.core.common.LoggerFactory: com.tencent.shadow.core.common.Logger getLogger(java.lang.Class)
+com.tencent.shadow.core.runtime.container.HostContentProviderDelegate: int update(android.net.Uri,android.content.ContentValues,java.lang.String,java.lang.String[])
+com.cloudtech.shell.SdkShell
+com.tencent.shadow.dynamic.host.DynamicRuntime: boolean recoveryRuntime(android.content.Context)
+com.tencent.shadow.dynamic.host.PluginProcessService: void loadRuntime(java.lang.String)
+com.tencent.shadow.dynamic.host.DynamicRuntime: void hackParentClassLoader(java.lang.ClassLoader,java.lang.ClassLoader)
+com.tencent.shadow.dynamic.host.BuildConfig: java.lang.String BUILD_TYPE
+com.tencent.shadow.dynamic.host.DynamicRuntime: void hackParentToRuntime(com.tencent.shadow.core.common.InstalledApk,java.lang.ClassLoader)
+com.tencent.shadow.dynamic.host.PpsController: android.os.IBinder mRemote
+com.tencent.shadow.dynamic.host.ApkClassLoader: java.lang.String[] mInterfacePackageNames
+com.tencent.shadow.dynamic.host.FailedException: <clinit>()
+com.tencent.shadow.dynamic.host.EnterCallback: void onCloseLoadingView()
+com.tencent.shadow.dynamic.host.ManagerImplLoader: java.lang.String MANAGER_FACTORY_CLASS_NAME
+com.tencent.shadow.core.common.Logger: void error(java.lang.String,java.lang.Object[])
+com.tencent.shadow.dynamic.host.NotFoundException: android.os.Parcelable$Creator CREATOR
+com.tencent.shadow.core.runtime.container.HostContentProviderDelegate: int bulkInsert(android.net.Uri,android.content.ContentValues[])
+com.tencent.shadow.dynamic.host.UuidManager: int TRANSACTION_getPluginLoader
+com.cloudtech.shell.shadow.share.LoadPluginCallback: void setCallback(com.cloudtech.shell.shadow.share.LoadPluginCallback$Callback)
+com.tencent.shadow.dynamic.host.PluginProcessService: PluginProcessService()
+com.tencent.shadow.dynamic.host.PluginManager
+com.tencent.shadow.dynamic.host.PpsStatus$1: java.lang.Object createFromParcel(android.os.Parcel)
+com.tencent.shadow.dynamic.host.PpsStatus: PpsStatus(java.lang.String,boolean,boolean,boolean)
+com.tencent.shadow.dynamic.host.BasePluginProcessService
+com.tencent.shadow.core.common.Logger: void trace(java.lang.String,java.lang.Throwable)
+com.tencent.shadow.dynamic.host.FailedException: FailedException(java.lang.RuntimeException)
+com.cloudtech.shell.shadow.ShadowLoader: void loadMainPlugin(android.content.Context,com.cloudtech.shell.entity.ModuleData)
+com.tencent.shadow.core.common.LoggerFactory: com.tencent.shadow.core.common.ILoggerFactory sILoggerFactory
+com.tencent.shadow.dynamic.host.ChangeApkContextWrapper: android.content.res.Resources getResources()
+com.tencent.shadow.core.common.InstalledApk
+com.tencent.shadow.dynamic.host.PpsController: com.tencent.shadow.dynamic.host.PpsStatus getPpsStatus()
+com.tencent.shadow.dynamic.host.BinderUuidManager
+com.tencent.shadow.dynamic.host.PpsBinder: int TRANSACTION_getPluginLoader
+com.cloudtech.shell.gp.AdvertisingIdClient$AdInfo: boolean isLimitAdTrackingEnabled()
+com.cloudtech.shell.shadow.FixedPathPmUpdater
+com.tencent.shadow.dynamic.host.ImplLoader: java.lang.String[] getCustomWhiteList()
+com.tencent.shadow.dynamic.host.DynamicPluginManager: com.tencent.shadow.dynamic.host.PluginManagerUpdater mUpdater
+com.tencent.shadow.core.common.LoggerFactory: com.tencent.shadow.core.common.ILoggerFactory getILoggerFactory()
+com.tencent.shadow.dynamic.host.ChangeApkContextWrapper: android.content.res.Resources createResources(java.lang.String,android.content.Context)
+com.tencent.shadow.dynamic.host.FailedException$1: java.lang.Object[] newArray(int)
+com.tencent.shadow.core.common.LoggerFactory: void setILoggerFactory(com.tencent.shadow.core.common.ILoggerFactory)
+com.tencent.shadow.dynamic.host.ChangeApkContextWrapper: android.content.res.AssetManager getAssets()
+com.tencent.shadow.dynamic.host.FailedException
+com.tencent.shadow.dynamic.host.PluginProcessService: com.tencent.shadow.dynamic.host.PpsController wrapBinder(android.os.IBinder)
+com.tencent.shadow.core.common.ILoggerFactory: com.tencent.shadow.core.common.Logger getLogger(java.lang.String)
+com.tencent.shadow.dynamic.host.DynamicRuntime
+com.tencent.shadow.dynamic.host.BasePluginProcessService$ActivityHolder: void onActivityPaused(android.app.Activity)
+com.tencent.shadow.dynamic.host.DynamicRuntime: com.tencent.shadow.core.common.Logger mLogger
+com.tencent.shadow.dynamic.host.NotFoundException: NotFoundException(java.lang.String)
+com.tencent.shadow.core.runtime.container.ContentProviderDelegateProviderHolder: void setContentProviderDelegateProvider(com.tencent.shadow.core.runtime.container.ContentProviderDelegateProvider)
+com.tencent.shadow.dynamic.host.LoaderImplLoader: com.tencent.shadow.dynamic.host.PluginLoaderImpl load(com.tencent.shadow.core.common.InstalledApk,java.lang.String,android.content.Context)
+com.tencent.shadow.dynamic.host.PluginProcessService: android.app.Application$ActivityLifecycleCallbacks getActivityHolder()
+com.tencent.shadow.dynamic.host.EnterCallback: void onEnterComplete()
+com.tencent.shadow.dynamic.host.BasePluginProcessService$ActivityHolder: void onActivityDestroyed(android.app.Activity)
+com.tencent.shadow.dynamic.host.ChangeApkContextWrapper
+com.cloudtech.shell.entity.PluginType: com.cloudtech.shell.entity.PluginType valueOf(java.lang.String)
+com.tencent.shadow.dynamic.host.BasePluginProcessService$ActivityHolder: void onActivitySaveInstanceState(android.app.Activity,android.os.Bundle)
+com.tencent.shadow.core.common.LoggerFactory
+com.cloudtech.shell.SdkShell: void close()
+com.tencent.shadow.core.common.InstalledApk$1: java.lang.Object[] newArray(int)
+com.tencent.shadow.core.common.InstalledApk: InstalledApk(android.os.Parcel)
+com.tencent.shadow.dynamic.host.ChangeApkContextWrapper: java.lang.ClassLoader getClassLoader()
+com.tencent.shadow.core.runtime.container.HostContentProviderDelegate: void onTrimMemory(int)
+com.tencent.shadow.dynamic.host.UuidManager: int TRANSACTION_CODE_FAILED_EXCEPTION
+com.tencent.shadow.dynamic.host.BuildConfig: java.lang.String FLAVOR
+com.cloudtech.shell.SdkShell: SdkShell()
+com.tencent.shadow.dynamic.host.FailedException: android.os.Parcelable$Creator CREATOR
+com.cloudtech.shell.shadow.FixedPathPmUpdater: java.util.concurrent.Future isAvailable(java.io.File)
+com.tencent.shadow.core.common.Logger: boolean isTraceEnabled()
+com.tencent.shadow.core.runtime.container.HostContentProviderDelegate: int delete(android.net.Uri,java.lang.String,java.lang.String[])
+com.tencent.shadow.dynamic.host.ManagerImplLoader: java.lang.String[] getCustomWhiteList()
+com.cloudtech.shell.R$string
+com.tencent.shadow.dynamic.host.BinderUuidManager: com.tencent.shadow.core.common.InstalledApk getPluginLoader(java.lang.String)
+com.cloudtech.shell.SdkShell: void initialize(android.content.Context,java.lang.String)
+com.tencent.shadow.dynamic.host.PpsStatus$1: com.tencent.shadow.dynamic.host.PpsStatus createFromParcel(android.os.Parcel)
+com.tencent.shadow.dynamic.host.ManagerImplLoader: java.lang.String[] REMOTE_PLUGIN_MANAGER_INTERFACES
+com.cloudtech.shell.shadow.AndroidLoggerFactory: int LOG_LEVEL_ERROR
+com.tencent.shadow.dynamic.host.PpsBinder: int TRANSACTION_exit
+com.cloudtech.shell.shadow.FixedPathPmUpdater: java.io.File apk
+com.tencent.shadow.dynamic.host.PpsController: void exit()
+com.tencent.shadow.dynamic.host.DynamicRuntime: void removeLastRuntimeInfo(android.content.Context)
+com.tencent.shadow.dynamic.host.ApkClassLoader: java.lang.Class loadClass(java.lang.String,boolean)
+com.tencent.shadow.dynamic.host.BinderUuidManager: BinderUuidManager(android.os.IBinder)
+com.cloudtech.shell.gp.AdvertisingIdClient$AdvertisingConnection: AdvertisingIdClient$AdvertisingConnection(com.cloudtech.shell.gp.AdvertisingIdClient$1)
+com.tencent.shadow.core.common.ILoggerFactory
+com.cloudtech.shell.R: R()
+com.tencent.shadow.core.common.BuildConfig: int VERSION_CODE
+com.cloudtech.shell.shadow.AndroidLoggerFactory: com.cloudtech.shell.shadow.AndroidLoggerFactory sInstance
+com.tencent.shadow.core.common.InstalledApk: java.lang.String apkFilePath
+com.tencent.shadow.core.runtime.container.PluginContainerContentProvider: android.os.ParcelFileDescriptor openFile(android.net.Uri,java.lang.String,android.os.CancellationSignal)
+com.tencent.shadow.dynamic.host.ApkClassLoader: java.lang.ClassLoader mGrandParent
+com.tencent.shadow.core.common.Logger: void info(java.lang.String,java.lang.Throwable)
+com.tencent.shadow.core.common.Logger: void trace(java.lang.String,java.lang.Object[])
+com.tencent.shadow.dynamic.host.PluginManagerImpl
+com.tencent.shadow.core.common.Logger: void info(java.lang.String)
+com.tencent.shadow.dynamic.host.UuidManager: java.lang.String DESCRIPTOR
+com.tencent.shadow.dynamic.host.ManagerImplLoader: <clinit>()
+com.tencent.shadow.core.runtime.container.ContentProviderDelegateProviderHolder
+com.tencent.shadow.dynamic.host.ChangeApkContextWrapper: android.content.res.Resources$Theme getTheme()
+com.tencent.shadow.dynamic.host.EnterCallback
+com.tencent.shadow.core.runtime.container.HostContentProviderDelegate: java.lang.String getType(android.net.Uri)
+com.tencent.shadow.dynamic.host.PluginManagerImpl: void onSaveInstanceState(android.os.Bundle)
+com.cloudtech.shell.shadow.AndroidLoggerFactory: com.tencent.shadow.core.common.ILoggerFactory getInstance()
+com.tencent.shadow.core.runtime.container.PluginContainerContentProvider$1: PluginContainerContentProvider$1(com.tencent.shadow.core.runtime.container.PluginContainerContentProvider)
+com.tencent.shadow.core.runtime.container.HostContentProviderDelegate: void onConfigurationChanged(android.content.res.Configuration)
+com.tencent.shadow.dynamic.host.PpsStatus$1: com.tencent.shadow.dynamic.host.PpsStatus[] newArray(int)
+com.tencent.shadow.core.runtime.container.PluginContainerContentProvider: int delete(android.net.Uri,java.lang.String,java.lang.String[])
+com.tencent.shadow.dynamic.host.BasePluginProcessService: <clinit>()
+com.tencent.shadow.core.common.Logger: java.lang.String getName()
+com.cloudtech.shell.gp.AdvertisingIdClient$AdvertisingConnection: AdvertisingIdClient$AdvertisingConnection()
+com.tencent.shadow.core.common.InstalledApk: java.lang.String libraryPath
+com.tencent.shadow.core.runtime.container.HostContentProviderDelegate: android.os.ParcelFileDescriptor openFile(android.net.Uri,java.lang.String)
+com.tencent.shadow.dynamic.host.PpsBinder
+com.tencent.shadow.core.common.BuildConfig: BuildConfig()
+com.tencent.shadow.dynamic.host.EnterCallback: void onShowLoadingView(android.view.View)
+com.tencent.shadow.core.runtime.container.ContentProviderDelegateProviderHolder$DelegateProviderHolderPrepareListener: void onPrepare()
+com.tencent.shadow.core.runtime.container.ContentProviderDelegateProvider
+com.tencent.shadow.dynamic.host.DynamicRuntime$RuntimeClassLoader
+com.tencent.shadow.dynamic.host.NotFoundException: <clinit>()
+com.tencent.shadow.core.runtime.container.HostContentProviderDelegate
+com.cloudtech.shell.shadow.MainPluginProcessService
+com.tencent.shadow.dynamic.host.BasePluginProcessService$ActivityHolder: BasePluginProcessService$ActivityHolder()
+com.cloudtech.shell.entity.PluginType: com.cloudtech.shell.entity.PluginType[] values()
+com.cloudtech.shell.shadow.MainPluginProcessService: MainPluginProcessService()
+com.tencent.shadow.dynamic.host.BuildConfig: boolean DEBUG
+com.tencent.shadow.dynamic.host.DynamicPluginManager
+com.tencent.shadow.dynamic.host.FailedException: java.lang.String errorMessage
+com.cloudtech.shell.TimingJobService: TimingJobService()
+com.tencent.shadow.dynamic.host.ManagerFactory
+com.tencent.shadow.core.runtime.container.ContentProviderDelegateProviderHolder: void setDelegateProviderHolderPrepareListener(com.tencent.shadow.core.runtime.container.ContentProviderDelegateProviderHolder$DelegateProviderHolderPrepareListener)
+com.cloudtech.shell.shadow.InitApplication: com.tencent.shadow.dynamic.host.PluginManager getPluginManager()
+com.cloudtech.shell.gp.AdvertisingIdClient$AdInfo
+com.tencent.shadow.dynamic.host.ChangeApkContextWrapper: android.view.LayoutInflater mLayoutInflater
+com.tencent.shadow.dynamic.host.PpsController: void loadPluginLoader(java.lang.String)
+com.cloudtech.shell.gp.GpsHelper
+com.tencent.shadow.dynamic.host.PluginManagerUpdater: java.io.File getLatest()
+com.tencent.shadow.dynamic.host.PpsBinder: int TRANSACTION_CODE_NO_EXCEPTION
+com.tencent.shadow.dynamic.host.PpsBinder: int TRANSACTION_getPpsStatus
+com.cloudtech.shell.shadow.FixedPathPmUpdater: FixedPathPmUpdater(java.io.File)
+com.cloudtech.shell.SdkShell: android.os.Handler handler
+com.tencent.shadow.dynamic.host.LoaderImplLoader: <clinit>()
+com.tencent.shadow.core.common.Logger: void info(java.lang.String,java.lang.Object[])
+com.tencent.shadow.core.runtime.container.HostContentProviderDelegate: void onLowMemory()
+com.tencent.shadow.core.runtime.container.ContentProviderDelegateProviderHolder: com.tencent.shadow.core.runtime.container.ContentProviderDelegateProviderHolder$DelegateProviderHolderPrepareListener sPrepareListener
+com.tencent.shadow.dynamic.host.DynamicPluginManager: com.tencent.shadow.dynamic.host.PluginManager getManagerImpl()
+com.tencent.shadow.dynamic.host.LoaderImplLoader: java.lang.String[] getCustomWhiteList()
+com.cloudtech.shell.gp.AdvertisingIdClient$AdvertisingInterface
+com.cloudtech.shell.R$style: R$style()
+com.tencent.shadow.core.common.InstalledApk: int describeContents()
+com.tencent.shadow.core.runtime.container.PluginContainerContentProvider: android.os.ParcelFileDescriptor openFile(android.net.Uri,java.lang.String)
+com.tencent.shadow.dynamic.host.ManagerFactory: com.tencent.shadow.dynamic.host.PluginManagerImpl buildManager(android.content.Context)
+com.tencent.shadow.dynamic.host.DynamicRuntime: void recoveryClassLoader()
+com.tencent.shadow.core.common.InstalledApk$1
+com.tencent.shadow.core.common.Logger: void error(java.lang.String,java.lang.Object,java.lang.Object)
+com.tencent.shadow.core.runtime.container.PluginContainerContentProvider: boolean onCreate()
+com.tencent.shadow.core.runtime.container.PluginContainerContentProvider: java.lang.String TAG
+com.tencent.shadow.dynamic.host.DynamicRuntime: java.lang.reflect.Field getParentField()
+com.tencent.shadow.dynamic.host.BuildConfig: java.lang.String APPLICATION_ID
+com.tencent.shadow.dynamic.host.LoaderFactory: com.tencent.shadow.dynamic.host.PluginLoaderImpl buildLoader(java.lang.String,android.content.Context)
+com.cloudtech.shell.gp.AdvertisingIdClient$AdInfo: AdvertisingIdClient$AdInfo(java.lang.String,boolean)
+com.tencent.shadow.dynamic.host.PpsController: android.os.IBinder getPluginLoader()
+com.tencent.shadow.dynamic.host.BinderUuidManager: android.os.IBinder mRemote
+com.tencent.shadow.core.common.InstalledApk: byte[] parcelExtras
+com.cloudtech.shell.shadow.AndroidLoggerFactory: com.tencent.shadow.core.common.Logger getLogger(java.lang.String)
+com.tencent.shadow.core.runtime.container.PluginContainerContentProvider: com.tencent.shadow.core.runtime.container.HostContentProviderDelegate access$002(com.tencent.shadow.core.runtime.container.PluginContainerContentProvider,com.tencent.shadow.core.runtime.container.HostContentProviderDelegate)
+com.tencent.shadow.dynamic.host.LoaderFactory
+com.tencent.shadow.dynamic.host.PpsStatus: boolean runtimeLoaded
+com.cloudtech.shell.shadow.share.LoadPluginCallback$Callback
+com.tencent.shadow.core.common.Logger: void info(java.lang.String,java.lang.Object)
+com.cloudtech.shell.shadow.share.LoadPluginCallback: com.cloudtech.shell.shadow.share.LoadPluginCallback$Callback getCallback()
+com.cloudtech.shell.shadow.FixedPathPmUpdater: java.util.concurrent.Future update()
+com.tencent.shadow.core.common.Logger: void debug(java.lang.String,java.lang.Object[])
+com.tencent.shadow.core.common.BuildConfig: java.lang.String BUILD_TYPE
+com.cloudtech.shell.gp.AdvertisingIdClient$AdvertisingConnection: void onServiceConnected(android.content.ComponentName,android.os.IBinder)
+com.tencent.shadow.dynamic.host.PluginProcessService: void exit()
+com.tencent.shadow.dynamic.host.DynamicRuntime$RuntimeClassLoader: java.lang.String apkPath
+com.tencent.shadow.dynamic.host.FailedException$1
+com.tencent.shadow.dynamic.host.BasePluginProcessService: com.tencent.shadow.core.common.Logger mLogger
+com.tencent.shadow.dynamic.host.PpsBinder: int TRANSACTION_loadRuntime
+com.tencent.shadow.dynamic.host.NotFoundException: NotFoundException(android.os.Parcel)
+com.tencent.shadow.core.common.Logger: void trace(java.lang.String,java.lang.Object)
+com.tencent.shadow.dynamic.host.UuidManager: com.tencent.shadow.core.common.InstalledApk getPluginLoader(java.lang.String)
+com.tencent.shadow.dynamic.host.FailedException$1: com.tencent.shadow.dynamic.host.FailedException[] newArray(int)
+com.tencent.shadow.dynamic.host.DynamicRuntime: java.lang.String KEY_RUNTIME_APK
+com.tencent.shadow.dynamic.host.PluginManagerImpl: void onCreate(android.os.Bundle)
+com.tencent.shadow.dynamic.host.FailedException: FailedException(int,java.lang.String)
+com.tencent.shadow.dynamic.host.DynamicRuntime$RuntimeClassLoader: java.lang.String access$000(com.tencent.shadow.dynamic.host.DynamicRuntime$RuntimeClassLoader)
+com.tencent.shadow.dynamic.host.ImplLoader
+com.tencent.shadow.dynamic.host.FailedException: int ERROR_CODE_RUNTIME_EXCEPTION
+com.tencent.shadow.dynamic.host.PluginProcessService: com.tencent.shadow.dynamic.host.BasePluginProcessService$ActivityHolder sActivityHolder

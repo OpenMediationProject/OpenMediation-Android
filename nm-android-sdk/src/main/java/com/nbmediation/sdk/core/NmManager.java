@@ -6,6 +6,7 @@ package com.nbmediation.sdk.core;
 import android.app.Activity;
 import android.text.TextUtils;
 
+import com.nbmediation.sdk.InitCallback;
 import com.nbmediation.sdk.core.imp.interstitialad.IsManager;
 import com.nbmediation.sdk.core.imp.rewardedvideo.RvManager;
 import com.nbmediation.sdk.interstitial.InterstitialAdListener;
@@ -14,7 +15,6 @@ import com.nbmediation.sdk.mediation.MediationRewardVideoListener;
 import com.nbmediation.sdk.utils.AdLog;
 import com.nbmediation.sdk.utils.AdsUtil;
 import com.nbmediation.sdk.utils.DeveloperLog;
-import com.nbmediation.sdk.utils.helper.IapHelper;
 import com.nbmediation.sdk.utils.PlacementUtils;
 import com.nbmediation.sdk.utils.SceneUtil;
 import com.nbmediation.sdk.utils.cache.DataCache;
@@ -23,11 +23,11 @@ import com.nbmediation.sdk.utils.constant.KeyConstants;
 import com.nbmediation.sdk.utils.error.Error;
 import com.nbmediation.sdk.utils.error.ErrorCode;
 import com.nbmediation.sdk.utils.event.EventId;
+import com.nbmediation.sdk.utils.helper.IapHelper;
 import com.nbmediation.sdk.utils.model.Configurations;
 import com.nbmediation.sdk.utils.model.Placement;
 import com.nbmediation.sdk.utils.model.Scene;
 import com.nbmediation.sdk.video.RewardedVideoListener;
-import com.nbmediation.sdk.InitCallback;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,7 +40,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.nbmediation.sdk.NmAds.*;
+import static com.nbmediation.sdk.NmAds.AD_TYPE;
 
 /**
  * The type Nm manager.

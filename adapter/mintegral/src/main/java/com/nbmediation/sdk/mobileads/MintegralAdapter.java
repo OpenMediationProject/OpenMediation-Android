@@ -3,20 +3,19 @@
 
 package com.nbmediation.sdk.mobileads;
 
-import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.nbmediation.sdk.mediation.CustomAdsAdapter;
-import com.nbmediation.sdk.mediation.InterstitialAdCallback;
-import com.nbmediation.sdk.mediation.MediationInfo;
-import com.nbmediation.sdk.mediation.RewardedVideoCallback;
 import com.mintegral.msdk.MIntegralSDK;
 import com.mintegral.msdk.interstitialvideo.out.InterstitialVideoListener;
 import com.mintegral.msdk.interstitialvideo.out.MTGInterstitialVideoHandler;
 import com.mintegral.msdk.out.MIntegralSDKFactory;
 import com.mintegral.msdk.out.MTGRewardVideoHandler;
 import com.mintegral.msdk.out.RewardVideoListener;
+import com.nbmediation.sdk.mediation.CustomAdsAdapter;
+import com.nbmediation.sdk.mediation.InterstitialAdCallback;
+import com.nbmediation.sdk.mediation.MediationInfo;
+import com.nbmediation.sdk.mediation.RewardedVideoCallback;
 import com.nbmediation.sdk.mobileads.mintegral.BuildConfig;
 
 import java.util.Map;
@@ -48,7 +47,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void initRewardedVideo(Activity activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
+    public void initRewardedVideo(Context activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
         String error = check(activity);
         if (TextUtils.isEmpty(error)) {
@@ -66,7 +65,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void loadRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
@@ -100,7 +99,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void showRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (!TextUtils.isEmpty(error)) {
@@ -120,7 +119,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
+    public void initInterstitialAd(Context activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
         String error = check(activity);
         if (TextUtils.isEmpty(error)) {
@@ -138,7 +137,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    public void loadInterstitialAd(Context activity, String adUnitId, InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
@@ -173,7 +172,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    public void showInterstitialAd(Context activity, String adUnitId, InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (!TextUtils.isEmpty(error)) {

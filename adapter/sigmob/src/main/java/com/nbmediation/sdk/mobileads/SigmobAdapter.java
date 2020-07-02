@@ -4,6 +4,7 @@
 package com.nbmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 
 import com.nbmediation.sdk.mediation.CustomAdsAdapter;
@@ -48,7 +49,7 @@ public class SigmobAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void initRewardedVideo(Activity activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
+    public void initRewardedVideo(Context activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
         String error = check(activity);
         String appId = null;
@@ -72,19 +73,19 @@ public class SigmobAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void loadRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, callback);
         loadRvAd(activity, adUnitId, callback);
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras,
+    public void loadRewardedVideo(Context activity, String adUnitId, Map<String, Object> extras,
                                   RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
         loadRvAd(activity, adUnitId, callback);
     }
 
-    private void loadRvAd(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    private void loadRvAd(Context activity, String adUnitId, RewardedVideoCallback callback) {
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
             WindRewardAdRequest request = mSigAds.get(adUnitId);
@@ -103,7 +104,7 @@ public class SigmobAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void showRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
 
         String error = check(activity, adUnitId);
@@ -116,7 +117,7 @@ public class SigmobAdapter extends CustomAdsAdapter {
         WindRewardAdRequest request = mSigAds.get(adUnitId);
         if (request != null) {
             WindRewardedVideoAd windRewardedVideoAd = WindRewardedVideoAd.sharedInstance();
-            windRewardedVideoAd.show(activity, request);
+            windRewardedVideoAd.show((Activity) activity, request);
             mSigAds.remove(adUnitId);
         } else {
             if (callback != null) {
@@ -135,7 +136,7 @@ public class SigmobAdapter extends CustomAdsAdapter {
     }
 
 
-    private void initSdk(final Activity activity, String appId, String appKey) {
+    private void initSdk(final Context activity, String appId, String appKey) {
         WindAds ads = WindAds.sharedAds();
 
         ads.startWithOptions(activity, new WindAdOptions(appId, appKey));

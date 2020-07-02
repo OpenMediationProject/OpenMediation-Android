@@ -4,6 +4,7 @@
 package com.nbmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
@@ -59,7 +60,7 @@ public class TapjoyAdapter extends CustomAdsAdapter implements TJConnectListener
         return MediationInfo.MEDIATION_ID_11;
     }
 
-    private synchronized void initSDK(final Activity activity) {
+    private synchronized void initSDK(final Context activity) {
         mInitState = InitState.INIT_PENDING;
         Tapjoy.limitedConnect(activity.getApplicationContext(), mAppKey, this);
     }
@@ -94,14 +95,14 @@ public class TapjoyAdapter extends CustomAdsAdapter implements TJConnectListener
     }
 
     @Override
-    public void initRewardedVideo(Activity activity, Map<String, Object> dataMap
+    public void initRewardedVideo(Context activity, Map<String, Object> dataMap
             , RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
         String error = check(activity);
         if (TextUtils.isEmpty(error)) {
             switch (mInitState) {
                 case NOT_INIT:
-                    Tapjoy.setActivity(activity);
+                    Tapjoy.setActivity((Activity) activity);
                     initSDK(activity);
                     if (dataMap.get("pid") != null && callback != null) {
                         mVideoCallbacks.put(requestVideoAd((String) dataMap.get("pid")), callback);
@@ -133,7 +134,7 @@ public class TapjoyAdapter extends CustomAdsAdapter implements TJConnectListener
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void loadRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
@@ -164,7 +165,7 @@ public class TapjoyAdapter extends CustomAdsAdapter implements TJConnectListener
     }
 
     @Override
-    public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void showRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
         if (TextUtils.isEmpty(adUnitId)) {
             if (callback != null) {
@@ -196,13 +197,13 @@ public class TapjoyAdapter extends CustomAdsAdapter implements TJConnectListener
     }
 
     @Override
-    public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
+    public void initInterstitialAd(Context activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
         String error = check(activity);
         if (TextUtils.isEmpty(error)) {
             switch (mInitState) {
                 case NOT_INIT:
-                    Tapjoy.setActivity(activity);
+                    Tapjoy.setActivity((Activity) activity);
                     initSDK(activity);
                     if (dataMap.get("pid") != null && callback != null) {
                         mInterstitialAdCallbacks.put(requestInterstitialAd((String) dataMap.get("pid")), callback);
@@ -234,7 +235,7 @@ public class TapjoyAdapter extends CustomAdsAdapter implements TJConnectListener
     }
 
     @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    public void loadInterstitialAd(Context activity, String adUnitId, InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
@@ -265,7 +266,7 @@ public class TapjoyAdapter extends CustomAdsAdapter implements TJConnectListener
     }
 
     @Override
-    public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    public void showInterstitialAd(Context activity, String adUnitId, InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
         if (TextUtils.isEmpty(adUnitId)) {
             if (callback != null) {

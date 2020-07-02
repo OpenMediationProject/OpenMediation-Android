@@ -4,6 +4,7 @@
 package com.nbmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 
 import com.adtiming.mediationsdk.AdTimingAds;
@@ -57,19 +58,19 @@ public class AdTimingAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void onResume(Activity activity) {
+    public void onResume(Context activity) {
         super.onResume(activity);
-        AdTimingAds.onResume(activity);
+        AdTimingAds.onResume((Activity) activity);
     }
 
     @Override
-    public void onPause(Activity activity) {
-        AdTimingAds.onPause(activity);
+    public void onPause(Context activity) {
+        AdTimingAds.onPause((Activity) activity);
         super.onPause(activity);
     }
 
     @Override
-    public void initRewardedVideo(Activity activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
+    public void initRewardedVideo(Context activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
         String error = check(activity);
         if (!TextUtils.isEmpty(error)) {
@@ -98,7 +99,7 @@ public class AdTimingAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void loadRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (!TextUtils.isEmpty(error)) {
@@ -125,7 +126,7 @@ public class AdTimingAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void showRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
         if (!mRvCallback.containsKey(adUnitId)) {
             mRvCallback.put(adUnitId, callback);
@@ -151,7 +152,7 @@ public class AdTimingAdapter extends CustomAdsAdapter {
 
 
     @Override
-    public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
+    public void initInterstitialAd(Context activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
         String error = check(activity);
         if (!TextUtils.isEmpty(error)) {
@@ -180,7 +181,7 @@ public class AdTimingAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    public void loadInterstitialAd(Context activity, String adUnitId, InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (!TextUtils.isEmpty(error)) {
@@ -207,7 +208,7 @@ public class AdTimingAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    public void showInterstitialAd(Context activity, String adUnitId, InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
         if (!mIsCallback.containsKey(adUnitId)) {
             mIsCallback.put(adUnitId, callback);
@@ -231,9 +232,9 @@ public class AdTimingAdapter extends CustomAdsAdapter {
         return AdTimingManager.getInstance().isInterstitialAdReady(adUnitId);
     }
 
-    private void initSDK(Activity activity, String appKey) {
+    private void initSDK(Context activity, String appKey) {
         mInitState = InitState.INIT_PENDING;
-        AdTimingAds.init(activity, appKey, new InitCallback() {
+        AdTimingAds.init((Activity) activity, appKey, new InitCallback() {
             @Override
             public void onSuccess() {
                 mInitState = InitState.INIT_SUCCESS;

@@ -4,17 +4,19 @@
 package com.nbmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 
+import com.chartboost.sdk.Chartboost;
+import com.chartboost.sdk.ChartboostDelegate;
+import com.chartboost.sdk.Model.CBError;
 import com.nbmediation.sdk.mediation.CustomAdsAdapter;
 import com.nbmediation.sdk.mediation.InterstitialAdCallback;
 import com.nbmediation.sdk.mediation.MediationInfo;
 import com.nbmediation.sdk.mediation.RewardedVideoCallback;
 import com.nbmediation.sdk.mobileads.chartboost.BuildConfig;
 import com.nbmediation.sdk.utils.AdLog;
-import com.chartboost.sdk.Chartboost;
-import com.chartboost.sdk.ChartboostDelegate;
-import com.chartboost.sdk.Model.CBError;
+import com.nbmediation.sdk.utils.HandlerUtil;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,11 +42,11 @@ public class ChartboostAdapter extends CustomAdsAdapter {
         mIsCallbacks = new ConcurrentHashMap<>();
     }
 
-    private void initSDK(final Activity activity) {
+    private void initSDK(final Context activity) {
         AdLog.getSingleton().LogD("init chartboost sdk");
         if (!hasInit.get()) {
             mCbDelegate = new CbCallback();
-            activity.runOnUiThread(new Runnable() {
+            HandlerUtil.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -53,7 +55,7 @@ public class ChartboostAdapter extends CustomAdsAdapter {
                         String appId = tmp[0];
                         String signature = tmp[1];
                         Chartboost.setPIDataUseConsent(activity, Chartboost.CBPIDataUseConsent.YES_BEHAVIORAL);
-                        Chartboost.startWithAppId(activity.getApplication(), appId, signature);
+                        Chartboost.startWithAppId(((Activity) activity).getApplication(), appId, signature);
                         Chartboost.setDelegate(mCbDelegate);
                         Chartboost.setMediation(Chartboost.CBMediation.CBMediationOther, getAdapterVersion(), "");
                         Chartboost.setShouldRequestInterstitialsInFirstSession(false);
@@ -97,7 +99,7 @@ public class ChartboostAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void initRewardedVideo(Activity activity, Map<String, Object> dataMap
+    public void initRewardedVideo(Context activity, Map<String, Object> dataMap
             , RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
         String checkError = check(activity);
@@ -114,7 +116,7 @@ public class ChartboostAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void loadRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, callback);
         String checkError = check(activity, adUnitId);
         if (TextUtils.isEmpty(checkError)) {
@@ -137,7 +139,7 @@ public class ChartboostAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void showRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         String checkError = check(activity, adUnitId);
         if (TextUtils.isEmpty(checkError)) {
             if (Chartboost.hasRewardedVideo(adUnitId)) {
@@ -162,7 +164,7 @@ public class ChartboostAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
+    public void initInterstitialAd(Context activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
         String checkError = check(activity);
         if (TextUtils.isEmpty(checkError)) {
@@ -178,7 +180,7 @@ public class ChartboostAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    public void loadInterstitialAd(Context activity, String adUnitId, InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, callback);
         String checkError = check(activity, adUnitId);
         if (TextUtils.isEmpty(checkError)) {
@@ -201,7 +203,7 @@ public class ChartboostAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    public void showInterstitialAd(Context activity, String adUnitId, InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
         String checkError = check(activity, adUnitId);
         if (TextUtils.isEmpty(checkError)) {

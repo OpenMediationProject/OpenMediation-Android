@@ -1,8 +1,32 @@
-include ':adapter:applovin', ':adapter:chartboost', ':adapter:adcolony', ':adapter:mintegral', ':adapter:adtiming',
-        ':adapter:tapjoy', ':adapter:vungle', ':adapter:tiktok', ':adapter:ironsource',
-        ':adapter:unity', ':adapter:facebook', ':adapter:mopub', ':adapter:fyber',
-        ':nm-android-sdk', ':adapter:admob', ':adapter:sigmob', ':app',
-        ':adapter_cn:tiktok', ':adapter_cn:tencentad'
-rootProject.name = 'AdTiming-OpenMediation-Android'
-include ':adapter_cn:hyadxopen', ':adapter_cn:cloudmobi', ':adapter_cn:tc056d',
-        ':adapter_cn:alion',':adapter_cn:zyt',':adapter_cn:ks'
+include ':adapter:applovin',
+        ':adapter:chartboost',
+        ':adapter:adcolony',
+        ':adapter:mintegral',
+        ':adapter:adtiming',
+        ':adapter:tapjoy',
+        ':adapter:vungle',
+        ':adapter:tiktok',
+        ':adapter:ironsource',
+        ':adapter:unity',
+        ':adapter:facebook',
+        ':adapter:mopub',
+        ':adapter:fyber',
+
+        ':adapter:admob',
+        ':adapter:sigmob',
+        ':app',
+        ':adapter_cn:tiktok',
+        ':adapter_cn:tencentad'
+rootProject.name = 'OpenMediation-Android'
+include ':adapter_cn:hyadxopen',
+        ':adapter_cn:cloudmobi',
+        ':adapter_cn:tc056d',
+        ':adapter_cn:alion',
+        ':adapter_cn:zyt',
+        ':adapter_cn:ks',
+        ':adapter_cn:agsdk'
+include ':adapter_host:host-app', ':adapter_host:host-online-plugin'
+include ':nm-android-sdk', ':adapter_plugin:plugin-main-lib',
+        ':adapter_plugin:plugin-loader', ':adapter_plugin:plugin-manager',
+        ':adapter_plugin:plugin-runtime', 'adapter_plugin:plugin-tiktok-apk',
+        'adapter_plugin:plugin-main', 'adapter_plugin:plugin-agsdk-plugin1-apk'

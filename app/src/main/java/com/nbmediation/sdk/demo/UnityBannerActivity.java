@@ -3,9 +3,9 @@
 
 package com.nbmediation.sdk.demo;
 
-import android.app.Activity;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -16,7 +16,7 @@ import com.nbmediation.sdk.api.unity.NmSdk;
 import com.nbmediation.sdk.demo.utils.NewApiUtils;
 import com.nbmediation.sdk.utils.error.Error;
 
-public class UnityBannerActivity extends Activity {
+public class UnityBannerActivity extends AppCompatActivity {
 
 
     @Override

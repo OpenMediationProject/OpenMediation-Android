@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#B9BEB9"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="184dp"
+            android:layout_height="80dp"
+            android:layout_gravity="center"
+            app:srcCompat="@mipmap/ic_launcher_round" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="AdTiming SDK Demo"
+            android:textColor="#000000"
+            android:textSize="30sp" />
+
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/btn_reward_video"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/btn_background"
+                android:enabled="false"
+                android:onClick="showRewardVideo"
+                android:text="Reward Video Ad Loading..."
+                android:textAllCaps="false"
+                android:textSize="20sp" />
+
+            <Button
+                android:id="@+id/btn_interstitial"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/btn_background"
+                android:enabled="false"
+                android:onClick="showInterstitial"
+                android:text="Interstitial Ad Loading..."
+                android:textAllCaps="false"
+                android:textSize="20sp" />
+
+            <Button
+                android:id="@+id/btn_banner"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/btn_background"
+                android:onClick="loadAndShowBanner"
+                android:text="Load And Show Banner Ad"
+                android:textAllCaps="false"
+                android:textSize="20sp" />
+
+            <Button
+                android:id="@+id/btn_native"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/btn_background"
+                android:onClick="loadAndShowNative"
+                android:text="Load And Show Native Ad"
+                android:textAllCaps="false"
+                android:textSize="20sp" />
+
+
+            <Button
+                android:id="@+id/btn_load_main"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/btn_background"
+                android:onClick="loadMainPlugin"
+                android:text="Load Main Plugin"
+                android:textAllCaps="false"
+                android:textSize="20sp" />
+
+            <Button
+                android:id="@+id/btn_load_plugin"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/btn_background"
+                android:onClick="loadOtherPlugin"
+                android:text="Load Other Plugin"
+                android:textAllCaps="false"
+                android:textSize="20sp" />
+
+            <Button
+                android:id="@+id/btn_start_plugin"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/btn_background"
+                android:onClick="startPlugin"
+                android:text="Load Start Plugin"
+                android:textAllCaps="false"
+                android:textSize="20sp" />
+
+            <Button
+                android:id="@+id/btn_init"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/btn_background"
+                android:onClick="initSdk"
+                android:text="Init SDK"
+                android:textColor="#000000"
+                android:textAllCaps="false"
+                android:textSize="20sp" />
+
+            <LinearLayout
+                android:id="@+id/ad_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:gravity="center"
+                android:orientation="horizontal"></LinearLayout>
+
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

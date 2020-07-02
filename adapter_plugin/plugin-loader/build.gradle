@@ -1,0 +1,39 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion project.COMPILE_SDK_VERSION
+    defaultConfig {
+        applicationId 'com.cloudmobi.plugin.loader'//project.HOST_APP_APPLICATION_ID //applicationId不重要
+        minSdkVersion project.MIN_SDK_VERSION
+        targetSdkVersion project.TARGET_SDK_VERSION
+        versionCode project.VERSION_CODE
+        versionName project.VERSION_NAME
+    }
+    buildTypes {
+        debug {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            signingConfig signingConfigs.create("release")
+            signingConfig.initWith(buildTypes.debug.signingConfig)
+        }
+    }
+}
+
+dependencies {
+    implementation "com.tencent.shadow.dynamic:loader-impl:$shadow_version"
+
+    compileOnly "com.tencent.shadow.core:activity-container:$shadow_version"
+    compileOnly "com.tencent.shadow.core:common:$shadow_version"
+    //下面这行依赖是为了防止在proguard的时候找不到LoaderFactory接口
+    compileOnly "com.tencent.shadow.dynamic:host:$shadow_version"
+
+    compileOnly project(":adapter_host:host-online-plugin")
+}
+
+

@@ -4,14 +4,15 @@
 package com.nbmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.SystemClock;
 import android.text.TextUtils;
 
-import com.nbmediation.sdk.mobileads.tencentad.BuildConfig;
 import com.nbmediation.sdk.mediation.CustomAdsAdapter;
 import com.nbmediation.sdk.mediation.InterstitialAdCallback;
 import com.nbmediation.sdk.mediation.MediationInfo;
 import com.nbmediation.sdk.mediation.RewardedVideoCallback;
+import com.nbmediation.sdk.mobileads.tencentad.BuildConfig;
 import com.nbmediation.sdk.utils.AdLog;
 import com.qq.e.ads.interstitial2.UnifiedInterstitialAD;
 import com.qq.e.ads.interstitial2.UnifiedInterstitialADListener;
@@ -24,8 +25,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public class TencentAdAdapter extends CustomAdsAdapter
-{
+public class TencentAdAdapter extends CustomAdsAdapter {
     private static String TAG = "OM-TencentAd: ";
     private ConcurrentMap<String, RewardVideoAD> mRvAds;
     private ConcurrentMap<String, UnifiedInterstitialAD> mIsAds;
@@ -56,7 +56,7 @@ public class TencentAdAdapter extends CustomAdsAdapter
     }
 
     @Override
-    public void initRewardedVideo(Activity activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
+    public void initRewardedVideo(Context activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
         String error = check(activity);
         if (TextUtils.isEmpty(error)) {
@@ -71,19 +71,19 @@ public class TencentAdAdapter extends CustomAdsAdapter
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void loadRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, callback);
         loadRvAd(activity, adUnitId, callback);
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras,
+    public void loadRewardedVideo(Context activity, String adUnitId, Map<String, Object> extras,
                                   RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
         loadRvAd(activity, adUnitId, callback);
     }
 
-    private void loadRvAd(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    private void loadRvAd(Context activity, String adUnitId, RewardedVideoCallback callback) {
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
             if (isRewardedVideoAvailable(adUnitId)) {
@@ -101,7 +101,7 @@ public class TencentAdAdapter extends CustomAdsAdapter
     }
 
     @Override
-    public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void showRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (!TextUtils.isEmpty(error)) {
@@ -116,7 +116,7 @@ public class TencentAdAdapter extends CustomAdsAdapter
             }
             RewardVideoAD rewardedVideoAd = mRvAds.get(adUnitId);
             if (rewardedVideoAd != null) {
-                rewardedVideoAd.showAD(activity);
+                rewardedVideoAd.showAD((Activity) activity);
             }
             mRvAds.remove(adUnitId);
         } else {
@@ -136,7 +136,7 @@ public class TencentAdAdapter extends CustomAdsAdapter
     }
 
     @Override
-    public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
+    public void initInterstitialAd(Context activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
         String error = check(activity);
         if (TextUtils.isEmpty(error)) {
@@ -151,19 +151,19 @@ public class TencentAdAdapter extends CustomAdsAdapter
     }
 
     @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    public void loadInterstitialAd(Context activity, String adUnitId, InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, callback);
         loadInterstitial(activity, adUnitId, callback);
     }
 
     @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, Map<String, Object> extras,
+    public void loadInterstitialAd(Context activity, String adUnitId, Map<String, Object> extras,
                                    InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, extras, callback);
         loadInterstitial(activity, adUnitId, callback);
     }
 
-    private void loadInterstitial(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    private void loadInterstitial(Context activity, String adUnitId, InterstitialAdCallback callback) {
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
             if (isInterstitialAdAvailable(adUnitId)) {
@@ -181,7 +181,7 @@ public class TencentAdAdapter extends CustomAdsAdapter
     }
 
     @Override
-    public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    public void showInterstitialAd(Context activity, String adUnitId, InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (!TextUtils.isEmpty(error)) {
@@ -196,7 +196,7 @@ public class TencentAdAdapter extends CustomAdsAdapter
             }
             UnifiedInterstitialAD ad = mIsAds.get(adUnitId);
             if (ad != null) {
-                ad.show(activity);
+                ad.show((Activity)activity);
             }
             mIsAds.remove(adUnitId);
         } else {
@@ -214,18 +214,18 @@ public class TencentAdAdapter extends CustomAdsAdapter
         return mIsAds.get(adUnitId) != null;
     }
 
-    private void realLoadInterstitial(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    private void realLoadInterstitial(Context activity, String adUnitId, InterstitialAdCallback callback) {
         if (callback != null) {
             mIsCallbacks.put(adUnitId, callback);
         }
 
         InnerIsAdListener listener = new InnerIsAdListener(adUnitId);
-        UnifiedInterstitialAD ad = new UnifiedInterstitialAD(activity, mAppKey, adUnitId, listener);
+        UnifiedInterstitialAD ad = new UnifiedInterstitialAD((Activity)activity, mAppKey, adUnitId, listener);
         listener.setAdView(ad);
         ad.loadAD();
     }
 
-    private void realLoadRvAd(Activity activity, final String adUnitId, final RewardedVideoCallback callback) {
+    private void realLoadRvAd(Context activity, final String adUnitId, final RewardedVideoCallback callback) {
         if (callback != null) {
             mRvCallbacks.put(adUnitId, callback);
         }

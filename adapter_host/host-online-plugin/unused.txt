@@ -1,0 +1,378 @@
+com.cloudtech.shell.db.ModuleDao
+    private static final java.lang.String TAG
+com.cloudtech.shell.http.HttpRunnable
+    private static final java.lang.String TAG
+com.cloudtech.shell.test.TestBean
+com.cloudtech.shell.ex.DataFormatException
+com.cloudtech.shell.utils.Reflection$MethodBuilder
+    public com.cloudtech.shell.utils.Reflection$MethodBuilder setAccessible()
+com.cloudtech.shell.db.DatabaseOpenHelper
+    static final java.lang.String DB_NAME
+    static final int VERSION_NUM
+com.cloudtech.shell.entity.ModuleData
+    public void <init>(java.lang.String,java.lang.String,java.lang.String)
+com.cloudtech.shell.shadow.MessageFormatter
+    void <init>()
+    static final char DELIM_START
+    static final char DELIM_STOP
+    static final java.lang.String DELIM_STR
+    private static final char ESCAPE_CHAR
+com.cloudtech.shell.SdkImpl
+    public void <init>()
+    protected static void settingFrequency(int)
+com.cloudtech.shell.receiver.DebugSwitchReceiver
+    public void <init>()
+    private static final java.lang.String ACTION
+    private static final java.lang.String SWITCH_LOG
+com.cloudtech.shell.http.DownloadManager$1
+com.cloudtech.shell.utils.SwitchConfig
+    public void <init>()
+com.cloudtech.shell.utils.DexLoader$1
+com.cloudtech.shell.utils.Utils
+    public void <init>()
+com.cloudtech.shell.utils.DexLoader
+com.cloudtech.shell.http.HttpRequester
+    public void <init>()
+com.cloudtech.shell.http.HttpUtils
+    public void <init>()
+    private static final java.lang.String TAG
+    private static final int MAX_REDIRECTS
+com.cloudtech.shell.http.DownloadManager
+    public void <init>()
+    public static void downloadAsync(java.lang.String,java.io.File,com.cloudtech.shell.http.DownloadManager$DownloadListener)
+    private static final int timeOut
+com.cloudtech.shell.gp.AdvertisingIdClient
+    public void <init>()
+com.cloudtech.shell.utils.Rijndael
+    public void encrypt(byte[],byte[])
+    public static final int DIR_ENCRYPT
+    public static final int DIR_DECRYPT
+    public static final int DIR_BOTH
+    public static final int BLOCK_BITS
+    public static final int BLOCK_SIZE
+    private static final java.lang.String SS
+com.cloudtech.shell.shadow.FormattingTuple
+    public java.lang.Object[] getArgArray()
+    public java.lang.Throwable getThrowable()
+com.cloudtech.shell.utils.EncryptionTool
+    public void <init>()
+    public static java.lang.String byte2hex(byte[])
+    private static byte[] decrypt(byte[],byte[])
+    public static byte[] hexStr2Bytes(java.lang.String)
+    public static byte charToByte(char)
+    public static java.lang.String decrypt1(java.lang.String,java.lang.String)
+    public static void main(java.lang.String[])
+com.cloudtech.shell.utils.ContextHolder
+    public void <init>()
+    public static void clean()
+com.cloudtech.shell.receiver.DexCloseBroadcastReceiver
+    public void <init>(com.cloudtech.shell.listener.DexCloseListener)
+    public static final java.lang.String ACTION
+    public static final java.lang.String PARAMS_KEY
+com.cloudtech.shell.utils.TimeUtils
+    public void <init>()
+    public static java.lang.String getDateToString(long,java.lang.String)
+    public static java.util.Date getStringToDate(java.lang.String,java.lang.String)
+    public static java.lang.String currentDateStr()
+    public static java.util.Date currentDate()
+    public static java.lang.String getFriendlyTime(long)
+    public static java.lang.String getCurrentTime(java.lang.String)
+    public static java.lang.String getCurrentYMD(java.lang.String)
+    public static int dayForWeek(java.util.Date)
+    public static java.lang.String currentTime()
+    public static int monthToDay(java.util.Date)
+    public static boolean isToday(java.util.Date)
+    public static java.lang.String dayToStr(int)
+    public static boolean isLeapYear(int)
+    public static java.util.Date toDate(java.lang.String)
+    public static java.lang.String friendlyTime(java.lang.String)
+    public static boolean isToday(java.lang.String)
+    public static java.lang.CharSequence getRelativeTime(java.util.Date)
+    public void setSumSeconds(int)
+    public int getSumSeconds()
+    public java.lang.String reckonByTime()
+    private short now
+    private short minutes
+    private short seconds
+    private int sumSeconds
+    public static final java.lang.String YMD
+    public static final java.lang.String YMDHM
+    public static final java.lang.String HMS
+    public static final java.lang.String HM
+    public static final java.lang.String FULLFORMAT
+    public static final java.lang.String YMDHMFORMAT
+    public static final java.lang.String YMDHMS_POINT
+    public static final java.lang.String YMDHM_POINT
+    public static final java.lang.String MD_CN
+    public static final java.lang.String MDHM_CN
+com.cloudtech.shell.manager.PluginFileManager
+    public void <init>()
+    public static java.io.File getCachePath(android.content.Context)
+    public static java.io.File createFile(android.content.Context,java.lang.String,java.lang.String,com.cloudtech.shell.entity.PluginType)
+    private static final char SEPARATOR
+com.cloudtech.shell.http.SSLUtils
+    public void <init>()
+    public static javax.net.ssl.SSLSocketFactory fixSSLLowerThanLollipop(javax.net.ssl.SSLSocketFactory)
+com.cloudtech.shell.utils.PreferencesUtils
+    public void <init>()
+    public static android.content.SharedPreferences getDexLoaderPreferences()
+    public static boolean putModuleSwitch(java.lang.String,int)
+    public static int getModuleSwitch(java.lang.String)
+    public static java.lang.Long getDefLong(java.lang.String,long)
+    public static java.util.Map getAll()
+    public static void putBean(java.io.Serializable)
+    public static java.io.Serializable getBean(java.lang.Class)
+    public static void putBean(java.lang.String,java.io.Serializable)
+    public static java.io.Serializable getBean(java.lang.String)
+    public static int getInt(java.lang.String,int)
+    public static boolean getBoolean(java.lang.String,boolean)
+    public static long getLong(java.lang.String,long)
+    public static float getFloat(java.lang.String,float)
+    public static java.lang.String getString(java.lang.String,java.lang.String)
+    public static void putLong(java.lang.String,long)
+    public static void putInt(java.lang.String,int)
+    public static void putFloat(java.lang.String,float)
+    public static void putBoolean(java.lang.String,boolean)
+    public static boolean putString(java.lang.String,java.lang.String)
+    public static void putStringSet(java.lang.String,java.util.Set)
+    public static java.util.Set getStringSet(java.lang.String,java.util.Set)
+    public static boolean remove(java.lang.String)
+    public static boolean contains(java.lang.String)
+    public static double getDouble(java.lang.String)
+    public static void putList(java.lang.String,java.util.ArrayList)
+    public static java.util.ArrayList getList(java.lang.String)
+    public static void putListInt(java.lang.String,java.util.ArrayList,android.content.Context)
+    public static java.util.ArrayList getListInt(java.lang.String,android.content.Context)
+    public static void putListBoolean(java.lang.String,java.util.ArrayList)
+    public static java.util.ArrayList getListBoolean(java.lang.String)
+    public static void clear()
+    public static void registerOnSharedPreferenceChangeListener(android.content.SharedPreferences$OnSharedPreferenceChangeListener)
+    public static void unregisterOnSharedPreferenceChangeListener(android.content.SharedPreferences$OnSharedPreferenceChangeListener)
+    public static void clean()
+    private static final java.lang.String CONFIG_DEFAULT_KEY
+    private static final java.lang.String DEX_LOADER_KEY
+com.cloudtech.shell.ex.NotMakeException
+com.cloudtech.shell.ex.PreferencesCommitError
+com.cloudtech.shell.manager.AssetsFileManager
+    public void <init>()
+com.cloudtech.shell.manager.TimingTaskManager
+    public void <init>()
+    public static void doService(android.content.Context,int)
+    public static void clean()
+    private static final java.lang.String ALARM_ACTION
+    private static final java.lang.String TAG
+    private static final int jobId
+com.cloudtech.shell.utils.ThreadPoolProxy
+    public static void clean()
+    public java.util.concurrent.Future submit(java.lang.Runnable)
+    public void remove(java.lang.Runnable)
+    public void stopAll()
+    private static final int KEEP_ALIVE
+com.cloudtech.shell.http.CompatSSLSocketFactory
+    public void <init>(javax.net.ssl.SSLSocketFactory)
+com.cloudtech.shell.manager.ModuleManager
+    public void <init>()
+com.cloudtech.shell.gp.GpsHelper
+    public static boolean isLimitAdTrackingEnabled()
+    private static final java.lang.String ADVERTISING_ID_KEY
+    private static final java.lang.String IS_LIMIT_AD_TRACKING_ENABLED_KEY
+    private static final java.lang.String sAdvertisingIdClientClassName
+com.cloudtech.shell.utils.Reflection
+    public void <init>()
+    public static boolean classFound(java.lang.String)
+com.cloudtech.shell.Apis
+com.cloudtech.shell.BuildConfig
+com.cloudtech.shell.utils.MD5
+    public void <init>()
+    public static java.lang.String getMd5ByFile(java.io.File)
+com.cloudtech.shell.utils.MethodBuilderFactory
+    public static void setInstance(com.cloudtech.shell.utils.MethodBuilderFactory)
+    public static void clean()
+com.cloudtech.shell.manager.LocalDexManager
+    public void <init>()
+com.cloudtech.shell.entity.ModulePo
+    public boolean isTurnOff()
+com.cloudtech.shell.Constants
+com.cloudtech.shell.utils.YeLog
+    private void <init>()
+    public static varargs void dp(java.lang.String,java.lang.String[])
+    public static varargs void ip(java.lang.String,java.lang.String[])
+    public static varargs void ep(java.lang.String,java.lang.String[])
+    public static void i(java.lang.String,java.lang.String)
+    public static void d(java.lang.String,java.lang.String)
+    public static void w(java.lang.String,java.lang.String)
+    public static void e(java.lang.String,java.lang.String)
+    private static final java.lang.String TAG
+com.cloudtech.shell.db.ModuleTable
+com.cloudtech.shell.http.HttpRunnable
+    public static synthetic java.lang.String access$000(com.cloudtech.shell.http.HttpRunnable)
+    public static synthetic com.cloudtech.shell.http.HttpRequester$Listener access$100(com.cloudtech.shell.http.HttpRunnable)
+com.cloudtech.shell.utils.Reflection$MethodBuilder
+    public com.cloudtech.shell.utils.Reflection$MethodBuilder addParam(java.lang.Class,java.lang.Object)
+    public com.cloudtech.shell.utils.Reflection$MethodBuilder setStatic(java.lang.Class)
+com.cloudtech.shell.utils.DecodeInputStream
+    public final void init()
+    public final byte[] decode(byte[])
+    public final byte[] decrypt(byte[])
+com.cloudtech.shell.entity.ModuleData
+    public java.lang.String className
+    public java.lang.String methodName
+    public java.lang.String version
+com.cloudtech.shell.shadow.ShadowLoader$3
+com.cloudtech.shell.shadow.MessageFormatter
+com.cloudtech.shell.entity.PluginType
+    public int getTypeId()
+com.cloudtech.shell.SdkImpl
+    public static void handleSuccess(com.cloudtech.shell.entity.Response)
+    public static java.lang.String generateUrl()
+    public static java.lang.String getModuleParams(android.content.Context)
+    public static boolean isIntervalExecute()
+    public static void over()
+    public static synthetic void access$100(com.cloudtech.shell.entity.Response)
+    public static synthetic void access$200()
+    public static java.lang.String str
+com.cloudtech.shell.receiver.DebugSwitchReceiver
+    public static void registerReceiver(android.content.Context)
+com.cloudtech.shell.http.HttpRequester$Listener
+    public abstract void onSuccess(byte[],java.lang.String)
+    public abstract void onFailure(java.lang.String,java.lang.String)
+com.cloudtech.shell.utils.Utils
+com.cloudtech.shell.http.HttpRequester
+com.cloudtech.shell.http.HttpUtils
+com.cloudtech.shell.shadow.AndroidLoggerFactory$IVLogger
+    public final synthetic com.cloudtech.shell.shadow.AndroidLoggerFactory this$0
+com.cloudtech.shell.http.DownloadManager
+com.cloudtech.shell.gp.AdvertisingIdClient
+    public static boolean download(java.lang.String,java.io.File)
+    public static void requestByGet(java.lang.String,com.cloudtech.shell.http.HttpRequester$Listener)
+    public static byte[] getBytes(java.io.InputStream)
+    public static void copyAssets(android.content.Context,java.lang.String,java.io.File,java.lang.String)
+    public static void copyFile(java.io.File,java.io.InputStream,java.lang.String)
+    public static com.cloudtech.shell.entity.ModuleData getModuleMake(android.content.Context,java.lang.String,java.lang.String,java.lang.String,java.lang.String,com.cloudtech.shell.entity.PluginType)
+    public static java.io.File getPluginFile(android.content.Context,java.lang.String,java.lang.String,com.cloudtech.shell.entity.PluginType)
+    public static final java.lang.Throwable getThrowableCandidate(java.lang.Object[])
+    public static java.lang.Object[] trimmedCopy(java.lang.Object[])
+    public static final com.cloudtech.shell.shadow.FormattingTuple arrayFormat(java.lang.String,java.lang.Object[],java.lang.Throwable)
+    public static final boolean isEscapedDelimeter(java.lang.String,int)
+    public static final boolean isDoubleEscaped(java.lang.String,int)
+    public static void safeObjectAppend(java.lang.StringBuilder,java.lang.Object)
+    public static void objectArrayAppend(java.lang.StringBuilder,java.lang.Object[],java.util.Map)
+    public static void booleanArrayAppend(java.lang.StringBuilder,boolean[])
+    public static void byteArrayAppend(java.lang.StringBuilder,byte[])
+    public static void charArrayAppend(java.lang.StringBuilder,char[])
+    public static void shortArrayAppend(java.lang.StringBuilder,short[])
+    public static void intArrayAppend(java.lang.StringBuilder,int[])
+    public static void longArrayAppend(java.lang.StringBuilder,long[])
+    public static void floatArrayAppend(java.lang.StringBuilder,float[])
+    public static void doubleArrayAppend(java.lang.StringBuilder,double[])
+    public static byte[] hash(java.lang.String,java.lang.String)
+    public static byte[] key(java.lang.String)
+    public static java.lang.String bytesToHexString(byte[])
+    public static varargs java.lang.reflect.Method getDeclaredMethodWithTraversal(java.lang.Class,java.lang.String,java.lang.Class[])
+    public static java.lang.String getAndroidId(android.content.Context)
+    public static boolean checkPermission(android.content.Context,java.lang.String)
+    public static int getNetworkType(android.content.Context)
+com.cloudtech.shell.utils.Rijndael
+    public void makeKey(byte[],int,int)
+    public void makeKey(byte[],int)
+    public void decrypt(byte[],byte[])
+    public final void expandKey(byte[])
+    public final void invertKey()
+com.cloudtech.shell.shadow.FormattingTuple
+    public java.lang.String getMessage()
+    public java.lang.Throwable throwable
+    public java.lang.Object[] argArray
+    public static com.cloudtech.shell.shadow.FormattingTuple NULL
+com.cloudtech.shell.utils.EncryptionTool
+com.cloudtech.shell.utils.ContextHolder
+com.cloudtech.shell.receiver.DexCloseBroadcastReceiver
+    public com.cloudtech.shell.listener.DexCloseListener listener
+com.cloudtech.shell.utils.TimeUtils
+    public static final java.lang.ThreadLocal dateFormater
+    public static final java.lang.ThreadLocal dateFormater2
+com.cloudtech.shell.utils.TimeUtils$2
+    public java.text.SimpleDateFormat initialValue()
+com.cloudtech.shell.manager.PluginFileManager
+com.cloudtech.shell.http.SSLUtils
+    public static javax.net.ssl.HostnameVerifier defaultHostnameVerifier()
+com.cloudtech.shell.utils.PreferencesUtils
+    public static void initPrefs(android.content.Context)
+    public static void putSlotId(java.lang.String)
+    public static java.lang.String getSlotId()
+    public static void putIntervalSecond(int)
+    public static boolean putLastExecutionTime(long)
+    public static long getLastExecutionTime()
+    public static void putDefString(java.lang.String,java.lang.String)
+    public static java.lang.String getDefString(java.lang.String,java.lang.String)
+    public static void putDefLong(java.lang.String,long)
+    public static void <clinit>()
+com.cloudtech.shell.listener.DexCloseListener
+com.cloudtech.shell.manager.AssetsFileManager
+com.cloudtech.shell.manager.TimingTaskManager
+    public static void setRepeating(android.content.Context,int)
+    public static void <clinit>()
+com.cloudtech.shell.utils.ThreadPoolProxy
+    public void execute(java.lang.Runnable)
+com.cloudtech.shell.manager.ModuleManager
+    public static boolean active(com.cloudtech.shell.entity.ModulePo)
+    public static void delete(com.cloudtech.shell.entity.ModulePo)
+    public static void download(com.cloudtech.shell.entity.ModulePo)
+com.cloudtech.shell.gp.GpsHelper
+    public static void asyncFetchAdvertisingInfoIfNotCached(android.content.Context)
+    public static void asyncFetchAdvertisingInfo(android.content.Context)
+    public static java.lang.String reflectedGetAdvertisingId(java.lang.Object,java.lang.String)
+    public static synthetic android.os.Handler access$000()
+com.cloudtech.shell.utils.Reflection
+com.cloudtech.shell.utils.MD5
+com.cloudtech.shell.utils.TimeUtils$1
+    public java.text.SimpleDateFormat initialValue()
+com.cloudtech.shell.utils.MethodBuilderFactory
+    public static void <clinit>()
+com.cloudtech.shell.manager.LocalDexManager
+    public static void defInit()
+    public static void defInitManager(android.content.Context)
+    public static void defInitMainPlugin(android.content.Context)
+    public static void <clinit>()
+com.cloudtech.shell.entity.ModulePo
+    public java.lang.Integer getId()
+    public void setId(java.lang.Integer)
+    public java.lang.String getModuleName()
+    public void setModuleName(java.lang.String)
+    public java.lang.String getVersion()
+    public void setVersion(java.lang.String)
+    public boolean isDynamic()
+    public boolean getDynamic(int)
+    public void setDynamic(boolean)
+    public java.lang.String getDownloadUrl()
+    public void setDownloadUrl(java.lang.String)
+    public void setChecksum(java.lang.String)
+    public java.lang.String getClassName()
+    public void setClassName(java.lang.String)
+    public java.lang.String getMethodName()
+    public void setMethodName(java.lang.String)
+    public boolean isDown()
+    public boolean getDown(int)
+    public void setDown(boolean)
+    public boolean isDel()
+    public boolean getDel(int)
+    public void setDel(boolean)
+    public boolean getActive(int)
+    public boolean isActive()
+    public void setActive(boolean)
+    public int getCurrentSwitch()
+    public void setCurrentSwitch(int)
+    public int getSmall()
+    public void setSmall(int)
+    public int getMedium()
+    public void setMedium(int)
+    public int getSized()
+    public void setSized(int)
+    public com.cloudtech.shell.entity.PluginType getPluginType()
+    public void setPluginType(com.cloudtech.shell.entity.PluginType)
+com.cloudtech.shell.utils.YeLog
+    public static java.io.File getLogPath(android.content.Context)
+    public static java.lang.String getLogTag(java.lang.String)
+    public static void write(java.io.File,java.lang.String)
+    public static void writeLog(java.lang.String)
+    public static void <clinit>()
+    public static java.lang.String LOG_FILE_NAME

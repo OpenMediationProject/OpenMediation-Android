@@ -1,17 +1,16 @@
 package com.nbmediation.sdk.demo;
 
 import android.Manifest;
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.provider.Settings;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 /**
  * Android 6.0 上权限分为<b>正常</b>和<b>危险</b>级别
@@ -78,11 +77,11 @@ public class PermissionHelper {
 
     };
 
-    private Activity mActivity;
+    private AppCompatActivity mActivity;
 
     private OnApplyPermissionListener mOnApplyPermissionListener;
 
-    public PermissionHelper(Activity activity) {
+    public PermissionHelper(AppCompatActivity activity) {
         mActivity = activity;
     }
 

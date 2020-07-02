@@ -1,6 +1,7 @@
 package com.nbmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 import android.view.View;
 
@@ -47,7 +48,7 @@ public class HyAdXOpenAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void initRewardedVideo(Activity activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
+    public void initRewardedVideo(Context activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
         Object appKey = dataMap.get("AppKey");
         String error = check(activity);
@@ -67,20 +68,20 @@ public class HyAdXOpenAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void loadRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, callback);
         loadRvAd(activity, adUnitId, callback);
 
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
+    public void loadRewardedVideo(Context activity, String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
         loadRvAd(activity, adUnitId, callback);
     }
 
     @Override
-    public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void showRewardedVideo(Context activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (!TextUtils.isEmpty(error)) {
@@ -101,7 +102,7 @@ public class HyAdXOpenAdapter extends CustomAdsAdapter {
     }
 
 
-    private void loadRvAd(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    private void loadRvAd(Context activity, String adUnitId, RewardedVideoCallback callback) {
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
             HyAdXOpenMotivateVideoAd rewardedVideoAd = mRvAds.get(adUnitId);
@@ -119,7 +120,7 @@ public class HyAdXOpenAdapter extends CustomAdsAdapter {
         }
     }
 
-    private void realLoadRvAd(Activity activity, final String adUnitId, RewardedVideoCallback callback) {
+    private void realLoadRvAd(Context activity, final String adUnitId, RewardedVideoCallback callback) {
         HyAdXOpenMotivateVideoAd hyAdXOpenMotivateVideoAd = create(activity, adUnitId, callback);
         hyAdXOpenMotivateVideoAd.load();
     }
@@ -132,9 +133,9 @@ public class HyAdXOpenAdapter extends CustomAdsAdapter {
         return mRvAds.get(adUnitId) != null;
     }
 
-    private HyAdXOpenMotivateVideoAd create(final Activity activity, final String adUnitId, final RewardedVideoCallback callback) {
+    private HyAdXOpenMotivateVideoAd create(final Context activity, final String adUnitId, final RewardedVideoCallback callback) {
         final HyAdXOpenMotivateVideoAd[] hyAdXOpenMotivateVideoAds = new HyAdXOpenMotivateVideoAd[1];
-        hyAdXOpenMotivateVideoAds[0] = new HyAdXOpenMotivateVideoAd(activity,
+        hyAdXOpenMotivateVideoAds[0] = new HyAdXOpenMotivateVideoAd((Activity)activity,
                 adUnitId,
                 new HyAdXOpenListener() {
                     @Override

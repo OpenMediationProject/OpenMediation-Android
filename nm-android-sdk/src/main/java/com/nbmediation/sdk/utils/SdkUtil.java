@@ -14,7 +14,7 @@ import com.nbmediation.sdk.utils.error.ErrorCode;
 import com.nbmediation.sdk.utils.request.network.util.NetworkChecker;
 
 /**
- * The type Sdk util.
+ * The type SdkShell util.
  */
 public class SdkUtil {
     private static String[] ADT_PERMISSIONS = new String[]{Manifest.permission.INTERNET, Manifest.permission.ACCESS_NETWORK_STATE};

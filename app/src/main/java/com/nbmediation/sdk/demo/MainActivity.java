@@ -4,12 +4,13 @@
 package com.nbmediation.sdk.demo;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,8 +22,6 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import com.nbmediation.sdk.InitCallback;
 import com.nbmediation.sdk.NmAds;
@@ -43,7 +42,7 @@ import com.nbmediation.sdk.utils.model.Scene;
 import com.nbmediation.sdk.video.RewardedVideoAd;
 import com.nbmediation.sdk.video.RewardedVideoListener;
 
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
 
     private Button rewardVideoButton;
     private Button interstitialButton;
