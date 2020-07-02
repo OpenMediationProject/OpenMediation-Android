@@ -67,7 +67,7 @@ shadow {
 //                runtimeApkConfig = new Tuple2('sample-runtime-debug.apk', ':adapter_plugin:sample-runtime:assembleDebug')
                 pluginApks {
                     pluginApk1 {
-                        businessName = 'agsdk'
+                        businessName = 'Plugin1'
 //businessName相同的插件，context获取的Dir是相同的。businessName留空，表示和宿主相同业务，直接使用宿主的Dir。
                         partKey = 'Plugin1'
                         buildTask = 'assembleDebug'
@@ -83,7 +83,7 @@ shadow {
 //                runtimeApkConfig = new Tuple2('plugin-runtime-release.apk', ':adapter_plugin:plugin-runtime:assembleRelease')
                 pluginApks {
                     pluginApk1 {
-                        businessName = 'agsdk'
+                        businessName = 'Plugin1'
                         partKey = 'Plugin1'
                         buildTask = 'assembleRelease'
                         apkName = 'plugin-agsdk-plugin1-apk-release.apk'
@@ -94,7 +94,7 @@ shadow {
             }
         }
 
-        archivePrefix = 'agsdk'
+        archivePrefix = 'agsdk-plugin1'
         archiveSuffix = project.AGSDK_PLUGIN
 //        loaderApkProjectPath = 'adapter_plugin/plugin-loader'
 //

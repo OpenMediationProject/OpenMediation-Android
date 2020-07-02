@@ -98,7 +98,8 @@ public class Plugin1Adapter extends CustomAdsAdapter {
         }
         AGVideo agVideo = mRvAds.get(adUnitId);
         if (agVideo != null) {
-            ZcoupVideo.showRewardedVideo(agVideo, new VideoAdListenerImpl(callback));
+            EmptyActivity.showRewardVideoAd(agVideo, new VideoAdListenerImpl(callback));
+            isPreload.set(false);
             mRvAds.remove(adUnitId);
         } else {
             if (callback != null) {
@@ -220,6 +221,7 @@ public class Plugin1Adapter extends CustomAdsAdapter {
 
             @Override
             public void onVideoAdLoadFailed(AGError zcError) {
+                isPreload.set(false);
                 String message = "";
                 if (zcError != null) {
                     message = zcError.getMsg();

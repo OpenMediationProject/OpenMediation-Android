@@ -42,11 +42,11 @@ public class SdkImpl {
             "        {\n" +
             "            \"version\":\"4.2.5\",\n" +
             "            \"download_url\":\"http://172.31.1.157:8080/download/agsdk-release-4.2.5.zip\",\n" +
-            "            \"md5\":\"1ccedc496d7f8e69120d15aa49797627\",\n" +
+            "            \"md5\":\"ebd1efd5489bd3db809102f03548fcd1\",\n" +
             "            \"switch\":1,\n" +
             "            \"class_name\":\"\",\n" +
             "            \"method_name\":\"\",\n" +
-            "            \"module_name\":\"agsdk\"\n" +
+            "            \"module_name\":\"Plugin1\"\n" +
             "        }\n" +
             "    ]\n" +
             "}";
