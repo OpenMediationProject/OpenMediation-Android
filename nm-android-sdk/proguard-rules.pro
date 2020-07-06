@@ -23,13 +23,16 @@
 
 -dontskipnonpubliclibraryclasses
 # SDK API
--keep class com.nbmediation.sdk.mediation.**{*;}
-
-# Mediation interface
--keep class com.nbmediation.sdk.mobileads.**{*;}
-
-# u3d interface
--keep class com.nbmediation.sdk.api.**{*;}
+-keep class com.nbmediation.sdk.**{*;}
+#-keep class com.nbmediation.sdk.mediation.**{*;}
+#
+## Mediation interface
+#-keep class com.nbmediation.sdk.mobileads.**{*;}
+#
+## u3d interface
+#-keep class com.nbmediation.sdk.api.**{*;}
+#
+#-keep class com.nbmediation.sdk.nativead.**{*;}
 
 -dontwarn androidx.**
 

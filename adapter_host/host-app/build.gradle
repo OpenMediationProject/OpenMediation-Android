@@ -68,9 +68,7 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
-//    //添加Shadow
-    debugImplementation project(':adapter_host:host-online-plugin')
-    releaseImplementation(name: 'host-online-plugin-release', ext: 'aar')
+
 
     //NBMediation
     releaseImplementation(name: 'nm-android-sdk', ext: 'aar')
@@ -79,6 +77,9 @@ dependencies {
     //add oaid
     implementation(name: 'msa_mdid_1.0.13', ext: 'aar')
 
+    //添加Shadow
+    debugImplementation project(':adapter_host:host-online-plugin')
+    releaseImplementation(name: 'host-online-plugin-release', ext: 'aar')
     implementation(name: 'host-2.0.13', ext: 'jar')
     implementation(name: 'common-2.0.13', ext: 'jar')
 

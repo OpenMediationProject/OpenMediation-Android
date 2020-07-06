@@ -26,7 +26,8 @@
             android:layout_marginStart="8dp"
             android:layout_toEndOf="@id/ad_icon_media"
             android:layout_toRightOf="@id/ad_btn"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:layout_marginLeft="8dp">
 
             <TextView
                 android:id="@+id/ad_title"
@@ -50,7 +51,8 @@
             android:layout_height="50dp"
             android:layout_marginStart="4dp"
             android:layout_alignParentLeft="true"
-            android:layout_centerVertical="true" />
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="4dp" />
     </RelativeLayout>
 
     <com.nbmediation.sdk.nativead.MediaView

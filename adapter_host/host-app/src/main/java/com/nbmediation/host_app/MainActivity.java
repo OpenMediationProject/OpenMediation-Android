@@ -25,6 +25,7 @@ import android.widget.TextView;
 import com.cloudtech.shell.shadow.InitApplication;
 import com.nbmediation.sdk.InitCallback;
 import com.nbmediation.sdk.NmAds;
+import com.nbmediation.sdk.api.unity.NmSdk;
 import com.nbmediation.sdk.banner.AdSize;
 import com.nbmediation.sdk.banner.BannerAd;
 import com.nbmediation.sdk.banner.BannerAdListener;
@@ -426,5 +427,13 @@ public class MainActivity extends Activity {
 
     public void initSdk(View view) {
         initSDK();
+    }
+
+    public void showVideo1(View view) {
+        NmSdk.showRewardedVideo("236","");
+    }
+
+    public void showVideo2(View view) {
+        NmSdk.showRewardedVideo("246","");
     }
 }

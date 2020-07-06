@@ -26,9 +26,9 @@ android.libraryVariants.all { variant ->
 }
 dependencies {
     compileOnly(name: 'nm-android-sdk', ext: 'aar')
-    compileOnly(name: 'adsgreat_base_4.2.5_ag', ext: 'jar')
-    compileOnly(name: 'adsgreat_imageloader_4.2.5_ag', ext: 'jar')
-    compileOnly(name: 'adsgreat_video_4.2.5_ag', ext: 'jar')
+    compileOnly(name: 'adsgreat_base_4.2.6_ag', ext: 'jar')
+    compileOnly(name: 'adsgreat_imageloader_4.2.6_ag', ext: 'jar')
+    compileOnly(name: 'adsgreat_video_4.2.6_ag', ext: 'jar')
 }
 
 repositories {

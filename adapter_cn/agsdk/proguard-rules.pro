@@ -30,3 +30,6 @@
 
 #for gaid
 -keep class **.AdvertisingIdClient$** { *; }
+
+#for oaid
+-keep class com.bun.miitmdid.core.** {*;}

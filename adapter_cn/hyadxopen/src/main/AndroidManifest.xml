@@ -24,7 +24,7 @@
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
         <provider
-            android:name="com.hytt.hyadxopensdk.fileprovider.HyAdXOpenFileProvider"
+            android:name="com.hytt.hyadxopensdk.fileprovider.v4.HyAdXOpenV4FileProvider"
             android:authorities="${applicationId}.HyAdXOpenFileProvider"
             android:exported="false"
             android:grantUriPermissions="true">

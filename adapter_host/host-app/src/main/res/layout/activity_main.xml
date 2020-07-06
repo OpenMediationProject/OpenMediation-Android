@@ -88,6 +88,31 @@
                 android:textAllCaps="false"
                 android:textSize="20sp" />
 
+            <Button
+                android:id="@+id/btn_show_1"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/btn_background"
+                android:onClick="showVideo1"
+                android:visibility="gone"
+                android:text="Load Main Plugin"
+                android:textAllCaps="false"
+                android:textSize="20sp" />
+
+            <Button
+                android:id="@+id/btn_show_2"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/btn_background"
+                android:onClick="showVideo2"
+                android:visibility="gone"
+                android:text="Load Main Plugin"
+                android:textAllCaps="false"
+                android:textSize="20sp" />
 
             <Button
                 android:id="@+id/btn_load_main"
@@ -97,9 +122,11 @@
                 android:layout_marginTop="20dp"
                 android:background="@drawable/btn_background"
                 android:onClick="loadMainPlugin"
+                android:visibility="gone"
                 android:text="Load Main Plugin"
                 android:textAllCaps="false"
                 android:textSize="20sp" />
+
 
             <Button
                 android:id="@+id/btn_load_plugin"
@@ -109,6 +136,7 @@
                 android:layout_marginTop="20dp"
                 android:background="@drawable/btn_background"
                 android:onClick="loadOtherPlugin"
+                android:visibility="gone"
                 android:text="Load Other Plugin"
                 android:textAllCaps="false"
                 android:textSize="20sp" />
@@ -121,6 +149,7 @@
                 android:layout_marginTop="20dp"
                 android:background="@drawable/btn_background"
                 android:onClick="startPlugin"
+                android:visibility="gone"
                 android:text="Load Start Plugin"
                 android:textAllCaps="false"
                 android:textSize="20sp" />
@@ -134,6 +163,7 @@
                 android:background="@drawable/btn_background"
                 android:onClick="initSdk"
                 android:text="Init SDK"
+                android:visibility="gone"
                 android:textColor="#000000"
                 android:textAllCaps="false"
                 android:textSize="20sp" />

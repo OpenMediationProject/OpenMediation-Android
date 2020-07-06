@@ -1,14 +1,14 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.kezong.fat-aar'
+//apply plugin: 'com.kezong.fat-aar'
 
 Properties properties = new Properties()
 properties.load(project.rootProject.file('extend.properties').newDataInputStream())
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
 
     defaultConfig {
         minSdkVersion 15
-        targetSdkVersion 27
+        targetSdkVersion 28
         versionCode 1
         versionName '1.1'
         buildConfigField "String", "VERSION_NUMBER", "\"${version}\""
@@ -57,7 +57,7 @@ task makeAdLibJar(type: Jar, dependsOn: ['build']) {
 }
 
 dependencies {
-    compileOnly 'com.android.support:appcompat-v7:27.1.1'
+    compileOnly 'com.android.support:appcompat-v7:28.0.0'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'

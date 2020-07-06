@@ -174,7 +174,7 @@ public final class InitImp {
 
     private static void doAfterGetConfig(String appKey, Configurations config) {
         try {
-            DeveloperLog.enableDebug(AdtUtil.getApplication(), config.getD() == 1);
+//            DeveloperLog.enableDebug(AdtUtil.getApplication(), config.getD() == 1);
             AdLog.getSingleton().init(AdtUtil.getApplication());
             EventUploadManager.getInstance().updateReportSettings(config);
             //reports error logs

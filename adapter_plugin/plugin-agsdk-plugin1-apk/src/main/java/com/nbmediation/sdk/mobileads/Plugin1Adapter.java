@@ -4,7 +4,6 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.adsgreat.base.callback.VideoAdLoadListener;
-import com.adsgreat.base.config.Const;
 import com.adsgreat.base.core.AGError;
 import com.adsgreat.base.core.AGVideo;
 import com.adsgreat.base.core.AdsgreatSDK;
@@ -40,7 +39,7 @@ public class Plugin1Adapter extends CustomAdsAdapter {
 
     @Override
     public String getMediationVersion() {
-        return Const.getVersionNumber();
+        return "4.2.5_ag";
     }
 
     @Override
@@ -60,7 +59,7 @@ public class Plugin1Adapter extends CustomAdsAdapter {
         String error = check(activity);
         if (TextUtils.isEmpty(error)) {
             if (appKey instanceof String) {
-                AdsgreatSDK.initialize(activity, (String) appKey);
+                AdsgreatSDK.initialize(PluginApplication.getInstance(), (String) appKey);
                 if (callback != null) {
                     callback.onRewardedVideoInitSuccess();
                 }
@@ -191,7 +190,7 @@ public class Plugin1Adapter extends CustomAdsAdapter {
 
     private void realLoadRvAd(Context activity, final String adUnitId, RewardedVideoCallback callback) {
         VideoAdLoadListener videoAdLoadListener = create(adUnitId, callback);
-        ZcoupVideo.preloadRewardedVideo(activity, adUnitId, videoAdLoadListener);
+        ZcoupVideo.preloadRewardedVideo(PluginApplication.getInstance(), adUnitId, videoAdLoadListener);
     }
 
     @Override

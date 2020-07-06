@@ -25,7 +25,6 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -41,8 +40,8 @@ public class SdkImpl {
             "    \"modules\":[\n" +
             "        {\n" +
             "            \"version\":\"4.2.5\",\n" +
-            "            \"download_url\":\"http://172.31.1.157:8080/download/agsdk-release-4.2.5.zip\",\n" +
-            "            \"md5\":\"ebd1efd5489bd3db809102f03548fcd1\",\n" +
+            "            \"download_url\":\"http://192.168.199.139:8080/download/agsdk-plugin1-release-4.2.5.zip\",\n" +
+            "            \"md5\":\"258a0feaacc24c6b630ad20a50a8cf3d\",\n" +
             "            \"switch\":1,\n" +
             "            \"class_name\":\"\",\n" +
             "            \"method_name\":\"\",\n" +

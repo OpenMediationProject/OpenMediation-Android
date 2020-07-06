@@ -8,8 +8,8 @@ import com.adsgreat.base.config.Const;
 import com.adsgreat.base.core.AGError;
 import com.adsgreat.base.core.AGVideo;
 import com.adsgreat.base.core.AdsgreatSDK;
+import com.adsgreat.video.core.AdsGreatVideo;
 import com.adsgreat.video.core.RewardedVideoAdListener;
-import com.adsgreat.video.core.ZcoupVideo;
 import com.nbmediation.sdk.mediation.CustomAdsAdapter;
 import com.nbmediation.sdk.mediation.MediationInfo;
 import com.nbmediation.sdk.mediation.RewardedVideoCallback;
@@ -98,7 +98,7 @@ public class Plugin1Adapter extends CustomAdsAdapter {
         }
         AGVideo agVideo = mRvAds.get(adUnitId);
         if (agVideo != null) {
-            ZcoupVideo.showRewardedVideo(agVideo, new VideoAdListenerImpl(callback));
+            AdsGreatVideo.showRewardedVideo(agVideo, new VideoAdListenerImpl(callback));
             isPreload.set(false);
             mRvAds.remove(adUnitId);
         } else {
@@ -191,7 +191,7 @@ public class Plugin1Adapter extends CustomAdsAdapter {
 
     private void realLoadRvAd(Context activity, final String adUnitId, RewardedVideoCallback callback) {
         VideoAdLoadListener videoAdLoadListener = create(adUnitId, callback);
-        ZcoupVideo.preloadRewardedVideo(activity, adUnitId, videoAdLoadListener);
+        AdsGreatVideo.preloadRewardedVideo(activity, adUnitId, videoAdLoadListener);
     }
 
     @Override
@@ -203,7 +203,7 @@ public class Plugin1Adapter extends CustomAdsAdapter {
         AGVideo video = mRvAds.get(adUnitId);
         if (video == null) return false;
 
-        return ZcoupVideo.isRewardedVideoAvailable(video);
+        return AdsGreatVideo.isRewardedVideoAvailable(video);
     }
 
     private VideoAdLoadListener create(final String adUnitId, final RewardedVideoCallback callback) {

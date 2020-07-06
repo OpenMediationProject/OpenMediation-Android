@@ -25,6 +25,7 @@ import android.widget.TextView;
 
 import com.nbmediation.sdk.InitCallback;
 import com.nbmediation.sdk.NmAds;
+import com.nbmediation.sdk.api.unity.NmSdk;
 import com.nbmediation.sdk.banner.AdSize;
 import com.nbmediation.sdk.banner.BannerAd;
 import com.nbmediation.sdk.banner.BannerAdListener;
@@ -332,6 +333,14 @@ public class MainActivity extends AppCompatActivity {
         } else {
             interstitialButton.setText("Interstitial Ad Loading...");
         }
+    }
+
+    public void showVideo1(View view) {
+        NmSdk.showRewardedVideo("236","");
+    }
+
+    public void showVideo2(View view) {
+        NmSdk.showRewardedVideo("246","");
     }
 
 }

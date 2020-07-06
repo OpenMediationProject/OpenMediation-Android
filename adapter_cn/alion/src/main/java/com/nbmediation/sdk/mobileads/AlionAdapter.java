@@ -52,7 +52,17 @@ public class AlionAdapter extends CustomAdsAdapter {
         super.initRewardedVideo(activity, dataMap, callback);
         String error = check(activity);
         if (TextUtils.isEmpty(error)) {
-            initSdk(activity, mAppKey, "5013395");
+            String[] split = mAppKey.split("\\|");
+            String appId = null;
+            if (split.length == 1) {
+                appId = split[0];
+            }
+
+            boolean mVertical = false;
+            if (split.length > 1) {
+                mVertical = "0".equals(split[1]);
+            }
+            initSdk(activity, appId, "5013395", mVertical);
             if (callback != null) {
                 callback.onRewardedVideoInitSuccess();
             }
@@ -124,10 +134,15 @@ public class AlionAdapter extends CustomAdsAdapter {
     }
 
 
-    private void initSdk(final Context activity, final String appId, String tid) {
+    private void initSdk(final Context activity, final String appId, String tid, final boolean vertical) {
         HandlerUtil.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                if (vertical) {
+                    VideoManager.getInstance().setVideoOrientation(Config.AD_VERTIVAL_SCREEN_DISPLAY);
+                } else {
+                    VideoManager.getInstance().setVideoOrientation(Config.AD_HORIZONTAL_SCREEN_DISPLAY);
+                }
                 ADManager.getInstance().init(((Activity) activity).getApplication(), appId).setException(true);//对接加载聚合广告需要申请appid(加载聚合广告和新闻需要appid)
 //                .setTtId(tid); //可选。向瑞狮运营申请tid
             }
