@@ -96,8 +96,7 @@
                 android:layout_marginTop="20dp"
                 android:background="@drawable/btn_background"
                 android:onClick="showVideo1"
-                android:visibility="gone"
-                android:text="Load Main Plugin"
+                android:text="Show Video 1"
                 android:textAllCaps="false"
                 android:textSize="20sp" />
 
@@ -109,8 +108,7 @@
                 android:layout_marginTop="20dp"
                 android:background="@drawable/btn_background"
                 android:onClick="showVideo2"
-                android:visibility="gone"
-                android:text="Load Main Plugin"
+                android:text="Show Video 2"
                 android:textAllCaps="false"
                 android:textSize="20sp" />
 

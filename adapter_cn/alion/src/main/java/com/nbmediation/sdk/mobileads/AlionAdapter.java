@@ -135,15 +135,17 @@ public class AlionAdapter extends CustomAdsAdapter {
 
 
     private void initSdk(final Context activity, final String appId, String tid, final boolean vertical) {
+
         HandlerUtil.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                MDIDHandler.init(activity);
                 if (vertical) {
                     VideoManager.getInstance().setVideoOrientation(Config.AD_VERTIVAL_SCREEN_DISPLAY);
                 } else {
                     VideoManager.getInstance().setVideoOrientation(Config.AD_HORIZONTAL_SCREEN_DISPLAY);
                 }
-                ADManager.getInstance().init(((Activity) activity).getApplication(), appId).setException(true);//对接加载聚合广告需要申请appid(加载聚合广告和新闻需要appid)
+                ADManager.getInstance().init(((Activity) activity).getApplication(), appId).setException(true).setOaid(MDIDHandler.getMdid());//对接加载聚合广告需要申请appid(加载聚合广告和新闻需要appid)
 //                .setTtId(tid); //可选。向瑞狮运营申请tid
             }
         });
@@ -156,6 +158,7 @@ public class AlionAdapter extends CustomAdsAdapter {
     private void realLoadRvAd(final Context activity, final String adUnitId, final RewardedVideoCallback rvCallback) {
         VideoManager.getInstance().setVideoOrientation(Config.AD_HORIZONTAL_SCREEN_DISPLAY);
         VideoManager.getInstance().setAdScalingModel(Config.AD_SCALING_MODE_SCALE_TO_FIT);
+        ADManager.getInstance().setOaid(MDIDHandler.getMdid());
         //视频的尺寸
 
         VideoManager.getInstance().setImageAcceptedSize(1080, 1920);
