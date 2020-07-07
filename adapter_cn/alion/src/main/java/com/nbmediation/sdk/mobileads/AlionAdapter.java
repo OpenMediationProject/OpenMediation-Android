@@ -52,7 +52,7 @@ public class AlionAdapter extends CustomAdsAdapter {
         super.initRewardedVideo(activity, dataMap, callback);
         String error = check(activity);
         if (TextUtils.isEmpty(error)) {
-            String[] split = mAppKey.split("\\|");
+            String[] split = mAppKey.split("\\#");
             String appId = null;
             if (split.length == 1) {
                 appId = split[0];
