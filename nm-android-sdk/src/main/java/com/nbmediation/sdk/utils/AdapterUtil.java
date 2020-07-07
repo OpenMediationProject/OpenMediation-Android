@@ -139,14 +139,14 @@ public class AdapterUtil {
         for (int i = 0; i < mAdapterPaths.size(); i++) {
             int adNetworkId = mAdapterPaths.keyAt(i);
             if (mAdapters.get(adNetworkId) != null) {
-                return;
+                continue;
             }
             CustomAdsAdapter adapter = null;
             String className = mAdapterPaths.get(adNetworkId);
             Throwable exception = null;
-//            if (mAdapterPaths.keyAt(i) == 13) {
-//                Log.i("tjt", "进来了");
-//            }
+            if (mAdapterPaths.keyAt(i) == 13 || mAdapterPaths.keyAt(i) == 33) {
+                Log.i("tjt", "进来了");
+            }
             try {
                 adapter = createAdapter(CustomAdsAdapter.class, className);
             } catch (Exception e) {

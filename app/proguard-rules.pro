@@ -19,3 +19,6 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file n.
 #-renamesourcefileattribute SourceFile
+-keep class com.tencent.shadow.core.common.**{*;}
+-keep class com.tencent.shadow.core.runtime.**{*;}
+-keep class com.tencent.shadow.dynamic.host.**{*;}

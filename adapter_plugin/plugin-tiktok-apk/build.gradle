@@ -80,7 +80,7 @@ shadow {
                     pluginApk1 {
                         businessName = 'tiktok'
 //businessName相同的插件，context获取的Dir是相同的。businessName留空，表示和宿主相同业务，直接使用宿主的Dir。
-                        partKey = 'tiktok'
+                        partKey = 'TikTok'
                         buildTask = 'assembleDebug'
                         apkName = 'plugin-tiktok-apk-debug.apk'
                         apkPath = 'adapter_plugin/plugin-tiktok-apk/build/outputs/apk/debug/plugin-tiktok-apk-debug.apk'
@@ -95,10 +95,11 @@ shadow {
                 pluginApks {
                     pluginApk1 {
                         businessName = 'tiktok'
-                        partKey = 'tiktok'
+                        partKey = 'TikTok'
                         buildTask = 'assembleRelease'
                         apkName = 'plugin-tiktok-apk-release.apk'
                         apkPath = 'adapter_plugin/plugin-tiktok-apk/build/outputs/apk/release/plugin-tiktok-apk-release.apk'
+                        hostWhiteList = ["com.cloudtech.shell.shadow.share", "com.nbmediation.sdk.mediation", "com.nbmediation.sdk.utils", "com.nbmediation.sdk.video"]
                     }
                 }
             }

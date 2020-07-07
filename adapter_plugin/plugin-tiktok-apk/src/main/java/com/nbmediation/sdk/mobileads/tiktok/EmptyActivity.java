@@ -1,4 +1,4 @@
-package com.nbmediation.sdk.mobileads;
+package com.nbmediation.sdk.mobileads.tiktok;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 import com.bytedance.sdk.openadsdk.TTFullScreenVideoAd;
 import com.bytedance.sdk.openadsdk.TTRewardVideoAd;
+import com.nbmediation.sdk.mobileads.PluginApplication;
 
 
 /**
@@ -28,7 +29,7 @@ public class EmptyActivity extends Activity {
 
     public final static String SHOW_TYPE = "show_type";
 
-    static void showRewardVideoAd(TTRewardVideoAd rewardedVideoAd) {
+    public static void showRewardVideoAd(TTRewardVideoAd rewardedVideoAd) {
         mRewardedVideoAd = rewardedVideoAd;
         Intent intent = new Intent(PluginApplication.getInstance(), EmptyActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -36,7 +37,7 @@ public class EmptyActivity extends Activity {
         PluginApplication.getInstance().startActivity(intent);
     }
 
-    static void showInterstitialAd(TTFullScreenVideoAd fullScreenVideoAd) {
+    public static void showInterstitialAd(TTFullScreenVideoAd fullScreenVideoAd) {
         mFullScreenVideoAd = fullScreenVideoAd;
         Intent intent = new Intent(PluginApplication.getInstance(), EmptyActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -47,8 +48,8 @@ public class EmptyActivity extends Activity {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.i(TAG, "EmptyActivity onCreate");
-        Toast.makeText(this, "EmptyActivity起来了", Toast.LENGTH_SHORT).show();
+//        Log.i(TAG, "EmptyActivity onCreate");
+//        Toast.makeText(this, "EmptyActivity起来了", Toast.LENGTH_SHORT).show();
         int showType = getIntent().getIntExtra(SHOW_TYPE, 0);
         if (showType == SHOW_REWARD_VIDEO && mRewardedVideoAd != null) {
             mRewardedVideoAd.showRewardVideoAd(this);

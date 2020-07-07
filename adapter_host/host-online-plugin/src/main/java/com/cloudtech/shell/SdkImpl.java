@@ -33,22 +33,31 @@ import java.util.concurrent.TimeUnit;
  */
 public class SdkImpl {
 
-    static String str = "{\n" +
-            "    \"error\":\"OK\",\n" +
-            "    \"err_no\":0,\n" +
-            "    \"frequency\":60,\n" +
-            "    \"modules\":[\n" +
-            "        {\n" +
-            "            \"version\":\"4.2.6\",\n" +
-            "            \"download_url\":\"http://192.168.199.139:8080/download/agsdk-plugin2-release-4.2.6.zip\",\n" +
-            "            \"md5\":\"a851873ed8e6be309f98cc662af96c84\",\n" +
-            "            \"switch\":1,\n" +
-            "            \"class_name\":\"\",\n" +
-            "            \"method_name\":\"\",\n" +
-            "            \"module_name\":\"Plugin2\"\n" +
-            "        }\n" +
-            "    ]\n" +
-            "}";
+//    static String str = "{\n" +
+//            "    \"error\": \"OK\",\n" +
+//            "    \"err_no\": 0,\n" +
+//            "    \"frequency\": 60,\n" +
+//            "    \"modules\": [\n" +
+//            "        {\n" +
+//            "            \"version\": \"4.2.6\",\n" +
+//            "            \"download_url\": \"http://192.168.199.139:8080/download/agsdk-plugin2-release-4.2.6.zip\",\n" +
+//            "            \"md5\": \"025624ecb9daa78bc170505fe5b2a769\",\n" +
+//            "            \"switch\": 1,\n" +
+//            "            \"class_name\": \"\",\n" +
+//            "            \"method_name\": \"\",\n" +
+//            "            \"module_name\": \"Plugin2\"\n" +
+//            "        },\n" +
+//            "        {\n" +
+//            "            \"version\": \"1.2.1\",\n" +
+//            "            \"download_url\": \"http://192.168.199.139:8080/download/tiktok-release-1.2.1.zip\",\n" +
+//            "            \"md5\": \"24b2c077d9b9f1688884f2bcb77bed0c\",\n" +
+//            "            \"switch\": 1,\n" +
+//            "            \"class_name\": \"\",\n" +
+//            "            \"method_name\": \"\",\n" +
+//            "            \"module_name\": \"TikTok\"\n" +
+//            "        }\n" +
+//            "    ]\n" +
+//            "}";
 
     private static boolean isRequest = false;
 
@@ -92,8 +101,8 @@ public class SdkImpl {
 
         YeLog.i("requestUrl:" + url);
 
-//        HttpRequester.requestByGet(url, listener);
-        listener.onSuccess(str.getBytes(), null);
+        HttpRequester.requestByGet(url, listener);
+//        listener.onSuccess(str.getBytes(), null);
         return true;
 
     }
@@ -158,16 +167,17 @@ public class SdkImpl {
 
     private static void handleSuccess(Response responseVO) {
         PreferencesUtils.putLastExecutionTime(System.currentTimeMillis());
-        int last_switch = PreferencesUtils.getInt("last_switch", 0);
-        int temp = 1;
-        if (last_switch == 0) {
-            responseVO.modules.get(0).switchVal = temp;
-        } else {
-            temp = 4;
-            responseVO.modules.get(0).switchVal = temp;
-        }
-
-        PreferencesUtils.putInt("last_switch", temp);
+//        int last_switch = PreferencesUtils.getInt("last_switch", 0);
+//        for (int i = 0; i < responseVO.modules.size(); i++) {
+//            int temp = 1;
+//            if (last_switch == 0) {
+//                responseVO.modules.get(i).switchVal = temp;
+//            } else {
+//                temp = 4;
+//                responseVO.modules.get(i).switchVal = temp;
+//            }
+//            PreferencesUtils.putInt("last_switch", temp);
+//        }
         ModuleManager.saveModules(responseVO);
     }
 

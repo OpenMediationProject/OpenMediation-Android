@@ -21,7 +21,7 @@
             android:name="com.bytedance.sdk.openadsdk.multipro.TTMultiProvider"
             android:authorities="${applicationId}.TTMultiProvider"
             android:exported="false" />
-        <activity android:name="com.nbmediation.sdk.mobileads.EmptyActivity"
+        <activity android:name="com.nbmediation.sdk.mobileads.tiktok.EmptyActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:noHistory="true"

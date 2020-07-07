@@ -1,11 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.nbmediation.sdk.mobileads.plugin1">
+    package="com.nbmediation.sdk.mobileads.plugin2">
 
     <application>
         <!-- Necessary -->
         <activity android:name="com.adsgreat.base.view.InnerWebViewActivity" />
 
-        <activity android:name="com.nbmediation.sdk.mobileads.EmptyActivity"
+        <activity android:name=".EmptyActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:noHistory="true"

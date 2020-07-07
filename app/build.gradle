@@ -73,16 +73,16 @@ dependencies {
     implementation(name: 'msa_mdid_1.0.13', ext: 'aar')
 
     //添加Shadow
-//    debugImplementation project(':adapter_host:host-online-plugin')
-    implementation(name: 'host-online-plugin-release', ext: 'aar')
+    debugImplementation project(':adapter_host:host-online-plugin')
+    releaseImplementation(name: 'host-online-plugin-release', ext: 'aar')
     implementation(name: 'host-2.0.13', ext: 'jar')
     implementation(name: 'common-2.0.13', ext: 'jar')
 
     //add agsdk
-    implementation(name: 'adsgreat_base_4.2.6_ag', ext: 'jar')
-    implementation(name: 'adsgreat_imageloader_4.2.6_ag', ext: 'jar')
-    implementation(name: 'adsgreat_video_4.2.6_ag', ext: 'jar')
-    implementation project(path: ':adapter_cn:agsdk')
+//    implementation(name: 'adsgreat_base_4.2.6_ag', ext: 'jar')
+//    implementation(name: 'adsgreat_imageloader_4.2.6_ag', ext: 'jar')
+//    implementation(name: 'adsgreat_video_4.2.6_ag', ext: 'jar')
+//    implementation project(path: ':adapter_cn:agsdk')
 
     //cloudmobi cn
     implementation(name: 'suib_base_4.2.7_sucn', ext: 'jar')
@@ -101,8 +101,8 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.8.0'
 
     //tiktok cn
-    implementation(name: 'open_ad_sdk_2.9.5.5', ext: 'aar')
-    implementation project(path: ':adapter_cn:tiktok')
+//    implementation(name: 'open_ad_sdk_2.9.5.5', ext: 'aar')
+//    implementation project(path: ':adapter_cn:tiktok')
 
     //sigmob
     implementation(name: 'windAd-2.18.2', ext: 'jar')
@@ -149,6 +149,16 @@ dependencies {
     implementation rootProject.ext.dependencies.glide
     implementation project(path: ':adapter_cn:alion')
 
+    //mintegral
+    implementation 'com.mintegral.msdk:videojs:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk:mtgjscommon:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk:playercommon:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk:reward:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk:videocommon:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk:interstitialvideo:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk:common:' + rootProject.ext.dependencies.mtg_version
+    implementation project(path: ':adapter:mintegral')
+
 
 //    //AdColony
 //    implementation rootProject.ext.dependencies.adcolony
@@ -187,15 +197,7 @@ dependencies {
 //    implementation rootProject.ext.dependencies.ironsource
 //    implementation project(path: ':adapter:ironsource')
 //
-//    //mintegral
-//    implementation 'com.mintegral.msdk:videojs:' + rootProject.ext.dependencies.mtg_version
-//    implementation 'com.mintegral.msdk:mtgjscommon:' + rootProject.ext.dependencies.mtg_version
-//    implementation 'com.mintegral.msdk:playercommon:' + rootProject.ext.dependencies.mtg_version
-//    implementation 'com.mintegral.msdk:reward:' + rootProject.ext.dependencies.mtg_version
-//    implementation 'com.mintegral.msdk:videocommon:' + rootProject.ext.dependencies.mtg_version
-//    implementation 'com.mintegral.msdk:interstitialvideo:' + rootProject.ext.dependencies.mtg_version
-//    implementation 'com.mintegral.msdk:common:' + rootProject.ext.dependencies.mtg_version
-//    implementation project(path: ':adapter:mintegral')
+
 //
 //    //mopub
 //    implementation(rootProject.ext.dependencies.mopub) { transitive = true }

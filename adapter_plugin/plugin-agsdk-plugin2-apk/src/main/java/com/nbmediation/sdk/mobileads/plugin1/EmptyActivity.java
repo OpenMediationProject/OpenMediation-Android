@@ -1,4 +1,4 @@
-package com.nbmediation.sdk.mobileads;
+package com.nbmediation.sdk.mobileads.plugin2;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -9,6 +9,7 @@ import android.widget.Toast;
 import com.adsgreat.base.core.AGVideo;
 import com.adsgreat.video.core.AdsGreatVideo;
 import com.adsgreat.video.core.RewardedVideoAdListener;
+import com.nbmediation.sdk.mobileads.PluginApplication;
 
 
 /**
@@ -30,7 +31,7 @@ public class EmptyActivity extends Activity {
 
     public final static String SHOW_TYPE = "show_type";
 
-    static void showRewardVideoAd(AGVideo agVideo, RewardedVideoAdListener rewardedVideoAdListener) {
+    public static void showRewardVideoAd(AGVideo agVideo, RewardedVideoAdListener rewardedVideoAdListener) {
         mRewardedVideoAd = agVideo;
         mRewardedListener = rewardedVideoAdListener;
         Intent intent = new Intent(PluginApplication.getInstance(), EmptyActivity.class);
@@ -50,8 +51,8 @@ public class EmptyActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.i(TAG, "EmptyActivity onCreate");
-        Toast.makeText(this, "EmptyActivity起来了", Toast.LENGTH_SHORT).show();
+//        Log.i(TAG, "EmptyActivity onCreate");
+//        Toast.makeText(this, "EmptyActivity起来了", Toast.LENGTH_SHORT).show();
         int showType = getIntent().getIntExtra(SHOW_TYPE, 0);
         if (showType == SHOW_REWARD_VIDEO && mRewardedVideoAd != null) {
             AdsGreatVideo.showRewardedVideo(mRewardedVideoAd, mRewardedListener);

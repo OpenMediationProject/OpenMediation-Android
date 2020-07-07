@@ -29,7 +29,7 @@ public class PluginApplication extends Application {
 
     public boolean isOnCreate;
 
-    static Handler MAIN_HANDLER = new Handler(Looper.getMainLooper());
+    public static Handler MAIN_HANDLER = new Handler(Looper.getMainLooper());
 
     @Override
     public void onCreate() {
