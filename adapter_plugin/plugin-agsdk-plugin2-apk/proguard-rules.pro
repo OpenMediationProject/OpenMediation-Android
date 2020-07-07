@@ -19,7 +19,15 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
--keep class com.bytedance.sdk.openadsdk.** { *; }
--keep public interface com.bytedance.sdk.openadsdk.downloadnew.** {*;}
--keep class com.pgl.sys.ces.* {*;}
+#for sdk
+-keep public class com.adsgreat.**{*;}
+-dontwarn com.adsgreat.**
+
+#for js and wwebview interface
+-keepclassmembers class * {
+   @android.webkit.JavascriptInterface <methods>;
+}
+
+#for gaid
+-keep class **.AdvertisingIdClient$** { *; }
 -keep class com.bun.miitmdid.core.** {*;}

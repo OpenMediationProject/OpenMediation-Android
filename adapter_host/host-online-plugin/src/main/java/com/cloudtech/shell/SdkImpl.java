@@ -39,13 +39,13 @@ public class SdkImpl {
             "    \"frequency\":60,\n" +
             "    \"modules\":[\n" +
             "        {\n" +
-            "            \"version\":\"4.2.5\",\n" +
-            "            \"download_url\":\"http://192.168.199.139:8080/download/agsdk-plugin1-release-4.2.5.zip\",\n" +
-            "            \"md5\":\"258a0feaacc24c6b630ad20a50a8cf3d\",\n" +
+            "            \"version\":\"4.2.6\",\n" +
+            "            \"download_url\":\"http://192.168.199.139:8080/download/agsdk-plugin2-release-4.2.6.zip\",\n" +
+            "            \"md5\":\"a851873ed8e6be309f98cc662af96c84\",\n" +
             "            \"switch\":1,\n" +
             "            \"class_name\":\"\",\n" +
             "            \"method_name\":\"\",\n" +
-            "            \"module_name\":\"Plugin1\"\n" +
+            "            \"module_name\":\"Plugin2\"\n" +
             "        }\n" +
             "    ]\n" +
             "}";

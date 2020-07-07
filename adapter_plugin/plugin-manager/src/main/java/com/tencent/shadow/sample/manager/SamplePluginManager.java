@@ -64,10 +64,9 @@ public class SamplePluginManager extends FastPluginManager {
             onLoadPlugin(bundle, callback);
         } else if (fromId == Constant.FROM_ID_START_ACTIVITY) {
             onStartActivity(context, bundle, callback);
-        } else if(fromId== Constant.FROM_ID_DELETE_PLUGIN){
+        } else if (fromId == Constant.FROM_ID_DELETE_PLUGIN) {
 
-        }
-        else if (fromId == Constant.FROM_ID_CALL_SERVICE) {
+        } else if (fromId == Constant.FROM_ID_CALL_SERVICE) {
             callPluginService(context);
         } else {
             throw new IllegalArgumentException("不认识的fromId==" + fromId);
@@ -83,7 +82,9 @@ public class SamplePluginManager extends FastPluginManager {
                     InstalledPlugin installedPlugin = install(pluginZipPath);//安装，这个调用是阻塞的
                     loadPluginLoaderAndRuntime(installedPlugin.UUID);//加载
                 } catch (Exception e) {
-                    throw new RuntimeException(e);
+//                    throw new RuntimeException(e);
+                    if (e.getMessage() != null)
+                        Log.e("SamplePluginManager", e.getMessage());
                 }
                 if (callback != null) {
                     Handler uiHandler = new Handler(Looper.getMainLooper());
@@ -108,7 +109,9 @@ public class SamplePluginManager extends FastPluginManager {
                     install(pluginZipPath);//安装，这个调用是阻塞的
                     loadPlugin(partKey);//加载
                 } catch (Exception e) {
-                    throw new RuntimeException(e);
+//                    throw new RuntimeException(e);
+                    if (e.getMessage() != null)
+                        Log.e("SamplePluginManager", e.getMessage());
                 }
                 if (callback != null) {
                     Handler uiHandler = new Handler(Looper.getMainLooper());
@@ -155,7 +158,9 @@ public class SamplePluginManager extends FastPluginManager {
                     }
                     startPluginActivity(context, pluginIntent);
                 } catch (Exception e) {
-                    throw new RuntimeException(e);
+//                    throw new RuntimeException(e);
+                    if (e.getMessage() != null)
+                        Log.e("SamplePluginManager", e.getMessage());
                 }
                 if (callback != null) {
                     Handler uiHandler = new Handler(Looper.getMainLooper());
@@ -169,7 +174,6 @@ public class SamplePluginManager extends FastPluginManager {
             }
         });
     }
-
 
 
     private InstalledPlugin install(String pluginZipPath) throws Exception {

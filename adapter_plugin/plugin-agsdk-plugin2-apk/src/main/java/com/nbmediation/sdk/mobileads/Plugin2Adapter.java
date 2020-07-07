@@ -7,8 +7,8 @@ import com.adsgreat.base.callback.VideoAdLoadListener;
 import com.adsgreat.base.core.AGError;
 import com.adsgreat.base.core.AGVideo;
 import com.adsgreat.base.core.AdsgreatSDK;
+import com.adsgreat.video.core.AdsGreatVideo;
 import com.adsgreat.video.core.RewardedVideoAdListener;
-import com.adsgreat.video.core.ZcoupVideo;
 import com.nbmediation.sdk.mediation.CustomAdsAdapter;
 import com.nbmediation.sdk.mediation.MediationInfo;
 import com.nbmediation.sdk.mediation.RewardedVideoCallback;
@@ -24,22 +24,22 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Created by jiantao.tu on 2020/5/14.
  */
-public class Plugin1Adapter extends CustomAdsAdapter {
+public class Plugin2Adapter extends CustomAdsAdapter {
 
-    private static String TAG = "OM-Cloudmobi-Plugin1: ";
+    private static String TAG = "OM-Cloudmobi-Plugin2: ";
 
     private ConcurrentMap<String, AGVideo> mRvAds;
 
     private AtomicBoolean isPreload = new AtomicBoolean();
 
 
-    public Plugin1Adapter() {
+    public Plugin2Adapter() {
         mRvAds = new ConcurrentHashMap<>();
     }
 
     @Override
     public String getMediationVersion() {
-        return "4.2.5_ag";
+        return "4.2.6_ag";
     }
 
     @Override
@@ -49,7 +49,7 @@ public class Plugin1Adapter extends CustomAdsAdapter {
 
     @Override
     public int getAdNetworkId() {
-        return MediationInfo.MEDIATION_ID_32;
+        return MediationInfo.MEDIATION_ID_33;
     }
 
     @Override
@@ -190,7 +190,7 @@ public class Plugin1Adapter extends CustomAdsAdapter {
 
     private void realLoadRvAd(Context activity, final String adUnitId, RewardedVideoCallback callback) {
         VideoAdLoadListener videoAdLoadListener = create(adUnitId, callback);
-        ZcoupVideo.preloadRewardedVideo(PluginApplication.getInstance(), adUnitId, videoAdLoadListener);
+        AdsGreatVideo.preloadRewardedVideo(PluginApplication.getInstance(), adUnitId, videoAdLoadListener);
     }
 
     @Override
@@ -202,7 +202,7 @@ public class Plugin1Adapter extends CustomAdsAdapter {
         AGVideo video = mRvAds.get(adUnitId);
         if (video == null) return false;
 
-        return ZcoupVideo.isRewardedVideoAvailable(video);
+        return AdsGreatVideo.isRewardedVideoAvailable(video);
     }
 
     private VideoAdLoadListener create(final String adUnitId, final RewardedVideoCallback callback) {

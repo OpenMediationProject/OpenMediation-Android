@@ -8699,14 +8699,14 @@ Constant Pool (count = 136):
   + String []
   + String [1.0.1]
   + String [1.0.2]
-  + String [58203a88caacd3addea7cf5b3307c82c]
+  + String [467e6b7db3dad78b52217d9dbb06d07a]
+  + String [4d0e37d572877eb4ca8746ed257ec74b]
   + String [700]
-  + String [758f05dfea81a08d5cef78e3b38b32fe]
   + String [\.]
   + String [plugin-main]
-  + String [plugin-main-debug-1.0.1.zip]
+  + String [plugin-main-release-1.0.1.zip]
   + String [plugin-manager]
-  + String [plugin-manager-debug-1.0.2.zip]
+  + String [plugin-manager-release-1.0.2.zip]
   + Class [com/cloudtech/shell/a/b]
   + Class [com/cloudtech/shell/b/b]
   + Class [com/cloudtech/shell/b/c]
@@ -8793,9 +8793,9 @@ Constant Pool (count = 136):
   + Utf8 [([Lcom/cloudtech/shell/b/b;)V]
   + Utf8 [1.0.1]
   + Utf8 [1.0.2]
-  + Utf8 [58203a88caacd3addea7cf5b3307c82c]
+  + Utf8 [467e6b7db3dad78b52217d9dbb06d07a]
+  + Utf8 [4d0e37d572877eb4ca8746ed257ec74b]
   + Utf8 [700]
-  + Utf8 [758f05dfea81a08d5cef78e3b38b32fe]
   + Utf8 [<clinit>]
   + Utf8 [<init>]
   + Utf8 [Code]
@@ -8827,9 +8827,9 @@ Constant Pool (count = 136):
   + Utf8 [java/lang/Throwable]
   + Utf8 [parseInt]
   + Utf8 [plugin-main]
-  + Utf8 [plugin-main-debug-1.0.1.zip]
+  + Utf8 [plugin-main-release-1.0.1.zip]
   + Utf8 [plugin-manager]
-  + Utf8 [plugin-manager-debug-1.0.2.zip]
+  + Utf8 [plugin-manager-release-1.0.2.zip]
   + Utf8 [split]
 
 Fields (count = 2):
@@ -8861,7 +8861,7 @@ Methods (count = 3):
       [18] ifnull +12 (target=30)
       [21] aload_1 v1
       [22] ldc #11
-        + String [plugin-manager-debug-1.0.2.zip]
+        + String [plugin-manager-release-1.0.2.zip]
       [24] invokestatic #39
         + Methodref [com/cloudtech/shell/e/a.a (Landroid/content/Context;Ljava/lang/String;)Z]
       [27] ifne +6 (target=33)
@@ -8871,14 +8871,14 @@ Methods (count = 3):
         + String [plugin-manager]
       [36] ldc #3
         + String [1.0.2]
-      [38] ldc #4
-        + String [58203a88caacd3addea7cf5b3307c82c]
+      [38] ldc #5
+        + String [4d0e37d572877eb4ca8746ed257ec74b]
       [40] ldc #1
         + String []
       [42] ldc #1
         + String []
       [44] ldc #11
-        + String [plugin-manager-debug-1.0.2.zip]
+        + String [plugin-manager-release-1.0.2.zip]
       [46] getstatic #29
         + Fieldref [com/cloudtech/shell/b/c.a Lcom/cloudtech/shell/b/c;]
       [49] invokestatic #41
@@ -8898,7 +8898,7 @@ Methods (count = 3):
       [71] ifnull +12 (target=83)
       [74] aload_1 v1
       [75] ldc #9
-        + String [plugin-main-debug-1.0.1.zip]
+        + String [plugin-main-release-1.0.1.zip]
       [77] invokestatic #39
         + Methodref [com/cloudtech/shell/e/a.a (Landroid/content/Context;Ljava/lang/String;)Z]
       [80] ifne +4 (target=84)
@@ -8908,14 +8908,14 @@ Methods (count = 3):
         + String [plugin-main]
       [87] ldc #2
         + String [1.0.1]
-      [89] ldc #6
-        + String [758f05dfea81a08d5cef78e3b38b32fe]
+      [89] ldc #4
+        + String [467e6b7db3dad78b52217d9dbb06d07a]
       [91] ldc #1
         + String []
       [93] ldc #1
         + String []
       [95] ldc #9
-        + String [plugin-main-debug-1.0.1.zip]
+        + String [plugin-main-release-1.0.1.zip]
       [97] getstatic #30
         + Fieldref [com/cloudtech/shell/b/c.b Lcom/cloudtech/shell/b/c;]
       [100] invokestatic #41
@@ -9050,7 +9050,7 @@ Methods (count = 3):
       [147] aload_0 v0
       [148] aload v6
       [150] aload v8
-      [152] ldc #5
+      [152] ldc #6
         + String [700]
       [154] invokestatic #40
         + Methodref [com/cloudtech/shell/e/a.a (Landroid/content/Context;Ljava/lang/String;Ljava/io/File;Ljava/lang/String;)V]
