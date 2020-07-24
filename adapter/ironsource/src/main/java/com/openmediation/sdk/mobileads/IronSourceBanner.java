@@ -1,12 +1,14 @@
 package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 
 import com.ironsource.mediationsdk.ISBannerSize;
 import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.IronSourceBannerLayout;
 import com.ironsource.mediationsdk.logger.IronSourceError;
 import com.ironsource.mediationsdk.sdk.BannerListener;
+import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomBannerEvent;
 import com.openmediation.sdk.mediation.MediationInfo;
 
@@ -25,6 +27,31 @@ public class IronSourceBanner extends CustomBannerEvent implements BannerListene
     }
 
     @Override
+    public void setGDPRConsent(Context context, boolean consent) {
+        super.setGDPRConsent(context, consent);
+        IronSource.setConsent(consent);
+    }
+
+    @Override
+    public void setUserAge(Context context, int age) {
+        super.setUserAge(context, age);
+        IronSource.setAge(age);
+    }
+
+    @Override
+    public void setUserGender(Context context, String gender) {
+        super.setUserGender(context, gender);
+        IronSource.setGender(gender);
+    }
+
+    @Override
+    public void setUSPrivacyLimit(Context context, boolean value) {
+        super.setUSPrivacyLimit(context, value);
+        String sell = value ? "true" : "false";
+        IronSource.setMetaData("do_not_sell", sell);
+    }
+
+    @Override
     public void loadAd(Activity activity, Map<String, String> config) throws Throwable {
         super.loadAd(activity, config);
         if (!check(activity, config)) {
@@ -35,11 +62,7 @@ public class IronSourceBanner extends CustomBannerEvent implements BannerListene
             IronSource.init(activity, appKey, IronSource.AD_UNIT.BANNER);
         }
         if (mIrBannerLayout == null || isFailed) {
-            int[] size = getBannerSize(config);
-            ISBannerSize bannerSize = ISBannerSize.BANNER;
-            if (size[0] > 0 && size[1] > 0) {
-                bannerSize = new ISBannerSize(size[0], size[1]);
-            }
+            ISBannerSize bannerSize = getAdSize(config);
             mIrBannerLayout = IronSource.createBanner(activity, bannerSize);
             mIrBannerLayout.setBannerListener(this);
             IronSource.loadBanner(mIrBannerLayout);
@@ -65,12 +88,13 @@ public class IronSourceBanner extends CustomBannerEvent implements BannerListene
     }
 
     @Override
-    public void onBannerAdLoadFailed(IronSourceError ironSourceError) {
+    public void onBannerAdLoadFailed(IronSourceError error) {
         if (isDestroyed) {
             return;
         }
         isFailed = true;
-        onInsError(ironSourceError.getErrorMessage());
+        onInsError(AdapterErrorBuilder.buildLoadError(
+                AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error.getErrorCode(), error.getErrorMessage()));
     }
 
     @Override
@@ -94,5 +118,19 @@ public class IronSourceBanner extends CustomBannerEvent implements BannerListene
     @Override
     public void onBannerAdLeftApplication() {
 
+    }
+
+    private ISBannerSize getAdSize(Map<String, String> config) {
+        String bannerDesc = getBannerDesc(config);
+        switch (bannerDesc) {
+            case DESC_LEADERBOARD:
+                return new ISBannerSize(728, 90);
+            case DESC_RECTANGLE:
+                return ISBannerSize.RECTANGLE;
+            case DESC_SMART:
+                return ISBannerSize.SMART;
+            default:
+                return ISBannerSize.BANNER;
+        }
     }
 }

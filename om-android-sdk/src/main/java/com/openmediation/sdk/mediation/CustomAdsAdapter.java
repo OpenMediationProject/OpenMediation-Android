@@ -18,7 +18,7 @@ import java.util.Map;
  * At runtime, the mediation SDK will find and instantiate a CustomAdsAdapter subclass as needed
  * and invoke its methods.
  */
-public abstract class CustomAdsAdapter implements RewardedVideoApi, InterstitialAdApi, BannerAdApi {
+public abstract class CustomAdsAdapter extends CustomAdParams implements RewardedVideoApi, InterstitialAdApi, BannerAdApi {
 
     protected String mAppKey;
 
@@ -154,6 +154,7 @@ public abstract class CustomAdsAdapter implements RewardedVideoApi, Interstitial
             return;
         }
         mAppKey = (String) dataMap.get("AppKey");
+        setCustomParams(activity);
     }
 
     /**

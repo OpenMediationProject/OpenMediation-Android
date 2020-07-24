@@ -41,4 +41,5 @@ dependencies {
     implementation 'com.mintegral.msdk:videocommon:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mintegral.msdk:interstitialvideo:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mintegral.msdk:common:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk:mtgbid:' + rootProject.ext.dependencies.mtg_version
 }

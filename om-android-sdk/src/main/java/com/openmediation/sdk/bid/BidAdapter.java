@@ -25,12 +25,12 @@ public abstract class BidAdapter implements BidApi {
     }
 
     @Override
-    public void notifyWin(String placementId) {
+    public void notifyWin(String placementId, Map<String, Object> dataMap) {
 
     }
 
     @Override
-    public void notifyLose(String placementId) {
+    public void notifyLose(String placementId, Map<String, Object> dataMap) {
 
     }
 }

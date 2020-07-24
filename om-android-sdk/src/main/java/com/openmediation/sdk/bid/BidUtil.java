@@ -3,6 +3,7 @@
 
 package com.openmediation.sdk.bid;
 
+import com.openmediation.sdk.banner.AdSize;
 import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.Configurations;
 
@@ -17,11 +18,14 @@ final class BidUtil {
         return configMap;
     }
 
-    static Map<String, Object> makeBidRequestInfo(BaseInstance instance, int adType) {
+    static Map<String, Object> makeBidRequestInfo(BaseInstance instance, int adType, AdSize adSize) {
         Map<String, Object> configMap = new HashMap<>();
         configMap.put(BidConstance.BID_APP_KEY, instance.getAppKey());
         configMap.put(BidConstance.BID_PLACEMENT_ID, instance.getKey());
         configMap.put(BidConstance.BID_AD_TYPE, adType);
+        if (adSize != null) {
+            configMap.put(BidConstance.BID_BANNER_SIZE, adSize);
+        }
         return configMap;
     }
 }

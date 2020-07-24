@@ -15,7 +15,7 @@ public abstract class CustomSplashEvent extends CustomAdEvent {
         CallbackManager.getInstance().onInsShowSuccess(mPlacementId, mInstancesKey, mInsId);
     }
 
-    protected synchronized void onInsShowFailed(String error) {
+    protected synchronized void onInsShowFailed(AdapterError error) {
         CallbackManager.getInstance().onInsShowFailed(mPlacementId, mInstancesKey, mInsId, error);
     }
 

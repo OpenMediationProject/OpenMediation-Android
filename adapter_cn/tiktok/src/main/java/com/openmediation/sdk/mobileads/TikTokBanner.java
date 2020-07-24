@@ -11,9 +11,9 @@ import com.bytedance.sdk.openadsdk.AdSlot;
 import com.bytedance.sdk.openadsdk.TTAdDislike;
 import com.bytedance.sdk.openadsdk.TTAdNative;
 import com.bytedance.sdk.openadsdk.TTNativeExpressAd;
+import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomBannerEvent;
 import com.openmediation.sdk.mediation.MediationInfo;
-import com.openmediation.sdk.utils.AdLog;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -37,12 +37,8 @@ public class TikTokBanner extends CustomBannerEvent implements TTAdNative.Native
         }
         this.mActivity = activity;
         initTTSDKConfig(activity, config);
-        int[] size = getBannerSize(config);
+        int[] size = getAdSize(activity, config);
         int width = size[0], height = size[1];
-        if (width < 0 || height < 0) {
-            width = 320;
-            height = 50;
-        }
         loadBannerAd(mInstancesKey, width, height);
     }
 
@@ -81,8 +77,8 @@ public class TikTokBanner extends CustomBannerEvent implements TTAdNative.Native
         if (isDestroyed) {
             return;
         }
-        AdLog.getSingleton().LogD(TAG + "Banner ad load failed " + s);
-        onInsError(s);
+        onInsError(AdapterErrorBuilder.buildLoadError(
+                AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, i, s));
     }
 
     @Override
@@ -97,7 +93,6 @@ public class TikTokBanner extends CustomBannerEvent implements TTAdNative.Native
         bindDislike(mActivity, mTTAd);
         mTTAd.setExpressInteractionListener(new InnerAdInteractionListener(TikTokBanner.this));
         mTTAd.render();
-        AdLog.getSingleton().LogD(TAG + "Banner ad load success ");
     }
 
     private static class InnerAdInteractionListener implements TTNativeExpressAd.ExpressAdInteractionListener {
@@ -118,12 +113,10 @@ public class TikTokBanner extends CustomBannerEvent implements TTAdNative.Native
                 return;
             }
             banner.onInsClicked();
-            AdLog.getSingleton().LogD(TAG + "onAdClicked");
         }
 
         @Override
         public void onAdShow(View view, int type) {
-            AdLog.getSingleton().LogD(TAG + "onAdShow");
         }
 
         @Override
@@ -132,8 +125,8 @@ public class TikTokBanner extends CustomBannerEvent implements TTAdNative.Native
             if (banner.isDestroyed) {
                 return;
             }
-            AdLog.getSingleton().LogD(TAG + "onRenderFail " + msg + " code:" + code);
-            banner.onInsError(msg);
+            banner.onInsError(AdapterErrorBuilder.buildLoadError(
+                    AdapterErrorBuilder.AD_UNIT_BANNER, "TikTokBanner", code, msg));
         }
 
         @Override
@@ -145,7 +138,6 @@ public class TikTokBanner extends CustomBannerEvent implements TTAdNative.Native
             if (banner.isDestroyed) {
                 return;
             }
-            AdLog.getSingleton().LogD(TAG + "onRenderSuccess");
             banner.mBannerView = view;
             banner.onInsReady(view);
         }
@@ -168,6 +160,21 @@ public class TikTokBanner extends CustomBannerEvent implements TTAdNative.Native
             public void onCancel() {
             }
         });
+    }
+
+    private int[] getAdSize(Activity activity, Map<String, String> config) {
+        String desc = getBannerDesc(config);
+        int widthDp = 320;
+        int heightDp = 50;
+
+        if (DESC_RECTANGLE.equals(desc)) {
+            widthDp = 300;
+            heightDp = 250;
+        } else if (DESC_SMART.equals(desc) && isLargeScreen(activity)) {
+            widthDp = 728;
+            heightDp = 90;
+        }
+        return new int[] {widthDp, heightDp};
     }
 
 }

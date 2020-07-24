@@ -1,17 +1,18 @@
 package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
-import android.util.Log;
 
-import com.openmediation.sdk.mobileads.ironsource.BuildConfig;
 import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.logger.IronSourceError;
 import com.ironsource.mediationsdk.utils.IronSourceUtils;
+import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
+import com.openmediation.sdk.mobileads.ironsource.BuildConfig;
 import com.openmediation.sdk.utils.AdLog;
 
 import java.lang.ref.WeakReference;
@@ -23,10 +24,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class IronSourceAdapter extends CustomAdsAdapter
-{
+public class IronSourceAdapter extends CustomAdsAdapter {
 
-    private static final String TAG = "AdTiming-IronSource";
+    private static final String TAG = "OM-IronSource";
 
     private static AtomicBoolean mDidInitInterstitial = new AtomicBoolean(false);
 
@@ -68,6 +68,31 @@ public class IronSourceAdapter extends CustomAdsAdapter
     }
 
     @Override
+    public void setGDPRConsent(Context context, boolean consent) {
+        super.setGDPRConsent(context, consent);
+        IronSource.setConsent(consent);
+    }
+
+    @Override
+    public void setUserAge(Context context, int age) {
+        super.setUserAge(context, age);
+        IronSource.setAge(age);
+    }
+
+    @Override
+    public void setUserGender(Context context, String gender) {
+        super.setUserGender(context, gender);
+        IronSource.setGender(gender);
+    }
+
+    @Override
+    public void setUSPrivacyLimit(Context context, boolean value) {
+        super.setUSPrivacyLimit(context, value);
+        String sell = value ? "true" : "false";
+        IronSource.setMetaData("do_not_sell", sell);
+    }
+
+    @Override
     public void onResume(Activity activity) {
         super.onResume(activity);
         IronSource.onResume(activity);
@@ -85,7 +110,8 @@ public class IronSourceAdapter extends CustomAdsAdapter
         String error = check(activity);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
-                callback.onRewardedVideoInitFailed(error);
+                callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
             }
             return;
         }
@@ -112,7 +138,8 @@ public class IronSourceAdapter extends CustomAdsAdapter
             IronSourceManager.getInstance().loadRewardedVideo(adUnitId, new WeakReference<>(IronSourceAdapter.this));
         } else {
             if (callback != null) {
-                callback.onRewardedVideoLoadFailed(checkError);
+                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, checkError));
             }
         }
     }
@@ -128,7 +155,8 @@ public class IronSourceAdapter extends CustomAdsAdapter
             IronSourceManager.getInstance().showRewardedVideo(adUnitId);
         } else {
             if (callback != null) {
-                callback.onRewardedVideoAdShowFailed(checkError);
+                callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, checkError));
             }
         }
     }
@@ -144,7 +172,8 @@ public class IronSourceAdapter extends CustomAdsAdapter
         String error = check(activity);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
-                callback.onInterstitialAdInitFailed(error);
+                callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
             }
             return;
         }
@@ -171,7 +200,8 @@ public class IronSourceAdapter extends CustomAdsAdapter
             IronSourceManager.getInstance().loadInterstitial(adUnitId, new WeakReference<>(IronSourceAdapter.this));
         } else {
             if (callback != null) {
-                callback.onInterstitialAdLoadFailed(checkError);
+                callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, checkError));
             }
         }
     }
@@ -187,7 +217,8 @@ public class IronSourceAdapter extends CustomAdsAdapter
             IronSourceManager.getInstance().showInterstitial(adUnitId);
         } else {
             if (callback != null) {
-                callback.onInterstitialAdShowFailed(checkError);
+                callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, checkError));
             }
         }
     }
@@ -208,20 +239,15 @@ public class IronSourceAdapter extends CustomAdsAdapter
         }
     }
 
-    void onInterstitialAdLoadFailed(String instanceId, IronSourceError ironSourceError) {
-        Log.e(TAG, String.format("IronSource Interstitial failed to load for instance %s  with Error: %s"
-                , instanceId, ironSourceError.getErrorMessage()));
-
+    void onInterstitialAdLoadFailed(String instanceId, IronSourceError error) {
         InterstitialAdCallback callback = mIsCallbacks.get(instanceId);
         if (callback != null) {
-            callback.onInterstitialAdLoadFailed(ironSourceError.toString());
+            callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error.getErrorCode(), error.getErrorMessage()));
         }
     }
 
     void onInterstitialAdOpened(String instanceId) {
-        Log.d(TAG, String.format("IronSource Interstitial opened ad for instance %s",
-                instanceId));
-
         InterstitialAdCallback callback = mIsCallbacks.get(instanceId);
         if (callback != null) {
             callback.onInterstitialAdShowSuccess();
@@ -229,7 +255,7 @@ public class IronSourceAdapter extends CustomAdsAdapter
     }
 
     void onInterstitialAdClosed(String instanceId) {
-        Log.d(TAG, String.format("IronSource Interstitial closed ad for instance %s",
+        AdLog.getSingleton().LogD(TAG, String.format("IronSource Interstitial closed ad for instance %s",
                 instanceId));
 
         InterstitialAdCallback callback = mIsCallbacks.get(instanceId);
@@ -238,17 +264,16 @@ public class IronSourceAdapter extends CustomAdsAdapter
         }
     }
 
-    void onInterstitialAdShowFailed(String instanceId, IronSourceError ironSourceError) {
-        Log.e(TAG, String.format("IronSource Interstitial failed to show " +
-                "for instance %s with Error: %s", instanceId, ironSourceError.getErrorMessage()));
+    void onInterstitialAdShowFailed(String instanceId, IronSourceError error) {
         InterstitialAdCallback callback = mIsCallbacks.get(instanceId);
         if (callback != null) {
-            callback.onInterstitialAdShowFailed(ironSourceError.toString());
+            callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error.getErrorCode(), error.getErrorMessage()));
         }
     }
 
     void onInterstitialAdClicked(String instanceId) {
-        Log.d(TAG, String.format("IronSource Interstitial ad clicked for instance %s",
+        AdLog.getSingleton().LogD(TAG, String.format("IronSource Interstitial ad clicked for instance %s",
                 instanceId));
 
         InterstitialAdCallback callback = mIsCallbacks.get(instanceId);
@@ -262,27 +287,22 @@ public class IronSourceAdapter extends CustomAdsAdapter
      */
 
     void onRewardedVideoAdLoadSuccess(String instanceId) {
-        Log.d(TAG, String.format("IronSource load success for instanceId: %s", instanceId));
+        AdLog.getSingleton().LogD(TAG, String.format("IronSource load success for instanceId: %s", instanceId));
         RewardedVideoCallback callback = mRvCallbacks.get(instanceId);
         if (callback != null) {
             callback.onRewardedVideoLoadSuccess();
         }
     }
 
-    void onRewardedVideoAdLoadFailed(String instanceId, IronSourceError ironSourceError) {
-        final String message = String.format("IronSource Rewarded Video failed to load for instance %s with Error: %s",
-                instanceId, ironSourceError.getErrorMessage());
-        Log.d(TAG, message);
+    void onRewardedVideoAdLoadFailed(String instanceId, IronSourceError error) {
         RewardedVideoCallback callback = mRvCallbacks.get(instanceId);
         if (callback != null) {
-            callback.onRewardedVideoLoadFailed(message);
+            callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error.getErrorCode(), error.getErrorMessage()));
         }
     }
 
     void onRewardedVideoAdOpened(final String instanceId) {
-        Log.d(TAG, String.format("IronSource Rewarded Video opened ad for instance %s",
-                instanceId));
-
         RewardedVideoCallback callback = mRvCallbacks.get(instanceId);
         if (callback != null) {
             callback.onRewardedVideoAdShowSuccess();
@@ -291,7 +311,7 @@ public class IronSourceAdapter extends CustomAdsAdapter
     }
 
     void onRewardedVideoAdClosed(String instanceId) {
-        Log.d(TAG, String.format("IronSource Rewarded Video closed ad for instance %s",
+        AdLog.getSingleton().LogD(TAG, String.format("IronSource Rewarded Video closed ad for instance %s",
                 instanceId));
 
         RewardedVideoCallback callback = mRvCallbacks.get(instanceId);
@@ -301,7 +321,7 @@ public class IronSourceAdapter extends CustomAdsAdapter
     }
 
     void onRewardedVideoAdRewarded(String instanceId) {
-        Log.d(TAG, String.format("IronSource Rewarded Video received reward for instance %s", instanceId));
+        AdLog.getSingleton().LogD(TAG, String.format("IronSource Rewarded Video received reward for instance %s", instanceId));
 
         RewardedVideoCallback callback = mRvCallbacks.get(instanceId);
         if (callback != null) {
@@ -309,19 +329,20 @@ public class IronSourceAdapter extends CustomAdsAdapter
         }
     }
 
-    void onRewardedVideoAdShowFailed(final String instanceId, IronSourceError ironsourceError) {
+    void onRewardedVideoAdShowFailed(final String instanceId, IronSourceError error) {
         final String message = String.format("IronSource Rewarded Video failed to show for instance %s with Error: %s",
-                instanceId, ironsourceError.getErrorMessage());
-        Log.w(TAG, message);
+                instanceId, error.getErrorMessage());
+        AdLog.getSingleton().LogE(TAG, message);
 
         RewardedVideoCallback callback = mRvCallbacks.get(instanceId);
         if (callback != null) {
-            callback.onRewardedVideoAdShowFailed(message);
+            callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error.getErrorCode(), error.getErrorMessage()));
         }
     }
 
     void onRewardedVideoAdClicked(String instanceId) {
-        Log.d(TAG, String.format("IronSource Rewarded Video clicked for instance %s",
+        AdLog.getSingleton().LogD(TAG, String.format("IronSource Rewarded Video clicked for instance %s",
                 instanceId));
 
         RewardedVideoCallback callback = mRvCallbacks.get(instanceId);

@@ -44,7 +44,7 @@ public class AdvertisingIdClient {
         }
     }
 
-    public static AdInfo getAdvertisingIdInfo(Context context) throws Exception {
+    public static AdInfo getAdvertisingIdInfo(Context context) {
         if (Looper.myLooper() == Looper.getMainLooper()) {
             DeveloperLog.LogD("getAdvertisingIdInfo Cannot be called from the main thread");
             return null;
@@ -64,10 +64,7 @@ public class AdvertisingIdClient {
                 return new AdInfo(adInterface.getId(), adInterface.isLimitAdTrackingEnabled(true));
             }
         } catch (Exception e) {
-            if (e instanceof PackageManager.NameNotFoundException) {
-                return null;
-            }
-            throw e;
+            return null;
         } finally {
             if (connection != null) {
                 context.unbindService(connection);

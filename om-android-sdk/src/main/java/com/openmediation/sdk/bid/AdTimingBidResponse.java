@@ -5,7 +5,7 @@ package com.openmediation.sdk.bid;
 
 public class AdTimingBidResponse {
     private int iid;
-    private double price;
+    private double price = 0;
     private String cur;
     private String original;
     private String payLoad;

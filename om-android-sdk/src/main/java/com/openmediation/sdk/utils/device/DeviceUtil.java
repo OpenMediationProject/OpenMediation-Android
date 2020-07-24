@@ -24,6 +24,7 @@ import android.webkit.WebSettings;
 
 import com.openmediation.sdk.utils.AdtUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
+import com.openmediation.sdk.utils.OaidHelper;
 import com.openmediation.sdk.utils.cache.DataCache;
 import com.openmediation.sdk.utils.constant.CommonConstants;
 import com.openmediation.sdk.utils.constant.KeyConstants;
@@ -88,15 +89,18 @@ public class DeviceUtil {
      *
      * @param context context
      * @return the map
-     * @throws Exception the exception
      */
-    public static Map<String, Object> preFetchDeviceInfo(Context context) throws Exception {
+    public static Map<String, Object> preFetchDeviceInfo(Context context) {
         Map<String, Object> map = new HashMap<>();
         map.put("UserAgent", getUserAgent(context));
         AdvertisingIdClient.AdInfo info = AdvertisingIdClient.getAdvertisingIdInfo(context);
         String gaid = info == null ? "" : info.getId();
         DeveloperLog.LogD("Gaid:" + gaid);
-        map.put("AdvertisingId", gaid);
+        if (!TextUtils.isEmpty(gaid)) {
+            map.put("AdvertisingId", gaid);
+        } else {
+            OaidHelper.initOaidServer(context);
+        }
         return map;
     }
 

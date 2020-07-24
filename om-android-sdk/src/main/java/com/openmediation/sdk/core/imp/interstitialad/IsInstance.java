@@ -5,13 +5,15 @@ package com.openmediation.sdk.core.imp.interstitialad;
 
 import android.app.Activity;
 
-import com.openmediation.sdk.utils.model.Instance;
 import com.openmediation.sdk.core.runnable.LoadTimeoutRunnable;
+import com.openmediation.sdk.mediation.AdapterError;
+import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.utils.AdLog;
 import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.error.Error;
 import com.openmediation.sdk.utils.error.ErrorCode;
+import com.openmediation.sdk.utils.model.Instance;
 import com.openmediation.sdk.utils.model.Scene;
 
 import java.util.Map;
@@ -87,11 +89,10 @@ public class IsInstance extends Instance implements InterstitialAdCallback, Load
     }
 
     @Override
-    public void onInterstitialAdInitFailed(String error) {
+    public void onInterstitialAdInitFailed(AdapterError error) {
+        AdLog.getSingleton().LogE("Interstitial Ad Init Failed: " + error.toString());
         onInsInitFailed(error);
-        Error errorResult = new Error(ErrorCode.CODE_LOAD_FAILED_IN_ADAPTER
-                , ErrorCode.MSG_LOAD_FAILED_IN_ADAPTER
-                + ", mediationID:" + getMediationId() + ", error:" + error, -1);
+        Error errorResult = new Error(ErrorCode.CODE_LOAD_FAILED_IN_ADAPTER, error.toString(), -1);
         mListener.onInterstitialAdInitFailed(errorResult, this);
     }
 
@@ -116,24 +117,22 @@ public class IsInstance extends Instance implements InterstitialAdCallback, Load
     }
 
     @Override
-    public void onInterstitialAdLoadFailed(String error) {
-        Error errorResult = new Error(ErrorCode.CODE_LOAD_FAILED_IN_ADAPTER
-                , ErrorCode.MSG_LOAD_FAILED_IN_ADAPTER
-                + ", mediationID:" + getMediationId() + ", error:" + error, -1);
-        AdLog.getSingleton().LogE(errorResult.toString() + "onInterstitialAdLoadFailed : " + toString());
-        DeveloperLog.LogE(errorResult.toString() + "onInterstitialAdLoadFailed : " + toString() + " error : " + error);
-        onInsLoadFailed(errorResult.toString());
+    public void onInterstitialAdLoadFailed(AdapterError error) {
+        AdLog.getSingleton().LogE("Interstitial Ad Load Failed: " + error.toString());
+        Error errorResult = new Error(ErrorCode.CODE_LOAD_FAILED_IN_ADAPTER, error.toString(), -1);
+        DeveloperLog.LogE(errorResult.toString() + " onInterstitialAdLoadFailed : " + toString() + " error : " + error);
+        onInsLoadFailed(error);
         mListener.onInterstitialAdLoadFailed(errorResult, this);
     }
 
     @Override
-    public void onInterstitialAdShowFailed(String error) {
+    public void onInterstitialAdShowFailed(AdapterError error) {
         Error errorResult = new Error(ErrorCode.CODE_SHOW_FAILED_IN_ADAPTER
                 , ErrorCode.MSG_SHOW_FAILED_IN_ADAPTER
                 + ", mediationID:" + getMediationId() + ", error:" + error, -1);
-        AdLog.getSingleton().LogE(errorResult.toString() + "onInterstitialAdShowFailed : " + toString());
+        AdLog.getSingleton().LogE("Interstitial Ad Show Failed: " + error.toString());
         DeveloperLog.LogE(errorResult.toString() + "onInterstitialAdShowFailed : " + toString() + " error : " + error);
-        onInsShowFailed(errorResult.toString(), mScene);
+        onInsShowFailed(error, mScene);
         mListener.onInterstitialAdShowFailed(errorResult, this);
     }
 
@@ -145,6 +144,7 @@ public class IsInstance extends Instance implements InterstitialAdCallback, Load
 
     @Override
     public void onLoadTimeout() {
-        onInterstitialAdLoadFailed(ErrorCode.ERROR_TIMEOUT);
+        onInsLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapter == null ? "" : mAdapter.getClass().getSimpleName(), ErrorCode.ERROR_TIMEOUT));
     }
 }

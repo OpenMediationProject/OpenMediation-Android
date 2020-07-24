@@ -17,7 +17,7 @@ public interface InterstitialAdCallback {
      *
      * @param error init failed reason
      */
-    void onInterstitialAdInitFailed(String error);
+    void onInterstitialAdInitFailed(AdapterError error);
 
     /**
      * called when third-party ad networks ads closed
@@ -34,7 +34,7 @@ public interface InterstitialAdCallback {
      *
      * @param error load failure reason
      */
-    void onInterstitialAdLoadFailed(String error);
+    void onInterstitialAdLoadFailed(AdapterError error);
 
     /**
      * called when third-party ad networks show ads
@@ -46,7 +46,7 @@ public interface InterstitialAdCallback {
      *
      * @param error show failure reason
      */
-    void onInterstitialAdShowFailed(String error);
+    void onInterstitialAdShowFailed(AdapterError error);
 
     /**
      * called when third-party ad networks ads are clicked

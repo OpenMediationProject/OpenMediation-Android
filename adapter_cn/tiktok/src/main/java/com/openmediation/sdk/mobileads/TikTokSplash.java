@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import com.bytedance.sdk.openadsdk.AdSlot;
 import com.bytedance.sdk.openadsdk.TTAdNative;
 import com.bytedance.sdk.openadsdk.TTSplashAd;
+import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomSplashEvent;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.utils.AdLog;
@@ -102,7 +103,8 @@ public class TikTokSplash extends CustomSplashEvent implements TTAdNative.Splash
     @Override
     public void show(ViewGroup container) {
         if (!isReady()) {
-            onInsShowFailed("SplashAd not ready");
+            onInsShowFailed(AdapterErrorBuilder.buildShowError(
+                    AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, "SplashAd not ready"));
             return;
         }
         try {
@@ -117,7 +119,8 @@ public class TikTokSplash extends CustomSplashEvent implements TTAdNative.Splash
             container.addView(splashView);
             splashAd.setSplashInteractionListener(this);
         } catch (Exception e) {
-            onInsShowFailed("SplashAd not ready");
+            onInsShowFailed(AdapterErrorBuilder.buildShowError(
+                    AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, e.getMessage()));
         }
     }
 
@@ -136,8 +139,8 @@ public class TikTokSplash extends CustomSplashEvent implements TTAdNative.Splash
         if (isDestroyed) {
             return;
         }
-        AdLog.getSingleton().LogD(TAG + "Splash ad load failed: code " + code + " " + message);
-        onInsError(message);
+        onInsError(AdapterErrorBuilder.buildLoadError(
+                AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, code, message));
     }
 
     @Override
@@ -145,8 +148,8 @@ public class TikTokSplash extends CustomSplashEvent implements TTAdNative.Splash
         if (isDestroyed) {
             return;
         }
-        AdLog.getSingleton().LogD(TAG + "Splash ad load failed: timeout");
-        onInsError("Splash ad load failed: timeout");
+        onInsError(AdapterErrorBuilder.buildLoadError(
+                AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, "Splash ad load failed: timeout"));
     }
 
     @Override
@@ -155,7 +158,8 @@ public class TikTokSplash extends CustomSplashEvent implements TTAdNative.Splash
             return;
         }
         if (ttSplashAd == null) {
-            onInsError("Splash ad Load Failed");
+            onInsError(AdapterErrorBuilder.buildLoadError(
+                    AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, "Splash ad Load Failed: TTSplashAd is null"));
             return;
         }
         mSplashAdMap.put(mInstancesKey, ttSplashAd);
@@ -177,7 +181,6 @@ public class TikTokSplash extends CustomSplashEvent implements TTAdNative.Splash
         if (isDestroyed) {
             return;
         }
-        AdLog.getSingleton().LogD(TAG + "Splash ad onAdShow");
         onInsShowSuccess();
     }
 

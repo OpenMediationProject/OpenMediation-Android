@@ -39,7 +39,6 @@ public final class BannerImp extends AbstractHybridAd implements View.OnAttachSt
     private FrameLayout mLytBanner;
     private RefreshTask mRefreshTask;
     private HandlerUtil.HandlerHolder mRlwHandler;
-    private AdSize mAdSize;
     private Activity mActivity;
 
     public BannerImp(Activity activity, String placementId, BannerAdListener listener) {
@@ -48,6 +47,10 @@ public final class BannerImp extends AbstractHybridAd implements View.OnAttachSt
         mActivity = activity;
         mLytBanner = createBannerParent(activity);
         mRlwHandler = new HandlerUtil.HandlerHolder(null, Looper.getMainLooper());
+    }
+
+    public void setAdSize(AdSize adSize) {
+        mAdSize = adSize;
     }
 
     private FrameLayout createBannerParent(Activity activity) {
@@ -62,13 +65,15 @@ public final class BannerImp extends AbstractHybridAd implements View.OnAttachSt
         super.loadAd(type);
     }
 
-    public void setAdSize(AdSize adSize) {
-        mAdSize = adSize;
-    }
-
     @Override
     protected void loadInsOnUIThread(BaseInstance instances) throws Throwable {
-        instances.reportInsLoad();
+        if (instances.getHb() == 1) {
+            instances.reportInsLoad(EventId.INSTANCE_PAYLOAD_REQUEST);
+        } else {
+            instances.reportInsLoad(EventId.INSTANCE_LOAD);
+            iLoadReport(instances);
+        }
+
         if (!isManualTriggered) {
             EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_RELOAD, instances.buildReportData());
         }
@@ -88,16 +93,16 @@ public final class BannerImp extends AbstractHybridAd implements View.OnAttachSt
 
         instances.setStart(System.currentTimeMillis());
         String payload = "";
-        if (mS2sBidResponses != null && mS2sBidResponses.containsKey(instances.getId())) {
-            payload = AuctionUtil.generateStringRequestData(mS2sBidResponses.get(instances.getId()));
+        if (mBidResponses != null && mBidResponses.containsKey(instances.getId())) {
+            payload = AuctionUtil.generateStringRequestData(mBidResponses.get(instances.getId()));
         }
         Map<String, String> placementInfo = PlacementUtils.getPlacementInfo(mPlacementId, instances, payload);
         if (mAdSize != null) {
             placementInfo.put("width", String.valueOf(mAdSize.getWidth()));
             placementInfo.put("height", String.valueOf(mAdSize.getHeight()));
+            placementInfo.put("description", mAdSize.getDescription());
         }
         bannerEvent.loadAd(mActRef.get(), placementInfo);
-        iLoadReport(instances);
     }
 
     @Override
@@ -132,10 +137,22 @@ public final class BannerImp extends AbstractHybridAd implements View.OnAttachSt
 
     @Override
     protected PlacementInfo getPlacementInfo() {
-        if (mAdSize == null) {
-            mAdSize = AdSize.BANNER;
+        AdSize adSize = resetAdSize();
+        return new PlacementInfo(mPlacementId).getBannerPlacementInfo(adSize.getWidth(), adSize.getHeight());
+    }
+
+    private AdSize resetAdSize() {
+        AdSize adSize = mAdSize;
+        if (adSize == null) {
+            adSize = AdSize.BANNER;
+        } else if (adSize == AdSize.SMART) {
+            if (CustomBannerEvent.isLargeScreen(mActRef.get())) {
+                adSize = AdSize.LEADERBOARD;
+            } else {
+                adSize = AdSize.BANNER;
+            }
         }
-        return new PlacementInfo(mPlacementId).getBannerPlacementInfo(mAdSize.getWidth(), mAdSize.getHeight());
+        return adSize;
     }
 
     @Override

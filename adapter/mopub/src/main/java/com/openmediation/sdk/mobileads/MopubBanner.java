@@ -4,21 +4,40 @@
 package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 
-import com.openmediation.sdk.mediation.CustomBannerEvent;
-import com.openmediation.sdk.mediation.MediationInfo;
-import com.openmediation.sdk.utils.AdLog;
 import com.mopub.common.MoPub;
 import com.mopub.common.SdkConfiguration;
 import com.mopub.common.SdkInitializationListener;
+import com.mopub.common.privacy.PersonalInfoManager;
 import com.mopub.mobileads.MoPubErrorCode;
 import com.mopub.mobileads.MoPubView;
+import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.CustomBannerEvent;
+import com.openmediation.sdk.mediation.MediationInfo;
 
 import java.util.Map;
 
 public class MoPubBanner extends CustomBannerEvent implements MoPubView.BannerAdListener {
 
     private MoPubView adView;
+
+    @Override
+    public void setGDPRConsent(Context context, boolean consent) {
+        super.setGDPRConsent(context, consent);
+        if (!MoPub.isSdkInitialized()) {
+            return;
+        }
+        PersonalInfoManager manager = MoPub.getPersonalInformationManager();
+        if (manager == null) {
+            return;
+        }
+        if (consent) {
+            manager.grantConsent();
+        } else {
+            manager.revokeConsent();
+        }
+    }
 
     @Override
     public void loadAd(final Activity activity, final Map<String, String> config) throws Throwable {
@@ -31,6 +50,9 @@ public class MoPubBanner extends CustomBannerEvent implements MoPubView.BannerAd
             MoPub.initializeSdk(activity, sdkConfiguration, new SdkInitializationListener() {
                 @Override
                 public void onInitializationFinished() {
+                    if (mUserConsent != null) {
+                        setGDPRConsent(activity, mUserConsent);
+                    }
                     loadBannerAd(activity, config);
                 }
             });
@@ -59,7 +81,6 @@ public class MoPubBanner extends CustomBannerEvent implements MoPubView.BannerAd
             return;
         }
         onInsReady(banner);
-        AdLog.getSingleton().LogD("Om-Mopub", "Mopub Banner ad load success ");
     }
 
     @Override
@@ -67,8 +88,8 @@ public class MoPubBanner extends CustomBannerEvent implements MoPubView.BannerAd
         if (isDestroyed) {
             return;
         }
-        onInsError("load mopub banner error: " + errorCode.toString());
-        AdLog.getSingleton().LogE("Om-Mopub: Mopub Banner ad load failed " + errorCode.name());
+        onInsError(AdapterErrorBuilder.buildLoadError(
+                AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, errorCode.name()));
     }
 
     @Override
@@ -102,13 +123,16 @@ public class MoPubBanner extends CustomBannerEvent implements MoPubView.BannerAd
     }
 
     private MoPubView.MoPubAdSize getAdSize(Map<String, String> config, MoPubView.MoPubAdSize defaultSize) {
-        int[] size = getBannerSize(config);
-        int height = size[1];
-        if (height == MoPubView.MoPubAdSize.HEIGHT_90_INT) {
-            return MoPubView.MoPubAdSize.HEIGHT_90;
-        } else if (height == MoPubView.MoPubAdSize.HEIGHT_250_INT) {
-            return MoPubView.MoPubAdSize.HEIGHT_250;
+        String bannerDesc = getBannerDesc(config);
+        switch (bannerDesc) {
+            case DESC_BANNER:
+                return MoPubView.MoPubAdSize.HEIGHT_50;
+            case DESC_LEADERBOARD:
+                return MoPubView.MoPubAdSize.HEIGHT_90;
+            case DESC_RECTANGLE:
+                return MoPubView.MoPubAdSize.HEIGHT_250;
+            default:
+                return defaultSize;
         }
-        return defaultSize;
     }
 }

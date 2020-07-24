@@ -32,7 +32,7 @@ public class NetworkChecker {
          */
         WIFI(2),
         /**
-         * 3 Cellular Network – Unknown Generation
+         * 3 Cellular Network-Unknown Generation
          */
         MOBILE(3),
         /**
@@ -104,12 +104,12 @@ public class NetworkChecker {
      * 0 Unknown
      * 1 Ethernet
      * 2 WIFI
-     * 3 Cellular Network – Unknown Generation
-     * 4 Cellular Network – 2G
-     * 5 Cellular Network – 3G
-     * 6 Cellular Network – 4G
-     * 7 Cellular Network – 5G
-     * 8 Cellular Network – 6G
+     * 3 Cellular Network-Unknown Generation
+     * 4 Cellular Network-2G
+     * 5 Cellular Network-3G
+     * 6 Cellular Network-4G
+     * 7 Cellular Network-5G
+     * 8 Cellular Network-6G
      *
      * @param context context
      * @return the connect type

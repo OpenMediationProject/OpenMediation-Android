@@ -6,20 +6,21 @@ package com.openmediation.sdk.mobileads;
 import android.app.Activity;
 import android.text.TextUtils;
 
-import com.facebook.ads.AdSettings;
-import com.facebook.ads.RewardedVideoAdExtendedListener;
-import com.openmediation.sdk.mediation.CustomAdsAdapter;
-import com.openmediation.sdk.mediation.MediationInfo;
-import com.openmediation.sdk.mediation.InterstitialAdCallback;
-import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
+import com.facebook.ads.AdSettings;
 import com.facebook.ads.AudienceNetworkAds;
 import com.facebook.ads.BuildConfig;
 import com.facebook.ads.InterstitialAd;
 import com.facebook.ads.InterstitialAdExtendedListener;
 import com.facebook.ads.RewardedVideoAd;
 import com.facebook.ads.RewardedVideoAdExtendedListener;
+import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.CustomAdsAdapter;
+import com.openmediation.sdk.mediation.InterstitialAdCallback;
+import com.openmediation.sdk.mediation.MediationInfo;
+import com.openmediation.sdk.mediation.RewardedVideoCallback;
+import com.openmediation.sdk.utils.AdLog;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -71,12 +72,14 @@ public class FacebookAdapter extends CustomAdsAdapter {
                 if (mDidInitSuccess) {
                     callback.onRewardedVideoInitSuccess();
                 } else {
-                    callback.onRewardedVideoInitFailed("Init facebook sdk failed");
+                    callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Init facebook sdk failed"));
                 }
             }
         } else {
             if (callback != null) {
-                callback.onRewardedVideoInitFailed(error);
+                callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
             }
         }
     }
@@ -114,7 +117,8 @@ public class FacebookAdapter extends CustomAdsAdapter {
             }
         } else {
             if (callback != null) {
-                callback.onRewardedVideoLoadFailed(error);
+                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
             }
         }
     }
@@ -127,7 +131,8 @@ public class FacebookAdapter extends CustomAdsAdapter {
             rewardedVideoAd.show();
         } else {
             if (callback != null) {
-                callback.onRewardedVideoAdShowFailed("Facebook rewardedVideo is not ready");
+                callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Facebook rewardedVideo is not ready"));
             }
         }
     }
@@ -152,12 +157,14 @@ public class FacebookAdapter extends CustomAdsAdapter {
                 if (mDidInitSuccess) {
                     callback.onInterstitialAdInitSuccess();
                 } else {
-                    callback.onInterstitialAdInitFailed("Init facebook sdk failed");
+                    callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Init facebook sdk failed"));
                 }
             }
         } else {
             if (callback != null) {
-                callback.onInterstitialAdInitFailed(error);
+                callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
             }
         }
 
@@ -198,7 +205,8 @@ public class FacebookAdapter extends CustomAdsAdapter {
             }
         } else {
             if (callback != null) {
-                callback.onInterstitialAdLoadFailed(error);
+                callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
             }
         }
     }
@@ -211,7 +219,8 @@ public class FacebookAdapter extends CustomAdsAdapter {
             interstitialAd.show();
         } else {
             if (callback != null) {
-                callback.onInterstitialAdShowFailed("Facebook interstitial is not ready");
+                callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Facebook interstitial is not ready"));
             }
         }
     }
@@ -267,10 +276,12 @@ public class FacebookAdapter extends CustomAdsAdapter {
                                         String message = "Facebook init failed:" + result.getMessage();
 
                                         for (InterstitialAdCallback callback : mIsCallbacks.values()) {
-                                            callback.onInterstitialAdInitFailed(message);
+                                            callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
+                                                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, message));
                                         }
                                         for (RewardedVideoCallback callback : mRvCallbacks.values()) {
-                                            callback.onRewardedVideoInitFailed(message);
+                                            callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
+                                                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, message));
                                         }
                                     }
                                 }
@@ -301,7 +312,8 @@ public class FacebookAdapter extends CustomAdsAdapter {
         @Override
         public void onError(Ad ad, AdError adError) {
             if (rvCallback != null) {
-                rvCallback.onRewardedVideoLoadFailed("Facebook rewardedVideo load failed : " + adError.getErrorMessage());
+                rvCallback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, "FacebookAdapter", adError.getErrorCode(), adError.getErrorMessage()));
             }
         }
 
@@ -368,7 +380,8 @@ public class FacebookAdapter extends CustomAdsAdapter {
         @Override
         public void onError(Ad ad, AdError adError) {
             if (isCallback != null) {
-                isCallback.onInterstitialAdLoadFailed("Facebook interstitial ad load failed : " + adError.getErrorMessage());
+                isCallback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, "FacebookAdapter", adError.getErrorCode(), adError.getErrorMessage()));
             }
         }
 

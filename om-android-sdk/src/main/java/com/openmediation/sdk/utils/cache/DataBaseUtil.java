@@ -139,7 +139,7 @@ class DataBaseUtil {
      * @param tableName  
      * @param columnName 
      * @param wheres     
-     * @return Array： 1st row contains col names
+     * @return Array:1st row contains col names
      */
     public ArrayList<String[]> query(String tableName, String columnName, String... wheres) {
         if (wheres != null && wheres.length != 0) {

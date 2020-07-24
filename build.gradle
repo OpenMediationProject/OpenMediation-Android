@@ -39,7 +39,7 @@ ext {
 //support 包相关包的引用
     dependencies = [
             //fb
-            "facebook"                   : 'com.facebook.android:audience-network-sdk:5.9.0',
+            "facebook"                   : 'com.facebook.android:audience-network-sdk:5.9.1',
             //admob
             "admob"                      : 'com.google.android.gms:play-services-ads:19.1.0',
             //vungle
@@ -49,7 +49,7 @@ ext {
             //Applovin
             "applovin"                   : 'com.applovin:applovin-sdk:9.12.7',
             //MoPub
-            "mopub"                      : 'com.mopub:mopub-sdk:5.12.0@aar',
+            "mopub"                      : 'com.mopub:mopub-sdk:5.13.0@aar',
             //TapJoy
             "tapjoy"                     : 'com.tapjoy:tapjoy-android-sdk:12.4.2@aar',
             //chartboost
@@ -60,15 +60,35 @@ ext {
             "play_service_base"          : 'com.google.android.gms:play-services-base:17.3.0',
             //gp-ads-identifier
             "play_service_ads_identifier": 'com.google.android.gms:play-services-ads-identifier:17.0.0',
-            //multidex
-            "multidex"                   : 'com.android.support:multidex:1.0.1',
             //Mintegral
             "mtg_version"                : '14.1.01',
             // IronSource
             "ironsource"                 : 'com.ironsource.sdk:mediationsdk:6.17.0',
 
-            "adtiming"                   : 'com.adtiming:mediation-sdk:6.4.0@aar',
-            "fyber"                      : '7.5.3'
+            "adtiming"                   : 'com.adtiming:mediation-sdk:6.5.1@aar',
+            "fyber"                      : '7.5.3',
+            "helium"                     : 'com.chartboost:helium:2.0.0',
+            "eventbus"                   : 'org.greenrobot:eventbus:3.1.1'
+    ]
+
+    adapterVersion = [
+            'adtiming'     : '1.3.0',
+            'admob'        : '1.3.0',
+            'facebook'     : '1.3.0',
+            'unity'        : '1.3.0',
+            'vungle'       : '1.3.0',
+            'adcolony'     : '1.3.0',
+            'applovin'     : '1.3.0',
+            'mopub'        : '1.3.0',
+            'tapjoy'       : '1.3.0',
+            'chartboost'   : '1.3.0',
+            'chartboostbid': '1.0.0',
+            'tiktok'       : '1.2.0',
+            'mintegral'    : '1.4.0',
+            'ironsource'   : '1.2.0',
+            'fyber'        : '1.2.0',
+            'tiktok_cn'    : '1.3.0',
+            'tencentad_cn' : '1.2.0'
     ]
 }
 

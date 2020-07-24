@@ -68,7 +68,6 @@ public final class InitImp {
         if (activity == null) {
             Error error = new Error(ErrorCode.CODE_INIT_INVALID_REQUEST
                     , ErrorCode.MSG_INIT_INVALID_REQUEST, ErrorCode.CODE_INTERNAL_REQUEST_ACTIVITY);
-            AdLog.getSingleton().LogE(error.toString());
             DeveloperLog.LogE(error.toString() + ", init failed because activity is null");
             callbackInitErrorOnUIThread(error);
             return;
@@ -81,17 +80,7 @@ public final class InitImp {
         ActLifecycle.getInstance().init(activity);
         EventUploadManager.getInstance().init(activity.getApplicationContext());
         EventUploadManager.getInstance().uploadEvent(EventId.INIT_START);
-        try {
-            DataCache.getInstance().init(AdtUtil.getApplication());
-            DataCache.getInstance().setMEM(KeyConstants.KEY_APP_KEY, appKey);
-            if (TextUtils.isEmpty(channel)) {
-                channel = "";
-            }
-            DataCache.getInstance().setMEM(KeyConstants.KEY_APP_CHANNEL, channel);
-        } catch (Exception ignored) {
-        }
-        WorkExecutor.execute(new InitAsyncRunnable());
-        WorkExecutor.execute(new RequestConfigRunnable(appKey));
+        WorkExecutor.execute(new InitAsyncRunnable(appKey, channel));
     }
 
     /**
@@ -141,26 +130,24 @@ public final class InitImp {
         return isInitRunning.get();
     }
 
-    private static void requestConfig(String appKey) throws Exception {
+    private static void requestConfig(Activity activity, String appKey) throws Exception {
         DeveloperLog.LogD("Om init request config");
         //requests Config
-        ConfigurationHelper.getConfiguration(appKey, new InitRequestCallback(appKey));
+        ConfigurationHelper.getConfiguration(appKey, new InitRequestCallback(activity, appKey));
     }
 
     /**
      * Inits global utils
      */
-    private static void initUtil() throws Exception {
-//        DataCache.getInstance().init(AdtUtil.getApplication());
+    private static void initUtil() {
+        DataCache.getInstance().init(AdtUtil.getApplication());
         DataCache.getInstance().set(DeviceUtil.preFetchDeviceInfo(AdtUtil.getApplication()));
-        OaidHelper.initOaidServer(AdtUtil.getApplication());
+//        OaidHelper.initOaidServer(AdtUtil.getApplication());
     }
 
     private static void doAfterGetConfig(String appKey, Configurations config) {
         try {
-            AdTimingAuctionManager.getInstance().initBid(AdtUtil.getApplication(), config);
             DeveloperLog.enableDebug(AdtUtil.getApplication(), config.getD() == 1);
-            AdLog.getSingleton().init(AdtUtil.getApplication());
             EventUploadManager.getInstance().updateReportSettings(config);
             //reports error logs
             CrashUtil.getSingleton().uploadException(config, appKey);
@@ -171,10 +158,12 @@ public final class InitImp {
     }
 
     private static void callbackInitErrorOnUIThread(final Error result) {
+        AdLog.getSingleton().LogE("Init Failed: " + result);
         HandlerUtil.runOnUiThread(new InitFailRunnable(result));
     }
 
     private static void callbackInitSuccessOnUIThread() {
+        AdLog.getSingleton().LogD("Init Success");
         HandlerUtil.runOnUiThread(new InitSuccessRunnable());
     }
 
@@ -206,39 +195,40 @@ public final class InitImp {
 
     private static class InitAsyncRunnable implements Runnable {
 
+        private String appKey;
+        private String appChannel;
+
+        private InitAsyncRunnable(String appKey, String appChannel) {
+            this.appKey = appKey;
+            this.appChannel = appChannel;
+        }
+
         @Override
         public void run() {
             try {
                 initUtil();
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                CrashUtil.getSingleton().saveException(e);
+                DeveloperLog.LogD("initUtil exception : ", e);
             }
-        }
-    }
-
-    private static class RequestConfigRunnable implements Runnable {
-
-        private String appKey;
-
-        private RequestConfigRunnable(String appKey) {
-            this.appKey = appKey;
-        }
-
-        @Override
-        public void run() {
             try {
+                DataCache.getInstance().setMEM(KeyConstants.KEY_APP_KEY, appKey);
+                if (TextUtils.isEmpty(appChannel)) {
+                    appChannel = "";
+                }
+                DataCache.getInstance().setMEM(KeyConstants.KEY_APP_CHANNEL, appChannel);
                 Activity activity = ActLifecycle.getInstance().getActivity();
                 Error error = SdkUtil.banRun(activity, appKey);
                 if (error != null) {
                     callbackInitErrorOnUIThread(error);
                     return;
                 }
-                requestConfig(appKey);
+                requestConfig(activity, appKey);
             } catch (Exception e) {
                 DeveloperLog.LogD("initOnAsyncThread  exception : ", e);
                 CrashUtil.getSingleton().saveException(e);
                 Error error = new Error(ErrorCode.CODE_INIT_UNKNOWN_INTERNAL_ERROR
                         , ErrorCode.MSG_INIT_UNKNOWN_INTERNAL_ERROR, ErrorCode.CODE_INTERNAL_UNKNOWN_OTHER);
-                AdLog.getSingleton().LogE(error.toString());
                 DeveloperLog.LogE(error.toString() + ", initOnAsyncThread");
                 callbackInitErrorOnUIThread(error);
             }
@@ -272,14 +262,16 @@ public final class InitImp {
     private static class InitRequestCallback implements Request.OnRequestCallback {
 
         private String appKey;
+        private Activity mActivity;
 
         /**
          * Instantiates a new Init request callback.
          *
          * @param appKey the app key
          */
-        InitRequestCallback(String appKey) {
+        InitRequestCallback(Activity activity, String appKey) {
             this.appKey = appKey;
+            this.mActivity = activity;
         }
 
         @Override
@@ -288,7 +280,6 @@ public final class InitImp {
                 if (response.code() != HttpURLConnection.HTTP_OK) {
                     Error error = new Error(ErrorCode.CODE_INIT_SERVER_ERROR
                             , ErrorCode.MSG_INIT_SERVER_ERROR, ErrorCode.CODE_INTERNAL_SERVER_ERROR);
-                    AdLog.getSingleton().LogE(error.toString() + ", Om init response code: " + response.code());
                     DeveloperLog.LogE(error.toString() + "Om init request config response code not 200 : " + response.code());
                     callbackInitErrorOnUIThread(error);
                     return;
@@ -298,7 +289,6 @@ public final class InitImp {
                 if (TextUtils.isEmpty(requestData)) {
                     Error error = new Error(ErrorCode.CODE_INIT_SERVER_ERROR
                             , ErrorCode.MSG_INIT_SERVER_ERROR, ErrorCode.CODE_INTERNAL_SERVER_ERROR);
-                    AdLog.getSingleton().LogE(error.toString() + ", Om init response data is null: " + requestData);
                     DeveloperLog.LogE(error.toString() + ", Om init response data is null: " + requestData);
                     callbackInitErrorOnUIThread(error);
                     return;
@@ -308,12 +298,17 @@ public final class InitImp {
                 if (config != null) {
                     DeveloperLog.LogD("Om init request config success");
                     DataCache.getInstance().setMEM(KeyConstants.KEY_CONFIGURATION, config);
+                    try {
+                        AdTimingAuctionManager.getInstance().initBid(mActivity, config);
+                    } catch (Exception e) {
+                        DeveloperLog.LogD("initBid  exception : ", e);
+                        CrashUtil.getSingleton().saveException(e);
+                    }
                     callbackInitSuccessOnUIThread();
                     doAfterGetConfig(appKey, config);
                 } else {
                     Error error = new Error(ErrorCode.CODE_INIT_SERVER_ERROR
                             , ErrorCode.MSG_INIT_SERVER_ERROR, ErrorCode.CODE_INTERNAL_SERVER_ERROR);
-                    AdLog.getSingleton().LogE(error.toString() + ", Om init format config is null");
                     DeveloperLog.LogE(error.toString() + ", Om init format config is null");
                     callbackInitErrorOnUIThread(error);
                 }
@@ -321,7 +316,6 @@ public final class InitImp {
                 CrashUtil.getSingleton().saveException(e);
                 Error error = new Error(ErrorCode.CODE_INIT_SERVER_ERROR
                         , ErrorCode.MSG_INIT_SERVER_ERROR, ErrorCode.CODE_INTERNAL_UNKNOWN_OTHER);
-                AdLog.getSingleton().LogE(error.toString());
                 DeveloperLog.LogE(error.toString() + ", request config exception:" + e);
                 callbackInitErrorOnUIThread(error);
             } finally {
@@ -333,7 +327,6 @@ public final class InitImp {
         public void onRequestFailed(String error) {
             Error result = new Error(ErrorCode.CODE_INIT_SERVER_ERROR
                     , ErrorCode.MSG_INIT_SERVER_ERROR, ErrorCode.CODE_INTERNAL_SERVER_FAILED);
-            AdLog.getSingleton().LogD("request config failed : " + result + ", error:" + error);
             DeveloperLog.LogD("request config failed : " + result + ", error:" + error);
             callbackInitErrorOnUIThread(result);
         }

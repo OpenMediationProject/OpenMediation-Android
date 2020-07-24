@@ -6,13 +6,14 @@ package com.openmediation.sdk.utils;
 import android.net.Uri;
 import android.text.TextUtils;
 
+import com.openmediation.sdk.utils.cache.DataCache;
+import com.openmediation.sdk.utils.constant.CommonConstants;
 import com.openmediation.sdk.utils.constant.KeyConstants;
+import com.openmediation.sdk.utils.crash.CrashUtil;
 import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.Configurations;
 import com.openmediation.sdk.utils.model.ImpRecord;
 import com.openmediation.sdk.utils.model.Placement;
-import com.openmediation.sdk.utils.cache.DataCache;
-import com.openmediation.sdk.utils.crash.CrashUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -275,6 +276,16 @@ public class PlacementUtils {
             DeveloperLog.LogD("PlacementUtils", e);
             CrashUtil.getSingleton().saveException(e);
             return null;
+        }
+    }
+
+    public static boolean isCacheAdsType(int adType) {
+        switch (adType) {
+            case CommonConstants.BANNER:
+            case CommonConstants.NATIVE:
+                return false;
+            default:
+                return true;
         }
     }
 }

@@ -4,8 +4,10 @@
 package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 
+import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
@@ -27,6 +29,7 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
     private InitState mInitState = InitState.NOT_INIT;
     private ConcurrentMap<String, InterstitialAdCallback> mIsCallback;
     private ConcurrentMap<String, RewardedVideoCallback> mRvCallback;
+    private static final String CONSENT_MESSAGE_VERSION = "1.0.0";
 
     public VungleAdapter() {
         mIsCallback = new ConcurrentHashMap<>();
@@ -48,13 +51,24 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
         return MediationInfo.MEDIATION_ID_5;
     }
 
-    private void initSDK(Activity activity) {
+    @Override
+    public void setGDPRConsent(Context context, boolean consent) {
+        super.setGDPRConsent(context, consent);
+        if (mInitState == InitState.INIT_SUCCESS) {
+            Vungle.updateConsentStatus(consent ? Vungle.Consent.OPTED_IN : Vungle.Consent.OPTED_OUT, CONSENT_MESSAGE_VERSION);
+        }
+    }
+
+    private void initSDK(final Activity activity) {
         mInitState = InitState.INIT_PENDING;
         Vungle.init(mAppKey, activity.getApplicationContext(), new InitCallback() {
             @Override
             public void onSuccess() {
                 mInitState = InitState.INIT_SUCCESS;
-                AdLog.getSingleton().LogD("Om-Vungle", "Vungle init success ");
+                if (mUserConsent != null) {
+                    setGDPRConsent(activity, mUserConsent);
+                }
+
                 if (!mRvCallback.isEmpty()) {
                     for (Map.Entry<String, RewardedVideoCallback> videoCallbackEntry : mRvCallback.entrySet()) {
                         videoCallbackEntry.getValue().onRewardedVideoInitSuccess();
@@ -70,15 +84,16 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
             @Override
             public void onError(VungleException error) {
                 mInitState = InitState.INIT_FAIL;
-                AdLog.getSingleton().LogE("Om-Vungle: Vungle init failed " + error.getLocalizedMessage());
                 if (!mRvCallback.isEmpty()) {
                     for (Map.Entry<String, RewardedVideoCallback> videoCallbackEntry : mRvCallback.entrySet()) {
-                        videoCallbackEntry.getValue().onRewardedVideoInitFailed("Vungle init failed " + error.getLocalizedMessage());
+                        videoCallbackEntry.getValue().onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error.getExceptionCode(), error.getLocalizedMessage()));
                     }
                 }
                 if (!mIsCallback.isEmpty()) {
                     for (Map.Entry<String, InterstitialAdCallback> interstitialAdCallbackEntry : mIsCallback.entrySet()) {
-                        interstitialAdCallbackEntry.getValue().onInterstitialAdInitFailed("Vungle init failed " + error.getLocalizedMessage());
+                        interstitialAdCallbackEntry.getValue().onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
+                              AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error.getExceptionCode(), error.getLocalizedMessage()));
                     }
                 }
             }
@@ -112,15 +127,16 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
                     break;
                 case INIT_FAIL:
                     if (callback != null) {
-                        callback.onRewardedVideoInitFailed("Vungle init failed ");
+                        callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
+                                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Vungle init failed"));
                     }
                     break;
                 default:
                     break;
             }
         } else {
-            AdLog.getSingleton().LogE("Om-Vungle: Vungle init failed ");
-            callback.onRewardedVideoInitFailed(error);
+            callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
+                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
         }
     }
 
@@ -139,11 +155,12 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
                     Vungle.loadAd(adUnitId, new LoadCallback());
                 }
             } else {
-                callback.onRewardedVideoLoadFailed("Vungle load failed cause vungle not initialized " + adUnitId);
+                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Vungle load failed cause vungle not initialized " + adUnitId));
             }
         } else {
-            AdLog.getSingleton().LogE("Om-Vungle: Vungle load failed, error: " + error);
-            callback.onRewardedVideoLoadFailed(error);
+            callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
         }
     }
 
@@ -158,11 +175,12 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
             if (isRewardedVideoAvailable(adUnitId)) {
                 Vungle.playAd(adUnitId, null, this);
             } else {
-                callback.onRewardedVideoAdShowFailed("Vungle show video failed no ready");
+                callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Vungle show video failed no ready"));
             }
         } else {
-            AdLog.getSingleton().LogE("Om-Vungle: Vungle show video failed, error:" + error);
-            callback.onRewardedVideoAdShowFailed(error);
+            callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
         }
     }
 
@@ -193,15 +211,16 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
                     break;
                 case INIT_FAIL:
                     if (callback != null) {
-                        callback.onInterstitialAdInitFailed("Vungle init failed ");
+                        callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
+                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Vungle init failed"));
                     }
                     break;
                 default:
                     break;
             }
         } else {
-            AdLog.getSingleton().LogE("Om-Vungle: Vungle init failed ");
-            callback.onInterstitialAdInitFailed(error);
+            callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
+                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
         }
     }
 
@@ -220,11 +239,12 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
                     Vungle.loadAd(adUnitId, new LoadCallback());
                 }
             } else {
-                callback.onInterstitialAdLoadFailed("Vungle load failed cause vungle not initialized " + adUnitId);
+                callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Vungle load failed cause vungle not initialized " + adUnitId));
             }
         } else {
-            AdLog.getSingleton().LogE("Om-Vungle: Vungle load interstitial ad failed, error: " + error);
-            callback.onInterstitialAdLoadFailed(error);
+            callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
         }
     }
 
@@ -239,11 +259,12 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
             if (isInterstitialAdAvailable(adUnitId)) {
                 Vungle.playAd(adUnitId, null, this);
             } else {
-                callback.onInterstitialAdShowFailed("Vungle show interstitial failed no ready");
+                callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "ad no ready"));
             }
         } else {
-            AdLog.getSingleton().LogE("Om-Vungle: Vungle show interstitial failed, error:" + error);
-            callback.onInterstitialAdShowFailed(error);
+            callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
         }
     }
 
@@ -276,7 +297,6 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
         if (mRvCallback.containsKey(id)) {
             RewardedVideoCallback callback = mRvCallback.get(id);
             if (callback != null) {
-                //
                 if (isCTAClicked) {
                     callback.onRewardedVideoAdClicked();
                 }
@@ -289,7 +309,6 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
         } else {
             InterstitialAdCallback callback = mIsCallback.get(id);
             if (callback != null) {
-                //
                 if (isCTAClicked) {
                     callback.onInterstitialAdClick();
                 }
@@ -300,19 +319,17 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
 
     @Override
     public void onError(String id, VungleException error) {
-        AdLog.getSingleton().LogE("Om-Vungle: Vungle ad play failed, id: "
-                + id + ", message: " + error.getLocalizedMessage());
         if (mRvCallback.containsKey(id)) {
             RewardedVideoCallback callback = mRvCallback.get(id);
             if (callback != null) {
-                callback.onRewardedVideoAdShowFailed("Vungle video play failed, s:"
-                        + id + ", message:" + error.getLocalizedMessage());
+                callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error.getExceptionCode(), error.getLocalizedMessage()));
             }
         } else {
             InterstitialAdCallback callback = mIsCallback.get(id);
             if (callback != null) {
-                callback.onInterstitialAdShowFailed("Vungle interstitial play failed, s:"
-                        + id + ", message:" + error.getLocalizedMessage());
+                callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error.getExceptionCode(), error.getLocalizedMessage()));
             }
         }
     }
@@ -338,16 +355,17 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
 
         @Override
         public void onError(String id, VungleException cause) {
-            AdLog.getSingleton().LogE("Om-Vungle: Vungle load failed, message:" + cause.getMessage());
             if (mRvCallback.containsKey(id)) {
                 RewardedVideoCallback callback = mRvCallback.get(id);
                 if (callback != null) {
-                    callback.onRewardedVideoLoadFailed("Vungle load video failed, message:" + cause.getLocalizedMessage());
+                    callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, cause.getExceptionCode(), cause.getLocalizedMessage()));
                 }
             } else {
                 InterstitialAdCallback callback = mIsCallback.get(id);
                 if (callback != null) {
-                    callback.onInterstitialAdLoadFailed("Vungle load interstitial failed, message:" + cause.getMessage());
+                    callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, cause.getExceptionCode(), cause.getLocalizedMessage()));
                 }
             }
         }

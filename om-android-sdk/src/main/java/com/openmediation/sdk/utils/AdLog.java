@@ -7,6 +7,8 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.util.Log;
 
+import com.openmediation.sdk.utils.error.Error;
+
 /**
  * 
  */
@@ -20,17 +22,10 @@ public class AdLog {
     }
 
     private boolean isDebug = false;
-    private static final String TAG = "Om";
+    private static final String TAG = "OmAds";
 
     private AdLog() {
 
-    }
-
-    public void init(Context context) {
-        if (isDebug) {
-            return;
-        }
-        isDebug = context != null && (context.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
     }
 
     public void isDebug(boolean isDebug) {
@@ -55,11 +50,28 @@ public class AdLog {
         }
     }
 
+
+    public void LogE(String tag, String info) {
+        if (isDebug) {
+            Log.e(TAG + ":" + tag, info);
+        }
+    }
+
     public void LogE(String info) {
-        Log.e(TAG, info);
+        if (isDebug) {
+            Log.e(TAG, info);
+        }
+    }
+
+    public void LogE(Error error) {
+        if (isDebug && error != null) {
+            Log.e(TAG, error.toString());
+        }
     }
 
     public void LogE(String info, Throwable throwable) {
-        Log.e(TAG, info, throwable);
+        if (isDebug) {
+            Log.e(TAG, info, throwable);
+        }
     }
 }

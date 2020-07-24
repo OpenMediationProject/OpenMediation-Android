@@ -24,23 +24,23 @@ import com.openmediation.sdk.utils.request.network.Headers;
 public final class LrReportHelper {
 
 
-    public static void report(String placementId, int loadType, int abt, int reportType) {
-        report(placementId, -1, loadType, -1, -1, abt, reportType);
+    public static void report(String placementId, int loadType, int abt, int reportType, int bid) {
+        report(placementId, -1, loadType, -1, -1, abt, reportType, bid);
     }
 
-    public static void report(BaseInstance instance, int loadType, int abt, int reportType) {
-        report(instance, -1, loadType, abt, reportType);
+    public static void report(BaseInstance instance, int loadType, int abt, int reportType, int bid) {
+        report(instance, -1, loadType, abt, reportType, bid);
     }
 
-    public static void report(BaseInstance instance, int sceneId, int loadType, int abt, int reportType) {
+    public static void report(BaseInstance instance, int sceneId, int loadType, int abt, int reportType, int bid) {
         if (instance == null) {
             return;
         }
-        report(instance.getPlacementId(), sceneId, loadType, instance.getId(), instance.getMediationId(), abt, reportType);
+        report(instance.getPlacementId(), sceneId, loadType, instance.getId(), instance.getMediationId(), abt, reportType, bid);
     }
 
     private static void report(String placementId, int sceneId, int loadType,
-                               int instanceId, int mediationId, int abt, int reportType) {
+                               int instanceId, int mediationId, int abt, int reportType, int bid) {
         try {
             Configurations config = DataCache.getInstance().getFromMem(KeyConstants.KEY_CONFIGURATION, Configurations.class);
             if (config == null || config.getApi() == null || TextUtils.isEmpty(config.getApi().getLr())) {
@@ -62,7 +62,8 @@ public final class LrReportHelper {
                             mediationId,
                             instanceId,
                             abt,
-                            reportType)
+                            reportType,
+                            bid)
                     ))
                     .connectTimeout(30000)
                     .readTimeout(60000)

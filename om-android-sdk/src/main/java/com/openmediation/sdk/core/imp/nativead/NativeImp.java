@@ -48,7 +48,12 @@ public final class NativeImp extends AbstractHybridAd implements View.OnAttachSt
 
     @Override
     protected void loadInsOnUIThread(BaseInstance instances) throws Throwable {
-        instances.reportInsLoad();
+        if (instances.getHb() == 1) {
+            instances.reportInsLoad(EventId.INSTANCE_PAYLOAD_REQUEST);
+        } else {
+            instances.reportInsLoad(EventId.INSTANCE_LOAD);
+            iLoadReport(instances);
+        }
         if (!checkActRef()) {
             onInsError(instances, ErrorCode.ERROR_ACTIVITY);
             return;
@@ -63,13 +68,12 @@ public final class NativeImp extends AbstractHybridAd implements View.OnAttachSt
             return;
         }
         String payload = "";
-        if (mS2sBidResponses != null && mS2sBidResponses.containsKey(instances.getId())) {
-            payload = AuctionUtil.generateStringRequestData(mS2sBidResponses.get(instances.getId()));
+        if (mBidResponses != null && mBidResponses.containsKey(instances.getId())) {
+            payload = AuctionUtil.generateStringRequestData(mBidResponses.get(instances.getId()));
         }
         Map<String, String> placementInfo = PlacementUtils.getPlacementInfo(mPlacementId, instances, payload);
         instances.setStart(System.currentTimeMillis());
         nativeEvent.loadAd(mActRef.get(), placementInfo);
-        iLoadReport(instances);
     }
 
     @Override

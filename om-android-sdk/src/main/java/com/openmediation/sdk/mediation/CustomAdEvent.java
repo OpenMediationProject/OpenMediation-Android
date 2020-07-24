@@ -8,7 +8,7 @@ import android.text.TextUtils;
 
 import java.util.Map;
 
-public abstract class CustomAdEvent {
+public abstract class CustomAdEvent extends CustomAdParams {
 
     protected String mPlacementId;
     protected String mInstancesKey;
@@ -18,6 +18,7 @@ public abstract class CustomAdEvent {
 
     public void loadAd(Activity activity, Map<String, String> config) throws Throwable {
         isDestroyed = false;
+        setCustomParams(activity);
     }
 
     public abstract int getMediation();
@@ -49,7 +50,11 @@ public abstract class CustomAdEvent {
         CallbackManager.getInstance().onInsClick(mPlacementId, mInstancesKey, mInsId);
     }
 
-    protected synchronized void onInsError(String error) {
+    private synchronized void onInsError(String error) {
+        CallbackManager.getInstance().onInsError(mPlacementId, mInstancesKey, mInsId, error);
+    }
+
+    protected synchronized void onInsError(AdapterError error) {
         CallbackManager.getInstance().onInsError(mPlacementId, mInstancesKey, mInsId, error);
     }
 

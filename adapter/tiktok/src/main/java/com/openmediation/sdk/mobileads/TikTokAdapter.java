@@ -15,11 +15,11 @@ import com.bytedance.sdk.openadsdk.TTAdNative;
 import com.bytedance.sdk.openadsdk.TTAdSdk;
 import com.bytedance.sdk.openadsdk.TTFullScreenVideoAd;
 import com.bytedance.sdk.openadsdk.TTRewardVideoAd;
+import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
-import com.openmediation.sdk.utils.AdLog;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -62,7 +62,8 @@ public class TikTokAdapter extends CustomAdsAdapter {
             }
         } else {
             if (callback != null) {
-                callback.onRewardedVideoInitFailed(error);
+                callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
             }
         }
     }
@@ -93,7 +94,8 @@ public class TikTokAdapter extends CustomAdsAdapter {
             }
         } else {
             if (callback != null) {
-                callback.onRewardedVideoLoadFailed(error);
+                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
             }
         }
     }
@@ -108,7 +110,8 @@ public class TikTokAdapter extends CustomAdsAdapter {
                     String error = check(activity, adUnitId);
                     if (!TextUtils.isEmpty(error)) {
                         if (callback != null) {
-                            callback.onRewardedVideoAdShowFailed(error);
+                            callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
                         }
                         return;
                     }
@@ -119,12 +122,14 @@ public class TikTokAdapter extends CustomAdsAdapter {
                         mTTRvAds.remove(adUnitId);
                     } else {
                         if (callback != null) {
-                            callback.onRewardedVideoAdShowFailed("TikTok RewardedVideo is not ready");
+                            callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "TikTok RewardedVideo is not ready"));
                         }
                     }
                 } catch (Exception e) {
                     if (callback != null) {
-                        callback.onRewardedVideoAdShowFailed("TikTok RewardedVideo is not ready");
+                        callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, e.getMessage()));
                     }
                 }
             }
@@ -150,7 +155,8 @@ public class TikTokAdapter extends CustomAdsAdapter {
             }
         } else {
             if (callback != null) {
-                callback.onInterstitialAdInitFailed(error);
+                callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
             }
         }
     }
@@ -181,7 +187,8 @@ public class TikTokAdapter extends CustomAdsAdapter {
             }
         } else {
             if (callback != null) {
-                callback.onInterstitialAdLoadFailed(error);
+                callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
             }
         }
     }
@@ -196,7 +203,8 @@ public class TikTokAdapter extends CustomAdsAdapter {
                     String error = check(activity, adUnitId);
                     if (!TextUtils.isEmpty(error)) {
                         if (callback != null) {
-                            callback.onInterstitialAdShowFailed(error);
+                            callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
                         }
                         return;
                     }
@@ -207,12 +215,14 @@ public class TikTokAdapter extends CustomAdsAdapter {
                         mTTFvAds.remove(adUnitId);
                     } else {
                         if (callback != null) {
-                            callback.onInterstitialAdShowFailed("TikTok InterstitialAd is not ready");
+                            callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "TikTok InterstitialAd is not ready"));
                         }
                     }
                 } catch (Exception e) {
                     if (callback != null) {
-                        callback.onInterstitialAdShowFailed("TikTok InterstitialAd is not ready");
+                        callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, e.getMessage()));
                     }
                 }
             }
@@ -228,7 +238,7 @@ public class TikTokAdapter extends CustomAdsAdapter {
     }
 
     private void initSdk(final Activity activity) {
-        TTAdManagerHolder.init(activity.getApplicationContext(), mAppKey);
+        TTAdManagerHolder.init(activity.getApplicationContext(), mAppKey, mUserConsent, mAgeRestricted);
     }
 
     private class InnerIsAdListener implements TTAdNative.FullScreenVideoAdListener {
@@ -243,18 +253,18 @@ public class TikTokAdapter extends CustomAdsAdapter {
 
         @Override
         public void onError(int i, String s) {
-            AdLog.getSingleton().LogE("OM-TikTok: loadInterstitialAd onError : code " + i + " msg " + s);
             if (mCallback != null) {
-                mCallback.onInterstitialAdLoadFailed("TikTok loadInterstitialAd ad load failed : code = " + i + " message = " + s);
+                mCallback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, i, s));
             }
         }
 
         @Override
         public void onFullScreenVideoAdLoad(TTFullScreenVideoAd ad) {
-            AdLog.getSingleton().LogD("OM-TikTok: loadInterstitialAd onFullScreenVideoAdLoad");
             if (ad == null) {
                 if (mCallback != null) {
-                    mCallback.onInterstitialAdLoadFailed("TikTok loadInterstitialAd ad load failed");
+                    mCallback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "TikTok InterstitialAd ad load failed"));
                 }
                 return;
             }
@@ -266,7 +276,6 @@ public class TikTokAdapter extends CustomAdsAdapter {
 
         @Override
         public void onFullScreenVideoCached() {
-            AdLog.getSingleton().LogD("OM-TikTok: loadInterstitialAd onFullScreenVideoCached");
         }
     }
 
@@ -286,7 +295,6 @@ public class TikTokAdapter extends CustomAdsAdapter {
 
         @Override
         public void onAdShow() {
-            AdLog.getSingleton().LogD("OM-TikTok: InterstitialAd onAdShow");
             if (mCallback != null) {
                 mCallback.onInterstitialAdShowSuccess();
             }
@@ -294,7 +302,6 @@ public class TikTokAdapter extends CustomAdsAdapter {
 
         @Override
         public void onAdVideoBarClick() {
-            AdLog.getSingleton().LogD("OM-TikTok: InterstitialAd onAdClicked");
             if (mCallback != null) {
                 mCallback.onInterstitialAdClick();
             }
@@ -302,7 +309,6 @@ public class TikTokAdapter extends CustomAdsAdapter {
 
         @Override
         public void onAdClose() {
-            AdLog.getSingleton().LogD("OM-TikTok: InterstitialAd onAdClose");
             if (mCallback != null) {
                 mCallback.onInterstitialAdClosed();
             }
@@ -310,12 +316,10 @@ public class TikTokAdapter extends CustomAdsAdapter {
 
         @Override
         public void onVideoComplete() {
-            AdLog.getSingleton().LogD("OM-TikTok: InterstitialAd onVideoComplete");
         }
 
         @Override
         public void onSkippedVideo() {
-            AdLog.getSingleton().LogD("OM-TikTok: InterstitialAd onSkippedVideo");
         }
     }
 
@@ -354,22 +358,22 @@ public class TikTokAdapter extends CustomAdsAdapter {
 
         @Override
         public void onError(int code, String message) {
-            AdLog.getSingleton().LogE("OM-TikTok: RewardedVideo  onError: " + code + ", " + message);
             if (mCallback != null) {
-                mCallback.onRewardedVideoLoadFailed("TikTok RewardedVideo load failed : " + code + ", " + message);
+                mCallback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, "TikTokAdapter", code, message));
             }
         }
 
         @Override
         public void onRewardVideoCached() {
-            AdLog.getSingleton().LogD("OM-TikTok: RewardedVideo onRewardVideoCached");
         }
 
         @Override
         public void onRewardVideoAdLoad(TTRewardVideoAd ad) {
             if (ad == null) {
                 if (mCallback != null) {
-                    mCallback.onRewardedVideoLoadFailed("TikTok RewardedVideo load failed");
+                    mCallback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, "TikTokAdapter", "TikTok RewardedVideo load failed"));
                 }
                 return;
             }
@@ -377,7 +381,6 @@ public class TikTokAdapter extends CustomAdsAdapter {
             if (mCallback != null) {
                 mCallback.onRewardedVideoLoadSuccess();
             }
-            AdLog.getSingleton().LogD("OM-TikTok: rewardedVideo  onRewardVideoAdLoad");
         }
     }
 
@@ -391,7 +394,6 @@ public class TikTokAdapter extends CustomAdsAdapter {
 
         @Override
         public void onAdShow() {
-            AdLog.getSingleton().LogD("OM-TikTok: rewardVideoAd show");
             if (callback != null) {
                 callback.onRewardedVideoAdShowSuccess();
                 callback.onRewardedVideoAdStarted();
@@ -400,7 +402,6 @@ public class TikTokAdapter extends CustomAdsAdapter {
 
         @Override
         public void onAdVideoBarClick() {
-            AdLog.getSingleton().LogD("OM-TikTok: rewardVideoAd bar click");
             if (callback != null) {
                 callback.onRewardedVideoAdClicked();
             }
@@ -408,7 +409,6 @@ public class TikTokAdapter extends CustomAdsAdapter {
 
         @Override
         public void onAdClose() {
-            AdLog.getSingleton().LogD("OM-TikTok: rewardVideoAd close");
             if (callback != null) {
                 callback.onRewardedVideoAdClosed();
             }
@@ -416,7 +416,6 @@ public class TikTokAdapter extends CustomAdsAdapter {
 
         @Override
         public void onVideoComplete() {
-            AdLog.getSingleton().LogD("OM-TikTok: rewardVideoAd complete");
             if (callback != null) {
                 callback.onRewardedVideoAdRewarded();
                 callback.onRewardedVideoAdEnded();
@@ -425,16 +424,14 @@ public class TikTokAdapter extends CustomAdsAdapter {
 
         @Override
         public void onVideoError() {
-            AdLog.getSingleton().LogE("OM-TikTok: rewardVideoAd error");
             if (callback != null) {
-                callback.onRewardedVideoAdShowFailed("TikTok rewardedVideo play failed");
+                callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, "TikTokAdapter", "TikTok rewardedVideo play failed"));
             }
         }
 
         @Override
         public void onRewardVerify(boolean rewardVerify, int rewardAmount, String rewardName) {
-            AdLog.getSingleton().LogD("OM-TikTok:  verify:" + rewardVerify + " amount:" + rewardAmount +
-                    " name:" + rewardName);
         }
 
     }

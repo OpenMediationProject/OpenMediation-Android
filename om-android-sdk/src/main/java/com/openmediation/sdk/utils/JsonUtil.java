@@ -23,6 +23,11 @@ public class JsonUtil {
                     return jsonObject;
                 }
                 jsonObject.put(key, value);
+            } else if (value instanceof Double) {
+                if (((double) value < 0)) {
+                    return jsonObject;
+                }
+                jsonObject.put(key, value);
             } else {
                 jsonObject.put(key, value);
             }

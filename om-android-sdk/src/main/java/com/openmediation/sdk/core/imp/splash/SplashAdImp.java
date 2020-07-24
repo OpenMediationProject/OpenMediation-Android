@@ -46,7 +46,7 @@ public class SplashAdImp extends AbstractHybridAd {
 
     @Override
     protected void loadInsOnUIThread(BaseInstance instances) throws Throwable {
-        instances.reportInsLoad();
+        instances.reportInsLoad(EventId.INSTANCE_LOAD);
         if (!checkActRef()) {
             onInsError(instances, ErrorCode.ERROR_ACTIVITY);
             return;
@@ -62,8 +62,8 @@ public class SplashAdImp extends AbstractHybridAd {
         }
         instances.setStart(System.currentTimeMillis());
         String payload = "";
-        if (mS2sBidResponses != null && mS2sBidResponses.containsKey(instances.getId())) {
-            payload = AuctionUtil.generateStringRequestData(mS2sBidResponses.get(instances.getId()));
+        if (mBidResponses != null && mBidResponses.containsKey(instances.getId())) {
+            payload = AuctionUtil.generateStringRequestData(mBidResponses.get(instances.getId()));
         }
         Map<String, String> placementInfo = PlacementUtils.getPlacementInfo(mPlacementId, instances, payload);
         placementInfo.put("Timeout", String.valueOf(mLoadTimeout));

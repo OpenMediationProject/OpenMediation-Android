@@ -21,6 +21,7 @@ import android.widget.TextView;
 
 import com.openmediation.sdk.InitCallback;
 import com.openmediation.sdk.OmAds;
+import com.openmediation.sdk.banner.AdSize;
 import com.openmediation.sdk.banner.BannerAd;
 import com.openmediation.sdk.banner.BannerAdListener;
 import com.openmediation.sdk.demo.utils.NewApiUtils;
@@ -225,6 +226,7 @@ public class MainActivity extends Activity {
 
             }
         });
+        bannerAd.setAdSize(AdSize.BANNER);
         bannerAd.loadAd();
     }
 

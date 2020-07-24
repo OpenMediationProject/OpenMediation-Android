@@ -4,25 +4,30 @@
 package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Color;
+import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdLoader;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.RequestConfiguration;
+import com.google.android.gms.ads.formats.NativeAdOptions;
+import com.google.android.gms.ads.formats.UnifiedNativeAd;
+import com.google.android.gms.ads.formats.UnifiedNativeAdView;
+import com.google.android.gms.ads.mediation.MediationAdConfiguration;
+import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomNativeEvent;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.nativead.AdIconView;
 import com.openmediation.sdk.nativead.MediaView;
 import com.openmediation.sdk.nativead.NativeAdView;
-import com.openmediation.sdk.utils.AdLog;
-import com.google.android.gms.ads.AdListener;
-import com.google.android.gms.ads.AdLoader;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.formats.NativeAdOptions;
-import com.google.android.gms.ads.formats.UnifiedNativeAd;
-import com.google.android.gms.ads.formats.UnifiedNativeAdView;
 
 import java.util.Map;
 
@@ -35,6 +40,36 @@ public class AdMobNative extends CustomNativeEvent {
     private AdIconView mAdIconView;
 
     @Override
+    public void setAgeRestricted(Context context, boolean restricted) {
+        super.setAgeRestricted(context, restricted);
+        int value = restricted? MediationAdConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE : MediationAdConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE;
+        RequestConfiguration requestConfiguration = MobileAds.getRequestConfiguration().toBuilder()
+                .setTagForChildDirectedTreatment(value)
+                .build();
+        MobileAds.setRequestConfiguration(requestConfiguration);
+    }
+
+    @Override
+    public void setUserAge(Context context, int age) {
+        super.setUserAge(context, age);
+        setAgeRestricted(context, age < 13);
+    }
+
+    private AdRequest createAdRequest() {
+        AdRequest.Builder builder = new AdRequest.Builder();
+        if (mUserConsent != null || mUSPrivacyLimit != null) {
+            Bundle extras = new Bundle();
+            if (mUserConsent != null && !mUserConsent) {
+                extras.putString("npa", "1");
+            }
+            if (mUSPrivacyLimit != null) {
+                extras.putInt("rdp", mUSPrivacyLimit ? 1 : 0);
+            }
+        }
+        return builder.build();
+    }
+
+    @Override
     public void loadAd(Activity activity, Map<String, String> config) throws Throwable {
         super.loadAd(activity, config);
 
@@ -43,7 +78,7 @@ public class AdMobNative extends CustomNativeEvent {
         }
 
         if (mAdLoader != null) {
-            mAdLoader.loadAd(new AdRequest.Builder().build());
+            mAdLoader.loadAd(createAdRequest());
             return;
         }
         AdLoader.Builder builder = new AdLoader.Builder(activity.getApplicationContext(), mInstancesKey);
@@ -67,9 +102,9 @@ public class AdMobNative extends CustomNativeEvent {
         mAdLoader = builder.withNativeAdOptions(nativeAdOptionsBuilder.build()).withAdListener(new AdListener() {
             @Override
             public void onAdFailedToLoad(int errorCode) {
-                AdLog.getSingleton().LogE("Om-AdMob: AdMob Native ad failed to load, error code is : " + errorCode);
                 if (!isDestroyed) {
-                    onInsError("onAdFailedToLoad:" + errorCode);
+                    onInsError(AdapterErrorBuilder.buildLoadError(
+                            AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, errorCode, AdMobErrorUtil.getErrorString(errorCode)));
                 }
             }
 
@@ -81,7 +116,7 @@ public class AdMobNative extends CustomNativeEvent {
                 }
             }
         }).build();
-        mAdLoader.loadAd(new AdRequest.Builder().build());
+        mAdLoader.loadAd(createAdRequest());
     }
 
     @Override

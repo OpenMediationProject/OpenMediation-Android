@@ -15,6 +15,7 @@ public class OaidHelper {
         } catch (ClassNotFoundException e) {
             return;
         }
+        com.bun.miitmdid.core.JLibrary.InitEntry(context);
         com.bun.miitmdid.core.MdidSdkHelper.InitSdk(context, true, new com.bun.miitmdid.core.IIdentifierListener() {
             @Override
             public void OnSupport(boolean b, com.bun.miitmdid.supplier.IdSupplier idSupplier) {

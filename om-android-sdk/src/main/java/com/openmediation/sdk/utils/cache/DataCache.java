@@ -49,13 +49,11 @@ public class DataCache {
      * Creates db table; queries data into memory; inits memory data
      *
      * @param context the context
-     * @throws Exception the exception
      */
-    public void init(Context context) throws Exception {
+    public void init(Context context) {
         this.mDataBaseUtil = DataBaseUtil.getSingleton();
         this.mDataBaseUtil.init(context, CommonConstants.DB_NAME, CommonConstants.DB_VERSION);
         this.mDataBaseUtil.createTable(TABLE_NAME, TABLE_CREATE_COLUMN);
-
         hashSet();
     }
 

@@ -4,6 +4,7 @@
 package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
@@ -13,9 +14,10 @@ import com.applovin.sdk.AppLovinAdClickListener;
 import com.applovin.sdk.AppLovinAdDisplayListener;
 import com.applovin.sdk.AppLovinAdLoadListener;
 import com.applovin.sdk.AppLovinAdSize;
+import com.applovin.sdk.AppLovinPrivacySettings;
 import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdkSettings;
-import com.applovin.sdk.AppLovinSdkUtils;
+import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomBannerEvent;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.utils.AdLog;
@@ -27,6 +29,36 @@ public class AppLovinBanner extends CustomBannerEvent implements AppLovinAdLoadL
     private AppLovinAdView mAppLovinAdView;
     private AppLovinSdk mAppLovinSdk;
     private static final String TAG = "OM-AppLovin";
+
+    @Override
+    public void setGDPRConsent(Context context, boolean consent) {
+        super.setGDPRConsent(context, consent);
+        if (context != null) {
+            AppLovinPrivacySettings.setHasUserConsent(consent, context);
+        }
+    }
+
+    @Override
+    public void setUserAge(Context context, int age) {
+        super.setUserAge(context, age);
+        setAgeRestricted(context, age < AppLovinAdapter.AGE_RESTRICTION);
+    }
+
+    @Override
+    public void setAgeRestricted(Context context, boolean restricted) {
+        super.setAgeRestricted(context, restricted);
+        if (context != null) {
+            AppLovinPrivacySettings.setIsAgeRestrictedUser(restricted, context);
+        }
+    }
+
+    @Override
+    public void setUSPrivacyLimit(Context context, boolean value) {
+        super.setUSPrivacyLimit(context, value);
+        if (context != null) {
+            AppLovinPrivacySettings.setDoNotSell(value, context);
+        }
+    }
 
     @Override
     public void loadAd(Activity activity, Map<String, String> config) throws Throwable {
@@ -46,7 +78,7 @@ public class AppLovinBanner extends CustomBannerEvent implements AppLovinAdLoadL
             mAppLovinAdView.loadNextAd();
             return;
         }
-        AppLovinAdSize adSize = getAdSize(config);
+        AppLovinAdSize adSize = getAdSize(activity, config);
         mAppLovinAdView = new AppLovinAdView(mAppLovinSdk, adSize, mInstancesKey, activity);
         mAppLovinAdView.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         mAppLovinAdView.setAdLoadListener(this);
@@ -92,28 +124,33 @@ public class AppLovinBanner extends CustomBannerEvent implements AppLovinAdLoadL
         if (isDestroyed) {
             return;
         }
-        AdLog.getSingleton().LogD(TAG, "AppLovin Banner ad load failedToReceiveAd: " + errorCode);
-        onInsError("Banner ad load failed");
+        onInsError(AdapterErrorBuilder.buildLoadError(
+                AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, errorCode, AppLovinAdapter.getErrorString(errorCode)));
     }
 
     @Override
     public void adDisplayed(AppLovinAd ad) {
-        AdLog.getSingleton().LogD(TAG, "AppLovin Banner adDisplayed ");
     }
 
     @Override
     public void adHidden(AppLovinAd ad) {
-        AdLog.getSingleton().LogD(TAG, "AppLovin Banner adHidden");
     }
 
-    private AppLovinAdSize getAdSize(Map<String, String> config) {
-        int[] size = getBannerSize(config);
-        int height = size[1];
-        if (height == AppLovinAdSize.LEADER.getHeight()) {
-            return AppLovinAdSize.LEADER;
-        } else if (height == AppLovinAdSize.MREC.getHeight()) {
-            return AppLovinAdSize.MREC;
+    private AppLovinAdSize getAdSize(Context context, Map<String, String> config) {
+        String bannerDesc = getBannerDesc(config);
+        switch (bannerDesc) {
+            case DESC_LEADERBOARD:
+                return AppLovinAdSize.LEADER;
+            case DESC_RECTANGLE:
+                return AppLovinAdSize.MREC;
+            case DESC_SMART:
+                if (isLargeScreen(context)) {
+                    return AppLovinAdSize.LEADER;
+                } else {
+                    return AppLovinAdSize.BANNER;
+                }
+            default:
+                return AppLovinAdSize.BANNER;
         }
-        return AppLovinAdSize.BANNER;
     }
 }

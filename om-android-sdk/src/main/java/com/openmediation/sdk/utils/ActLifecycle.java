@@ -71,7 +71,11 @@ public class ActLifecycle implements Application.ActivityLifecycleCallbacks {
 
     @Override
     public void onActivityStarted(Activity activity) {
-        DeveloperLog.LogD("onActivityStarted: " + activity.toString());
+    }
+
+    @Override
+    public void onActivityResumed(Activity activity) {
+        DeveloperLog.LogD("onActivityResumed: " + activity.toString());
         if (isAdActivity(activity)) {
             return;
         }
@@ -79,10 +83,6 @@ public class ActLifecycle implements Application.ActivityLifecycleCallbacks {
         if (old == null || old != activity) {
             mThisActivity.set(activity);
         }
-    }
-
-    @Override
-    public void onActivityResumed(Activity activity) {
     }
 
     @Override

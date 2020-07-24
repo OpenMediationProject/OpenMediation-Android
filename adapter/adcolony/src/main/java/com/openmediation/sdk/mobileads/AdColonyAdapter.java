@@ -4,19 +4,22 @@
 package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 
 import com.adcolony.sdk.AdColony;
+import com.adcolony.sdk.AdColonyAppOptions;
 import com.adcolony.sdk.AdColonyInterstitial;
 import com.adcolony.sdk.AdColonyInterstitialListener;
 import com.adcolony.sdk.AdColonyReward;
 import com.adcolony.sdk.AdColonyRewardListener;
+import com.adcolony.sdk.AdColonyUserMetadata;
 import com.adcolony.sdk.AdColonyZone;
+import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.openmediation.sdk.mobileads.adcolony.BuildConfig;
-import com.openmediation.sdk.utils.AdLog;
 
 import java.util.List;
 import java.util.Map;
@@ -27,10 +30,12 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
     private boolean mDidInited = false;
     private ConcurrentMap<String, RewardedVideoCallback> mRvCallback;
     private ConcurrentHashMap<String, AdColonyInterstitial> mAdColonyAds;
+    private AdColonyAppOptions mAdColonyOptions;
 
     public AdColonyAdapter() {
         mRvCallback = new ConcurrentHashMap<>();
         mAdColonyAds = new ConcurrentHashMap<>();
+        mAdColonyOptions = new AdColonyAppOptions();
     }
 
     @Override
@@ -49,6 +54,43 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
     }
 
     @Override
+    public void setGDPRConsent(Context context, boolean consent) {
+        super.setGDPRConsent(context, consent);
+        mAdColonyOptions.setGDPRConsentString(consent ? "1" : "0");
+        mAdColonyOptions.setGDPRRequired(true);
+        AdColony.setAppOptions(mAdColonyOptions);
+    }
+
+    @Override
+    public void setUserAge(Context context, int age) {
+        super.setUserAge(context, age);
+        try {
+            AdColonyUserMetadata userMetadata = mAdColonyOptions.getUserMetadata();
+            if (userMetadata == null) {
+                userMetadata = new AdColonyUserMetadata();
+            }
+            userMetadata.setUserAge(age);
+            mAdColonyOptions.setUserMetadata(userMetadata);
+            AdColony.setAppOptions(mAdColonyOptions);
+        } catch (Exception ignored) {
+        }
+    }
+
+    @Override
+    public void setUserGender(Context context, String gender) {
+        try {
+            AdColonyUserMetadata userMetadata = mAdColonyOptions.getUserMetadata();
+            if (userMetadata == null) {
+                userMetadata = new AdColonyUserMetadata();
+            }
+            userMetadata.setUserGender(gender);
+            mAdColonyOptions.setUserMetadata(userMetadata);
+            AdColony.setAppOptions(mAdColonyOptions);
+        } catch (Exception ignored) {
+        }
+    }
+
+    @Override
     public void initRewardedVideo(Activity activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
         String error = check(activity);
@@ -59,7 +101,8 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
             }
         } else {
             if (callback != null) {
-                callback.onRewardedVideoInitFailed(error);
+                callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
             }
         }
     }
@@ -78,7 +121,8 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
                 callback.onRewardedVideoLoadSuccess();
             }
         } else {
-            callback.onRewardedVideoLoadFailed(error);
+            callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
         }
     }
 
@@ -91,13 +135,14 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
                 interstitial.show();
             } else {
                 if (callback != null) {
-                    callback.onRewardedVideoAdShowFailed("AdColony ad not ready");
+                    callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, AdColonyAdapter.this.mAdapterName, "AdColony ad not ready"));
                 }
             }
         } else {
-            AdLog.getSingleton().LogE("Om-AdColony: AdColony ad not ready");
             if (callback != null) {
-                callback.onRewardedVideoAdShowFailed("AdColony ad not ready");
+                callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, AdColonyAdapter.this.mAdapterName, "AdColony ad not ready"));
             }
         }
     }
@@ -125,9 +170,9 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
             String[] zoneIds;
             if (idList != null) {
                 zoneIds = idList.toArray(new String[idList.size()]);
-                AdColony.configure(activity.getApplication(), mAppKey, zoneIds);
+                AdColony.configure(activity.getApplication(), mAdColonyOptions, mAppKey, zoneIds);
             } else {
-                AdColony.configure(activity.getApplication(), mAppKey);
+                AdColony.configure(activity.getApplication(), mAdColonyOptions, mAppKey);
             }
             mDidInited = true;
         }
@@ -155,7 +200,8 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
         public void onRequestNotFilled(AdColonyZone zone) {
             RewardedVideoCallback callback = mRvCallback.get(zone.getZoneID());
             if (callback != null) {
-                callback.onRewardedVideoLoadFailed("AdColony ad not filled");
+                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Request Not Filled"));
             }
         }
 

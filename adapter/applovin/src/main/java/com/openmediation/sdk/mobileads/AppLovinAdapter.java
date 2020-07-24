@@ -4,14 +4,9 @@
 package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 
-import com.openmediation.sdk.mediation.CustomAdsAdapter;
-import com.openmediation.sdk.mediation.InterstitialAdCallback;
-import com.openmediation.sdk.mediation.MediationInfo;
-import com.openmediation.sdk.mediation.RewardedVideoCallback;
-import com.openmediation.sdk.mobileads.applovin.BuildConfig;
-import com.openmediation.sdk.utils.AdLog;
 import com.applovin.adview.AppLovinIncentivizedInterstitial;
 import com.applovin.adview.AppLovinInterstitialAd;
 import com.applovin.adview.AppLovinInterstitialAdDialog;
@@ -20,8 +15,17 @@ import com.applovin.sdk.AppLovinAdClickListener;
 import com.applovin.sdk.AppLovinAdDisplayListener;
 import com.applovin.sdk.AppLovinAdLoadListener;
 import com.applovin.sdk.AppLovinAdVideoPlaybackListener;
+import com.applovin.sdk.AppLovinErrorCodes;
+import com.applovin.sdk.AppLovinPrivacySettings;
 import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdkSettings;
+import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.CustomAdsAdapter;
+import com.openmediation.sdk.mediation.InterstitialAdCallback;
+import com.openmediation.sdk.mediation.MediationInfo;
+import com.openmediation.sdk.mediation.RewardedVideoCallback;
+import com.openmediation.sdk.mobileads.applovin.BuildConfig;
+import com.openmediation.sdk.utils.AdLog;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,6 +43,8 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
 
     private ConcurrentMap<String, AppLovinIncentivizedInterstitial> mRvAds;
     private ConcurrentMap<String, RewardedVideoCallback> mRvCallbacks;
+
+    static final int AGE_RESTRICTION = 16;
 
     public AppLovinAdapter() {
         mIsAds = new ConcurrentHashMap<>();
@@ -65,9 +71,38 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
     }
 
     @Override
+    public void setGDPRConsent(Context context, boolean consent) {
+        super.setGDPRConsent(context, consent);
+        if (context != null) {
+            AppLovinPrivacySettings.setHasUserConsent(consent, context);
+        }
+    }
+
+    @Override
+    public void setUserAge(Context context, int age) {
+        super.setUserAge(context, age);
+        setAgeRestricted(context, age < AGE_RESTRICTION);
+    }
+
+    @Override
+    public void setAgeRestricted(Context context, boolean restricted) {
+        super.setAgeRestricted(context, restricted);
+        if (context != null) {
+            AppLovinPrivacySettings.setIsAgeRestrictedUser(restricted, context);
+        }
+    }
+
+    @Override
+    public void setUSPrivacyLimit(Context context, boolean value) {
+        super.setUSPrivacyLimit(context, value);
+        if (context != null) {
+            AppLovinPrivacySettings.setDoNotSell(value, context);
+        }
+    }
+
+    @Override
     public void initRewardedVideo(Activity activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
-        AdLog.getSingleton().LogD("AppLovinAdapter", "initsdk:" + mAppKey);
         String error = check(activity);
         if (TextUtils.isEmpty(error)) {
             initSDK(activity);
@@ -76,14 +111,14 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
             }
         } else {
             if (callback != null) {
-                callback.onRewardedVideoInitFailed(error);
+                callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
             }
         }
     }
 
     private synchronized void initSDK(Activity activity) {
         if (!mDidInited) {
-            AdLog.getSingleton().LogD("AppLovinAdapter", "initsdk:" + mAppKey);
             AppLovinSdk lovinSdk = AppLovinSdk.getInstance(mAppKey
                     , new AppLovinSdkSettings(activity.getApplicationContext()),
                     activity.getApplicationContext());
@@ -118,7 +153,8 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
         if (TextUtils.isEmpty(error)) {
             AppLovinIncentivizedInterstitial videoAd = getVideo(activity, adUnitId);
             if (videoAd == null) {
-                callback.onRewardedVideoLoadFailed("onRewardedVideoLoadFailed");
+                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Ad LoadFailed"));
             } else {
                 if (videoAd.isAdReadyToDisplay()) {
                     if (callback != null) {
@@ -128,7 +164,6 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
                     videoAd.preload(new AppLovinAdLoadListener() {
                         @Override
                         public void adReceived(AppLovinAd appLovinAd) {
-                            AdLog.getSingleton().LogD("AppLovinAdapter", "adReceived:" + appLovinAd);
                             if (appLovinAd != null) {
                                 if (callback != null) {
                                     callback.onRewardedVideoLoadSuccess();
@@ -138,9 +173,9 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
 
                         @Override
                         public void failedToReceiveAd(int i) {
-                            AdLog.getSingleton().LogE("AppLovinAdapter: failedToReceiveAd:" + i);
                             if (callback != null) {
-                                callback.onRewardedVideoLoadFailed("failedToReceiveAd:" + i);
+                                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, i, getErrorString(i)));
                             }
                         }
                     });
@@ -149,7 +184,8 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
             }
         } else {
             if (callback != null) {
-                callback.onRewardedVideoLoadFailed(error);
+                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
             }
         }
     }
@@ -160,19 +196,22 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
         String error = check(activity, adUnitId);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
-                callback.onRewardedVideoAdShowFailed(error);
+                callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
             }
             return;
         }
         AppLovinIncentivizedInterstitial videoAd = getVideo(activity, adUnitId);
         if (videoAd == null) {
             if (callback != null) {
-                callback.onRewardedVideoAdShowFailed("applovin video get fail when show");
+                callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "AppLovin video get fail when show"));
             }
         } else {
             if (!isRewardedVideoAvailable(adUnitId)) {
                 if (callback != null) {
-                    callback.onRewardedVideoAdShowFailed("applovin video not ready when show");
+                    callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "AppLovin video not ready when show"));
                 }
                 return;
             }
@@ -209,7 +248,8 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
             }
         } else {
             if (callback != null) {
-                callback.onInterstitialAdInitFailed(error);
+                callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
             }
         }
     }
@@ -233,16 +273,17 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
 
                     @Override
                     public void failedToReceiveAd(int i) {
-                        AdLog.getSingleton().LogE("Om-AppLovin: AppLovin interstitial ad load failed : " + i);
                         if (callback != null) {
-                            callback.onInterstitialAdLoadFailed("Om-");
+                            callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, i, getErrorString(i)));
                         }
                     }
                 });
             }
         } else {
             if (callback != null) {
-                callback.onInterstitialAdLoadFailed(error);
+                callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
             }
         }
     }
@@ -253,7 +294,8 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
         String error = check(activity, adUnitId);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
-                callback.onInterstitialAdShowFailed(error);
+                callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
             }
             return;
         }
@@ -265,7 +307,8 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
             }
         } else {
             if (callback != null) {
-                callback.onInterstitialAdShowFailed("AppLovin Interstitial ad is not ready to show");
+                callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "not ready"));
             }
         }
     }
@@ -278,7 +321,7 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
 
     @Override
     public void adClicked(AppLovinAd appLovinAd) {
-        AdLog.getSingleton().LogD("AppLovinAdapter", "adClicked:" + appLovinAd);
+        AdLog.getSingleton().LogD("OM-AppLovin", "adClicked:" + appLovinAd);
         if (appLovinAd != null) {
             RewardedVideoCallback callback = mRvCallbacks.get(appLovinAd.getZoneId());
             if (callback != null) {
@@ -294,7 +337,7 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
 
     @Override
     public void adDisplayed(AppLovinAd appLovinAd) {
-        AdLog.getSingleton().LogD("AppLovinAdapter", "adDisplayed:" + appLovinAd);
+        AdLog.getSingleton().LogD("OM-AppLovin", "adDisplayed:" + appLovinAd);
         if (appLovinAd != null) {
             RewardedVideoCallback callback = mRvCallbacks.get(appLovinAd.getZoneId());
             if (callback != null) {
@@ -310,7 +353,7 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
 
     @Override
     public void adHidden(AppLovinAd appLovinAd) {
-        AdLog.getSingleton().LogD("AppLovinAdapter", "adHidden:" + appLovinAd);
+        AdLog.getSingleton().LogD("OM-AppLovin", "adHidden:" + appLovinAd);
         if (appLovinAd != null) {
             RewardedVideoCallback callback = mRvCallbacks.get(appLovinAd.getZoneId());
             if (callback != null) {
@@ -326,7 +369,7 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
 
     @Override
     public void videoPlaybackBegan(AppLovinAd appLovinAd) {
-        AdLog.getSingleton().LogD("AppLovinAdapter", "videoPlaybackBegan:" + appLovinAd);
+        AdLog.getSingleton().LogD("OM-AppLovin", "videoPlaybackBegan:" + appLovinAd);
         if (appLovinAd != null) {
             RewardedVideoCallback callback = mRvCallbacks.get(appLovinAd.getZoneId());
             if (callback != null) {
@@ -337,7 +380,7 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
 
     @Override
     public void videoPlaybackEnded(AppLovinAd appLovinAd, double percentViewed, boolean fullyWatched) {
-        AdLog.getSingleton().LogD("AppLovinAdapter", "videoPlaybackEnded:" + appLovinAd
+        AdLog.getSingleton().LogD("OM-AppLovin", "videoPlaybackEnded:" + appLovinAd
                 + ", percentViewed:" + percentViewed + ", fullyWatched:" + fullyWatched);
         if (appLovinAd != null) {
             RewardedVideoCallback callback = mRvCallbacks.get(appLovinAd.getZoneId());
@@ -347,6 +390,31 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
                     callback.onRewardedVideoAdRewarded();
                 }
             }
+        }
+    }
+
+    static String getErrorString(int errorCode) {
+        switch (errorCode) {
+            case AppLovinErrorCodes.FETCH_AD_TIMEOUT:
+                return "Ad fetch timeout";
+            case AppLovinErrorCodes.INCENTIVIZED_NO_AD_PRELOADED:
+                return "No ad pre-loaded";
+            case AppLovinErrorCodes.INCENTIVIZED_SERVER_TIMEOUT:
+                return "Server timeout";
+            case AppLovinErrorCodes.INCENTIVIZED_UNKNOWN_SERVER_ERROR:
+                return "Unknown server error";
+            case AppLovinErrorCodes.INCENTIVIZED_USER_CLOSED_VIDEO:
+                return "User closed video before reward";
+            case AppLovinErrorCodes.NO_FILL:
+                return "No fill";
+            case AppLovinErrorCodes.NO_NETWORK:
+                return "No network available";
+            case AppLovinErrorCodes.UNABLE_TO_RENDER_AD:
+                return "Unable to render ad";
+            case AppLovinErrorCodes.UNSPECIFIED_ERROR:
+                return "Unspecified error";
+            default:
+                return "Unknown error";
         }
     }
 

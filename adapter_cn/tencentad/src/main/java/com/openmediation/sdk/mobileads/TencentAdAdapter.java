@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.os.SystemClock;
 import android.text.TextUtils;
 
+import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
@@ -66,7 +67,8 @@ public class TencentAdAdapter extends CustomAdsAdapter {
             }
         } else {
             if (callback != null) {
-                callback.onRewardedVideoInitFailed(error);
+                callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
             }
         }
     }
@@ -96,7 +98,8 @@ public class TencentAdAdapter extends CustomAdsAdapter {
             }
         } else {
             if (callback != null) {
-                callback.onRewardedVideoLoadFailed(error);
+                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
             }
         }
     }
@@ -107,7 +110,8 @@ public class TencentAdAdapter extends CustomAdsAdapter {
         String error = check(activity, adUnitId);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
-                callback.onRewardedVideoAdShowFailed(error);
+                callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
             }
             return;
         }
@@ -122,7 +126,8 @@ public class TencentAdAdapter extends CustomAdsAdapter {
             mRvAds.remove(adUnitId);
         } else {
             if (callback != null) {
-                callback.onRewardedVideoAdShowFailed("TencentAds ad not ready");
+                callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "TencentAds ad not ready"));
             }
         }
     }
@@ -147,7 +152,8 @@ public class TencentAdAdapter extends CustomAdsAdapter {
             }
         } else {
             if (callback != null) {
-                callback.onInterstitialAdInitFailed(error);
+                callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
             }
         }
     }
@@ -177,7 +183,8 @@ public class TencentAdAdapter extends CustomAdsAdapter {
             }
         } else {
             if (callback != null) {
-                callback.onInterstitialAdLoadFailed(error);
+                callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
             }
         }
     }
@@ -188,7 +195,8 @@ public class TencentAdAdapter extends CustomAdsAdapter {
         String error = check(activity, adUnitId);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
-                callback.onInterstitialAdShowFailed(error);
+                callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
             }
             return;
         }
@@ -203,7 +211,8 @@ public class TencentAdAdapter extends CustomAdsAdapter {
             mIsAds.remove(adUnitId);
         } else {
             if (callback != null) {
-                callback.onInterstitialAdShowFailed("TencentAds InterstitialAd not ready");
+                callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "TencentAds InterstitialAd not ready"));
             }
         }
     }
@@ -252,7 +261,6 @@ public class TencentAdAdapter extends CustomAdsAdapter {
 
         @Override
         public void onADReceive() {
-            AdLog.getSingleton().LogD(TAG + "InterstitialAd onADReceive : " + mAdUnitId);
             if (mAd != null) {
                 mIsAds.put(mAdUnitId, mAd);
             }
@@ -269,16 +277,15 @@ public class TencentAdAdapter extends CustomAdsAdapter {
 
         @Override
         public void onNoAD(AdError adError) {
-            AdLog.getSingleton().LogE(TAG + "InterstitialAd  onError: " + adError.getErrorCode() + ", " + adError.getErrorMsg());
             InterstitialAdCallback callback = mIsCallbacks.get(mAdUnitId);
             if (callback != null) {
-                callback.onInterstitialAdLoadFailed(TAG + "InterstitialAd load failed : " + adError.getErrorCode() + ", " + adError.getErrorMsg());
+                callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, adError.getErrorCode(), adError.getErrorMsg()));
             }
         }
 
         @Override
         public void onADOpened() {
-            AdLog.getSingleton().LogD(TAG + "InterstitialAd show onDisplay : " + mAdUnitId);
             InterstitialAdCallback callback = mIsCallbacks.get(mAdUnitId);
             if (callback != null) {
                 callback.onInterstitialAdShowSuccess();
@@ -329,7 +336,6 @@ public class TencentAdAdapter extends CustomAdsAdapter {
 
         @Override
         public void onADLoad() {
-            AdLog.getSingleton().LogD(TAG + "RewardedVideo onRewardVideoAdLoad : " + mAdUnitId);
             RewardedVideoCallback callback = mRvCallbacks.get(mAdUnitId);
             if (mRewardVideoAD != null) {
                 mRvAds.put(mAdUnitId, mRewardVideoAD);
@@ -346,7 +352,6 @@ public class TencentAdAdapter extends CustomAdsAdapter {
 
         @Override
         public void onADShow() {
-            AdLog.getSingleton().LogD(TAG + "RewardVideoAd show onDisplay : " + mAdUnitId);
             RewardedVideoCallback callback = mRvCallbacks.get(mAdUnitId);
             if (callback != null) {
                 callback.onRewardedVideoAdStarted();
@@ -355,7 +360,6 @@ public class TencentAdAdapter extends CustomAdsAdapter {
 
         @Override
         public void onADExpose() {
-            AdLog.getSingleton().LogD(TAG + "RewardVideoAd show onADExpose : " + mAdUnitId);
             RewardedVideoCallback callback = mRvCallbacks.get(mAdUnitId);
             if (callback != null) {
                 callback.onRewardedVideoAdShowSuccess();
@@ -391,7 +395,6 @@ public class TencentAdAdapter extends CustomAdsAdapter {
 
         @Override
         public void onADClose() {
-            AdLog.getSingleton().LogD(TAG + "RewardVideoAd close : " + mAdUnitId);
             RewardedVideoCallback callback = mRvCallbacks.get(mAdUnitId);
             if (callback != null) {
                 callback.onRewardedVideoAdClosed();
@@ -400,10 +403,10 @@ public class TencentAdAdapter extends CustomAdsAdapter {
 
         @Override
         public void onError(AdError adError) {
-            AdLog.getSingleton().LogE(TAG + "RewardedVideo  onError: " + adError.getErrorCode() + ", " + adError.getErrorMsg());
             RewardedVideoCallback callback = mRvCallbacks.get(mAdUnitId);
             if (callback != null) {
-                callback.onRewardedVideoLoadFailed(TAG + "RewardedVideo load failed : " + adError.getErrorCode() + ", " + adError.getErrorMsg());
+                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, adError.getErrorCode(), adError.getErrorMsg()));
             }
         }
     }

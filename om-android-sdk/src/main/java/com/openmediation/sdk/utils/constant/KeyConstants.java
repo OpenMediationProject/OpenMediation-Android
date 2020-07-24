@@ -70,13 +70,13 @@ public interface KeyConstants {
         /**
          * The constant KEY_ZO.
          */
-        /*@see DeviceUtil.getTimeZoneOffset    int       TimeZoneOffset in minutes, e.g. UTC+0800 zo=480 must */
+        /*@see DeviceUtil.getTimeZoneOffset    int       TimeZoneOffset in minutes,e.g. UTC+0800 zo=480 must */
         String KEY_ZO = "zo";
 
         /**
          * The constant KEY_TZ.
          */
-        /*@see DeviceUtil.getTimeZone          String    localTimeZone.name,TimeZone.getDefault().getID()     Asia/Shanghai︎ must*/
+        /*@see DeviceUtil.getTimeZone   String  localTimeZone.name,TimeZone.getDefault().getID()    Asia/Shanghai must*/
         String KEY_TZ = "tz";
 
         /**
@@ -276,10 +276,25 @@ public interface KeyConstants {
          */
         String KEY_TYPE = "type";
 
+        String KEY_BID = "bid";
         /**
          * The constant KEY_CHANNEL.
          */
         String KEY_CHANNEL = "cnl";
+
+        /*Age*/
+        String KEY_AGE = "age";
+        /*Gender*/
+        String KEY_GENDER = "gender";
+
+        /*Regs*/
+        String KEY_REGS = "regs";
+        /*GDPR*/
+        String KEY_GDPR = "gdpr";
+        /*COPPA*/
+        String KEY_COPPA = "coppa";
+        /*CCPA*/
+        String KEY_CCPA = "ccpa";
     }
 
     /**

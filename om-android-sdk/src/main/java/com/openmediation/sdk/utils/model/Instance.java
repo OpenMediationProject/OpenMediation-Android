@@ -4,8 +4,11 @@
 package com.openmediation.sdk.utils.model;
 
 import android.app.Activity;
+import android.content.Context;
 import android.util.SparseArray;
 
+import com.openmediation.sdk.core.runnable.LoadTimeoutRunnable;
+import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.utils.InsExecutor;
 import com.openmediation.sdk.utils.JsonUtil;
@@ -14,7 +17,6 @@ import com.openmediation.sdk.utils.cache.DataCache;
 import com.openmediation.sdk.utils.constant.KeyConstants;
 import com.openmediation.sdk.utils.event.EventId;
 import com.openmediation.sdk.utils.event.EventUploadManager;
-import com.openmediation.sdk.core.runnable.LoadTimeoutRunnable;
 
 import org.json.JSONObject;
 
@@ -165,10 +167,14 @@ public class Instance extends BaseInstance {
      *
      * @param error the error
      */
-    protected void onInsInitFailed(String error) {
+    protected void onInsInitFailed(AdapterError error) {
         setMediationState(MEDIATION_STATE.INIT_FAILED);
+        if (error == null) {
+            return;
+        }
         JSONObject data = buildReportData();
-        JsonUtil.put(data, "msg", error);
+        JsonUtil.put(data, "code", error.getCode());
+        JsonUtil.put(data, "msg", error.getMessage());
         if (mInitStart > 0) {
             int dur = (int) (System.currentTimeMillis() - mInitStart) / 1000;
             JsonUtil.put(data, "duration", dur);
@@ -187,6 +193,7 @@ public class Instance extends BaseInstance {
      * On ins load success.
      */
     protected void onInsLoadSuccess() {
+        setAdapterError(null);
         cancelInsLoadTimer();
         setMediationState(MEDIATION_STATE.AVAILABLE);
         JSONObject data = buildReportData();
@@ -194,11 +201,16 @@ public class Instance extends BaseInstance {
             int dur = (int) (System.currentTimeMillis() - mLoadStart) / 1000;
             JsonUtil.put(data, "duration", dur);
         }
-        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_LOAD_SUCCESS, data);
+        if (getHb() == 1) {
+            EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_PAYLOAD_SUCCESS, data);
+        } else {
+            EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_LOAD_SUCCESS, data);
+        }
     }
 
     @Override
-    public void onInsLoadFailed(String error) {
+    public void onInsLoadFailed(AdapterError error) {
+        setAdapterError(error);
         setMediationState(MEDIATION_STATE.LOAD_FAILED);
         cancelInsLoadTimer();
         super.onInsLoadFailed(error);
@@ -210,17 +222,9 @@ public class Instance extends BaseInstance {
      * @param error the error
      * @param scene the scene
      */
-    @Override
-    public void onInsShowFailed(String error, Scene scene) {
+    public void onInsShowFailed(AdapterError error, Scene scene) {
         setMediationState(MEDIATION_STATE.NOT_AVAILABLE);
-        JSONObject data = buildReportDataWithScene(scene);
-        JsonUtil.put(data, "msg", error);
-        if (mShowStart > 0) {
-            int dur = (int) (System.currentTimeMillis() - mShowStart) / 1000;
-            JsonUtil.put(data, "duration", dur);
-            mShowStart = 0;
-        }
-        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_SHOW_FAILED, data);
+        super.onInsShowFailed(error, scene);
     }
 
     /**
@@ -266,6 +270,37 @@ public class Instance extends BaseInstance {
         }
         return instanceKeys;
     }
+
+    public void setGDPRConsent(Context context, boolean consent) {
+        if (mAdapter != null) {
+            mAdapter.setGDPRConsent(context, consent);
+        }
+    }
+
+    public void setAgeRestricted(Context context, boolean restricted) {
+        if (mAdapter != null) {
+            mAdapter.setAgeRestricted(context, restricted);
+        }
+    }
+
+    public void setUserAge(Context context, int age) {
+        if (mAdapter != null) {
+            mAdapter.setUserAge(context, age);
+        }
+    }
+
+    public void setUserGender(Context context, String gender) {
+        if (mAdapter != null) {
+            mAdapter.setUserGender(context, gender);
+        }
+    }
+
+    public void setUSPrivacyLimit(Context context, boolean value) {
+        if (mAdapter != null) {
+            mAdapter.setUSPrivacyLimit(context, value);
+        }
+    }
+
 
     /**
      * The enum Mediation state.

@@ -30,7 +30,7 @@ public class Placement extends Frequency {
     private int cs;
     //refresh in how many seconds for RewardVideo     30
     private int rf;
-
+    private Map<Integer, Integer> rfs;
     //Mediation placement data
     private SparseArray<BaseInstance> insMap;
 
@@ -112,6 +112,14 @@ public class Placement extends Frequency {
 
     public void setRf(int rf) {
         this.rf = rf;
+    }
+
+    public void setRfs(Map<Integer, Integer> rfs) {
+        this.rfs = rfs;
+    }
+
+    public Map<Integer, Integer> getRfs() {
+        return rfs;
     }
 
     public int getPt() {

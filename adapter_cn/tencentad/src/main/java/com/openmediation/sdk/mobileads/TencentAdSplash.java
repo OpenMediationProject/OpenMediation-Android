@@ -7,9 +7,9 @@ import android.app.Activity;
 import android.os.SystemClock;
 import android.view.ViewGroup;
 
+import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomSplashEvent;
 import com.openmediation.sdk.mediation.MediationInfo;
-import com.openmediation.sdk.utils.AdLog;
 import com.qq.e.ads.splash.SplashAD;
 import com.qq.e.ads.splash.SplashADListener;
 import com.qq.e.comm.managers.GDTADManager;
@@ -44,7 +44,7 @@ public class TencentAdSplash extends CustomSplashEvent implements SplashADListen
         int fetchDelay = 0;
         try {
             fetchDelay = Integer.parseInt(timeout);
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
         if (fetchDelay <= 0) {
             fetchDelay = 0;
@@ -60,7 +60,8 @@ public class TencentAdSplash extends CustomSplashEvent implements SplashADListen
             return;
         }
         if (mSplashAD == null) {
-            onInsShowFailed("SplashAd not ready");
+            onInsShowFailed(AdapterErrorBuilder.buildShowError(
+                    AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, "SplashAd not ready"));
             return;
         }
         mSplashAD.showAd(container);
@@ -83,7 +84,6 @@ public class TencentAdSplash extends CustomSplashEvent implements SplashADListen
             return;
         }
         mExpireTimestamp = 0;
-        AdLog.getSingleton().LogD(TAG + "Splash ad onADDismissed");
         onInsDismissed();
     }
 
@@ -93,8 +93,8 @@ public class TencentAdSplash extends CustomSplashEvent implements SplashADListen
             return;
         }
         mExpireTimestamp = 0;
-        AdLog.getSingleton().LogD(TAG + "Splash ad load failed: code " + adError.getErrorCode() + " " + adError.getErrorMsg());
-        onInsError(adError.getErrorMsg());
+        onInsError(AdapterErrorBuilder.buildLoadError(
+                AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, adError.getErrorCode(), adError.getErrorMsg()));
     }
 
     @Override
@@ -102,7 +102,6 @@ public class TencentAdSplash extends CustomSplashEvent implements SplashADListen
         if (isDestroyed) {
             return;
         }
-        AdLog.getSingleton().LogD(TAG + "Splash ad onADPresent");
         onInsShowSuccess();
     }
 
@@ -111,7 +110,6 @@ public class TencentAdSplash extends CustomSplashEvent implements SplashADListen
         if (isDestroyed) {
             return;
         }
-        AdLog.getSingleton().LogD(TAG + "Splash ad onADClicked");
         onInsClicked();
     }
 
@@ -120,7 +118,6 @@ public class TencentAdSplash extends CustomSplashEvent implements SplashADListen
         if (isDestroyed) {
             return;
         }
-        AdLog.getSingleton().LogD(TAG + "Splash ad onADTick " + millisUntilFinished);
         onInsTick(millisUntilFinished);
     }
 
@@ -134,7 +131,6 @@ public class TencentAdSplash extends CustomSplashEvent implements SplashADListen
             return;
         }
         mExpireTimestamp = expireTimestamp;
-        AdLog.getSingleton().LogD(TAG + "Splash ad onADLoaded");
         onInsReady(null);
     }
 

@@ -31,7 +31,6 @@ dependencies {
         exclude group: 'com.google.android.gms', module: 'play-services-ads'
     }
     implementation project(':om-android-sdk')
-    implementation(name: 'BiddingKit', ext: 'aar')
 }
 
 repositories {

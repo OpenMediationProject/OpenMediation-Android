@@ -40,6 +40,22 @@ public class InsUtil {
         return instanceList;
     }
 
+    public static synchronized List<Integer> getInsIdWithStatus(List<Instance> instances, Instance.MEDIATION_STATE... states) {
+        if (instances == null) {
+            return Collections.emptyList();
+        }
+
+        List<Integer> insIdList = new ArrayList<>();
+        for (Instance in : instances) {
+            for (Instance.MEDIATION_STATE state : states) {
+                if (in.getMediationState() == state) {
+                    insIdList.add(in.getId());
+                }
+            }
+        }
+        return insIdList;
+    }
+
     /**
      * Instance count int.
      *

@@ -45,6 +45,9 @@ public interface EventId {
     int INSTANCE_BID_FAILED = 272;
     int INSTANCE_BID_WIN = 273;
     int INSTANCE_BID_LOSE = 274;
+    int INSTANCE_PAYLOAD_REQUEST = 275;
+    int INSTANCE_PAYLOAD_SUCCESS = 276;
+    int INSTANCE_PAYLOAD_FAILED = 277;
 
 
     /****************************************/

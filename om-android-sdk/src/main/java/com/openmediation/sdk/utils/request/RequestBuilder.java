@@ -7,7 +7,9 @@ import android.content.Context;
 import android.os.Build;
 import android.text.TextUtils;
 
+import com.openmediation.sdk.MetaData;
 import com.openmediation.sdk.bid.AdTimingBidResponse;
+import com.openmediation.sdk.core.OmManager;
 import com.openmediation.sdk.utils.AdtUtil;
 import com.openmediation.sdk.utils.DensityUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
@@ -273,6 +275,9 @@ public class RequestBuilder {
         JsonUtil.put(jsonObject, KeyConstants.RequestBody.KEY_IID, extras[4]);
         JsonUtil.put(jsonObject, "abt", extras[5]);
         JsonUtil.put(jsonObject, KeyConstants.RequestBody.KEY_TYPE, extras[6]);
+        if (extras[7] == 1) {
+            JsonUtil.put(jsonObject, KeyConstants.RequestBody.KEY_BID, extras[7]);
+        }
         DeveloperLog.LogD("lr params:" + jsonObject.toString());
         return Gzip.inGZip(jsonObject.toString().getBytes(Charset.forName(CommonConstants.CHARTSET_UTF8)));
     }
@@ -377,7 +382,38 @@ public class RequestBuilder {
         }
         body.put(KeyConstants.RequestBody.KEY_W, DensityUtil.getPhoneWidth(context));
         body.put(KeyConstants.RequestBody.KEY_H, DensityUtil.getPhoneHeight(context));
+        appendRegsObject(body, OmManager.getInstance().getMetaData());
         return body;
+    }
+
+    private static void appendRegsObject(JSONObject body, MetaData metaData) throws Exception {
+        if (metaData == null) {
+            return;
+        }
+        String gender = metaData.getGender();
+        if (!TextUtils.isEmpty(gender)) {
+            int genderValue = 0;
+            if ("male".equals(gender)) {
+                genderValue = 1;
+            } else if ("female".equals(gender)) {
+                genderValue = 2;
+            }
+            body.put(KeyConstants.RequestBody.KEY_GENDER, genderValue);
+        }
+        if (metaData.getAge() != null) {
+            body.put(KeyConstants.RequestBody.KEY_AGE, metaData.getAge());
+        }
+        JSONObject regs = new JSONObject();
+        if (metaData.getGDPRConsent() != null) {
+            regs.put(KeyConstants.RequestBody.KEY_GDPR, metaData.getGDPRConsent() ? 0 : 1);
+        }
+        if (metaData.getAgeRestricted() != null) {
+            regs.put(KeyConstants.RequestBody.KEY_COPPA, metaData.getAgeRestricted() ? 1 : 0);
+        }
+        if (metaData.getUSPrivacyLimit() != null) {
+            regs.put(KeyConstants.RequestBody.KEY_CCPA, metaData.getUSPrivacyLimit() ? 1 : 0);
+        }
+        body.put(KeyConstants.RequestBody.KEY_REGS, regs);
     }
 
     /**

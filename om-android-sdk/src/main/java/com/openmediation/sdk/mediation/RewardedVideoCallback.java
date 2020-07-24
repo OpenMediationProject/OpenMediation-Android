@@ -19,7 +19,7 @@ public interface RewardedVideoCallback {
      *
      * @param error init failed reason
      */
-    void onRewardedVideoInitFailed(String error);
+    void onRewardedVideoInitFailed(AdapterError error);
 
     /**
      * called when third-party ad network shows an ads
@@ -41,7 +41,7 @@ public interface RewardedVideoCallback {
      *
      * @param error load failed reason
      */
-    void onRewardedVideoLoadFailed(String error);
+    void onRewardedVideoLoadFailed(AdapterError error);
 
     /**
      * called when third-party ad network ads start to play video
@@ -63,7 +63,7 @@ public interface RewardedVideoCallback {
      *
      * @param error show failed reason
      */
-    void onRewardedVideoAdShowFailed(String error);
+    void onRewardedVideoAdShowFailed(AdapterError error);
 
     /**
      * called when third-party ad network ads are clicked

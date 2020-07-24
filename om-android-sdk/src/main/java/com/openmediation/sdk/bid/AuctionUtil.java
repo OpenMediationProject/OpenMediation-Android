@@ -4,10 +4,8 @@
 package com.openmediation.sdk.bid;
 
 import android.text.TextUtils;
-import android.util.SparseArray;
 
 import com.openmediation.sdk.utils.model.BaseInstance;
-import com.openmediation.sdk.utils.model.Placement;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,48 +13,37 @@ import java.util.List;
 import java.util.Map;
 
 public class AuctionUtil {
+
     private static final String AUCTION_LOSE = "${AUCTION_LOSS}";
 
-    public static void instanceNotifyBidWin(int abt, BaseInstance instance) {
-        AdTimingAuctionManager.getInstance().notifyWin(abt, instance);
-    }
-
-
-    public static void s2sNotifyBidWin(String url, BaseInstance instance) {
-        AdTimingAuctionManager.getInstance().notifyWin(url, instance);
-    }
-
-    public static void c2sNotifyBidLose(List<AdTimingBidResponse> bidResponses, Placement placement) {
-        if (bidResponses == null || bidResponses.isEmpty() || placement == null) {
+    public static void notifyWin(BaseInstance instance, AdTimingBidResponse bidResponse) {
+        if (bidResponse == null) {
             return;
         }
-
-        SparseArray<BaseInstance> insMap = placement.getInsMap();
-        for (AdTimingBidResponse bidResponse : bidResponses) {
-            BaseInstance instance = insMap.get(bidResponse.getIid());
-            if (instance == null) {
-                continue;
-            }
-            AdTimingAuctionManager.getInstance().notifyLose(placement.getHbAbt(), instance);
+        String nurl = bidResponse.getNurl();
+        if (TextUtils.isEmpty(nurl)) {
+            AdTimingAuctionManager.getInstance().notifyWin(instance);
+        } else {
+            AdTimingAuctionManager.getInstance().notifyWin(nurl, instance);
         }
     }
 
-    public static void s2sNotifyBidLose(AdTimingBidResponse bidResponse, int code, BaseInstance instance) {
-        if (bidResponse == null || instance == null) {
+    public static void notifyLose(BaseInstance instance, AdTimingBidResponse bidResponse, int code) {
+        if (bidResponse == null) {
             return;
         }
-
         String lurl = bidResponse.getLurl();
         if (TextUtils.isEmpty(lurl)) {
-            return;
+            AdTimingAuctionManager.getInstance().notifyLose(instance, code);
+        } else {
+            if (lurl.contains(AUCTION_LOSE)) {
+                lurl = lurl.replace(AUCTION_LOSE, String.valueOf(code));
+            }
+            AdTimingAuctionManager.getInstance().notifyLose(lurl, instance);
         }
-        if (lurl.contains(AUCTION_LOSE)) {
-            lurl = lurl.replace(AUCTION_LOSE, String.valueOf(code));
-        }
-        AdTimingAuctionManager.getInstance().notifyLose(instance.getWfAbt(), lurl, instance);
     }
 
-    public static void s2sNotifyBidLose(Map<BaseInstance, AdTimingBidResponse> bidResponses, int code) {
+    public static void notifyLose(Map<BaseInstance, AdTimingBidResponse> bidResponses, int code) {
         if (bidResponses == null || bidResponses.isEmpty()) {
             return;
         }
@@ -71,12 +58,13 @@ public class AuctionUtil {
             }
             String lurl = bidResponse.getLurl();
             if (TextUtils.isEmpty(lurl)) {
-                continue;
+                AdTimingAuctionManager.getInstance().notifyLose(instance, code);
+            } else {
+                if (lurl.contains(AUCTION_LOSE)) {
+                    lurl = lurl.replace(AUCTION_LOSE, String.valueOf(code));
+                }
+                AdTimingAuctionManager.getInstance().notifyLose(lurl, instance);
             }
-            if (lurl.contains(AUCTION_LOSE)) {
-                lurl = lurl.replace(AUCTION_LOSE, String.valueOf(code));
-            }
-            AdTimingAuctionManager.getInstance().notifyLose(instance.getWfAbt(), lurl, instance);
         }
     }
 

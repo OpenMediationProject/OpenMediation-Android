@@ -4,13 +4,16 @@
 package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 
+import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomBannerEvent;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mobileads.unity.BuildConfig;
 import com.openmediation.sdk.utils.AdLog;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.metadata.MediationMetaData;
+import com.unity3d.ads.metadata.MetaData;
 import com.unity3d.services.banners.BannerErrorInfo;
 import com.unity3d.services.banners.BannerView;
 import com.unity3d.services.banners.UnityBannerSize;
@@ -25,6 +28,36 @@ public class UnityBanner extends CustomBannerEvent implements BannerView.IListen
     private BannerView mBannerView;
 
     @Override
+    public void setGDPRConsent(Context context, boolean consent) {
+        super.setGDPRConsent(context, consent);
+        if (context != null) {
+            MetaData gdprMetaData = new MetaData(context);
+            gdprMetaData.set("gdpr.consent", consent);
+            gdprMetaData.commit();
+        }
+    }
+
+    @Override
+    public void setAgeRestricted(Context context, boolean restricted) {
+        super.setAgeRestricted(context, restricted);
+        if (context != null) {
+            MetaData ageGateMetaData = new MetaData(context);
+            ageGateMetaData.set("privacy.useroveragelimit", restricted);
+            ageGateMetaData.commit();
+        }
+    }
+
+    @Override
+    public void setUSPrivacyLimit(Context context, boolean value) {
+        super.setUSPrivacyLimit(context, value);
+        if (context != null) {
+            MetaData privacyMetaData = new MetaData(context);
+            privacyMetaData.set("privacy.consent", !value);
+            privacyMetaData.commit();
+        }
+    }
+
+    @Override
     public void loadAd(Activity activity, Map<String, String> config) throws Throwable {
         super.loadAd(activity, config);
 
@@ -37,15 +70,15 @@ public class UnityBanner extends CustomBannerEvent implements BannerView.IListen
             mDidInit = true;
         }
 
-        BannerView bannerView = new BannerView(activity, mInstancesKey, getAdSize(activity, config));
+        UnityBannerSize bannerSize = getAdSize(activity, config);
+        BannerView bannerView = new BannerView(activity, mInstancesKey, bannerSize);
         bannerView.setListener(this);
         bannerView.load();
     }
 
     private synchronized void initSDK(Activity activity, String appKey) {
-        AdLog.getSingleton().LogD(TAG, "initSDK, appkey:" + appKey);
         MediationMetaData mediationMetaData = new MediationMetaData(activity);
-        mediationMetaData.setName("AdTiming");
+        mediationMetaData.setName("Om");
         mediationMetaData.setVersion(BuildConfig.VERSION_NAME);
         mediationMetaData.commit();
         UnityAds.initialize(activity, appKey);
@@ -74,7 +107,6 @@ public class UnityBanner extends CustomBannerEvent implements BannerView.IListen
             mBannerView.destroy();
         }
         mBannerView = bannerAdView;
-        AdLog.getSingleton().LogD(TAG + "Unity Banner Ad Load Success : " + mInstancesKey);
         onInsReady(bannerAdView);
     }
 
@@ -92,8 +124,8 @@ public class UnityBanner extends CustomBannerEvent implements BannerView.IListen
         if (isDestroyed) {
             return;
         }
-        AdLog.getSingleton().LogD(TAG + "Unity Banner Ad Load Failed " + errorInfo.errorMessage + "  " + mInstancesKey);
-        onInsError(errorInfo.errorMessage);
+        onInsError(AdapterErrorBuilder.buildLoadError(
+                AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, errorInfo.errorCode.name()));
     }
 
     @Override
@@ -101,17 +133,24 @@ public class UnityBanner extends CustomBannerEvent implements BannerView.IListen
 
     }
 
-    private UnityBannerSize getAdSize(Activity activity, Map<String, String> config) {
-        int[] size = getBannerSize(config);
-        int width = size[0];
-        int height = size[1];
-        UnityBannerSize bannerSize;
-        if (size[0] < 0 || size[1] < 0) {
-            bannerSize = UnityBannerSize.getDynamicSize(activity);
-        } else {
-            bannerSize = new UnityBannerSize(width, height);
+    private UnityBannerSize getAdSize(Context context, Map<String, String> config) {
+        String bannerDesc = getBannerDesc(config);
+        switch (bannerDesc) {
+            case DESC_BANNER:
+                return new UnityBannerSize(320, 50);
+            case DESC_LEADERBOARD:
+                return new UnityBannerSize(728, 90);
+            case DESC_RECTANGLE:
+                return new UnityBannerSize(300, 250);
+            case DESC_SMART:
+                if (isLargeScreen(context)) {
+                    return new UnityBannerSize(728, 90);
+                } else {
+                    return new UnityBannerSize(320, 50);
+                }
+            default:
+                return UnityBannerSize.getDynamicSize(context);
         }
-        return bannerSize;
     }
 
 }

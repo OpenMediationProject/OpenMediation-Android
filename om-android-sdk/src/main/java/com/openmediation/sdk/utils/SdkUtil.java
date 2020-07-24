@@ -28,48 +28,31 @@ public class SdkUtil {
      */
     public static Error banRun(Activity activity, String appKey) {
         Error error;
-        //
         if (!DeviceUtil.isActivityAvailable(activity)) {
             error = new Error(ErrorCode.CODE_INIT_INVALID_REQUEST
                     , ErrorCode.MSG_INIT_INVALID_REQUEST, ErrorCode.CODE_INTERNAL_UNKNOWN_ACTIVITY);
             //init error activity is not available
-            AdLog.getSingleton().LogE(error.toString());
             DeveloperLog.LogE(error.toString());
             return error;
         }
-        //
         if (TextUtils.isEmpty(appKey)) {
             error = new Error(ErrorCode.CODE_INIT_INVALID_REQUEST
                     , ErrorCode.MSG_INIT_INVALID_REQUEST, ErrorCode.CODE_INTERNAL_REQUEST_APPKEY);
             //init error appKey is empty
-            AdLog.getSingleton().LogE(error.toString());
             DeveloperLog.LogE(error.toString());
             return error;
         }
-        //
-        if (GdprUtil.isGdprSubjected(activity)) {
-            error = new Error(ErrorCode.CODE_INIT_INVALID_REQUEST
-                    , ErrorCode.MSG_INIT_INVALID_REQUEST, ErrorCode.CODE_INTERNAL_REQUEST_GDPR);
-            //init error gdpr is rejected
-            AdLog.getSingleton().LogE(error.toString());
-            DeveloperLog.LogE(error.toString());
-            return error;
-        }
-        //
         if (!PermissionUtil.isGranted(activity, ADT_PERMISSIONS)) {
             error = new Error(ErrorCode.CODE_INIT_INVALID_REQUEST
                     , ErrorCode.MSG_INIT_INVALID_REQUEST, ErrorCode.CODE_INTERNAL_REQUEST_PERMISSION);
             //init error permission is not granted
-            AdLog.getSingleton().LogE(error.toString());
             DeveloperLog.LogE(error.toString());
             return error;
         }
-        //
         if (!NetworkChecker.isAvailable(activity)) {
             error = new Error(ErrorCode.CODE_INIT_NETWORK_ERROR
                     , ErrorCode.MSG_INIT_NETWORK_ERROR, -1);
             //init error network is not available
-            AdLog.getSingleton().LogE(error.toString());
             DeveloperLog.LogE(error.toString());
             return error;
         }

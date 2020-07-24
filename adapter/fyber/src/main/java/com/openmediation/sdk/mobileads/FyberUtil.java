@@ -5,7 +5,7 @@ import android.util.TypedValue;
 
 public final class FyberUtil {
 
-    public static int dpToPixels(Activity activity, int dpSize) {
+    static int dpToPixels(Activity activity, int dpSize) {
         if (activity == null) {
             return dpSize;
         } else {

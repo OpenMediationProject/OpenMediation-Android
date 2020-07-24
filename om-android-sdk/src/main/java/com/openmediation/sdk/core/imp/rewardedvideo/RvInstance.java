@@ -5,7 +5,9 @@ package com.openmediation.sdk.core.imp.rewardedvideo;
 
 import android.app.Activity;
 
-import com.openmediation.sdk.utils.model.Instance;
+import com.openmediation.sdk.core.runnable.LoadTimeoutRunnable;
+import com.openmediation.sdk.mediation.AdapterError;
+import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.openmediation.sdk.utils.AdLog;
 import com.openmediation.sdk.utils.DeveloperLog;
@@ -13,7 +15,7 @@ import com.openmediation.sdk.utils.error.Error;
 import com.openmediation.sdk.utils.error.ErrorCode;
 import com.openmediation.sdk.utils.event.EventId;
 import com.openmediation.sdk.utils.event.EventUploadManager;
-import com.openmediation.sdk.core.runnable.LoadTimeoutRunnable;
+import com.openmediation.sdk.utils.model.Instance;
 import com.openmediation.sdk.utils.model.Scene;
 
 import java.util.Map;
@@ -92,11 +94,10 @@ public class RvInstance extends Instance implements RewardedVideoCallback, LoadT
     }
 
     @Override
-    public void onRewardedVideoInitFailed(String error) {
+    public void onRewardedVideoInitFailed(AdapterError error) {
+        AdLog.getSingleton().LogE("RewardedVideo Ad Init Failed: " + error.toString());
         onInsInitFailed(error);
-        Error errorResult = new Error(ErrorCode.CODE_LOAD_FAILED_IN_ADAPTER
-                , ErrorCode.MSG_LOAD_FAILED_IN_ADAPTER
-                + ", mediationID:" + getMediationId() + ", error:" + error, -1);
+        Error errorResult = new Error(ErrorCode.CODE_LOAD_FAILED_IN_ADAPTER, error.toString(), -1);
         mListener.onRewardedVideoInitFailed(errorResult, this);
     }
 
@@ -121,13 +122,11 @@ public class RvInstance extends Instance implements RewardedVideoCallback, LoadT
     }
 
     @Override
-    public void onRewardedVideoLoadFailed(String error) {
-        Error errorResult = new Error(ErrorCode.CODE_LOAD_FAILED_IN_ADAPTER
-                , ErrorCode.MSG_LOAD_FAILED_IN_ADAPTER
-                + ", mediationID:" + getMediationId() + ", error:" + error, -1);
-        AdLog.getSingleton().LogE(errorResult.toString() + ", onRewardedVideoLoadFailed :" + toString());
+    public void onRewardedVideoLoadFailed(AdapterError error) {
+        Error errorResult = new Error(ErrorCode.CODE_LOAD_FAILED_IN_ADAPTER, error.toString(), -1);
+        AdLog.getSingleton().LogE("RewardedVideo Ad Load Failed: " + error.toString());
         DeveloperLog.LogD("RvInstance onRewardedVideoLoadFailed : " + toString() + " error : " + errorResult);
-        onInsLoadFailed(errorResult.toString());
+        onInsLoadFailed(error);
         mListener.onRewardedVideoLoadFailed(errorResult, this);
     }
 
@@ -150,13 +149,11 @@ public class RvInstance extends Instance implements RewardedVideoCallback, LoadT
     }
 
     @Override
-    public void onRewardedVideoAdShowFailed(String error) {
-        Error errorResult = new Error(ErrorCode.CODE_SHOW_FAILED_IN_ADAPTER
-                , ErrorCode.MSG_SHOW_FAILED_IN_ADAPTER
-                + ", mediationId:" + getMediationId() + ", error:" + error, -1);
-        AdLog.getSingleton().LogE(errorResult.toString() + ", onRewardedVideoAdShowFailed: " + toString());
+    public void onRewardedVideoAdShowFailed(AdapterError error) {
+        Error errorResult = new Error(ErrorCode.CODE_SHOW_FAILED_IN_ADAPTER, error.toString(), -1);
+        AdLog.getSingleton().LogE("RewardedVideo Ad Show Failed: " + error.toString());
         DeveloperLog.LogE(errorResult.toString() + ", onRewardedVideoAdShowFailed: " + toString());
-        onInsShowFailed(errorResult.toString(), mScene);
+        onInsShowFailed(error, mScene);
         mListener.onRewardedVideoAdShowFailed(errorResult, this);
     }
 
@@ -169,6 +166,7 @@ public class RvInstance extends Instance implements RewardedVideoCallback, LoadT
     @Override
     public void onLoadTimeout() {
         DeveloperLog.LogD("rvInstance onLoadTimeout : " + toString());
-        onRewardedVideoLoadFailed(ErrorCode.ERROR_TIMEOUT);
+        onInsLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapter == null ? "" : mAdapter.getClass().getSimpleName(), ErrorCode.ERROR_TIMEOUT));
     }
 }

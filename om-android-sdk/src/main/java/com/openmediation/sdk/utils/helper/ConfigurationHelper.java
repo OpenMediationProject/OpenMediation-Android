@@ -33,6 +33,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -160,6 +162,17 @@ public class ConfigurationHelper {
             placement.setFrequencyUnit(placementObject.optInt("fu") * 60 * 60 * 1000);
             placement.setFrequencyInterval(placementObject.optInt("fi") * 1000);
             placement.setRf(placementObject.optInt("rf"));
+            JSONObject rfsObject = placementObject.optJSONObject("rfs");
+            if (rfsObject != null) {
+                Map<Integer, Integer> rfsMap = new LinkedHashMap<>();
+                Iterator<String> keys = rfsObject.keys();
+                while (keys.hasNext()) {
+                    String key = keys.next();
+                    int value = rfsObject.optInt(key);
+                    rfsMap.put(Integer.valueOf(key), value);
+                }
+                placement.setRfs(rfsMap);
+            }
             placement.setCs(placementObject.optInt("cs"));
             placement.setBs(placementObject.optInt("bs"));
             placement.setFo(placementObject.optInt("fo"));

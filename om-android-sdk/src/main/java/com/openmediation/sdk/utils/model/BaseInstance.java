@@ -5,6 +5,8 @@ package com.openmediation.sdk.utils.model;
 
 import android.text.TextUtils;
 
+import com.openmediation.sdk.bid.AdTimingBidResponse;
+import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.utils.AdRateUtil;
 import com.openmediation.sdk.utils.AdtUtil;
@@ -45,8 +47,9 @@ public class BaseInstance extends Frequency {
     private int hb;
 
     private int hbt;
-    private BID_STATE bidState;
+    private BID_STATE bidState = BID_STATE.NOT_BIDDING;
     private int wfAbt;
+    private AdTimingBidResponse bidResponse;
 
     protected long mInitStart;
     protected long mLoadStart;
@@ -55,6 +58,8 @@ public class BaseInstance extends Frequency {
     protected String mPlacementId;
 
     protected CustomAdsAdapter mAdapter;
+
+    protected AdapterError mAdapterError;
 
     public BaseInstance() {
     }
@@ -187,6 +192,18 @@ public class BaseInstance extends Frequency {
         return wfAbt;
     }
 
+    public void setBidResponse(AdTimingBidResponse bidResponse) {
+        this.bidResponse = bidResponse;
+    }
+
+    public AdapterError getAdapterError() {
+        return mAdapterError;
+    }
+
+    public void setAdapterError(AdapterError error) {
+        this.mAdapterError = error;
+    }
+
     @Override
     public String toString() {
         return "Ins{" +
@@ -235,6 +252,11 @@ public class BaseInstance extends Frequency {
                 JsonUtil.put(jsonObject, "cs", placement.getCs());
             }
             JsonUtil.put(jsonObject, "abt", wfAbt);
+            if (hb == 1 && bidResponse != null) {
+                JsonUtil.put(jsonObject, "bid", 1);
+                JsonUtil.put(jsonObject, "price", bidResponse.getPrice());
+                JsonUtil.put(jsonObject, "cur", bidResponse.getCur());
+            }
             return jsonObject;
         } catch (Exception e) {
             DeveloperLog.LogD("buildReportData exception : ", e);
@@ -249,36 +271,53 @@ public class BaseInstance extends Frequency {
         return jsonObject;
     }
 
-    public void reportInsLoad() {
-        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_LOAD, buildReportData());
+    public void reportInsLoad(int eventId) {
+        EventUploadManager.getInstance().uploadEvent(eventId, buildReportData());
     }
 
     public void reportInsDestroyed() {
         EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_DESTROY, buildReportData());
     }
 
-    public void onInsLoadFailed(String error) {
+    public void onInsLoadFailed(AdapterError error) {
+        if (error == null) {
+            return;
+        }
         JSONObject data = buildReportData();
-        JsonUtil.put(data, "msg", error);
+        JsonUtil.put(data, "code", error.getCode());
+        JsonUtil.put(data, "msg", error.getMessage());
         if (mLoadStart > 0) {
             int dur = (int) (System.currentTimeMillis() - mLoadStart) / 1000;
             JsonUtil.put(data, "duration", dur);
         }
-        if (!TextUtils.isEmpty(error) && error.contains(ErrorCode.ERROR_TIMEOUT)) {
-            EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_LOAD_TIMEOUT, data);
+        if (getHb() == 1) {
+            EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_PAYLOAD_FAILED, data);
         } else {
-            EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_LOAD_ERROR, data);
+            String msg = error.getMessage();
+            if (!TextUtils.isEmpty(msg) && msg.contains(ErrorCode.ERROR_TIMEOUT)) {
+                EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_LOAD_TIMEOUT, data);
+            } else {
+                EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_LOAD_ERROR, data);
+            }
         }
     }
 
-    public void onInsReLoadFailed(String error) {
+    public void onInsReLoadFailed(AdapterError error) {
+        if (error == null) {
+            return;
+        }
         JSONObject data = buildReportData();
-        JsonUtil.put(data, "msg", error);
+        JsonUtil.put(data, "code", error.getCode());
+        JsonUtil.put(data, "msg", error.getMessage());
         if (mLoadStart > 0) {
             int dur = (int) (System.currentTimeMillis() - mLoadStart) / 1000;
             JsonUtil.put(data, "duration", dur);
         }
-        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_RELOAD_ERROR, data);
+        if (getHb() == 1) {
+            EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_PAYLOAD_FAILED, data);
+        } else {
+            EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_RELOAD_ERROR, data);
+        }
     }
 
     public void onInsShow(Scene scene) {
@@ -298,6 +337,9 @@ public class BaseInstance extends Frequency {
             mShowStart = 0;
         }
         EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_CLOSED, data);
+        if (bidResponse != null) {
+            setBidResponse(null);
+        }
     }
 
     public void onInsClick(Scene scene) {
@@ -308,9 +350,13 @@ public class BaseInstance extends Frequency {
         EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_SHOW_SUCCESS, buildReportDataWithScene(scene));
     }
 
-    public void onInsShowFailed(String error, Scene scene) {
+    public void onInsShowFailed(AdapterError error, Scene scene) {
+        if (error == null) {
+            return;
+        }
         JSONObject data = buildReportDataWithScene(scene);
-        JsonUtil.put(data, "msg", error);
+        JsonUtil.put(data, "code", error.getCode());
+        JsonUtil.put(data, "msg", error.getMessage());
         if (mShowStart > 0) {
             int dur = (int) (System.currentTimeMillis() - mShowStart) / 1000;
             JsonUtil.put(data, "duration", dur);
@@ -321,6 +367,9 @@ public class BaseInstance extends Frequency {
 
     public void onInsClose(Scene scene) {
         EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_CLOSED, buildReportDataWithScene(scene));
+        if (bidResponse != null) {
+            setBidResponse(null);
+        }
     }
 
     public enum BID_STATE {

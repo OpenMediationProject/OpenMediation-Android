@@ -6,7 +6,6 @@ package com.openmediation.sdk.mobileads;
 import android.content.Context;
 
 import com.bytedance.sdk.openadsdk.TTAdConfig;
-import com.bytedance.sdk.openadsdk.TTAdConstant;
 import com.bytedance.sdk.openadsdk.TTAdManager;
 import com.bytedance.sdk.openadsdk.TTAdSdk;
 
@@ -21,30 +20,31 @@ public class TTAdManagerHolder {
         return TTAdSdk.getAdManager();
     }
 
-    public static void init(Context context, String appId) {
+    public static void init(Context context, String appId, Boolean consent, Boolean ageRestricted) {
         if (context == null) {
             return;
         }
-        doInit(context, appId);
-    }
-
-    private static void doInit(Context context, String appId) {
         if (!sInit) {
-            TTAdSdk.init(context, buildConfig(context, appId));
+            TTAdSdk.init(context, buildConfig(context, appId, consent, ageRestricted));
             sInit = true;
         }
     }
 
-    private static TTAdConfig buildConfig(Context context, String appId) {
-        return new TTAdConfig.Builder()
+    private static TTAdConfig buildConfig(Context context, String appId, Boolean consent, Boolean ageRestricted) {
+        TTAdConfig.Builder builder = new TTAdConfig.Builder()
                 .appId(appId)
                 .useTextureView(true)
                 .appName(context.getApplicationInfo().loadLabel(context.getPackageManager()).toString())
-                .titleBarTheme(TTAdConstant.TITLE_BAR_THEME_DARK)
-                .setGDPR(0)
                 .allowShowPageWhenScreenLock(false)
-                .supportMultiProcess(false)
-                .coppa(0)
-                .build();
+                .supportMultiProcess(false);
+        if (consent != null) {
+            // 0 close GDRP Privacy protection ，1: open GDRP Privacy protection
+            builder.setGDPR(consent ? 0 : 1);
+        }
+        if (ageRestricted != null) {
+            // 0:adult ，1:child
+            builder.coppa(ageRestricted ? 1 : 0);
+        }
+        return builder.build();
     }
 }

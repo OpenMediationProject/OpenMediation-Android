@@ -128,7 +128,7 @@ public class WaterFallHelper {
             AdTimingBidResponse response = new AdTimingBidResponse();
             response.setIid(iid);
             response.setPayLoad(adm);
-            double price = object.optDouble("price");
+            double price = object.optDouble("price", 0);
             String nurl = object.optString("nurl");
             if (nurl.contains(AUCTION_PRICE)) {
                 nurl = nurl.replace(AUCTION_PRICE, String.valueOf(price));
@@ -139,6 +139,7 @@ public class WaterFallHelper {
                 lurl = lurl.replace(AUCTION_PRICE, String.valueOf(price + 0.1));
             }
             response.setLurl(lurl);
+            response.setPrice(price);
             bidResponses.put(iid, response);
         }
         return bidResponses;
@@ -226,6 +227,7 @@ public class WaterFallHelper {
             BaseInstance ins = insMap.get(insArray.optInt(i));
             if (ins != null) {
                 ins.setWfAbt(abt);
+                ins.setBidResponse(null);
                 instancesList.add((Instance) ins);
             }
         }

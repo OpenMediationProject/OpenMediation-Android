@@ -209,7 +209,7 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
     }
 
     private void log(String stringToLoad) {
-        AdLog.getSingleton().LogD("AdTiming-IronSource", stringToLoad);
+        AdLog.getSingleton().LogD("OM-IronSource", stringToLoad);
     }
 
     @Override

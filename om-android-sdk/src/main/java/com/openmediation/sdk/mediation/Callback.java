@@ -12,10 +12,12 @@ public abstract class Callback {
 
     protected void onInsError(String instanceKey, String instanceId, String error) {
     }
+    protected void onInsError(String instanceKey, String instanceId, AdapterError error) {
+    }
 
     protected void onInsShowSuccess(String instanceKey, String instanceId) {
     }
-    protected void onInsShowFailed(String instanceKey, String instanceId, String error) {
+    protected void onInsShowFailed(String instanceKey, String instanceId, AdapterError error) {
     }
     protected void onInsClosed(String instanceKey, String instanceId) {
     }

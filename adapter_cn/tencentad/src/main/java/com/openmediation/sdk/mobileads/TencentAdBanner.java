@@ -5,9 +5,9 @@ package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
 
+import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomBannerEvent;
 import com.openmediation.sdk.mediation.MediationInfo;
-import com.openmediation.sdk.utils.AdLog;
 import com.qq.e.ads.banner2.UnifiedBannerADListener;
 import com.qq.e.ads.banner2.UnifiedBannerView;
 import com.qq.e.comm.managers.GDTADManager;
@@ -58,8 +58,8 @@ public class TencentAdBanner extends CustomBannerEvent implements UnifiedBannerA
         if (isDestroyed) {
             return;
         }
-        AdLog.getSingleton().LogD(TAG + "Banner ad load failed: code " + adError.getErrorCode() + " " + adError.getErrorMsg());
-        onInsError(adError.getErrorMsg());
+        onInsError(AdapterErrorBuilder.buildLoadError(
+                AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, adError.getErrorCode(), adError.getErrorMsg()));
     }
 
     @Override
@@ -67,7 +67,6 @@ public class TencentAdBanner extends CustomBannerEvent implements UnifiedBannerA
         if (isDestroyed) {
             return;
         }
-        AdLog.getSingleton().LogD(TAG + "Banner ad onADReceive");
         onInsReady(mBannerView);
     }
 
@@ -87,7 +86,6 @@ public class TencentAdBanner extends CustomBannerEvent implements UnifiedBannerA
             return;
         }
         onInsClicked();
-        AdLog.getSingleton().LogD(TAG + "onAdClicked");
     }
 
     @Override

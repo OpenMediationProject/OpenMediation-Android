@@ -4,17 +4,19 @@
 package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 
+import com.chartboost.sdk.Chartboost;
+import com.chartboost.sdk.ChartboostDelegate;
+import com.chartboost.sdk.Model.CBError;
+import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.openmediation.sdk.mobileads.chartboost.BuildConfig;
 import com.openmediation.sdk.utils.AdLog;
-import com.chartboost.sdk.Chartboost;
-import com.chartboost.sdk.ChartboostDelegate;
-import com.chartboost.sdk.Model.CBError;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -61,7 +63,7 @@ public class ChartboostAdapter extends CustomAdsAdapter {
                         Chartboost.setAutoCacheAds(true);
 
                     } catch (Exception e) {
-                        AdLog.getSingleton().LogE("Om-Chartboost", e);
+                        AdLog.getSingleton().LogE("OM-Chartboost", e.getMessage());
                     }
                 }
             });
@@ -97,6 +99,16 @@ public class ChartboostAdapter extends CustomAdsAdapter {
     }
 
     @Override
+    public void setGDPRConsent(Context context, boolean consent) {
+        super.setGDPRConsent(context, consent);
+        if (consent) {
+            Chartboost.setPIDataUseConsent(context, Chartboost.CBPIDataUseConsent.YES_BEHAVIORAL);
+        } else {
+            Chartboost.setPIDataUseConsent(context, Chartboost.CBPIDataUseConsent.NO_BEHAVIORAL);
+        }
+    }
+
+    @Override
     public void initRewardedVideo(Activity activity, Map<String, Object> dataMap
             , RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
@@ -109,7 +121,8 @@ public class ChartboostAdapter extends CustomAdsAdapter {
                 callback.onRewardedVideoInitSuccess();
             }
         } else {
-            callback.onRewardedVideoLoadFailed(checkError);
+            callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
+                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, checkError));
         }
     }
 
@@ -124,6 +137,9 @@ public class ChartboostAdapter extends CustomAdsAdapter {
                 }
             } else {
                 mRvLoadTriggerIds.add(adUnitId);
+                if (callback != null) {
+                    mRvCallbacks.put(adUnitId, callback);
+                }
                 if (Chartboost.getDelegate() == null) {
                     Chartboost.setDelegate(mCbDelegate);
                 }
@@ -131,7 +147,8 @@ public class ChartboostAdapter extends CustomAdsAdapter {
             }
         } else {
             if (callback != null) {
-                callback.onRewardedVideoLoadFailed(checkError);
+                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, checkError));
             }
         }
     }
@@ -141,17 +158,21 @@ public class ChartboostAdapter extends CustomAdsAdapter {
         String checkError = check(activity, adUnitId);
         if (TextUtils.isEmpty(checkError)) {
             if (Chartboost.hasRewardedVideo(adUnitId)) {
+                if (callback != null) {
+                    mRvCallbacks.put(adUnitId, callback);
+                }
                 if (Chartboost.getDelegate() == null) {
                     Chartboost.setDelegate(mCbDelegate);
                 }
                 Chartboost.showRewardedVideo(adUnitId);
             } else {
-                AdLog.getSingleton().LogE("chartboost ad not ready");
-                callback.onRewardedVideoAdShowFailed("chartboost ad not ready");
+                callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "ad not ready"));
             }
         } else {
             if (callback != null) {
-                callback.onRewardedVideoAdShowFailed(checkError);
+                callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, checkError));
             }
         }
     }
@@ -173,7 +194,8 @@ public class ChartboostAdapter extends CustomAdsAdapter {
                 callback.onInterstitialAdInitSuccess();
             }
         } else {
-            callback.onInterstitialAdInitFailed(checkError);
+            callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
+                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, checkError));
         }
     }
 
@@ -188,6 +210,9 @@ public class ChartboostAdapter extends CustomAdsAdapter {
                 }
             } else {
                 mIsLoadTriggerIds.add(adUnitId);
+                if (callback != null) {
+                    mIsCallbacks.put(adUnitId, callback);
+                }
                 if (Chartboost.getDelegate() == null) {
                     Chartboost.setDelegate(mCbDelegate);
                 }
@@ -195,7 +220,8 @@ public class ChartboostAdapter extends CustomAdsAdapter {
             }
         } else {
             if (callback != null) {
-                callback.onInterstitialAdLoadFailed(checkError);
+                callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, checkError));
             }
         }
     }
@@ -206,17 +232,21 @@ public class ChartboostAdapter extends CustomAdsAdapter {
         String checkError = check(activity, adUnitId);
         if (TextUtils.isEmpty(checkError)) {
             if (Chartboost.hasInterstitial(adUnitId)) {
+                if (callback != null) {
+                    mIsCallbacks.put(adUnitId, callback);
+                }
                 if (Chartboost.getDelegate() == null) {
                     Chartboost.setDelegate(mCbDelegate);
                 }
                 Chartboost.showInterstitial(adUnitId);
             } else {
-                AdLog.getSingleton().LogE("chartboost ad not ready");
-                callback.onInterstitialAdShowFailed("chartboost ad not ready");
+                callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "ad not ready"));
             }
         } else {
             if (callback != null) {
-                callback.onInterstitialAdShowFailed(checkError);
+                callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, checkError));
             }
         }
     }
@@ -231,7 +261,7 @@ public class ChartboostAdapter extends CustomAdsAdapter {
         @Override
         public void didCacheInterstitial(String location) {
             InterstitialAdCallback listener = mIsCallbacks.get(location);
-            AdLog.getSingleton().LogD("Om-Chartboost Chartboost Interstitial ad load success");
+            AdLog.getSingleton().LogD("OM-Chartboost Interstitial ad load success");
             if (listener != null && mIsLoadTriggerIds.contains(location)) {
                 listener.onInterstitialAdLoadSuccess();
                 mIsLoadTriggerIds.remove(location);
@@ -242,16 +272,16 @@ public class ChartboostAdapter extends CustomAdsAdapter {
         public void didFailToLoadInterstitial(String location, CBError.CBImpressionError error) {
             InterstitialAdCallback listener = mIsCallbacks.get(location);
             String errorString = error != null ? error.name() : " error message ";
-            AdLog.getSingleton().LogE("Om-Chartboost Chartboost Interstitial ad load failed : " + errorString);
             if (listener != null && mIsLoadTriggerIds.contains(location)) {
-                listener.onInterstitialAdLoadFailed(errorString);
+                listener.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, errorString));
                 mIsLoadTriggerIds.remove(location);
             }
         }
 
         @Override
         public void didClickInterstitial(String location) {
-            AdLog.getSingleton().LogD("Om-Chartboost Chartboost Interstitial ad click");
+            AdLog.getSingleton().LogD("OM-Chartboost Interstitial ad click");
             InterstitialAdCallback listener = mIsCallbacks.get(location);
             if (listener != null) {
                 listener.onInterstitialAdClick();
@@ -260,7 +290,7 @@ public class ChartboostAdapter extends CustomAdsAdapter {
 
         @Override
         public void didDisplayInterstitial(String location) {
-            AdLog.getSingleton().LogD("Om-Chartboost Chartboost Interstitial ad display");
+            AdLog.getSingleton().LogD("OM-Chartboost Interstitial ad display");
             InterstitialAdCallback listener = mIsCallbacks.get(location);
             if (listener != null) {
                 listener.onInterstitialAdShowSuccess();
@@ -269,7 +299,7 @@ public class ChartboostAdapter extends CustomAdsAdapter {
 
         @Override
         public void didDismissInterstitial(String location) {
-            AdLog.getSingleton().LogD("Om-Chartboost Chartboost Interstitial ad close");
+            AdLog.getSingleton().LogD("OM-Chartboost Interstitial ad close");
             InterstitialAdCallback listener = mIsCallbacks.get(location);
             if (listener != null) {
                 listener.onInterstitialAdClosed();
@@ -279,7 +309,7 @@ public class ChartboostAdapter extends CustomAdsAdapter {
         @Override
         public void didCacheRewardedVideo(String location) {
             RewardedVideoCallback listener = mRvCallbacks.get(location);
-            AdLog.getSingleton().LogD("Om-Chartboost Chartboost RewardVideo ad load success");
+            AdLog.getSingleton().LogD("OM-Chartboost RewardVideo ad load success");
             if (listener != null && mRvLoadTriggerIds.contains(location)) {
                 listener.onRewardedVideoLoadSuccess();
                 mRvLoadTriggerIds.remove(location);
@@ -290,9 +320,9 @@ public class ChartboostAdapter extends CustomAdsAdapter {
         public void didFailToLoadRewardedVideo(String location, CBError.CBImpressionError error) {
             RewardedVideoCallback listener = mRvCallbacks.get(location);
             String errorString = error != null ? error.name() : " error message ";
-            AdLog.getSingleton().LogE("Om-Chartboost Chartboost RewardVideo ad load failed:" + errorString);
             if (listener != null && mRvLoadTriggerIds.contains(location)) {
-                listener.onRewardedVideoLoadFailed(errorString);
+                listener.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, errorString));
                 mRvLoadTriggerIds.remove(location);
             }
         }
@@ -300,7 +330,7 @@ public class ChartboostAdapter extends CustomAdsAdapter {
         @Override
         public void didClickRewardedVideo(String location) {
             RewardedVideoCallback listener = mRvCallbacks.get(location);
-            AdLog.getSingleton().LogD("Om-Chartboost Chartboost RewardVideo ad click");
+            AdLog.getSingleton().LogD("OM-Chartboost RewardVideo ad click");
             if (listener != null) {
                 listener.onRewardedVideoAdClicked();
             }
@@ -309,7 +339,7 @@ public class ChartboostAdapter extends CustomAdsAdapter {
         @Override
         public void didCompleteRewardedVideo(String location, int reward) {
             RewardedVideoCallback listener = mRvCallbacks.get(location);
-            AdLog.getSingleton().LogD("Om-Chartboost Chartboost RewardVideo ad complete");
+            AdLog.getSingleton().LogD("OM-Chartboost RewardVideo ad complete");
             if (listener != null) {
                 listener.onRewardedVideoAdEnded();
                 listener.onRewardedVideoAdRewarded();
@@ -318,7 +348,7 @@ public class ChartboostAdapter extends CustomAdsAdapter {
 
         @Override
         public void didDismissRewardedVideo(String location) {
-            AdLog.getSingleton().LogD("Om-Chartboost Chartboost RewardVideo ad close");
+            AdLog.getSingleton().LogD("OM-Chartboost RewardVideo ad close");
             RewardedVideoCallback listener = mRvCallbacks.get(location);
             if (listener != null) {
                 listener.onRewardedVideoAdClosed();
@@ -327,7 +357,7 @@ public class ChartboostAdapter extends CustomAdsAdapter {
 
         @Override
         public void didDisplayRewardedVideo(String location) {
-            AdLog.getSingleton().LogD("Om-Chartboost Chartboost RewardVideo ad display");
+            AdLog.getSingleton().LogD("OM-Chartboost RewardVideo ad display");
             RewardedVideoCallback listener = mRvCallbacks.get(location);
             if (listener != null) {
                 listener.onRewardedVideoAdShowSuccess();
@@ -338,7 +368,7 @@ public class ChartboostAdapter extends CustomAdsAdapter {
         @Override
         public void didInitialize() {
             super.didInitialize();
-            AdLog.getSingleton().LogD("Om-Chartboost Chartboost init success");
+            AdLog.getSingleton().LogD("OM-Chartboost init success");
             onInitCallback();
         }
     }

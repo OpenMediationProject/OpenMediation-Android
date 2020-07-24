@@ -15,7 +15,7 @@ public interface BidApi {
 
     void executeBid(Context context, Map<String, Object> dataMap, BidCallback callback);
 
-    void notifyWin(String placementId);
+    void notifyWin(String placementId, Map<String, Object> dataMap);
 
-    void notifyLose(String placementId);
+    void notifyLose(String placementId, Map<String, Object> dataMap);
 }

@@ -4,21 +4,17 @@
 package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
-import com.openmediation.sdk.mediation.CustomNativeEvent;
-import com.openmediation.sdk.mediation.MediationInfo;
-import com.openmediation.sdk.nativead.AdIconView;
-import com.openmediation.sdk.nativead.MediaView;
-import com.openmediation.sdk.nativead.NativeAdView;
-import com.openmediation.sdk.utils.AdLog;
 import com.mopub.common.MoPub;
 import com.mopub.common.SdkConfiguration;
 import com.mopub.common.SdkInitializationListener;
+import com.mopub.common.privacy.PersonalInfoManager;
 import com.mopub.nativeads.MoPubStaticNativeAdRenderer;
 import com.mopub.nativeads.NativeAd;
 import com.mopub.nativeads.NativeErrorCode;
@@ -26,6 +22,13 @@ import com.mopub.nativeads.StaticNativeAd;
 import com.mopub.nativeads.ViewBinder;
 import com.mopub.volley.Response;
 import com.mopub.volley.VolleyError;
+import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.CustomNativeEvent;
+import com.openmediation.sdk.mediation.MediationInfo;
+import com.openmediation.sdk.nativead.AdIconView;
+import com.openmediation.sdk.nativead.MediaView;
+import com.openmediation.sdk.nativead.NativeAdView;
+import com.openmediation.sdk.utils.AdLog;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -47,6 +50,23 @@ public class MoPubNative extends CustomNativeEvent implements com.mopub.nativead
 
     private Bitmap mIcon;
     private Bitmap mContent;
+
+    @Override
+    public void setGDPRConsent(Context context, boolean consent) {
+        super.setGDPRConsent(context, consent);
+        if (!MoPub.isSdkInitialized()) {
+            return;
+        }
+        PersonalInfoManager manager = MoPub.getPersonalInformationManager();
+        if (manager == null) {
+            return;
+        }
+        if (consent) {
+            manager.grantConsent();
+        } else {
+            manager.revokeConsent();
+        }
+    }
 
     @Override
     public void registerNativeView(final NativeAdView nativeAdView) {
@@ -122,7 +142,7 @@ public class MoPubNative extends CustomNativeEvent implements com.mopub.nativead
     }
 
     @Override
-    public void loadAd(Activity activity, Map<String, String> config) throws Throwable {
+    public void loadAd(final Activity activity, Map<String, String> config) throws Throwable {
         super.loadAd(activity, config);
         if (!check(activity, config)) {
             return;
@@ -136,6 +156,9 @@ public class MoPubNative extends CustomNativeEvent implements com.mopub.nativead
             MoPub.initializeSdk(activity, sdkConfiguration, new SdkInitializationListener() {
                 @Override
                 public void onInitializationFinished() {
+                    if (mUserConsent != null) {
+                        setGDPRConsent(activity, mUserConsent);
+                    }
                     loadNativeAd(mActRef.get());
                 }
             });
@@ -183,7 +206,7 @@ public class MoPubNative extends CustomNativeEvent implements com.mopub.nativead
         mNativeAd.setMoPubNativeEventListener(this);
         StaticNativeAd staticNativeAd = (StaticNativeAd) nativeAd.getBaseNativeAd();
         mAdInfo.setDesc(staticNativeAd.getText());
-        mAdInfo.setType(3);
+        mAdInfo.setType(getMediation());
         mAdInfo.setCallToActionText(staticNativeAd.getCallToAction());
         mAdInfo.setTitle(staticNativeAd.getTitle());
         MoPubUtil.Request(mActRef.get(), staticNativeAd.getIconImageUrl(), new Response.Listener<Bitmap>() {
@@ -202,7 +225,7 @@ public class MoPubNative extends CustomNativeEvent implements com.mopub.nativead
             public void onResponse(Bitmap bitmap) {
                 mContent = bitmap;
                 onInsReady(mAdInfo);
-                AdLog.getSingleton().LogD("Om-Mopub", "Mopub Native ad load success ");
+                AdLog.getSingleton().LogD("OM-Mopub", "Mopub Native ad load success ");
             }
         }, new Response.ErrorListener() {
             @Override
@@ -210,8 +233,8 @@ public class MoPubNative extends CustomNativeEvent implements com.mopub.nativead
                 if (isDestroyed) {
                     return;
                 }
-                onInsError("load mopub ad error: " + volleyError.getMessage());
-                AdLog.getSingleton().LogE("Om-Mopub: Mopub Native ad load failed when load image : " + volleyError.getMessage());
+                onInsError(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, volleyError.getMessage()));
             }
         });
     }
@@ -221,8 +244,8 @@ public class MoPubNative extends CustomNativeEvent implements com.mopub.nativead
         if (isDestroyed) {
             return;
         }
-        onInsError("load mopub native ad error: " + errorCode.toString());
-        AdLog.getSingleton().LogE("Om-Mopub: Mopub native ad load failed " + errorCode.name());
+        onInsError(AdapterErrorBuilder.buildLoadError(
+                AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, errorCode.name()));
     }
 
     @Override

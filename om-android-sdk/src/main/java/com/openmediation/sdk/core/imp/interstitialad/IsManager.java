@@ -60,7 +60,7 @@ public final class IsManager extends AbstractAdsManager implements IsManagerList
         }
         IsInstance isInstance = (IsInstance) instance;
         isInstance.setIsManagerListener(this);
-        isInstance.initIs(mActivity);
+        isInstance.initIs(mActivityReference.get());
     }
 
     @Override
@@ -73,19 +73,19 @@ public final class IsManager extends AbstractAdsManager implements IsManagerList
 
     @Override
     protected void insShow(final Instance instance) {
-        ((IsInstance) instance).showIs(mActivity, mScene);
+        ((IsInstance) instance).showIs(mActivityReference.get(), mScene);
     }
 
     @Override
     protected void insLoad(Instance instance) {
         IsInstance isInstance = (IsInstance) instance;
-        isInstance.loadIs(mActivity);
+        isInstance.loadIs(mActivityReference.get());
     }
 
     @Override
     protected void inLoadWithBid(Instance instance, Map<String, Object> extras) {
         IsInstance isInstance = (IsInstance) instance;
-        isInstance.loadIsWithBid(mActivity, extras);
+        isInstance.loadIsWithBid(mActivityReference.get(), extras);
     }
 
     @Override

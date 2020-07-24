@@ -35,10 +35,6 @@ dependencies {
     implementation(rootProject.ext.dependencies.facebook) {
         exclude group: 'com.google.android.gms', module: 'play-services-ads'
     }
-    implementation(name: 'BiddingKit', ext: 'aar')
-
-    implementation rootProject.ext.dependencies.multidex
-
     //admob
     implementation rootProject.ext.dependencies.admob
     //vungle
@@ -68,6 +64,7 @@ dependencies {
     implementation 'com.mintegral.msdk:videocommon:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mintegral.msdk:interstitialvideo:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mintegral.msdk:common:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk:mtgbid:' + rootProject.ext.dependencies.mtg_version
 
     implementation rootProject.ext.dependencies.ironsource
 
@@ -85,7 +82,6 @@ dependencies {
     implementation project(path: ':adapter:mopub')
     implementation project(path: ':adapter:adcolony')
     implementation project(path: ':adapter:applovin')
-    implementation(name: 'BiddingKit', ext: 'aar')
     implementation project(path: ':adapter:facebook')
     implementation project(path: ':adapter:chartboost')
     implementation project(path: ':adapter:tapjoy')

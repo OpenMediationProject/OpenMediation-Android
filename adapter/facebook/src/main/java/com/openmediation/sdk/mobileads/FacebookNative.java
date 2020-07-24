@@ -7,20 +7,21 @@ import android.app.Activity;
 import android.view.View;
 import android.widget.RelativeLayout;
 
+import com.facebook.ads.Ad;
+import com.facebook.ads.AdError;
+import com.facebook.ads.AdOptionsView;
 import com.facebook.ads.AdSettings;
+import com.facebook.ads.AudienceNetworkAds;
+import com.facebook.ads.NativeAd;
+import com.facebook.ads.NativeAdLayout;
+import com.facebook.ads.NativeAdListener;
+import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomNativeEvent;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.nativead.AdIconView;
 import com.openmediation.sdk.nativead.MediaView;
 import com.openmediation.sdk.nativead.NativeAdView;
 import com.openmediation.sdk.utils.AdLog;
-import com.facebook.ads.Ad;
-import com.facebook.ads.AdError;
-import com.facebook.ads.AdOptionsView;
-import com.facebook.ads.AudienceNetworkAds;
-import com.facebook.ads.NativeAd;
-import com.facebook.ads.NativeAdLayout;
-import com.facebook.ads.NativeAdListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -130,8 +131,8 @@ public class FacebookNative extends CustomNativeEvent implements NativeAdListene
         if (isDestroyed) {
             return;
         }
-        onInsError(adError.getErrorMessage());
-        AdLog.getSingleton().LogE("Om-Facebook: Facebook Native ad load failed " + adError.getErrorMessage());
+        onInsError(AdapterErrorBuilder.buildLoadError(
+                AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, adError.getErrorCode(), adError.getErrorMessage()));
     }
 
     @Override
@@ -145,7 +146,7 @@ public class FacebookNative extends CustomNativeEvent implements NativeAdListene
         mAdInfo.setTitle(nativeAd.getAdHeadline());
 
         onInsReady(mAdInfo);
-        AdLog.getSingleton().LogD("Om-Facebook", "Facebook Native ad load success ");
+        AdLog.getSingleton().LogD("OM-Facebook", "Facebook Native ad load success ");
     }
 
     @Override
@@ -164,13 +165,6 @@ public class FacebookNative extends CustomNativeEvent implements NativeAdListene
     private void initSdk(Activity activity) {
         AdSettings.setIntegrationErrorMode(AdSettings.IntegrationErrorMode.INTEGRATION_ERROR_CALLBACK_MODE);
         if (mDidCallInit.compareAndSet(false, true)) {
-            if (AudienceNetworkAds.isInAdsProcess(activity.getApplicationContext())) {
-                // According to Xabi from facebook (29/4/19) - the meaning of isInAdsProcess==true is that
-                // another process has already initialized Facebook's SDK and in this case there's no need to init it again.
-                // Without this check an error will appear in the log.
-                return;
-            }
-
             AudienceNetworkAds.buildInitSettings(activity.getApplicationContext())
                     .withInitListener(new AudienceNetworkAds.InitListener() {
                         @Override

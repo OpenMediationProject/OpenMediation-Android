@@ -71,7 +71,7 @@ public final class RvManager extends AbstractAdsManager implements RvManagerList
         }
         RvInstance rvInstance = (RvInstance) instance;
         rvInstance.setRvManagerListener(this);
-        rvInstance.initRv(mActivity);
+        rvInstance.initRv(mActivityReference.get());
     }
 
     @Override
@@ -84,19 +84,19 @@ public final class RvManager extends AbstractAdsManager implements RvManagerList
 
     @Override
     protected void insShow(final Instance instance) {
-        ((RvInstance) instance).showRv(mActivity, mScene);
+        ((RvInstance) instance).showRv(mActivityReference.get(), mScene);
     }
 
     @Override
     protected void insLoad(Instance instance) {
         RvInstance rvInstance = (RvInstance) instance;
-        rvInstance.loadRv(mActivity);
+        rvInstance.loadRv(mActivityReference.get());
     }
 
     @Override
     protected void inLoadWithBid(Instance instance, Map<String, Object> extras) {
         RvInstance rvInstance = (RvInstance) instance;
-        rvInstance.loadRvWithBid(mActivity, extras);
+        rvInstance.loadRvWithBid(mActivityReference.get(), extras);
     }
 
     @Override

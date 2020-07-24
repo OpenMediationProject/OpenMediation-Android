@@ -31,7 +31,7 @@ public interface SplashAdListener {
 
     /**
      * called when SplashAd countdown
-     * @param millisUntilFinished The time until the end of the countdown，ms
+     * @param millisUntilFinished The time until the end of the countdown,ms
      */
     void onSplashAdTick(long millisUntilFinished);
 

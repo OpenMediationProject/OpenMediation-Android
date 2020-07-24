@@ -6,6 +6,7 @@ package com.openmediation.sdk;
 import android.app.Activity;
 
 import com.openmediation.sdk.core.OmManager;
+import com.openmediation.sdk.utils.AdLog;
 
 /**
  * The type Om ads.
@@ -81,6 +82,57 @@ public abstract class OmAds {
      */
     public static String getSDKVersion() {
         return OmManager.getInstance().getSDKVersion();
+    }
+
+    /**
+     * setLogEnable
+     * @param debug enable log output
+     */
+    public static void setLogEnable(boolean debug) {
+        AdLog.getSingleton().isDebug(debug);
+    }
+
+    /**
+     * setGDPRConsent "true" is Accepted, "false" is Refuse.
+     * According to the GDPR, set method of this property must be called before "init", or by default will collect user's information.
+     * @param consent whether the user provided consent
+     */
+    public static void setGDPRConsent(boolean consent) {
+        OmManager.getInstance().setGDPRConsent(consent);
+    }
+
+    /**
+     * Set user age restricted
+     * @param restricted whether you want your content treated as child-directed for purposes of COPPA
+     */
+    public static void setAgeRestricted(boolean restricted) {
+        OmManager.getInstance().setAgeRestricted(restricted);
+    }
+
+    /**
+     * Set this property to configure the user's age.
+     * @param age user age
+     */
+    public static void setUserAge(int age) {
+        OmManager.getInstance().setUserAge(age);
+    }
+
+    /**
+     * Set the gender of the current user. "male" or "female"
+     * @param gender user gender
+     */
+    public static void setUserGender(String gender) {
+        OmManager.getInstance().setUserGender(gender);
+    }
+
+    /**
+     * According to the CCPA
+     * true : If the user has opted out of “sale” of personal information
+     * false : If “sale” of personal information is permitted
+     * set method of this property must be called before "init", or by default will collect user's information.
+     */
+    public static void setUSPrivacyLimit(boolean value) {
+        OmManager.getInstance().setUSPrivacyLimit(value);
     }
 
     /**

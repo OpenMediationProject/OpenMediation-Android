@@ -114,7 +114,6 @@ public class CrashUtil implements Thread.UncaughtExceptionHandler {
                 if (throwable == null || mCrashSp == null) {
                     return;
                 }
-                //多于10条则不写入
                 if (mCrashSp.getAll() != null && mCrashSp.getAll().size() >= 10) {
                     return;
                 }

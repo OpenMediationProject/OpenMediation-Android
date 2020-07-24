@@ -56,6 +56,13 @@ public final class CallbackManager {
         }
     }
 
+    public synchronized void onInsError(String placementId, String instanceKey, String instanceId, AdapterError error) {
+        Callback callback = getCallback(placementId);
+        if (callback != null) {
+            callback.onInsError(instanceKey, instanceId, error);
+        }
+    }
+
     public synchronized void onInsShowSuccess(String placementId, String instanceKey, String instanceId) {
         Callback callback = getCallback(placementId);
         if (callback != null) {
@@ -63,7 +70,7 @@ public final class CallbackManager {
         }
     }
 
-    public synchronized void onInsShowFailed(String placementId, String instanceKey, String instanceId, String error) {
+    public synchronized void onInsShowFailed(String placementId, String instanceKey, String instanceId, AdapterError error) {
         Callback callback = getCallback(placementId);
         if (callback != null) {
             callback.onInsShowFailed(instanceKey, instanceId, error);

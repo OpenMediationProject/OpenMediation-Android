@@ -29,6 +29,11 @@ public class Event implements Parcelable {
     private int duration = -1;//in seconds;  6
     private int priority = -1;//instance load priority;  2
     private int cs = -1;//cached stock size;  3
+    private String code = "";
+    private int bid = -1;
+    private double price = -1;
+    private String cur;
+    private int abt = -1;
 
     Event() throws Exception {
         this((String) null);
@@ -59,6 +64,11 @@ public class Event implements Parcelable {
         duration = in.readInt();
         priority = in.readInt();
         cs = in.readInt();
+        abt = in.readInt();
+        code = in.readString();
+        bid = in.readInt();
+        price = in.readDouble();
+        cur = in.readString();
     }
 
     public static final Creator<Event> CREATOR = new Creator<Event>() {
@@ -88,6 +98,11 @@ public class Event implements Parcelable {
             duration = jsonObject.optInt("duration", -1);
             priority = jsonObject.optInt("priority", -1);
             cs = jsonObject.optInt("cs", -1);
+            abt = jsonObject.optInt("abt", -1);
+            code = jsonObject.optString("code");
+            bid = jsonObject.optInt("bid", -1);
+            price = jsonObject.optDouble("price", -1);
+            cur = jsonObject.optString("cur");
         } catch (Exception e) {
             DeveloperLog.LogD("parse Event from json ", e);
         }
@@ -109,6 +124,11 @@ public class Event implements Parcelable {
             JsonUtil.put(jsonObject, "duration", duration);
             JsonUtil.put(jsonObject, "priority", priority);
             JsonUtil.put(jsonObject, "cs", cs);
+            JsonUtil.put(jsonObject, "abt", abt);
+            JsonUtil.put(jsonObject, "code", code);
+            JsonUtil.put(jsonObject, "bid", bid);
+            JsonUtil.put(jsonObject, "price", price);
+            JsonUtil.put(jsonObject, "cur", cur);
         } catch (Exception e) {
             DeveloperLog.LogD("Event to json ", e);
         }
@@ -139,6 +159,11 @@ public class Event implements Parcelable {
         dest.writeInt(duration);
         dest.writeInt(priority);
         dest.writeInt(cs);
+        dest.writeInt(abt);
+        dest.writeString(code);
+        dest.writeInt(bid);
+        dest.writeDouble(price);
+        dest.writeString(cur);
     }
 
     @Override
@@ -250,4 +275,43 @@ public class Event implements Parcelable {
         this.cs = cs;
     }
 
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public int getBid() {
+        return bid;
+    }
+
+    public void setBid(int bid) {
+        this.bid = bid;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public String getCur() {
+        return cur;
+    }
+
+    public void setCur(String cur) {
+        this.cur = cur;
+    }
+
+    public void setAbt(int abt) {
+        this.abt = abt;
+    }
+
+    public int getAbt() {
+        return abt;
+    }
 }

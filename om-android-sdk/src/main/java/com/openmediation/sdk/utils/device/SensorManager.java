@@ -148,7 +148,7 @@ public class SensorManager {
                                 float[] copyOf = Arrays.copyOf(sensorValues, sensorValues.length);
                                 this.mSensorValues[1] = copyOf;
                                 this.mValuePow = valuesPow(valuesOne, copyOf);
-                            } else //纳秒计算50毫秒
+                            } else
                                 if (50000000 <= sensorTimestamp - this.mNowTime) {
                                     this.mNowTime = sensorTimestamp;
                                     if (Arrays.equals(valuesTow, sensorValues)) {

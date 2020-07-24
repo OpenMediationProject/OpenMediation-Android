@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.text.TextUtils;
 
 import com.openmediation.sdk.InitCallback;
+import com.openmediation.sdk.MetaData;
 import com.openmediation.sdk.core.imp.interstitialad.IsManager;
 import com.openmediation.sdk.core.imp.rewardedvideo.RvManager;
 import com.openmediation.sdk.core.imp.splash.SplashAdManager;
@@ -63,6 +64,8 @@ public final class OmManager implements InitCallback {
     private AtomicBoolean mDidIsInit = new AtomicBoolean(false);
     private boolean mIsInForeground = true;
     private static ConcurrentLinkedQueue<InitCallback> mInitCallbacks = new ConcurrentLinkedQueue<>();
+
+    private MetaData mMetaData = null;
 
     private static final class OmHolder {
         private static final OmManager INSTANCE = new OmManager();
@@ -533,6 +536,7 @@ public final class OmManager implements InitCallback {
     @Override
     public void onSuccess() {
         initManagerWithDefaultPlacementId();
+        setCustomParams();
         setListeners();
         checkHasLoadWhileInInitProgress();
         preloadAdWithAdType();
@@ -595,7 +599,7 @@ public final class OmManager implements InitCallback {
         if (mInitCallbacks != null) {
             for (InitCallback callback : mInitCallbacks) {
                 if (callback == null) {
-                    AdLog.getSingleton().LogD(ErrorCode.ERROR_INIT_FAILED + " " + result);
+                    AdLog.getSingleton().LogE(ErrorCode.ERROR_INIT_FAILED + " " + result);
                     continue;
                 }
                 callback.onError(result);
@@ -887,5 +891,185 @@ public final class OmManager implements InitCallback {
         }
         Scene s = SceneUtil.getScene(PlacementUtils.getPlacement(placementId), scene);
         AdsUtil.callActionReport(placementId, s != null ? s.getId() : 0, eventId);
+    }
+
+    public void setGDPRConsent(boolean consent) {
+        if (mMetaData == null) {
+            mMetaData = new MetaData();
+        }
+        mMetaData.setGDPRConsent(consent);
+
+        if (!mIsManagers.isEmpty()) {
+            Set<Map.Entry<String, IsManager>> isEntrys = mIsManagers.entrySet();
+            for (Map.Entry<String, IsManager> isManagerEntry : isEntrys) {
+                if (isManagerEntry != null) {
+                    isManagerEntry.getValue().setGDPRConsent(consent);
+                }
+            }
+        }
+        if (!mRvManagers.isEmpty()) {
+            Set<Map.Entry<String, RvManager>> rvEntrys = mRvManagers.entrySet();
+            for (Map.Entry<String, RvManager> rvManagerEntry : rvEntrys) {
+                if (rvManagerEntry != null) {
+                    rvManagerEntry.getValue().setGDPRConsent(consent);
+                }
+            }
+        }
+    }
+
+    public void setAgeRestricted(boolean restricted) {
+        if (mMetaData == null) {
+            mMetaData = new MetaData();
+        }
+        mMetaData.setAgeRestricted(restricted);
+
+        if (!mIsManagers.isEmpty()) {
+            Set<Map.Entry<String, IsManager>> isEntrys = mIsManagers.entrySet();
+            for (Map.Entry<String, IsManager> isManagerEntry : isEntrys) {
+                if (isManagerEntry != null) {
+                    isManagerEntry.getValue().setAgeRestricted(restricted);
+                }
+            }
+        }
+        if (!mRvManagers.isEmpty()) {
+            Set<Map.Entry<String, RvManager>> rvEntrys = mRvManagers.entrySet();
+            for (Map.Entry<String, RvManager> rvManagerEntry : rvEntrys) {
+                if (rvManagerEntry != null) {
+                    rvManagerEntry.getValue().setAgeRestricted(restricted);
+                }
+            }
+        }
+    }
+
+    public void setUserAge(int age) {
+        if (mMetaData == null) {
+            mMetaData = new MetaData();
+        }
+        mMetaData.setUserAge(age);
+
+        if (!mIsManagers.isEmpty()) {
+            Set<Map.Entry<String, IsManager>> isEntrys = mIsManagers.entrySet();
+            for (Map.Entry<String, IsManager> isManagerEntry : isEntrys) {
+                if (isManagerEntry != null) {
+                    isManagerEntry.getValue().setUserAge(age);
+                }
+            }
+        }
+        if (!mRvManagers.isEmpty()) {
+            Set<Map.Entry<String, RvManager>> rvEntrys = mRvManagers.entrySet();
+            for (Map.Entry<String, RvManager> rvManagerEntry : rvEntrys) {
+                if (rvManagerEntry != null) {
+                    rvManagerEntry.getValue().setUserAge(age);
+                }
+            }
+        }
+    }
+
+    public void setUserGender(String gender) {
+        if (mMetaData == null) {
+            mMetaData = new MetaData();
+        }
+        mMetaData.setUserGender(gender);
+
+        if (!mIsManagers.isEmpty()) {
+            Set<Map.Entry<String, IsManager>> isEntrys = mIsManagers.entrySet();
+            for (Map.Entry<String, IsManager> isManagerEntry : isEntrys) {
+                if (isManagerEntry != null) {
+                    isManagerEntry.getValue().setUserGender(gender);
+                }
+            }
+        }
+        if (!mRvManagers.isEmpty()) {
+            Set<Map.Entry<String, RvManager>> rvEntrys = mRvManagers.entrySet();
+            for (Map.Entry<String, RvManager> rvManagerEntry : rvEntrys) {
+                if (rvManagerEntry != null) {
+                    rvManagerEntry.getValue().setUserGender(gender);
+                }
+            }
+        }
+    }
+
+    public void setUSPrivacyLimit(boolean value) {
+        if (mMetaData == null) {
+            mMetaData = new MetaData();
+        }
+        mMetaData.setUSPrivacyLimit(value);
+
+        if (!mIsManagers.isEmpty()) {
+            Set<Map.Entry<String, IsManager>> isEntrys = mIsManagers.entrySet();
+            for (Map.Entry<String, IsManager> isManagerEntry : isEntrys) {
+                if (isManagerEntry != null) {
+                    isManagerEntry.getValue().setUSPrivacyLimit(value);
+                }
+            }
+        }
+        if (!mRvManagers.isEmpty()) {
+            Set<Map.Entry<String, RvManager>> rvEntrys = mRvManagers.entrySet();
+            for (Map.Entry<String, RvManager> rvManagerEntry : rvEntrys) {
+                if (rvManagerEntry != null) {
+                    rvManagerEntry.getValue().setUSPrivacyLimit(value);
+                }
+            }
+        }
+    }
+
+    public Boolean getGDPRConsent() {
+        if (mMetaData == null) {
+            return null;
+        }
+        return mMetaData.getGDPRConsent();
+    }
+
+    public Boolean getAgeRestricted() {
+        if (mMetaData == null) {
+            return null;
+        }
+        return mMetaData.getAgeRestricted();
+    }
+
+    public Integer getUserAge() {
+        if (mMetaData == null) {
+            return null;
+        }
+        return mMetaData.getAge();
+    }
+
+    public String getUserGender() {
+        if (mMetaData == null) {
+            return null;
+        }
+        return mMetaData.getGender();
+    }
+
+    public Boolean getUSPrivacyLimit() {
+        if (mMetaData == null) {
+            return null;
+        }
+        return mMetaData.getUSPrivacyLimit();
+    }
+
+    /**
+     * called after init success
+     */
+    private void setCustomParams() {
+        if (getGDPRConsent() != null) {
+            setGDPRConsent(getGDPRConsent());
+        }
+        if (getAgeRestricted() != null) {
+            setAgeRestricted(getAgeRestricted());
+        }
+        if (getUserAge() != null) {
+            setUserAge(getUserAge());
+        }
+        if (getUserGender() != null) {
+            setUserGender(getUserGender());
+        }
+        if (getUSPrivacyLimit() != null) {
+            setUSPrivacyLimit(getUSPrivacyLimit());
+        }
+    }
+
+    public MetaData getMetaData() {
+        return mMetaData;
     }
 }

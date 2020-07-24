@@ -3,8 +3,11 @@
 
 package com.openmediation.sdk.mobileads;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.Build;
+import android.text.TextUtils;
 
 import com.mopub.volley.Request;
 import com.mopub.volley.Response;
@@ -27,5 +30,38 @@ final class MoPubUtil {
     static int dip2px(Context context, float dpValue) {
         final float scale = context.getResources().getDisplayMetrics().densityDpi;
         return (int) (dpValue * (scale / 160) + 0.5f);
+    }
+
+    static String check(Activity activity, String adUnitId) {
+        if (activity == null) {
+            return "activity is null";
+        }
+        if (isDestroyed(activity)) {
+            return "activity is destroyed";
+        }
+        if (TextUtils.isEmpty(adUnitId)) {
+            return "instanceKey is null";
+        }
+        return "";
+    }
+
+    /**
+     * Checks if an Activity is available
+     *
+     * @param activity the given activity
+     * @return activity availability
+     */
+    private static boolean isDestroyed(Activity activity) {
+        boolean flage = false;
+        if (Build.VERSION.SDK_INT >= 17) {
+            if (activity == null || activity.isDestroyed()) {
+                flage = true;
+            }
+        } else {
+            if (activity == null || activity.isFinishing()) {
+                flage = true;
+            }
+        }
+        return flage;
     }
 }

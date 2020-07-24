@@ -4,23 +4,25 @@
 package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 
-import com.openmediation.sdk.mediation.CustomAdsAdapter;
-import com.openmediation.sdk.mediation.InterstitialAdCallback;
-import com.openmediation.sdk.mediation.MediationInfo;
-import com.openmediation.sdk.mediation.RewardedVideoCallback;
-import com.openmediation.sdk.mobileads.mopub.BuildConfig;
-import com.openmediation.sdk.utils.AdLog;
 import com.mopub.common.MoPub;
 import com.mopub.common.MoPubReward;
 import com.mopub.common.SdkConfiguration;
 import com.mopub.common.SdkInitializationListener;
+import com.mopub.common.privacy.PersonalInfoManager;
 import com.mopub.mobileads.MoPubErrorCode;
 import com.mopub.mobileads.MoPubInterstitial;
 import com.mopub.mobileads.MoPubRewardedVideoListener;
 import com.mopub.mobileads.MoPubRewardedVideoManager;
 import com.mopub.mobileads.MoPubRewardedVideos;
+import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.CustomAdsAdapter;
+import com.openmediation.sdk.mediation.InterstitialAdCallback;
+import com.openmediation.sdk.mediation.MediationInfo;
+import com.openmediation.sdk.mediation.RewardedVideoCallback;
+import com.openmediation.sdk.mobileads.mopub.BuildConfig;
 
 import java.util.Map;
 import java.util.Set;
@@ -29,6 +31,7 @@ import java.util.concurrent.ConcurrentMap;
 
 public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideoListener
         , MoPubInterstitial.InterstitialAdListener {
+    private static final String TAG = "OM-MoPub";
     private static final String TP_PARAM = "imext";
 
     private volatile InitState mInitState = InitState.NOT_INIT;
@@ -79,7 +82,23 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
         MoPub.onStop(activity);
     }
 
-    private void initSDK(Activity activity, String pid) {
+    @Override
+    public void setGDPRConsent(Context context, boolean consent) {
+        super.setGDPRConsent(context, consent);
+        if (mInitState == InitState.INIT_SUCCESS) {
+            PersonalInfoManager manager = MoPub.getPersonalInformationManager();
+            if (manager == null) {
+                return;
+            }
+            if (consent) {
+                manager.grantConsent();
+            } else {
+                manager.revokeConsent();
+            }
+        }
+    }
+
+    private void initSDK(final Activity activity, String pid) {
         mInitState = InitState.INIT_PENDING;
         SdkConfiguration sdkConfiguration = new SdkConfiguration.Builder(pid).build();
         MoPub.initializeSdk(activity, sdkConfiguration, new SdkInitializationListener() {
@@ -98,6 +117,9 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
                     }
                 }
                 mInitState = InitState.INIT_SUCCESS;
+                if (mUserConsent != null) {
+                    setGDPRConsent(activity, mUserConsent);
+                }
             }
         });
     }
@@ -110,7 +132,7 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
         if (dataMap.get("pid") != null) {
             pid = (String) dataMap.get("pid");
         }
-        String error = check(activity, pid);
+        String error = MoPubUtil.check(activity, pid);
         if (TextUtils.isEmpty(error)) {
             switch (mInitState) {
                 case NOT_INIT:
@@ -124,21 +146,23 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
                     callback.onRewardedVideoInitSuccess();
                     break;
                 case INIT_FAIL:
-                    callback.onRewardedVideoInitFailed("MoPub initRewardedVideo failed");
+                    callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "MoPub initRewardedVideo failed"));
                     break;
                 default:
                     break;
             }
         } else {
             if (callback != null) {
-                callback.onRewardedVideoInitFailed(error);
+                callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
             }
         }
     }
 
     @Override
     public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
-        String error = check(activity, adUnitId);
+        String error = MoPubUtil.check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
             if (!mRvCallback.containsKey(adUnitId)) {
                 mRvCallback.put(adUnitId, callback);
@@ -152,7 +176,8 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
             }
         } else {
             if (callback != null) {
-                callback.onRewardedVideoLoadFailed(error);
+                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
             }
         }
     }
@@ -160,10 +185,11 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
     @Override
     public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
-        String error = check(activity, adUnitId);
+        String error = MoPubUtil.check(activity, adUnitId);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
-                callback.onRewardedVideoAdShowFailed(error);
+                callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
             }
             return;
         }
@@ -174,7 +200,8 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
             MoPubRewardedVideos.showRewardedVideo(adUnitId);
         } else {
             if (callback != null) {
-                callback.onRewardedVideoAdShowFailed("MoPub ad not ready to show");
+                callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "MoPub ad not ready to show"));
             }
         }
     }
@@ -189,7 +216,6 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
 
     @Override
     public void onRewardedVideoLoadSuccess(String adUnitId) {
-        AdLog.getSingleton().LogD("onRewardedVideoLoadSuccess : " + adUnitId);
         RewardedVideoCallback callback = mRvCallback.get(adUnitId);
         if (callback != null) {
             callback.onRewardedVideoLoadSuccess();
@@ -198,16 +224,15 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
 
     @Override
     public void onRewardedVideoLoadFailure(String adUnitId, MoPubErrorCode errorCode) {
-        AdLog.getSingleton().LogE("onRewardedVideoLoadFailure : " + adUnitId + ", errorCode:" + errorCode);
         RewardedVideoCallback callback = mRvCallback.get(adUnitId);
         if (callback != null) {
-            callback.onRewardedVideoLoadFailed("MoPub ad load failed : " + errorCode.name());
+            callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, errorCode.name()));
         }
     }
 
     @Override
     public void onRewardedVideoStarted(String adUnitId) {
-        AdLog.getSingleton().LogD("onRewardedVideoStarted : " + adUnitId);
         mShowingId = adUnitId;
         RewardedVideoCallback callback = mRvCallback.get(adUnitId);
         if (callback != null) {
@@ -218,16 +243,15 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
 
     @Override
     public void onRewardedVideoPlaybackError(String adUnitId, MoPubErrorCode errorCode) {
-        AdLog.getSingleton().LogE("onRewardedVideoPlaybackError : " + adUnitId);
         RewardedVideoCallback callback = mRvCallback.get(adUnitId);
         if (callback != null) {
-            callback.onRewardedVideoAdShowFailed("MoPub ad PlaybackError : " + errorCode.name());
+            callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, errorCode.name()));
         }
     }
 
     @Override
     public void onRewardedVideoClicked(String adUnitId) {
-        AdLog.getSingleton().LogD("onRewardedVideoClicked : " + adUnitId);
         RewardedVideoCallback callback = mRvCallback.get(adUnitId);
         if (callback != null) {
             callback.onRewardedVideoAdClicked();
@@ -236,7 +260,6 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
 
     @Override
     public void onRewardedVideoClosed(String adUnitId) {
-        AdLog.getSingleton().LogD("onRewardedVideoClosed : " + adUnitId);
         RewardedVideoCallback callback = mRvCallback.get(adUnitId);
         if (callback != null) {
             callback.onRewardedVideoAdClosed();
@@ -245,7 +268,6 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
 
     @Override
     public void onRewardedVideoCompleted(Set<String> adUnitIds, MoPubReward reward) {
-        AdLog.getSingleton().LogD("onRewardedVideoCompleted : " + adUnitIds + ", reward:" + reward);
         if (!TextUtils.isEmpty(mShowingId)) {
             RewardedVideoCallback callback = mRvCallback.get(mShowingId);
             if (callback != null) {
@@ -262,7 +284,7 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
         if (dataMap.get("pid") != null) {
             pid = (String) dataMap.get("pid");
         }
-        String error = check(activity, pid);
+        String error = MoPubUtil.check(activity, pid);
         if (TextUtils.isEmpty(error)) {
             switch (mInitState) {
                 case NOT_INIT:
@@ -276,14 +298,16 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
                     callback.onInterstitialAdInitSuccess();
                     break;
                 case INIT_FAIL:
-                    callback.onInterstitialAdInitFailed("MoPub initInterstitialAd failed");
+                    callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "MoPub initInterstitialAd failed"));
                     break;
                 default:
                     break;
             }
         } else {
             if (callback != null) {
-                callback.onInterstitialAdInitFailed(error);
+                callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
             }
         }
     }
@@ -291,7 +315,7 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
     @Override
     public void loadInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, callback);
-        String error = check(activity, adUnitId);
+        String error = MoPubUtil.check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
             MoPubInterstitial interstitial = getInterstitialAd(activity, adUnitId);
             if (!mIsCallback.containsKey(interstitial)) {
@@ -306,7 +330,8 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
             }
         } else {
             if (callback != null) {
-                callback.onInterstitialAdLoadFailed(error);
+                callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
             }
         }
     }
@@ -314,10 +339,11 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
     @Override
     public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
-        String error = check(activity, adUnitId);
+        String error = MoPubUtil.check(activity, adUnitId);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
-                callback.onInterstitialAdShowFailed(error);
+                callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
             }
             return;
         }
@@ -330,7 +356,8 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
             interstitial.show();
         } else {
             if (callback != null) {
-                callback.onInterstitialAdShowFailed("MoPub interstitial is not ready");
+                callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "MoPub interstitial is not ready"));
             }
         }
     }
@@ -356,8 +383,6 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
 
     @Override
     public void onInterstitialLoaded(MoPubInterstitial interstitial) {
-        AdLog.getSingleton().LogD("onInterstitialLoaded : "
-                + (interstitial != null ? interstitial.getLocation() : null));
         InterstitialAdCallback callback = mIsCallback.get(interstitial);
         if (callback != null) {
             callback.onInterstitialAdLoadSuccess();
@@ -366,19 +391,15 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
 
     @Override
     public void onInterstitialFailed(MoPubInterstitial interstitial, MoPubErrorCode errorCode) {
-        AdLog.getSingleton().LogE("onInterstitialFailed : "
-                + (interstitial != null ? interstitial.getLocation() : null)
-                + ", errorCode:" + errorCode);
         InterstitialAdCallback callback = mIsCallback.get(interstitial);
         if (callback != null) {
-            callback.onInterstitialAdLoadFailed("MoPub interstitial load failed : " + errorCode.name());
+            callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, errorCode.name()));
         }
     }
 
     @Override
     public void onInterstitialShown(MoPubInterstitial interstitial) {
-        AdLog.getSingleton().LogD("onInterstitialShown : "
-                + (interstitial != null ? interstitial.getLocation() : null));
         InterstitialAdCallback callback = mIsCallback.get(interstitial);
         if (callback != null) {
             callback.onInterstitialAdShowSuccess();
@@ -387,8 +408,6 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
 
     @Override
     public void onInterstitialClicked(MoPubInterstitial interstitial) {
-        AdLog.getSingleton().LogD("onInterstitialClicked : "
-                + (interstitial != null ? interstitial.getLocation() : null));
         InterstitialAdCallback callback = mIsCallback.get(interstitial);
         if (callback != null) {
             callback.onInterstitialAdClick();
@@ -397,8 +416,6 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
 
     @Override
     public void onInterstitialDismissed(MoPubInterstitial interstitial) {
-        AdLog.getSingleton().LogD("onInterstitialDismissed : "
-                + (interstitial != null ? interstitial.getLocation() : null));
         InterstitialAdCallback callback = mIsCallback.get(interstitial);
         if (callback != null) {
             callback.onInterstitialAdClosed();
