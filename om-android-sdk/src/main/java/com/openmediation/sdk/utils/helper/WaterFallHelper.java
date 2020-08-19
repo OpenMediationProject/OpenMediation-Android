@@ -20,6 +20,7 @@ import com.openmediation.sdk.utils.event.EventId;
 import com.openmediation.sdk.utils.event.EventUploadManager;
 import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.Configurations;
+import com.openmediation.sdk.utils.model.InstanceLoadStatus;
 import com.openmediation.sdk.utils.model.Placement;
 import com.openmediation.sdk.utils.model.PlacementInfo;
 import com.openmediation.sdk.utils.request.HeaderUtils;
@@ -80,6 +81,7 @@ public class WaterFallHelper {
     public static void wfRequest(PlacementInfo info, OmManager.LOAD_TYPE type,
                                  List<AdTimingBidResponse> c2sResult,
                                  List<AdTimingBidResponse> s2sResult,
+                                 List<InstanceLoadStatus> statusList,
                                  Request.OnRequestCallback callback) throws Exception {
         Configurations config = DataCache.getInstance().getFromMem(KeyConstants.KEY_CONFIGURATION, Configurations.class);
         if (config == null || config.getApi() == null || TextUtils.isEmpty(config.getApi().getWf())) {
@@ -88,7 +90,7 @@ public class WaterFallHelper {
         }
         String url = RequestBuilder.buildWfUrl(config.getApi().getWf());
 
-        byte[] bytes = RequestBuilder.buildWfRequestBody(info, c2sResult, s2sResult,
+        byte[] bytes = RequestBuilder.buildWfRequestBody(info, c2sResult, s2sResult, statusList,
                 IapHelper.getIap(),
                 String.valueOf(PlacementUtils.getPlacementImprCount(info.getId())),
                 String.valueOf(type.getValue())

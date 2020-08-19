@@ -6,6 +6,7 @@ package com.openmediation.sdk.utils;
 import android.util.Base64;
 import android.util.SparseArray;
 
+import com.openmediation.sdk.core.AdapterRepository;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.utils.constant.CommonConstants;
@@ -66,6 +67,8 @@ public class AdapterUtil {
                 mAdapters.put(adapter.getAdNetworkId(), adapter);
                 AdNetwork unityAdNetwork = getAdNetWork(adapter);
                 jsonArray.put(unityAdNetwork.toJson());
+                // set GDPR Age Gender
+                AdapterRepository.getInstance().setCustomParams(adapter);
             } catch (Exception e) {
 //                CrashUtil.getSingleton().saveException(e);
 //                DeveloperLog.LogD("AdapterUtil getAdns : ", e);
@@ -79,7 +82,7 @@ public class AdapterUtil {
      *
      * @return the adapter map
      */
-    static SparseArray<CustomAdsAdapter> getAdapterMap() {
+    public static SparseArray<CustomAdsAdapter> getAdapterMap() {
         return mAdapters;
     }
 

@@ -54,6 +54,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -348,7 +349,9 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
 
     @Override
     protected synchronized void onInsReady(final Instance instance) {
-        LrReportHelper.report(instance, mLoadType.getValue(), mPlacement.getWfAbt(), CommonConstants.INSTANCE_READY, 0);
+        if (instance.getHb() != 1) {
+            LrReportHelper.report(instance, mLoadType.getValue(), mPlacement.getWfAbt(), CommonConstants.INSTANCE_READY, 0);
+        }
         mAllLoadFailedCount.set(0);
         if (!shouldFinishLoad()) {
             initOrFetchNextAdapter();
@@ -451,13 +454,20 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
     public void onBidComplete(List<AdTimingBidResponse> c2sResponses, List<AdTimingBidResponse> s2sResponses) {
         try {
             if (mBidResponses == null) {
-                mBidResponses = new HashMap<>();
+                mBidResponses = new ConcurrentHashMap<>();
             }
             if (c2sResponses != null && !c2sResponses.isEmpty()) {
                 storeC2sResult(c2sResponses);
             }
-            appendLastBidResult(c2sResponses);
-            WaterFallHelper.wfRequest(getPlacementInfo(), mLoadType, c2sResponses, s2sResponses, AbstractAdsManager.this);
+            List<AdTimingBidResponse> bidResponses = appendLastBidResult();
+            if (bidResponses != null && !bidResponses.isEmpty()) {
+                if (c2sResponses == null) {
+                    c2sResponses = new ArrayList<>();
+                }
+                c2sResponses.addAll(bidResponses);
+            }
+            WaterFallHelper.wfRequest(getPlacementInfo(), mLoadType, c2sResponses, s2sResponses,
+                    InsUtil.getInstanceLoadStatuses(mTotalIns), AbstractAdsManager.this);
         } catch (Exception e) {
             Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
                     , ErrorCode.MSG_LOAD_INVALID_REQUEST, ErrorCode.CODE_LOAD_UNKNOWN_INTERNAL_ERROR);
@@ -857,19 +867,19 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
         }
     }
 
-    private void appendLastBidResult(List<AdTimingBidResponse> c2sResponses) {
+    private List<AdTimingBidResponse> appendLastBidResult() {
+        List<AdTimingBidResponse> responses = null;
         if (hasAvailableCache()) {
-            if (c2sResponses == null) {
-                c2sResponses = new ArrayList<>();
-            }
+            responses = new ArrayList<>();
             List<Integer> ids = InsUtil.getInsIdWithStatus(mTotalIns, Instance.MEDIATION_STATE.AVAILABLE);
             for (Integer id : ids) {
                 AdTimingBidResponse bidResponse = mBidResponses.get(id);
                 if (bidResponse != null) {
-                    c2sResponses.add(bidResponse);
+                    responses.add(bidResponse);
                 }
             }
         }
+        return responses;
     }
 
     private void notifyInsBidWin(BaseInstance instance) {

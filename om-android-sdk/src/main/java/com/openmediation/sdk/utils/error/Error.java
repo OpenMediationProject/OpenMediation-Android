@@ -14,6 +14,14 @@ public class Error {
         this.internalCode = internalCode;
     }
 
+    public int getErrorCode() {
+        return code;
+    }
+
+    public String getErrorMessage() {
+        return message;
+    }
+
     @Override
     public String toString() {
         if (internalCode == -1) {

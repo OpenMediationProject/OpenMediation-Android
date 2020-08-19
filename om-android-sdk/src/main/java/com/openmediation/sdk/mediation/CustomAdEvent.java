@@ -18,7 +18,6 @@ public abstract class CustomAdEvent extends CustomAdParams {
 
     public void loadAd(Activity activity, Map<String, String> config) throws Throwable {
         isDestroyed = false;
-        setCustomParams(activity);
     }
 
     public abstract int getMediation();

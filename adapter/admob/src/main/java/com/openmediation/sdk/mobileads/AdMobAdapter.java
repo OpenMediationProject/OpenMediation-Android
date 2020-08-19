@@ -314,6 +314,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 super.onRewardedAdOpened();
                 if (callback != null) {
                     callback.onRewardedVideoAdShowSuccess();
+                    callback.onRewardedVideoAdStarted();
                 }
             }
 
@@ -339,6 +340,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 mRewardedAds.remove(adUnitId);
                 mRefAct.clear();
                 if (callback != null) {
+                    callback.onRewardedVideoAdEnded();
                     callback.onRewardedVideoAdClosed();
                 }
             }

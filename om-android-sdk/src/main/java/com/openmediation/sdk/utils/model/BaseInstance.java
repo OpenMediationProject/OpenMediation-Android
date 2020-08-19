@@ -59,7 +59,7 @@ public class BaseInstance extends Frequency {
 
     protected CustomAdsAdapter mAdapter;
 
-    protected AdapterError mAdapterError;
+    protected InstanceLoadStatus mLastLoadStatus;
 
     public BaseInstance() {
     }
@@ -196,12 +196,8 @@ public class BaseInstance extends Frequency {
         this.bidResponse = bidResponse;
     }
 
-    public AdapterError getAdapterError() {
-        return mAdapterError;
-    }
-
-    public void setAdapterError(AdapterError error) {
-        this.mAdapterError = error;
+    public InstanceLoadStatus getLastLoadStatus() {
+        return mLastLoadStatus;
     }
 
     @Override
@@ -280,43 +276,62 @@ public class BaseInstance extends Frequency {
     }
 
     public void onInsLoadFailed(AdapterError error) {
-        if (error == null) {
-            return;
-        }
         JSONObject data = buildReportData();
-        JsonUtil.put(data, "code", error.getCode());
-        JsonUtil.put(data, "msg", error.getMessage());
+        if (error != null) {
+            JsonUtil.put(data, "code", error.getCode());
+            JsonUtil.put(data, "msg", error.getMessage());
+        }
+        int dur = 0;
         if (mLoadStart > 0) {
-            int dur = (int) (System.currentTimeMillis() - mLoadStart) / 1000;
+            dur = (int) (System.currentTimeMillis() - mLoadStart) / 1000;
             JsonUtil.put(data, "duration", dur);
         }
         if (getHb() == 1) {
             EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_PAYLOAD_FAILED, data);
         } else {
-            String msg = error.getMessage();
-            if (!TextUtils.isEmpty(msg) && msg.contains(ErrorCode.ERROR_TIMEOUT)) {
+            if (error != null && error.getMessage().contains(ErrorCode.ERROR_TIMEOUT)) {
                 EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_LOAD_TIMEOUT, data);
             } else {
                 EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_LOAD_ERROR, data);
             }
         }
+        setLoadStatus(dur, error);
     }
 
     public void onInsReLoadFailed(AdapterError error) {
-        if (error == null) {
-            return;
-        }
         JSONObject data = buildReportData();
-        JsonUtil.put(data, "code", error.getCode());
-        JsonUtil.put(data, "msg", error.getMessage());
+        if (error == null) {
+            JsonUtil.put(data, "code", error.getCode());
+            JsonUtil.put(data, "msg", error.getMessage());
+        }
+        int dur = 0;
         if (mLoadStart > 0) {
-            int dur = (int) (System.currentTimeMillis() - mLoadStart) / 1000;
+            dur = (int) (System.currentTimeMillis() - mLoadStart) / 1000;
             JsonUtil.put(data, "duration", dur);
         }
         if (getHb() == 1) {
             EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_PAYLOAD_FAILED, data);
         } else {
             EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_RELOAD_ERROR, data);
+        }
+        setLoadStatus(dur, error);
+    }
+
+    private void setLoadStatus(long duration, AdapterError error) {
+        if (error == null) {
+            mLastLoadStatus = null;
+        } else {
+            if (error.isLoadFailFromAdn()) {
+                InstanceLoadStatus status = new InstanceLoadStatus();
+                status.setIid(id);
+                status.setLts(mLoadStart);
+                status.setDur(duration);
+                status.setCode(error.getCode());
+                status.setMsg(error.getMessage());
+                mLastLoadStatus = status;
+            } else {
+                mLastLoadStatus = null;
+            }
         }
     }
 
@@ -351,12 +366,11 @@ public class BaseInstance extends Frequency {
     }
 
     public void onInsShowFailed(AdapterError error, Scene scene) {
-        if (error == null) {
-            return;
-        }
         JSONObject data = buildReportDataWithScene(scene);
-        JsonUtil.put(data, "code", error.getCode());
-        JsonUtil.put(data, "msg", error.getMessage());
+        if (error != null) {
+            JsonUtil.put(data, "code", error.getCode());
+            JsonUtil.put(data, "msg", error.getMessage());
+        }
         if (mShowStart > 0) {
             int dur = (int) (System.currentTimeMillis() - mShowStart) / 1000;
             JsonUtil.put(data, "duration", dur);

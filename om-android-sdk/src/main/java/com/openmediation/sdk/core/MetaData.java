@@ -1,7 +1,7 @@
 // Copyright 2020 ADTIMING TECHNOLOGY COMPANY LIMITED
 // Licensed under the GNU Lesser General Public License Version 3
 
-package com.openmediation.sdk;
+package com.openmediation.sdk.core;
 
 public class MetaData {
     private Boolean mUserConsent = null;
@@ -26,7 +26,7 @@ public class MetaData {
         this.mAgeRestricted = ageRestricted;
     }
 
-    public Integer getAge() {
+    public Integer getUserAge() {
         return mUserAge;
     }
 
@@ -34,7 +34,7 @@ public class MetaData {
         this.mUserAge = userAge;
     }
 
-    public String getGender() {
+    public String getUserGender() {
         return mUserGender;
     }
 
@@ -48,5 +48,16 @@ public class MetaData {
 
     public void setUSPrivacyLimit(Boolean value) {
         this.mUSPrivacyLimit = value;
+    }
+
+    @Override
+    public String toString() {
+        return "MetaData{" +
+                "mUserConsent=" + mUserConsent +
+                ", mAgeRestricted=" + mAgeRestricted +
+                ", mUserAge=" + mUserAge +
+                ", mUserGender=" + mUserGender  +
+                ", mUSPrivacyLimit=" + mUSPrivacyLimit +
+                '}';
     }
 }

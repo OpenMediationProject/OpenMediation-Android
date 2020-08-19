@@ -72,6 +72,8 @@ public class AdManager {
                 }
 
                 addAdEvent(instances, adEvent);
+                // set GDPR Age Gender
+                AdapterRepository.getInstance().setCustomParams(adEvent);
             } else {
                 DeveloperLog.LogD("get Ins Event from map: " + instances.toString());
             }

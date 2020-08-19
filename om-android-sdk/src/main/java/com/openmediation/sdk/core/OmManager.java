@@ -7,7 +7,6 @@ import android.app.Activity;
 import android.text.TextUtils;
 
 import com.openmediation.sdk.InitCallback;
-import com.openmediation.sdk.MetaData;
 import com.openmediation.sdk.core.imp.interstitialad.IsManager;
 import com.openmediation.sdk.core.imp.rewardedvideo.RvManager;
 import com.openmediation.sdk.core.imp.splash.SplashAdManager;
@@ -64,8 +63,6 @@ public final class OmManager implements InitCallback {
     private AtomicBoolean mDidIsInit = new AtomicBoolean(false);
     private boolean mIsInForeground = true;
     private static ConcurrentLinkedQueue<InitCallback> mInitCallbacks = new ConcurrentLinkedQueue<>();
-
-    private MetaData mMetaData = null;
 
     private static final class OmHolder {
         private static final OmManager INSTANCE = new OmManager();
@@ -140,7 +137,6 @@ public final class OmManager implements InitCallback {
      */
     public void init(Activity activity, String appKey, String channel, InitCallback callback, AD_TYPE... types) {
         if (InitImp.isInit()) {
-            setListeners();
             if (callback != null) {
                 callback.onSuccess();
             }
@@ -280,21 +276,14 @@ public final class OmManager implements InitCallback {
      * @param listener    InterstitialAd listener
      */
     public void setInterstitialAdListener(String placementId, InterstitialAdListener listener) {
-        if (isInitRunning()) {
+        IsManager isManager = getIsManager(placementId);
+        if (isManager != null) {
+            isManager.setInterstitialAdListener(listener);
+        } else {
             if (mIsListeners == null) {
                 mIsListeners = new ConcurrentHashMap<>();
             }
             mIsListeners.put(placementId, listener);
-        } else {
-            IsManager isManager = getIsManager(placementId);
-            if (isManager != null) {
-                isManager.setInterstitialAdListener(listener);
-            } else {
-                if (mIsListeners == null) {
-                    mIsListeners = new ConcurrentHashMap<>();
-                }
-                mIsListeners.put(placementId, listener);
-            }
         }
     }
 
@@ -305,16 +294,14 @@ public final class OmManager implements InitCallback {
      * @param listener    the listener
      */
     public void setMediationInterstitialAdListener(String placementId, MediationInterstitialListener listener) {
-        if (isInitRunning()) {
+        IsManager isManager = getIsManager(placementId);
+        if (isManager != null) {
+            isManager.setMediationInterstitialAdListener(listener);
+        } else {
             if (mMediationIsListeners == null) {
                 mMediationIsListeners = new ConcurrentHashMap<>();
             }
             mMediationIsListeners.put(placementId, listener);
-        } else {
-            IsManager isManager = getIsManager(placementId);
-            if (isManager != null) {
-                isManager.setMediationInterstitialAdListener(listener);
-            }
         }
     }
 
@@ -417,21 +404,14 @@ public final class OmManager implements InitCallback {
      * @param listener    RewardedVideoAd listener
      */
     public void setRewardedVideoListener(String placementId, RewardedVideoListener listener) {
-        if (isInitRunning()) {
+        RvManager rvManager = getRvManager(placementId);
+        if (rvManager != null) {
+            rvManager.setRewardedVideoListener(listener);
+        } else {
             if (mRvListeners == null) {
                 mRvListeners = new ConcurrentHashMap<>();
             }
             mRvListeners.put(placementId, listener);
-        } else {
-            RvManager rvManager = getRvManager(placementId);
-            if (rvManager != null) {
-                rvManager.setRewardedVideoListener(listener);
-            } else {
-                if (mRvListeners == null) {
-                    mRvListeners = new ConcurrentHashMap<>();
-                }
-                mRvListeners.put(placementId, listener);
-            }
         }
     }
 
@@ -442,16 +422,14 @@ public final class OmManager implements InitCallback {
      * @param listener    the listener
      */
     public void setMediationRewardedVideoListener(String placementId, MediationRewardVideoListener listener) {
-        if (isInitRunning()) {
+        RvManager rvManager = getRvManager(placementId);
+        if (rvManager != null) {
+            rvManager.setMediationRewardedVideoListener(listener);
+        } else {
             if (mMediationRvListeners == null) {
                 mMediationRvListeners = new ConcurrentHashMap<>();
             }
             mMediationRvListeners.put(placementId, listener);
-        } else {
-            RvManager rvManager = getRvManager(placementId);
-            if (rvManager != null) {
-                rvManager.setMediationRewardedVideoListener(listener);
-            }
         }
     }
 
@@ -536,7 +514,6 @@ public final class OmManager implements InitCallback {
     @Override
     public void onSuccess() {
         initManagerWithDefaultPlacementId();
-        setCustomParams();
         setListeners();
         checkHasLoadWhileInInitProgress();
         preloadAdWithAdType();
@@ -894,182 +871,46 @@ public final class OmManager implements InitCallback {
     }
 
     public void setGDPRConsent(boolean consent) {
-        if (mMetaData == null) {
-            mMetaData = new MetaData();
-        }
-        mMetaData.setGDPRConsent(consent);
-
-        if (!mIsManagers.isEmpty()) {
-            Set<Map.Entry<String, IsManager>> isEntrys = mIsManagers.entrySet();
-            for (Map.Entry<String, IsManager> isManagerEntry : isEntrys) {
-                if (isManagerEntry != null) {
-                    isManagerEntry.getValue().setGDPRConsent(consent);
-                }
-            }
-        }
-        if (!mRvManagers.isEmpty()) {
-            Set<Map.Entry<String, RvManager>> rvEntrys = mRvManagers.entrySet();
-            for (Map.Entry<String, RvManager> rvManagerEntry : rvEntrys) {
-                if (rvManagerEntry != null) {
-                    rvManagerEntry.getValue().setGDPRConsent(consent);
-                }
-            }
-        }
+        AdapterRepository.getInstance().setGDPRConsent(consent);
     }
 
     public void setAgeRestricted(boolean restricted) {
-        if (mMetaData == null) {
-            mMetaData = new MetaData();
-        }
-        mMetaData.setAgeRestricted(restricted);
-
-        if (!mIsManagers.isEmpty()) {
-            Set<Map.Entry<String, IsManager>> isEntrys = mIsManagers.entrySet();
-            for (Map.Entry<String, IsManager> isManagerEntry : isEntrys) {
-                if (isManagerEntry != null) {
-                    isManagerEntry.getValue().setAgeRestricted(restricted);
-                }
-            }
-        }
-        if (!mRvManagers.isEmpty()) {
-            Set<Map.Entry<String, RvManager>> rvEntrys = mRvManagers.entrySet();
-            for (Map.Entry<String, RvManager> rvManagerEntry : rvEntrys) {
-                if (rvManagerEntry != null) {
-                    rvManagerEntry.getValue().setAgeRestricted(restricted);
-                }
-            }
-        }
+        AdapterRepository.getInstance().setAgeRestricted(restricted);
     }
 
     public void setUserAge(int age) {
-        if (mMetaData == null) {
-            mMetaData = new MetaData();
-        }
-        mMetaData.setUserAge(age);
-
-        if (!mIsManagers.isEmpty()) {
-            Set<Map.Entry<String, IsManager>> isEntrys = mIsManagers.entrySet();
-            for (Map.Entry<String, IsManager> isManagerEntry : isEntrys) {
-                if (isManagerEntry != null) {
-                    isManagerEntry.getValue().setUserAge(age);
-                }
-            }
-        }
-        if (!mRvManagers.isEmpty()) {
-            Set<Map.Entry<String, RvManager>> rvEntrys = mRvManagers.entrySet();
-            for (Map.Entry<String, RvManager> rvManagerEntry : rvEntrys) {
-                if (rvManagerEntry != null) {
-                    rvManagerEntry.getValue().setUserAge(age);
-                }
-            }
-        }
+        AdapterRepository.getInstance().setUserAge(age);
     }
 
     public void setUserGender(String gender) {
-        if (mMetaData == null) {
-            mMetaData = new MetaData();
-        }
-        mMetaData.setUserGender(gender);
-
-        if (!mIsManagers.isEmpty()) {
-            Set<Map.Entry<String, IsManager>> isEntrys = mIsManagers.entrySet();
-            for (Map.Entry<String, IsManager> isManagerEntry : isEntrys) {
-                if (isManagerEntry != null) {
-                    isManagerEntry.getValue().setUserGender(gender);
-                }
-            }
-        }
-        if (!mRvManagers.isEmpty()) {
-            Set<Map.Entry<String, RvManager>> rvEntrys = mRvManagers.entrySet();
-            for (Map.Entry<String, RvManager> rvManagerEntry : rvEntrys) {
-                if (rvManagerEntry != null) {
-                    rvManagerEntry.getValue().setUserGender(gender);
-                }
-            }
-        }
+        AdapterRepository.getInstance().setUserGender(gender);
     }
 
     public void setUSPrivacyLimit(boolean value) {
-        if (mMetaData == null) {
-            mMetaData = new MetaData();
-        }
-        mMetaData.setUSPrivacyLimit(value);
-
-        if (!mIsManagers.isEmpty()) {
-            Set<Map.Entry<String, IsManager>> isEntrys = mIsManagers.entrySet();
-            for (Map.Entry<String, IsManager> isManagerEntry : isEntrys) {
-                if (isManagerEntry != null) {
-                    isManagerEntry.getValue().setUSPrivacyLimit(value);
-                }
-            }
-        }
-        if (!mRvManagers.isEmpty()) {
-            Set<Map.Entry<String, RvManager>> rvEntrys = mRvManagers.entrySet();
-            for (Map.Entry<String, RvManager> rvManagerEntry : rvEntrys) {
-                if (rvManagerEntry != null) {
-                    rvManagerEntry.getValue().setUSPrivacyLimit(value);
-                }
-            }
-        }
+        AdapterRepository.getInstance().setUSPrivacyLimit(value);
     }
 
     public Boolean getGDPRConsent() {
-        if (mMetaData == null) {
-            return null;
-        }
-        return mMetaData.getGDPRConsent();
+        return AdapterRepository.getInstance().getGDPRConsent();
     }
 
     public Boolean getAgeRestricted() {
-        if (mMetaData == null) {
-            return null;
-        }
-        return mMetaData.getAgeRestricted();
+        return AdapterRepository.getInstance().getAgeRestricted();
     }
 
     public Integer getUserAge() {
-        if (mMetaData == null) {
-            return null;
-        }
-        return mMetaData.getAge();
+        return AdapterRepository.getInstance().getUserAge();
     }
 
     public String getUserGender() {
-        if (mMetaData == null) {
-            return null;
-        }
-        return mMetaData.getGender();
+        return AdapterRepository.getInstance().getUserGender();
     }
 
     public Boolean getUSPrivacyLimit() {
-        if (mMetaData == null) {
-            return null;
-        }
-        return mMetaData.getUSPrivacyLimit();
-    }
-
-    /**
-     * called after init success
-     */
-    private void setCustomParams() {
-        if (getGDPRConsent() != null) {
-            setGDPRConsent(getGDPRConsent());
-        }
-        if (getAgeRestricted() != null) {
-            setAgeRestricted(getAgeRestricted());
-        }
-        if (getUserAge() != null) {
-            setUserAge(getUserAge());
-        }
-        if (getUserGender() != null) {
-            setUserGender(getUserGender());
-        }
-        if (getUSPrivacyLimit() != null) {
-            setUSPrivacyLimit(getUSPrivacyLimit());
-        }
+        return AdapterRepository.getInstance().getUSPrivacyLimit();
     }
 
     public MetaData getMetaData() {
-        return mMetaData;
+        return AdapterRepository.getInstance().getMetaData();
     }
 }

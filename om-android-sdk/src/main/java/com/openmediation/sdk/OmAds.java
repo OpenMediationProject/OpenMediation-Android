@@ -136,6 +136,46 @@ public abstract class OmAds {
     }
 
     /**
+     * The user's current consent status
+     * @return consent status
+     */
+    public static Boolean getGDPRConsent() {
+        return OmManager.getInstance().getGDPRConsent();
+    }
+
+    /**
+     * The user's COPPA status
+     * @return COPPA status
+     */
+    public static Boolean getAgeRestricted() {
+        return OmManager.getInstance().getAgeRestricted();
+    }
+
+    /**
+     * The user's current age
+     * @return the user's current age
+     */
+    public static Integer getUserAge() {
+        return OmManager.getInstance().getUserAge();
+    }
+
+    /**
+     * The user's current gender
+     * @return the user's current gender
+     */
+    public static String getUserGender() {
+        return OmManager.getInstance().getUserGender();
+    }
+
+    /**
+     * The user's CCPA status
+     * @return CCPA status
+     */
+    public static Boolean getUSPrivacyLimit() {
+        return OmManager.getInstance().getUSPrivacyLimit();
+    }
+
+    /**
      * SDK supported preloadable Ad types
      */
     public enum AD_TYPE {

@@ -19,6 +19,7 @@ import com.openmediation.sdk.utils.AdsUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.HandlerUtil;
 import com.openmediation.sdk.utils.IOUtil;
+import com.openmediation.sdk.utils.InsUtil;
 import com.openmediation.sdk.utils.PlacementUtils;
 import com.openmediation.sdk.utils.Preconditions;
 import com.openmediation.sdk.utils.WorkExecutor;
@@ -45,6 +46,7 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -89,6 +91,7 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
      * The M total ins.
      */
     BaseInstance[] mTotalIns;
+    private List<BaseInstance> mLastInstances;
     /**
      * The M bs.
      */
@@ -227,7 +230,8 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
     @Override
     public void onBidComplete(List<AdTimingBidResponse> c2sResponses, List<AdTimingBidResponse> s2sResponses) {
         try {
-            WaterFallHelper.wfRequest(getPlacementInfo(), mLoadType, c2sResponses, s2sResponses, this);
+            WaterFallHelper.wfRequest(getPlacementInfo(), mLoadType, c2sResponses, s2sResponses,
+                    InsUtil.getInstanceLoadStatuses(mLastInstances),this);
             if (mBidResponses == null) {
                 mBidResponses = new HashMap<>();
             }
@@ -259,6 +263,7 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
             }
 
             mPlacement.setWfAbt(clInfo.optInt("abt"));
+            clearLoadFailedInstances();
             BaseInstance[] tmp = WaterFallHelper.getArrayInstances(clInfo, mPlacement, mBs);
             if (tmp == null || tmp.length == 0) {
                 DeveloperLog.LogD("Ad", "request cl success, but ins[] is empty" + mPlacement);
@@ -453,7 +458,7 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
      * @param instances the instances
      */
     void iReadyReport(BaseInstance instances) {
-        if (isDestroyed) {
+        if (isDestroyed || instances.getHb() == 1) {
             return;
         }
         if (isManualTriggered) {
@@ -664,6 +669,21 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
                 continue;
             }
             mBidResponses.put(bidResponse.getIid(), bidResponse);
+        }
+    }
+
+    private void clearLoadFailedInstances() {
+        if (mLastInstances != null) {
+            mLastInstances.clear();
+        }
+    }
+
+    void addLoadFailedInstance(BaseInstance instance) {
+        if (mLastInstances == null) {
+            mLastInstances = new CopyOnWriteArrayList<>();
+        }
+        if (instance != null) {
+            mLastInstances.add(instance);
         }
     }
 }

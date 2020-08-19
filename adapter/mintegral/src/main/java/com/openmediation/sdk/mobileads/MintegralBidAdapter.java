@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MintegralBidAdapter extends BidAdapter {
+    private static final String CLAZZ = "com.mintegral.msdk.mtgbid.out.BidManager";
     private ConcurrentHashMap<String, BidResponsed> mBidResponses;
     private boolean mDidInitSdk;
     private Context mContext;
@@ -57,13 +58,21 @@ public class MintegralBidAdapter extends BidAdapter {
 
     @Override
     public String getBiddingToken(Context context) {
-        return BidManager.getBuyerUid(context);
+        try {
+            Class clazz = Class.forName(CLAZZ);
+            if (mDidInitSdk) {
+                return BidManager.getBuyerUid(context);
+            }
+        } catch (Exception ignored) {
+        }
+        return "";
     }
 
     @Override
     public void executeBid(Context context, Map<String, Object> dataMap, BidCallback callback) {
         super.executeBid(context, dataMap, callback);
         try {
+            Class clazz = Class.forName(CLAZZ);
             String unitId = (String) dataMap.get(BidConstance.BID_PLACEMENT_ID);
             if (TextUtils.isEmpty(unitId)) {
                 if (callback != null) {
@@ -74,6 +83,11 @@ public class MintegralBidAdapter extends BidAdapter {
             BidManager manager = new BidManager("", unitId);
             manager.setBidListener(new BidResCallback(unitId, callback));
             manager.bid();
+        } catch (ClassNotFoundException e) {
+            AdLog.getSingleton().LogE("Mintegral bid sdk not integrated");
+            if (callback != null) {
+                callback.bidFailed("Mintegral bid sdk not integrated");
+            }
         } catch (Exception e) {
             AdLog.getSingleton().LogE("Mintegral bid failed: " + e.getMessage());
             if (callback != null) {

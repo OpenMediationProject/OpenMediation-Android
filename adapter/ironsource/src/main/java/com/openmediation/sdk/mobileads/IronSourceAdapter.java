@@ -316,6 +316,7 @@ public class IronSourceAdapter extends CustomAdsAdapter {
 
         RewardedVideoCallback callback = mRvCallbacks.get(instanceId);
         if (callback != null) {
+            callback.onRewardedVideoAdEnded();
             callback.onRewardedVideoAdClosed();
         }
     }

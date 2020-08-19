@@ -7,7 +7,7 @@ import android.content.Context;
 import android.os.Build;
 import android.text.TextUtils;
 
-import com.openmediation.sdk.MetaData;
+import com.openmediation.sdk.core.MetaData;
 import com.openmediation.sdk.bid.AdTimingBidResponse;
 import com.openmediation.sdk.core.OmManager;
 import com.openmediation.sdk.utils.AdtUtil;
@@ -22,6 +22,7 @@ import com.openmediation.sdk.utils.constant.KeyConstants;
 import com.openmediation.sdk.utils.device.DeviceUtil;
 import com.openmediation.sdk.utils.device.ImeiUtil;
 import com.openmediation.sdk.utils.event.Event;
+import com.openmediation.sdk.utils.model.InstanceLoadStatus;
 import com.openmediation.sdk.utils.model.PlacementInfo;
 import com.openmediation.sdk.utils.request.network.util.NetworkChecker;
 
@@ -390,7 +391,7 @@ public class RequestBuilder {
         if (metaData == null) {
             return;
         }
-        String gender = metaData.getGender();
+        String gender = metaData.getUserGender();
         if (!TextUtils.isEmpty(gender)) {
             int genderValue = 0;
             if ("male".equals(gender)) {
@@ -400,8 +401,8 @@ public class RequestBuilder {
             }
             body.put(KeyConstants.RequestBody.KEY_GENDER, genderValue);
         }
-        if (metaData.getAge() != null) {
-            body.put(KeyConstants.RequestBody.KEY_AGE, metaData.getAge());
+        if (metaData.getUserAge() != null) {
+            body.put(KeyConstants.RequestBody.KEY_AGE, metaData.getUserAge());
         }
         JSONObject regs = new JSONObject();
         if (metaData.getGDPRConsent() != null) {
@@ -425,6 +426,7 @@ public class RequestBuilder {
      * @throws Exception the exception
      */
     public static byte[] buildWfRequestBody(PlacementInfo info, List<AdTimingBidResponse> c2sResult, List<AdTimingBidResponse> s2sResult,
+                                            List<InstanceLoadStatus> statusList,
                                             String... extras) throws Exception {
         JSONObject body = getRequestBodyBaseJson();
         if (info.getWidth() != 0) {
@@ -464,6 +466,23 @@ public class RequestBuilder {
                 array.put(object);
             }
             body.put("bids2s", array);
+        }
+
+        if (statusList != null && !statusList.isEmpty()) {
+            JSONArray array = new JSONArray();
+            for (InstanceLoadStatus status : statusList) {
+                if (status == null) {
+                    continue;
+                }
+                JSONObject object = new JSONObject();
+                JsonUtil.put(object, "iid", status.getIid());
+                JsonUtil.put(object, "lts", status.getLts());
+                JsonUtil.put(object, "dur", status.getDur());
+                JsonUtil.put(object, "code", status.getCode());
+                JsonUtil.put(object, "msg", status.getMsg());
+                array.put(object);
+            }
+            body.put("ils", array);
         }
         DeveloperLog.LogD("request wf params : " + body.toString());
         return Gzip.inGZip(body.toString().getBytes(Charset.forName(CommonConstants.CHARTSET_UTF8)));

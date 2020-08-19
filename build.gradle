@@ -64,7 +64,7 @@ ext {
             "mtg_version"                : '14.1.01',
             // IronSource
             "ironsource"                 : 'com.ironsource.sdk:mediationsdk:6.17.0',
-
+            "mytarget"                   : 'com.my.target:mytarget-sdk:5.8.4',
             "adtiming"                   : 'com.adtiming:mediation-sdk:6.5.1@aar',
             "fyber"                      : '7.5.3',
             "helium"                     : 'com.chartboost:helium:2.0.0',
@@ -73,7 +73,7 @@ ext {
 
     adapterVersion = [
             'adtiming'     : '1.3.0',
-            'admob'        : '1.3.0',
+            'admob'        : '1.3.1',
             'facebook'     : '1.3.0',
             'unity'        : '1.3.0',
             'vungle'       : '1.3.0',
@@ -84,8 +84,9 @@ ext {
             'chartboost'   : '1.3.0',
             'chartboostbid': '1.0.0',
             'tiktok'       : '1.2.0',
-            'mintegral'    : '1.4.0',
-            'ironsource'   : '1.2.0',
+            'mintegral'    : '1.4.1',
+            'mytarget'     : '1.0.0',
+            'ironsource'   : '1.2.1',
             'fyber'        : '1.2.0',
             'tiktok_cn'    : '1.3.0',
             'tencentad_cn' : '1.2.0'

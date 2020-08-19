@@ -7,6 +7,7 @@ import android.text.TextUtils;
 
 import com.openmediation.sdk.utils.model.Instance;
 import com.openmediation.sdk.utils.model.BaseInstance;
+import com.openmediation.sdk.utils.model.InstanceLoadStatus;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -130,5 +131,19 @@ public class InsUtil {
             }
         }
         return null;
+    }
+
+    public static List<InstanceLoadStatus> getInstanceLoadStatuses(List<? extends BaseInstance> instanceList) {
+        List<InstanceLoadStatus> statusList = null;
+        if (instanceList != null && !instanceList.isEmpty()) {
+            statusList = new ArrayList<>();
+            for (BaseInstance instance : instanceList) {
+                if (instance == null || instance.getLastLoadStatus() == null) {
+                    continue;
+                }
+                statusList.add(instance.getLastLoadStatus());
+            }
+        }
+        return statusList;
     }
 }

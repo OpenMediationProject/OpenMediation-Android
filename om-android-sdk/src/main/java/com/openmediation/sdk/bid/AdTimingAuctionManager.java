@@ -10,9 +10,11 @@ import android.util.SparseArray;
 
 import com.openmediation.sdk.banner.AdSize;
 import com.openmediation.sdk.utils.AdtUtil;
+import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.HandlerUtil;
 import com.openmediation.sdk.utils.JsonUtil;
 import com.openmediation.sdk.utils.PlacementUtils;
+import com.openmediation.sdk.utils.crash.CrashUtil;
 import com.openmediation.sdk.utils.event.EventId;
 import com.openmediation.sdk.utils.event.EventUploadManager;
 import com.openmediation.sdk.utils.model.BaseInstance;
@@ -88,9 +90,14 @@ public class AdTimingAuctionManager {
                 if (instance.getHb() == 1) {
                     BidAdapter bidAdapter = BidAdapterUtil.getBidAdapter(instance.getMediationId());
                     if (bidAdapter != null) {
-                        bidInstances.add(instance);
-                        bidAdapter.initBid(context, BidUtil.makeBidInitInfo(config, instance.getMediationId()),
-                                null);
+                        try {
+                            bidAdapter.initBid(context, BidUtil.makeBidInitInfo(config, instance.getMediationId()),
+                                    null);
+                            bidInstances.add(instance);
+                        } catch (Throwable throwable) {
+                            DeveloperLog.LogE("initBid error: " + throwable.toString());
+                            CrashUtil.getSingleton().saveException(throwable);
+                        }
                     }
                 }
             }
@@ -146,8 +153,7 @@ public class AdTimingAuctionManager {
                 HbCallback hbCallback = new HbCallback(bidInstance, true);
                 hbCallback.bidSuccess(response);
             } else {
-                bidAdapter.executeBid(context, BidUtil.makeBidRequestInfo(bidInstance, adType, adSize),
-                        new HbCallback(bidInstance, false));
+                executeBid(context, adType, adSize, bidInstance, bidAdapter);
                 mBidStartTime.put(bidInstance.getId(), System.currentTimeMillis());
                 EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_BID_REQUEST, bidInstance.buildReportData());
                 startTimeout(bidInstance);
@@ -159,6 +165,18 @@ public class AdTimingAuctionManager {
         }
     }
 
+    private void executeBid(Context context, int adType, AdSize adSize, BaseInstance bidInstance, BidAdapter bidAdapter) {
+        HbCallback callback = new HbCallback(bidInstance, false);
+        try {
+            bidAdapter.executeBid(context, BidUtil.makeBidRequestInfo(bidInstance, adType, adSize),
+                    callback);
+        } catch (Throwable throwable) {
+            callback.bidFailed("bid failed");
+            DeveloperLog.LogE("bid error: " + throwable.toString());
+            CrashUtil.getSingleton().saveException(throwable);
+        }
+    }
+
     private AdTimingBidResponse getBidInstanceToken(Context context, BaseInstance bidInstance) {
         if (bidInstance == null) {
             return null;
@@ -167,13 +185,19 @@ public class AdTimingAuctionManager {
         if (bidAdapter == null) {
             return null;
         }
-        String token = bidAdapter.getBiddingToken(context);
-        if (TextUtils.isEmpty(token)) {
-            return null;
+        AdTimingBidResponse bidResponse = null;
+        try {
+            String token = bidAdapter.getBiddingToken(context);
+            if (TextUtils.isEmpty(token)) {
+                return null;
+            }
+            bidResponse = new AdTimingBidResponse();
+            bidResponse.setIid(bidInstance.getId());
+            bidResponse.setToken(token);
+        } catch (Throwable throwable) {
+            DeveloperLog.LogE("bid error: " + throwable.toString());
+            CrashUtil.getSingleton().saveException(throwable);
         }
-        AdTimingBidResponse bidResponse = new AdTimingBidResponse();
-        bidResponse.setIid(bidInstance.getId());
-        bidResponse.setToken(token);
         return bidResponse;
     }
 

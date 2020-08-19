@@ -140,6 +140,7 @@ public final class InitImp {
      * Inits global utils
      */
     private static void initUtil() {
+        AdapterRepository.getInstance().init();
         DataCache.getInstance().init(AdtUtil.getApplication());
         DataCache.getInstance().set(DeviceUtil.preFetchDeviceInfo(AdtUtil.getApplication()));
 //        OaidHelper.initOaidServer(AdtUtil.getApplication());

@@ -154,7 +154,6 @@ public abstract class CustomAdsAdapter extends CustomAdParams implements Rewarde
             return;
         }
         mAppKey = (String) dataMap.get("AppKey");
-        setCustomParams(activity);
     }
 
     /**

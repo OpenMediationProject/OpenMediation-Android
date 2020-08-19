@@ -14,13 +14,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Observable;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Operations on Data Cache
  */
-public class DataCache {
+public class DataCache  extends Observable {
     private static String TABLE_NAME = "table_core";
     private static String TABLE_CREATE_COLUMN = "KEY VARCHAR(30),VALUE VARCHAR";
     private static String TABLE_COLUMN = "KEY,VALUE";
@@ -237,8 +238,14 @@ public class DataCache {
             CrashUtil.getSingleton().saveException(e);
         }
         lock.readLock().unlock();
+
+        notifyObservers();
     }
 
+    @Override
+    public synchronized boolean hasChanged() {
+        return true;
+    }
     /**
      * Get t.
      *

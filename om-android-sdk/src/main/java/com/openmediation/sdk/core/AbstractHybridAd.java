@@ -238,18 +238,19 @@ public abstract class AbstractHybridAd extends AbstractAd {
         internalInsError(instances, error.toString());
     }
 
-    private void internalInsError(BaseInstance instances, String error) {
-        notifyLoadFailedInsBidLose(instances);
+    private void internalInsError(BaseInstance instance, String error) {
+        addLoadFailedInstance(instance);
+        notifyLoadFailedInsBidLose(instance);
 
         if (getAdType() == CommonConstants.BANNER) {
             //MopubBanner registered a receiver, we need to take care of it
-            destroyAdEvent(instances);
+            destroyAdEvent(instance);
         }
-        DeveloperLog.LogD("load ins : " + instances.toString() + " error : " + error);
+        DeveloperLog.LogD("load ins : " + instance.toString() + " error : " + error);
 
         int len = mTotalIns.length;
         //groupIndex of current failed instance
-        int groupIndex = instances.getGrpIndex();
+        int groupIndex = instance.getGrpIndex();
         //allInstanceGroup failed?
         boolean allInstanceGroupIsNull = true;
         //allInstanceGroup member failed?
@@ -257,7 +258,7 @@ public abstract class AbstractHybridAd extends AbstractAd {
         //traverses to set all failed members to null
         for (int a = 0; a < len; a++) {
             BaseInstance i = mTotalIns[a];
-            if (i == instances) {
+            if (i == instance) {
                 mTotalIns[a] = null;
             }
 
@@ -285,10 +286,10 @@ public abstract class AbstractHybridAd extends AbstractAd {
             return;
         }
 
-        if (instances.isFirst()) {
+        if (instance.isFirst()) {
             //e.g. assuming 0, 1, 2 in the group, bs is 3; when 0 fails, index moves forward by 2: 0 + 3 - 1 = 2
-            DeveloperLog.LogD("first instance failed, add callbackIndex : " + instances.toString() + " error : " + error);
-            mCanCallbackIndex = instances.getIndex() + mBs - 1;
+            DeveloperLog.LogD("first instance failed, add callbackIndex : " + instance.toString() + " error : " + error);
+            mCanCallbackIndex = instance.getIndex() + mBs - 1;
             checkReadyInstance();
         }
     }

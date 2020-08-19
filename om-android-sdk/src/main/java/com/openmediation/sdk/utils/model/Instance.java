@@ -169,12 +169,11 @@ public class Instance extends BaseInstance {
      */
     protected void onInsInitFailed(AdapterError error) {
         setMediationState(MEDIATION_STATE.INIT_FAILED);
-        if (error == null) {
-            return;
-        }
         JSONObject data = buildReportData();
-        JsonUtil.put(data, "code", error.getCode());
-        JsonUtil.put(data, "msg", error.getMessage());
+        if (error != null) {
+            JsonUtil.put(data, "code", error.getCode());
+            JsonUtil.put(data, "msg", error.getMessage());
+        }
         if (mInitStart > 0) {
             int dur = (int) (System.currentTimeMillis() - mInitStart) / 1000;
             JsonUtil.put(data, "duration", dur);
@@ -193,7 +192,7 @@ public class Instance extends BaseInstance {
      * On ins load success.
      */
     protected void onInsLoadSuccess() {
-        setAdapterError(null);
+        mLastLoadStatus = null;
         cancelInsLoadTimer();
         setMediationState(MEDIATION_STATE.AVAILABLE);
         JSONObject data = buildReportData();
@@ -210,7 +209,6 @@ public class Instance extends BaseInstance {
 
     @Override
     public void onInsLoadFailed(AdapterError error) {
-        setAdapterError(error);
         setMediationState(MEDIATION_STATE.LOAD_FAILED);
         cancelInsLoadTimer();
         super.onInsLoadFailed(error);
