@@ -74,4 +74,12 @@ public class InterstitialAd extends BaseOmAds {
     public static void setAdListener(InterstitialAdListener listener) {
         OmManager.getInstance().setInterstitialAdListener("", listener);
     }
+
+    public static void addAdListener(InterstitialAdListener listener) {
+        OmManager.getInstance().addInterstitialAdListener("", listener);
+    }
+
+    public static void removeAdListener(InterstitialAdListener listener) {
+        OmManager.getInstance().removeInterstitialAdListener("", listener);
+    }
 }

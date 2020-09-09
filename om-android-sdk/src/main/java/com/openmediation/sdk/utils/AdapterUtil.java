@@ -112,7 +112,7 @@ public class AdapterUtil {
 
     private static AdNetwork getAdNetWork(CustomAdsAdapter adapter) {
         if (adapter != null) {
-            return new AdNetwork(adapter.getAdNetworkId(), adapter.getMediationVersion(), adapter.getAdapterVersion());
+            return new AdNetwork(adapter.getAdNetworkId(), adapter.getAdapterVersion(), adapter.getMediationVersion());
         } else {
             return null;
         }

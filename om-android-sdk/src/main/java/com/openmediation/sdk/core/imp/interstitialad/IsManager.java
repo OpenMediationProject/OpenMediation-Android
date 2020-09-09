@@ -37,8 +37,17 @@ public final class IsManager extends AbstractAdsManager implements IsManagerList
         return isPlacementAvailable();
     }
 
+    @Deprecated
     public void setInterstitialAdListener(InterstitialAdListener listener) {
-        mListenerWrapper.setInterstitialAdListener(listener);
+        mListenerWrapper.addInterstitialListener(listener);
+    }
+
+    public void addInterstitialAdListener(InterstitialAdListener listener) {
+        mListenerWrapper.addInterstitialListener(listener);
+    }
+
+    public void removeInterstitialAdListener(InterstitialAdListener listener) {
+        mListenerWrapper.removeInterstitialListener(listener);
     }
 
     public void setMediationInterstitialAdListener(MediationInterstitialListener listener) {

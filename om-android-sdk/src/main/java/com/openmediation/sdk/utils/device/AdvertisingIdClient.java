@@ -17,7 +17,6 @@ import android.os.RemoteException;
 import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.crash.CrashUtil;
 
-import java.lang.reflect.Method;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class AdvertisingIdClient {
@@ -44,6 +43,13 @@ public class AdvertisingIdClient {
         }
     }
 
+    public static void getGaid(Context context, OnGetGaidListener listener) {
+        AdInfo info = getAdvertisingIdInfo(context);
+        if (listener != null) {
+            listener.onGetGaid(info != null ? info.advertisingId : "");
+        }
+    }
+
     public static AdInfo getAdvertisingIdInfo(Context context) {
         if (Looper.myLooper() == Looper.getMainLooper()) {
             DeveloperLog.LogD("getAdvertisingIdInfo Cannot be called from the main thread");
@@ -61,6 +67,7 @@ public class AdvertisingIdClient {
             if (context.bindService(intent, connection, Context.BIND_AUTO_CREATE)) {
                 AdvertisingInterface adInterface = new AdvertisingInterface(
                         connection.getBinder());
+                DeveloperLog.LogD("Gaid:" + adInterface.getId());
                 return new AdInfo(adInterface.getId(), adInterface.isLimitAdTrackingEnabled(true));
             }
         } catch (Exception e) {
@@ -146,5 +153,9 @@ public class AdvertisingIdClient {
             }
             return limitAdTracking;
         }
+    }
+
+    public interface OnGetGaidListener {
+        void onGetGaid(String gaid);
     }
 }

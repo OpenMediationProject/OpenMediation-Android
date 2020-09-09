@@ -20,6 +20,8 @@ public class SplashAdManager {
 
     private ConcurrentMap<String, SplashAdImp> mSplashAds;
 
+    private ConcurrentMap<String, SplashAdListener> mSplashListeners = new ConcurrentHashMap<>();
+
     public void setSize(int width, int height) {
         setSize("", width, height);
     }
@@ -74,6 +76,9 @@ public class SplashAdManager {
     public void load(String placementId) {
         SplashAdImp splashAdImp = getSplashAd(placementId);
         if (splashAdImp == null) {
+            if (placementId != null && mSplashListeners.containsKey(placementId)) {
+                mSplashListeners.get(placementId).onSplashAdFailed("Placement Not Found");
+            }
             return;
         }
         splashAdImp.loadAd(OmManager.LOAD_TYPE.MANUAL);
@@ -105,6 +110,13 @@ public class SplashAdManager {
     public void setSplashAdListener(String placementId, SplashAdListener listener) {
         SplashAdImp splashAdImp = getSplashAd(placementId);
         if (splashAdImp == null) {
+            if (placementId != null) {
+                if (listener == null) {
+                    mSplashListeners.remove(placementId);
+                } else {
+                    mSplashListeners.put(placementId, listener);
+                }
+            }
             return;
         }
         splashAdImp.setAdListener(listener);
@@ -118,6 +130,9 @@ public class SplashAdManager {
         AdsUtil.callActionReport(EventId.CALLED_SHOW, placementId, null, CommonConstants.SPLASH);
         SplashAdImp splashAdImp = getSplashAd(placementId);
         if (splashAdImp == null) {
+            if (placementId != null && mSplashListeners.containsKey(placementId)) {
+                mSplashListeners.get(placementId).onSplashAdShowFailed("Placement Not Found");
+            }
             return;
         }
         splashAdImp.show(container);

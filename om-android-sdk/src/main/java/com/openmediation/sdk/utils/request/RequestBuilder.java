@@ -333,24 +333,10 @@ public class RequestBuilder {
         body.put(KeyConstants.RequestBody.KEY_ZO, DeviceUtil.getTimeZoneOffset());
         body.put(KeyConstants.RequestBody.KEY_SESSION, DeviceUtil.getSessionId());
         body.put(KeyConstants.RequestBody.KEY_UID, DeviceUtil.getUid());
-        int dType;
-        String did;
-        String gaid = DataCache.getInstance().get("AdvertisingId", String.class);
-        if (!TextUtils.isEmpty(gaid)) {
-            did = gaid;
-            dType = 2;
-        } else if (!TextUtils.isEmpty(ImeiUtil.getIMEI(context))) {
-            did = ImeiUtil.getIMEI(context);
-            dType = 5;
-        } else if (!TextUtils.isEmpty(OaidHelper.getOaid())) {
-            did = OaidHelper.getOaid();
-            dType = 4;
-        } else {
-            did = "";
-            dType = 0;
+        Map<String, Object> gaidMap = getGaidMap(context);
+        for (Map.Entry<String, Object> integerEntry : gaidMap.entrySet()) {
+            body.put(integerEntry.getKey(), integerEntry.getValue());
         }
-        body.put(KeyConstants.RequestBody.KEY_DID, did);
-        body.put(KeyConstants.RequestBody.KEY_DTYPE, dType);
         body.put(KeyConstants.RequestBody.KEY_JB, DeviceUtil.isRoot() ? 1 : 0);
         body.put(KeyConstants.RequestBody.KEY_LANG, map.get(KeyConstants.RequestBody.KEY_LANG));
         body.put(KeyConstants.RequestBody.KEY_LCOUNTRY, map.get(KeyConstants.RequestBody.KEY_LCOUNTRY));
@@ -599,5 +585,28 @@ public class RequestBuilder {
 //        androidBody.put(KeyConstants.Android.KEY_FB_ID, DeviceUtil.getFacebookId(context));
         androidBody.put(KeyConstants.RequestBody.KEY_TDM, DeviceUtil.disk());
         return androidBody;
+    }
+
+    private static Map<String, Object> getGaidMap(Context context) {
+        Map<String, Object> map = new HashMap<>();
+        int dType;
+        String did;
+        String gaid = DataCache.getInstance().get(KeyConstants.RequestBody.KEY_GAID, String.class);
+        if (!TextUtils.isEmpty(gaid)) {
+            did = gaid;
+            dType = 2;
+        } else if (!TextUtils.isEmpty(ImeiUtil.getIMEI(context))) {
+            did = ImeiUtil.getIMEI(context);
+            dType = 5;
+        } else if (!TextUtils.isEmpty(OaidHelper.getOaid())) {
+            did = OaidHelper.getOaid();
+            dType = 4;
+        } else {
+            did = "";
+            dType = 0;
+        }
+        map.put(KeyConstants.RequestBody.KEY_DID, did);
+        map.put(KeyConstants.RequestBody.KEY_DTYPE, dType);
+        return map;
     }
 }

@@ -14,19 +14,31 @@ import com.openmediation.sdk.utils.event.EventId;
 import com.openmediation.sdk.utils.model.Scene;
 import com.openmediation.sdk.video.RewardedVideoListener;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  *
  */
 public class ListenerWrapper {
-    private RewardedVideoListener mRvListener;
-    private InterstitialAdListener mIsListener;
+    private Set<RewardedVideoListener> mRvListeners;
+    private Set<InterstitialAdListener> mIsListeners;
     private MediationRewardVideoListener mMediationRvListener;
     private MediationInterstitialListener mMediationIsListener;
 
     private String mPlacementId;
 
+    ListenerWrapper() {
+        mRvListeners = new HashSet<>();
+        mIsListeners = new HashSet<>();
+    }
+
     private boolean canSendCallback(Object listener) {
         return listener != null;
+    }
+
+    private boolean canSendListCallback(Object listeners) {
+        return listeners != null && !((Set) listeners).isEmpty();
     }
 
     private void sendCallback(Runnable callbackRunnable) {
@@ -35,16 +47,24 @@ public class ListenerWrapper {
         }
     }
 
+    public void addRewardedVideoListener(RewardedVideoListener listener) {
+        mRvListeners.add(listener);
+    }
+
+    public void removeRewardedVideoListener(RewardedVideoListener listener) {
+        mRvListeners.remove(listener);
+    }
+
+    public void addInterstitialListener(InterstitialAdListener listener) {
+        mIsListeners.add(listener);
+    }
+
+    public void removeInterstitialListener(InterstitialAdListener listener) {
+        mIsListeners.remove(listener);
+    }
+
     public void setPlacementId(String placementId) {
         this.mPlacementId = placementId;
-    }
-
-    public void setRewardedVideoListener(RewardedVideoListener listener) {
-        mRvListener = listener;
-    }
-
-    public void setInterstitialAdListener(InterstitialAdListener listener) {
-        mIsListener = listener;
     }
 
     public void setMediationRewardedVideoListener(MediationRewardVideoListener listener) {
@@ -58,12 +78,14 @@ public class ListenerWrapper {
 
     public void onRewardedVideoAvailabilityChanged(final boolean available) {
         DeveloperLog.LogD("onRewardedVideoAvailabilityChanged : " + available);
-        if (canSendCallback(mRvListener)) {
+        if (canSendListCallback(mRvListeners)) {
             sendCallback(new Runnable() {
 
                 @Override
                 public void run() {
-                    mRvListener.onRewardedVideoAvailabilityChanged(available);
+                    for (RewardedVideoListener listener : mRvListeners) {
+                        listener.onRewardedVideoAvailabilityChanged(available);
+                    }
                     if (available) {
                         AdsUtil.callbackActionReport(EventId.CALLBACK_LOAD_SUCCESS, mPlacementId, null, null);
                     } else {
@@ -106,12 +128,14 @@ public class ListenerWrapper {
 
     public void onRewardedVideoAdShowed(final Scene scene) {
         DeveloperLog.LogD("onRewardedVideoAdShowed");
-        if (canSendCallback(mRvListener)) {
+        if (canSendListCallback(mRvListeners)) {
             sendCallback(new Runnable() {
 
                 @Override
                 public void run() {
-                    mRvListener.onRewardedVideoAdShowed(scene);
+                    for (RewardedVideoListener listener : mRvListeners) {
+                        listener.onRewardedVideoAdShowed(scene);
+                    }
                     AdsUtil.callbackActionReport(EventId.CALLBACK_PRESENT_SCREEN, mPlacementId, scene, null);
                 }
             });
@@ -131,12 +155,14 @@ public class ListenerWrapper {
 
     public void onRewardedVideoAdShowFailed(final Scene scene, final Error error) {
         DeveloperLog.LogD("onRewardedVideoAdShowFailed : " + error);
-        if (canSendCallback(mRvListener)) {
+        if (canSendListCallback(mRvListeners)) {
             sendCallback(new Runnable() {
 
                 @Override
                 public void run() {
-                    mRvListener.onRewardedVideoAdShowFailed(scene, error);
+                    for (RewardedVideoListener listener : mRvListeners) {
+                        listener.onRewardedVideoAdShowFailed(scene, error);
+                    }
                     AdsUtil.callbackActionReport(EventId.CALLBACK_SHOW_FAILED, mPlacementId, scene, error);
                 }
             });
@@ -156,12 +182,14 @@ public class ListenerWrapper {
 
     public void onRewardedVideoAdClicked(final Scene scene) {
         DeveloperLog.LogD("onRewardedVideoAdClicked");
-        if (canSendCallback(mRvListener)) {
+        if (canSendListCallback(mRvListeners)) {
             sendCallback(new Runnable() {
 
                 @Override
                 public void run() {
-                    mRvListener.onRewardedVideoAdClicked(scene);
+                    for (RewardedVideoListener listener : mRvListeners) {
+                        listener.onRewardedVideoAdClicked(scene);
+                    }
                     AdsUtil.callbackActionReport(EventId.CALLBACK_CLICK, mPlacementId, scene, null);
                 }
             });
@@ -181,12 +209,14 @@ public class ListenerWrapper {
 
     public void onRewardedVideoAdClosed(final Scene scene) {
         DeveloperLog.LogD("onRewardedVideoAdClosed");
-        if (canSendCallback(mRvListener)) {
+        if (canSendListCallback(mRvListeners)) {
             sendCallback(new Runnable() {
 
                 @Override
                 public void run() {
-                    mRvListener.onRewardedVideoAdClosed(scene);
+                    for (RewardedVideoListener listener : mRvListeners) {
+                        listener.onRewardedVideoAdClosed(scene);
+                    }
                     AdsUtil.callbackActionReport(EventId.CALLBACK_DISMISS_SCREEN, mPlacementId, scene, null);
                 }
             });
@@ -206,12 +236,14 @@ public class ListenerWrapper {
 
     public void onRewardedVideoAdStarted(final Scene scene) {
         DeveloperLog.LogD("onRewardedVideoAdStarted");
-        if (canSendCallback(mRvListener)) {
+        if (canSendListCallback(mRvListeners)) {
             sendCallback(new Runnable() {
 
                 @Override
                 public void run() {
-                    mRvListener.onRewardedVideoAdStarted(scene);
+                    for (RewardedVideoListener listener : mRvListeners) {
+                        listener.onRewardedVideoAdStarted(scene);
+                    }
                 }
             });
         }
@@ -230,12 +262,14 @@ public class ListenerWrapper {
 
     public void onRewardedVideoAdEnded(final Scene scene) {
         DeveloperLog.LogD("onRewardedVideoAdEnded : ");
-        if (canSendCallback(mRvListener)) {
+        if (canSendListCallback(mRvListeners)) {
             sendCallback(new Runnable() {
 
                 @Override
                 public void run() {
-                    mRvListener.onRewardedVideoAdEnded(scene);
+                    for (RewardedVideoListener listener : mRvListeners) {
+                        listener.onRewardedVideoAdEnded(scene);
+                    }
                 }
             });
         }
@@ -254,11 +288,13 @@ public class ListenerWrapper {
 
     public void onRewardedVideoAdRewarded(final Scene scene) {
         DeveloperLog.LogD("onRewardedVideoAdRewarded");
-        if (canSendCallback(mRvListener)) {
+        if (canSendListCallback(mRvListeners)) {
             sendCallback(new Runnable() {
                 @Override
                 public void run() {
-                    mRvListener.onRewardedVideoAdRewarded(scene);
+                    for (RewardedVideoListener listener : mRvListeners) {
+                        listener.onRewardedVideoAdRewarded(scene);
+                    }
                     AdsUtil.callbackActionReport(EventId.CALLBACK_REWARDED, mPlacementId, scene, null);
                 }
             });
@@ -277,12 +313,14 @@ public class ListenerWrapper {
 
     public void onInterstitialAdAvailabilityChanged(final boolean available) {
         DeveloperLog.LogD("onInterstitialAdAvailabilityChanged : " + available);
-        if (canSendCallback(mIsListener)) {
+        if (canSendListCallback(mIsListeners)) {
             sendCallback(new Runnable() {
 
                 @Override
                 public void run() {
-                    mIsListener.onInterstitialAdAvailabilityChanged(available);
+                    for (InterstitialAdListener listener : mIsListeners) {
+                        listener.onInterstitialAdAvailabilityChanged(available);
+                    }
                     if (available) {
                         AdsUtil.callbackActionReport(EventId.CALLBACK_LOAD_SUCCESS, mPlacementId, null, null);
                     } else {
@@ -326,12 +364,14 @@ public class ListenerWrapper {
 
     public void onInterstitialAdShowed(final Scene scene) {
         DeveloperLog.LogD("onInterstitialAdShowed");
-        if (canSendCallback(mIsListener)) {
+        if (canSendListCallback(mIsListeners)) {
             sendCallback(new Runnable() {
 
                 @Override
                 public void run() {
-                    mIsListener.onInterstitialAdShowed(scene);
+                    for (InterstitialAdListener listener : mIsListeners) {
+                        listener.onInterstitialAdShowed(scene);
+                    }
                     AdsUtil.callbackActionReport(EventId.CALLBACK_PRESENT_SCREEN, mPlacementId, scene, null);
                 }
             });
@@ -352,12 +392,14 @@ public class ListenerWrapper {
 
     public void onInterstitialAdShowFailed(final Scene scene, final Error error) {
         DeveloperLog.LogD("onInterstitialAdShowFailed");
-        if (canSendCallback(mIsListener)) {
+        if (canSendListCallback(mIsListeners)) {
             sendCallback(new Runnable() {
 
                 @Override
                 public void run() {
-                    mIsListener.onInterstitialAdShowFailed(scene, error);
+                    for (InterstitialAdListener listener : mIsListeners) {
+                        listener.onInterstitialAdShowFailed(scene, error);
+                    }
                     AdsUtil.callbackActionReport(EventId.CALLBACK_SHOW_FAILED, mPlacementId, scene, error);
                 }
             });
@@ -377,12 +419,14 @@ public class ListenerWrapper {
 
     public void onInterstitialAdClosed(final Scene scene) {
         DeveloperLog.LogD("onInterstitialAdClosed");
-        if (canSendCallback(mIsListener)) {
+        if (canSendListCallback(mIsListeners)) {
             sendCallback(new Runnable() {
 
                 @Override
                 public void run() {
-                    mIsListener.onInterstitialAdClosed(scene);
+                    for (InterstitialAdListener listener : mIsListeners) {
+                        listener.onInterstitialAdClosed(scene);
+                    }
                     AdsUtil.callbackActionReport(EventId.CALLBACK_DISMISS_SCREEN, mPlacementId, scene, null);
                 }
             });
@@ -403,12 +447,14 @@ public class ListenerWrapper {
 
     public void onInterstitialAdClicked(final Scene scene) {
         DeveloperLog.LogD("onInterstitialAdClicked");
-        if (canSendCallback(mIsListener)) {
+        if (canSendListCallback(mIsListeners)) {
             sendCallback(new Runnable() {
 
                 @Override
                 public void run() {
-                    mIsListener.onInterstitialAdClicked(scene);
+                    for (InterstitialAdListener listener : mIsListeners) {
+                        listener.onInterstitialAdClicked(scene);
+                    }
                     AdsUtil.callbackActionReport(EventId.CALLBACK_CLICK, mPlacementId, scene, null);
                 }
             });

@@ -3,6 +3,7 @@
 
 package com.openmediation.sdk.core.imp.rewardedvideo;
 
+import com.openmediation.sdk.utils.SceneUtil;
 import com.openmediation.sdk.utils.model.Instance;
 import com.openmediation.sdk.mediation.MediationRewardVideoListener;
 import com.openmediation.sdk.utils.DeveloperLog;
@@ -10,6 +11,7 @@ import com.openmediation.sdk.utils.helper.IcHelper;
 import com.openmediation.sdk.utils.error.Error;
 import com.openmediation.sdk.utils.error.ErrorCode;
 import com.openmediation.sdk.utils.model.PlacementInfo;
+import com.openmediation.sdk.utils.model.Scene;
 import com.openmediation.sdk.video.RewardedVideoListener;
 import com.openmediation.sdk.core.AbstractAdsManager;
 import com.openmediation.sdk.core.OmManager;
@@ -45,11 +47,23 @@ public final class RvManager extends AbstractAdsManager implements RvManagerList
     }
 
     public void setRewardedExtId(String scene, String extId) {
-        mExtIds.put(scene, extId);
+        Scene placementScene = SceneUtil.getScene(mPlacement, scene);
+        if (placementScene != null) {
+            mExtIds.put(placementScene.getN(), extId);
+        }
     }
 
+    @Deprecated
     public void setRewardedVideoListener(RewardedVideoListener listener) {
-        mListenerWrapper.setRewardedVideoListener(listener);
+        mListenerWrapper.addRewardedVideoListener(listener);
+    }
+
+    public void addRewardedVideoListener(RewardedVideoListener listener) {
+        mListenerWrapper.addRewardedVideoListener(listener);
+    }
+
+    public void removeRewardedVideoListener(RewardedVideoListener listener) {
+        mListenerWrapper.removeRewardedVideoListener(listener);
     }
 
     public void setMediationRewardedVideoListener(MediationRewardVideoListener listener) {

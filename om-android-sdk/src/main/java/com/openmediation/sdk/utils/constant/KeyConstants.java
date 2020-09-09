@@ -295,6 +295,8 @@ public interface KeyConstants {
         String KEY_COPPA = "coppa";
         /*CCPA*/
         String KEY_CCPA = "ccpa";
+
+        String KEY_GAID = "AdvertisingId";
     }
 
     /**

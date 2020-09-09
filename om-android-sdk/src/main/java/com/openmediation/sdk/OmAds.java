@@ -127,8 +127,8 @@ public abstract class OmAds {
 
     /**
      * According to the CCPA
-     * true : If the user has opted out of “sale” of personal information
-     * false : If “sale” of personal information is permitted
+     * true : If the user has opted out of "sale" of personal information
+     * false : If "sale" of personal information is permitted
      * set method of this property must be called before "init", or by default will collect user's information.
      */
     public static void setUSPrivacyLimit(boolean value) {

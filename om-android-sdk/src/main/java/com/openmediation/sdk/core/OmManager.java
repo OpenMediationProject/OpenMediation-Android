@@ -33,6 +33,7 @@ import com.openmediation.sdk.video.RewardedVideoListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,8 +50,8 @@ import static com.openmediation.sdk.OmAds.AD_TYPE;
 public final class OmManager implements InitCallback {
     private Map<String, IsManager> mIsManagers;
     private Map<String, RvManager> mRvManagers;
-    private ConcurrentMap<String, InterstitialAdListener> mIsListeners;
-    private ConcurrentMap<String, RewardedVideoListener> mRvListeners;
+    private ConcurrentMap<String, Set<InterstitialAdListener>> mIsListeners;
+    private ConcurrentMap<String, Set<RewardedVideoListener>> mRvListeners;
 
     private ConcurrentMap<String, MediationInterstitialListener> mMediationIsListeners;
     private ConcurrentMap<String, MediationRewardVideoListener> mMediationRvListeners;
@@ -276,14 +277,47 @@ public final class OmManager implements InitCallback {
      * @param listener    InterstitialAd listener
      */
     public void setInterstitialAdListener(String placementId, InterstitialAdListener listener) {
+        addInterstitialAdListener(placementId, listener);
+    }
+
+    public void addInterstitialAdListener(String placementId, InterstitialAdListener listener) {
+        addIsAdListenerImp(placementId, listener, false);
+    }
+
+    private void addIsAdListenerImp(String placementId, InterstitialAdListener listener, boolean reAdd) {
         IsManager isManager = getIsManager(placementId);
         if (isManager != null) {
-            isManager.setInterstitialAdListener(listener);
+            isManager.addInterstitialAdListener(listener);
         } else {
+            if (reAdd) {
+                return;
+            }
             if (mIsListeners == null) {
                 mIsListeners = new ConcurrentHashMap<>();
             }
-            mIsListeners.put(placementId, listener);
+            Set<InterstitialAdListener> isListeners = mIsListeners.get(placementId);
+            if (isListeners == null) {
+                isListeners = new HashSet<>();
+            }
+            isListeners.add(listener);
+            mIsListeners.put(placementId, isListeners);
+        }
+    }
+
+    public void removeInterstitialAdListener(String placementId, InterstitialAdListener listener) {
+        IsManager isManager = getIsManager(placementId);
+        if (isManager != null) {
+            isManager.removeInterstitialAdListener(listener);
+        } else {
+            if (mIsListeners == null || mIsListeners.isEmpty()) {
+                return;
+            }
+            Set<InterstitialAdListener> isListeners = mIsListeners.get(placementId);
+            if (isListeners == null || isListeners.isEmpty()) {
+                return;
+            }
+            isListeners.remove(listener);
+            mIsListeners.put(placementId, isListeners);
         }
     }
 
@@ -323,7 +357,14 @@ public final class OmManager implements InitCallback {
                 mDelayLoadIs.add(placementId);
             } else {
                 if (mIsListeners != null && mIsListeners.containsKey(placementId)) {
-                    mIsListeners.get(placementId).onInterstitialAdAvailabilityChanged(false);
+                    Set<InterstitialAdListener> isListeners = mIsListeners.get(placementId);
+                    if (isListeners == null || isListeners.isEmpty()) {
+                        AdLog.getSingleton().LogE(ErrorCode.MSG_LOAD_SDK_UNINITIALIZED);
+                    } else {
+                        for (InterstitialAdListener listener : isListeners) {
+                            listener.onInterstitialAdAvailabilityChanged(false);
+                        }
+                    }
                 } else if (mMediationIsListeners != null && mMediationIsListeners.containsKey(placementId)) {
                     mMediationIsListeners.get(placementId).onInterstitialAdLoadFailed(
                             new Error(ErrorCode.CODE_LOAD_SDK_UNINITIALIZED,
@@ -369,10 +410,17 @@ public final class OmManager implements InitCallback {
             isManager.showInterstitialAd(scene);
         } else {
             if (mIsListeners != null && mIsListeners.containsKey(placementId)) {
-                mIsListeners.get(placementId).onInterstitialAdShowFailed(
-                        SceneUtil.getScene(PlacementUtils.getPlacement(placementId), scene),
-                        new Error(ErrorCode.CODE_SHOW_SDK_UNINITIALIZED,
-                                ErrorCode.MSG_SHOW_SDK_UNINITIALIZED, -1));
+                Set<InterstitialAdListener> isListeners = mIsListeners.get(placementId);
+                if (isListeners == null || isListeners.isEmpty()) {
+                    AdLog.getSingleton().LogE(ErrorCode.MSG_SHOW_SDK_UNINITIALIZED);
+                } else {
+                    for (InterstitialAdListener listener : isListeners) {
+                        listener.onInterstitialAdShowFailed(
+                                SceneUtil.getScene(PlacementUtils.getPlacement(placementId), scene),
+                                new Error(ErrorCode.CODE_SHOW_SDK_UNINITIALIZED,
+                                        ErrorCode.MSG_SHOW_SDK_UNINITIALIZED, -1));
+                    }
+                }
             } else if (mMediationIsListeners != null && mMediationIsListeners.containsKey(placementId)) {
                 mMediationIsListeners.get(placementId).onInterstitialAdShowFailed(
                         new Error(ErrorCode.CODE_SHOW_SDK_UNINITIALIZED,
@@ -404,14 +452,47 @@ public final class OmManager implements InitCallback {
      * @param listener    RewardedVideoAd listener
      */
     public void setRewardedVideoListener(String placementId, RewardedVideoListener listener) {
+        addRewardedVideoListener(placementId, listener);
+    }
+
+    public void addRewardedVideoListener(String placementId, RewardedVideoListener listener) {
+        addRvAdListenerImp(placementId, listener, false);
+    }
+
+    private void addRvAdListenerImp(String placementId, RewardedVideoListener listener, boolean reAdd) {
         RvManager rvManager = getRvManager(placementId);
         if (rvManager != null) {
-            rvManager.setRewardedVideoListener(listener);
+            rvManager.addRewardedVideoListener(listener);
         } else {
+            if (reAdd) {
+                return;
+            }
             if (mRvListeners == null) {
                 mRvListeners = new ConcurrentHashMap<>();
             }
-            mRvListeners.put(placementId, listener);
+            Set<RewardedVideoListener> rvListeners = mRvListeners.get(placementId);
+            if (rvListeners == null) {
+                rvListeners = new HashSet<>();
+            }
+            rvListeners.add(listener);
+            mRvListeners.put(placementId, rvListeners);
+        }
+    }
+
+    public void removeRewardedVideoListener(String placementId, RewardedVideoListener listener) {
+        RvManager rvManager = getRvManager(placementId);
+        if (rvManager != null) {
+            rvManager.removeRewardedVideoListener(listener);
+        } else {
+            if (mRvListeners == null || mRvListeners.isEmpty()) {
+                return;
+            }
+            Set<RewardedVideoListener> rvListeners = mRvListeners.get(placementId);
+            if (rvListeners == null || rvListeners.isEmpty()) {
+                return;
+            }
+            rvListeners.remove(listener);
+            mRvListeners.put(placementId, rvListeners);
         }
     }
 
@@ -451,7 +532,14 @@ public final class OmManager implements InitCallback {
                 mDelayLoadRv.add(placementId);
             } else {
                 if (mRvListeners != null && mRvListeners.containsKey(placementId)) {
-                    mRvListeners.get(placementId).onRewardedVideoAvailabilityChanged(false);
+                    Set<RewardedVideoListener> rvListeners = mRvListeners.get(placementId);
+                    if (rvListeners == null || rvListeners.isEmpty()) {
+                        AdLog.getSingleton().LogE(ErrorCode.MSG_LOAD_SDK_UNINITIALIZED);
+                    } else {
+                        for (RewardedVideoListener listener : rvListeners) {
+                            listener.onRewardedVideoAvailabilityChanged(false);
+                        }
+                    }
                 } else if (mMediationRvListeners != null && mMediationRvListeners.containsKey(placementId)) {
                     mMediationRvListeners.get(placementId).onRewardedVideoLoadFailed(
                             new Error(ErrorCode.CODE_LOAD_SDK_UNINITIALIZED,
@@ -497,10 +585,17 @@ public final class OmManager implements InitCallback {
             rvManager.showRewardedVideo(scene);
         } else {
             if (mRvListeners != null && mRvListeners.containsKey(placementId)) {
-                mRvListeners.get(placementId).onRewardedVideoAdShowFailed(
-                        SceneUtil.getScene(PlacementUtils.getPlacement(placementId), scene),
-                        new Error(ErrorCode.CODE_SHOW_SDK_UNINITIALIZED,
-                                ErrorCode.MSG_SHOW_SDK_UNINITIALIZED, -1));
+                Set<RewardedVideoListener> rvListeners = mRvListeners.get(placementId);
+                if (rvListeners == null || rvListeners.isEmpty()) {
+                    AdLog.getSingleton().LogE(ErrorCode.MSG_LOAD_SDK_UNINITIALIZED);
+                } else {
+                    for (RewardedVideoListener listener : rvListeners) {
+                        listener.onRewardedVideoAdShowFailed(
+                                SceneUtil.getScene(PlacementUtils.getPlacement(placementId), scene),
+                                new Error(ErrorCode.CODE_SHOW_SDK_UNINITIALIZED,
+                                        ErrorCode.MSG_SHOW_SDK_UNINITIALIZED, -1));
+                    }
+                }
             } else if (mMediationRvListeners != null && mMediationRvListeners.containsKey(placementId)) {
                 mMediationRvListeners.get(placementId).onRewardedVideoAdShowFailed(
                         new Error(ErrorCode.CODE_SHOW_SDK_UNINITIALIZED,
@@ -531,19 +626,25 @@ public final class OmManager implements InitCallback {
 
     private void setListeners() {
         if (mIsListeners != null && !mIsListeners.isEmpty()) {
-            Set<Map.Entry<String, InterstitialAdListener>> isListenerEntrys = mIsListeners.entrySet();
-            for (Map.Entry<String, InterstitialAdListener> isListenerEntry : isListenerEntrys) {
+            Set<Map.Entry<String, Set<InterstitialAdListener>>> isListenerEntrys = mIsListeners.entrySet();
+            for (Map.Entry<String, Set<InterstitialAdListener>> isListenerEntry : isListenerEntrys) {
                 if (isListenerEntry != null) {
-                    setInterstitialAdListener(isListenerEntry.getKey(), isListenerEntry.getValue());
+                    Set<InterstitialAdListener> isListeners = isListenerEntry.getValue();
+                    for (InterstitialAdListener listener : isListeners) {
+                        addIsAdListenerImp(isListenerEntry.getKey(), listener, true);
+                    }
                 }
             }
             mIsListeners.clear();
         }
         if (mRvListeners != null && !mRvListeners.isEmpty()) {
-            Set<Map.Entry<String, RewardedVideoListener>> rvListenerEntrys = mRvListeners.entrySet();
-            for (Map.Entry<String, RewardedVideoListener> rvListenerEntry : rvListenerEntrys) {
+            Set<Map.Entry<String, Set<RewardedVideoListener>>> rvListenerEntrys = mRvListeners.entrySet();
+            for (Map.Entry<String, Set<RewardedVideoListener>> rvListenerEntry : rvListenerEntrys) {
                 if (rvListenerEntry != null) {
-                    setRewardedVideoListener(rvListenerEntry.getKey(), rvListenerEntry.getValue());
+                    Set<RewardedVideoListener> rvListeners = rvListenerEntry.getValue();
+                    for (RewardedVideoListener listener : rvListeners) {
+                        addRvAdListenerImp(rvListenerEntry.getKey(), listener, true);
+                    }
                 }
             }
             mRvListeners.clear();
@@ -837,7 +938,14 @@ public final class OmManager implements InitCallback {
         if (mDelayLoadIs != null) {
             for (String delayLoadI : mDelayLoadIs) {
                 if (mIsListeners != null && !mIsListeners.isEmpty()) {
-                    mIsListeners.get(delayLoadI).onInterstitialAdAvailabilityChanged(false);
+                    Set<InterstitialAdListener> isListeners = mIsListeners.get(delayLoadI);
+                    if (isListeners == null || isListeners.isEmpty()) {
+                        AdLog.getSingleton().LogE(ErrorCode.MSG_LOAD_SDK_UNINITIALIZED);
+                    } else {
+                        for (InterstitialAdListener listener : isListeners) {
+                            listener.onInterstitialAdAvailabilityChanged(false);
+                        }
+                    }
                 }
 
                 if (mMediationIsListeners != null && !mMediationIsListeners.isEmpty()) {
@@ -849,7 +957,14 @@ public final class OmManager implements InitCallback {
         if (mDelayLoadRv != null) {
             for (String s : mDelayLoadRv) {
                 if (mRvListeners != null && !mRvListeners.isEmpty()) {
-                    mRvListeners.get(s).onRewardedVideoAvailabilityChanged(false);
+                    Set<RewardedVideoListener> rvListeners = mRvListeners.get(s);
+                    if (rvListeners == null || rvListeners.isEmpty()) {
+                        AdLog.getSingleton().LogE(ErrorCode.MSG_LOAD_SDK_UNINITIALIZED);
+                    } else {
+                        for (RewardedVideoListener listener : rvListeners) {
+                            listener.onRewardedVideoAvailabilityChanged(false);
+                        }
+                    }
                 }
 
                 if (mMediationRvListeners != null && !mMediationRvListeners.isEmpty()) {

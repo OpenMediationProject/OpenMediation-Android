@@ -22,7 +22,7 @@ import com.openmediation.sdk.utils.cache.DataCache;
 import com.openmediation.sdk.utils.constant.CommonConstants;
 import com.openmediation.sdk.utils.constant.KeyConstants;
 import com.openmediation.sdk.utils.crash.CrashUtil;
-import com.openmediation.sdk.utils.device.DeviceUtil;
+import com.openmediation.sdk.utils.device.AdvertisingIdClient;
 import com.openmediation.sdk.utils.error.Error;
 import com.openmediation.sdk.utils.error.ErrorBuilder;
 import com.openmediation.sdk.utils.error.ErrorCode;
@@ -130,10 +130,19 @@ public final class InitImp {
         return isInitRunning.get();
     }
 
-    private static void requestConfig(Activity activity, String appKey) throws Exception {
-        DeveloperLog.LogD("Om init request config");
-        //requests Config
-        ConfigurationHelper.getConfiguration(appKey, new InitRequestCallback(activity, appKey));
+    private static void requestConfig(Activity activity, String appKey) {
+        try {
+            DeveloperLog.LogD("Om init request config");
+            //requests Config
+            ConfigurationHelper.getConfiguration(appKey, new InitRequestCallback(activity, appKey));
+        } catch (Exception e) {
+            DeveloperLog.LogD("requestConfig  exception : ", e);
+            CrashUtil.getSingleton().saveException(e);
+            Error error = new Error(ErrorCode.CODE_INIT_UNKNOWN_INTERNAL_ERROR
+                    , ErrorCode.MSG_INIT_UNKNOWN_INTERNAL_ERROR, ErrorCode.CODE_INTERNAL_UNKNOWN_OTHER);
+            DeveloperLog.LogE(error.toString() + ", requestConfig");
+            callbackInitErrorOnUIThread(error);
+        }
     }
 
     /**
@@ -142,8 +151,6 @@ public final class InitImp {
     private static void initUtil() {
         AdapterRepository.getInstance().init();
         DataCache.getInstance().init(AdtUtil.getApplication());
-        DataCache.getInstance().set(DeviceUtil.preFetchDeviceInfo(AdtUtil.getApplication()));
-//        OaidHelper.initOaidServer(AdtUtil.getApplication());
     }
 
     private static void doAfterGetConfig(String appKey, Configurations config) {
@@ -207,24 +214,30 @@ public final class InitImp {
         @Override
         public void run() {
             try {
-                initUtil();
-            } catch (Exception e) {
-                CrashUtil.getSingleton().saveException(e);
-                DeveloperLog.LogD("initUtil exception : ", e);
-            }
-            try {
-                DataCache.getInstance().setMEM(KeyConstants.KEY_APP_KEY, appKey);
-                if (TextUtils.isEmpty(appChannel)) {
-                    appChannel = "";
-                }
-                DataCache.getInstance().setMEM(KeyConstants.KEY_APP_CHANNEL, appChannel);
-                Activity activity = ActLifecycle.getInstance().getActivity();
+                final Activity activity = ActLifecycle.getInstance().getActivity();
                 Error error = SdkUtil.banRun(activity, appKey);
                 if (error != null) {
                     callbackInitErrorOnUIThread(error);
                     return;
                 }
-                requestConfig(activity, appKey);
+                initUtil();
+                DataCache.getInstance().setMEM(KeyConstants.Request.KEY_APP_KEY, appKey);
+                AdvertisingIdClient.getGaid(AdtUtil.getApplication(), new AdvertisingIdClient.OnGetGaidListener() {
+                    @Override
+                    public void onGetGaid(String gaid) {
+                        if (!TextUtils.isEmpty(gaid)) {
+                            DataCache.getInstance().set(KeyConstants.RequestBody.KEY_GAID, gaid);
+                            requestConfig(activity, appKey);
+                        } else {
+                            OaidHelper.getOaid(AdtUtil.getApplication(), new OaidHelper.oaidListener() {
+                                @Override
+                                public void onGetOaid(String oaid) {
+                                    requestConfig(activity, appKey);
+                                }
+                            });
+                        }
+                    }
+                });
             } catch (Exception e) {
                 DeveloperLog.LogD("initOnAsyncThread  exception : ", e);
                 CrashUtil.getSingleton().saveException(e);

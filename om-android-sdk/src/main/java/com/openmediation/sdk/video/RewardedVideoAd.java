@@ -84,4 +84,18 @@ public final class RewardedVideoAd extends BaseOmAds {
     public static void setAdListener(RewardedVideoListener listener) {
         OmManager.getInstance().setRewardedVideoListener("", listener);
     }
+
+    /**
+     * Set the {@link RewardedVideoListener} to default placement that will receive events from the
+     * rewarded video system. Set this to null to stop receiving event callbacks.
+     *
+     * @param listener the listener
+     */
+    public static void addAdListener(RewardedVideoListener listener) {
+        OmManager.getInstance().addRewardedVideoListener("", listener);
+    }
+
+    public static void removeAdListener(RewardedVideoListener listener) {
+        OmManager.getInstance().removeRewardedVideoListener("", listener);
+    }
 }
