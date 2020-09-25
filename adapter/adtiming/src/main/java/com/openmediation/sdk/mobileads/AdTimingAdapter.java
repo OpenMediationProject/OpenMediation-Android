@@ -289,7 +289,7 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
                     for (Map.Entry<String, RewardedVideoCallback> rewardedVideoCallbackEntry : mVideoListeners.entrySet()) {
                         if (rewardedVideoCallbackEntry != null) {
                             rewardedVideoCallbackEntry.getValue().onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
-                                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, adTimingError.toString()));
+                                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, adTimingError.getErrorCode(), adTimingError.getErrorMessage()));
                         }
                     }
                 }
@@ -298,12 +298,12 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
                     for (Map.Entry<String, InterstitialAdCallback> interstitialAdCallbackEntry : mInterstitialListeners.entrySet()) {
                         if (interstitialAdCallbackEntry != null) {
                             interstitialAdCallbackEntry.getValue().onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
-                                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, adTimingError.toString()));
+                                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, adTimingError.getErrorCode(), adTimingError.getErrorMessage()));
                         }
                     }
                 }
             }
-        });
+        }, AdTimingAds.AD_TYPE.INTERACTIVE);
     }
 
     @Override
@@ -349,7 +349,7 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
             InterstitialAdCallback callback = mInterstitialListeners.get(placementId);
             if (callback != null) {
                 callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error.getCode(), error.toString()));
+                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error.getCode(), error.getMessage()));
             }
         } catch (Exception ignored) {
         }
@@ -377,7 +377,7 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
             InterstitialAdCallback callback = mInterstitialListeners.get(placementId);
             if (callback != null) {
                 callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error.getCode(), error.toString()));
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error.getCode(), error.getMessage()));
             }
         } catch (Exception ignored) {
         }
@@ -438,7 +438,7 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
             RewardedVideoCallback callback = mVideoListeners.get(placementId);
             if (callback != null) {
                 callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
-                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error.getCode(), error.toString()));
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error.getCode(), error.getMessage()));
             }
         } catch (Exception ignored) {
         }
@@ -467,7 +467,7 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
             RewardedVideoCallback callback = mVideoListeners.get(placementId);
             if (callback != null) {
                 callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error.getCode(), error.toString()));
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error.getCode(), error.getMessage()));
             }
         } catch (Exception ignored) {
         }

@@ -80,6 +80,7 @@ public class MainActivity extends Activity {
 
     private void initSDK() {
         NewApiUtils.printLog("start init sdk");
+        OmAds.setLogEnable(true);
         OmAds.init(this, NewApiUtils.APPKEY, new InitCallback() {
             @Override
             public void onSuccess() {

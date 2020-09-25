@@ -77,9 +77,9 @@ public class AdTimingBanner extends CustomBannerEvent implements BannerAdListene
                 @Override
                 public void onError(AdTimingError error) {
                     onInsError(AdapterErrorBuilder.buildLoadError(
-                            AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error.toString()));
+                            AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error.getErrorCode(), error.getErrorMessage()));
                 }
-            });
+            }, AdTimingAds.AD_TYPE.INTERACTIVE);
             return;
         }
         loadBanner(activity, config);
@@ -121,7 +121,7 @@ public class AdTimingBanner extends CustomBannerEvent implements BannerAdListene
     public void onBannerAdFailed(String placementId, com.adtiming.mediationsdk.adt.utils.error.AdTimingError error) {
         if (!isDestroyed) {
             onInsError(AdapterErrorBuilder.buildLoadError(
-                    AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error.getCode(), error.toString()));
+                    AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error.getCode(), error.getMessage()));
         }
     }
 

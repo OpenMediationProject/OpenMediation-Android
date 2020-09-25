@@ -77,9 +77,9 @@ public class AdTimingNative extends CustomNativeEvent implements NativeAdListene
                 @Override
                 public void onError(AdTimingError error) {
                     onInsError(AdapterErrorBuilder.buildLoadError(
-                            AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, error.toString()));
+                            AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, error.getErrorCode(), error.getErrorMessage()));
                 }
-            });
+            }, AdTimingAds.AD_TYPE.INTERACTIVE);
             return;
         }
 
@@ -178,7 +178,7 @@ public class AdTimingNative extends CustomNativeEvent implements NativeAdListene
     public void onNativeAdFailed(String placementId, com.adtiming.mediationsdk.adt.utils.error.AdTimingError error) {
         if (!isDestroyed) {
             onInsError(AdapterErrorBuilder.buildLoadError(
-                    AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, error.getCode(), error.toString()));
+                    AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, error.getCode(), error.getMessage()));
         }
     }
 
