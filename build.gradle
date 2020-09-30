@@ -65,14 +65,14 @@ ext {
             // IronSource
             "ironsource"                 : 'com.ironsource.sdk:mediationsdk:6.17.0',
             "mytarget"                   : 'com.my.target:mytarget-sdk:5.8.4',
-            "adtiming"                   : 'com.adtiming:mediation-sdk:6.5.1@aar',
+            "adtiming"                   : 'com.adtiming:mediation-sdk:6.6.1@aar',
             "fyber"                      : '7.5.3',
             "helium"                     : 'com.chartboost:helium:2.0.0',
             "eventbus"                   : 'org.greenrobot:eventbus:3.1.1'
     ]
 
     adapterVersion = [
-            'adtiming'     : '1.3.0',
+            'adtiming'     : '1.3.2',
             'admob'        : '1.3.1',
             'facebook'     : '1.3.0',
             'unity'        : '1.3.0',

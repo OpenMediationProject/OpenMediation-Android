@@ -20,7 +20,7 @@ dependencies {
   implementation 'com.adtiming.om:om-android-sdk:1.3.2'
 
   // AdTiming-Adapter
-  implementation 'com.adtiming.adapters.om:adtiming:1.3.1'  
+  implementation 'com.adtiming.adapters.om:adtiming:1.3.2'  
   // AdMob-Adapter
   implementation 'com.adtiming.adapters.om:admob:1.3.1'
   // Facebook-Adapter

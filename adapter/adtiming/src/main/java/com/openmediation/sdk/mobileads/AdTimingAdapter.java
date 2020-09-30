@@ -259,11 +259,12 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
         return AdTimingInterstitialAd.isReady(adUnitId);
     }
 
-    private void initSDK(Activity activity, String appKey) {
+    private void initSDK(final Activity activity, String appKey) {
         mInitState = InitState.INIT_PENDING;
         AdTimingAds.init(activity, appKey, new InitCallback() {
             @Override
             public void onSuccess() {
+                AdTimingSingleTon.getInstance().initAdTiming(activity);
                 mInitState = InitState.INIT_SUCCESS;
                 if (!mVideoListeners.isEmpty()) {
                     for (Map.Entry<String, RewardedVideoCallback> rewardedVideoCallbackEntry : mVideoListeners.entrySet()) {
@@ -303,7 +304,7 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
                     }
                 }
             }
-        }, AdTimingAds.AD_TYPE.INTERACTIVE);
+        }, AdTimingAds.AD_TYPE.NONE);
     }
 
     @Override

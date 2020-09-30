@@ -24,7 +24,7 @@ public class AdTimingBidAdapter extends BidAdapter {
         }
         if (dataMap != null && dataMap.containsKey(BidConstance.BID_APP_KEY)) {
             String appKey = String.valueOf(dataMap.get(BidConstance.BID_APP_KEY));
-            AdTimingAds.init((Activity) context, appKey, null, AdTimingAds.AD_TYPE.INTERACTIVE);
+            AdTimingAds.init((Activity) context, appKey, null, AdTimingAds.AD_TYPE.NONE);
         }
     }
 

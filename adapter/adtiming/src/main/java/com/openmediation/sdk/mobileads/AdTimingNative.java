@@ -65,7 +65,7 @@ public class AdTimingNative extends CustomNativeEvent implements NativeAdListene
         if (!check(activity, config)) {
             return;
         }
-
+        AdTimingSingleTon.getInstance().initAdTiming(activity);
         if (!AdTimingAds.isInit()) {
             String appKey = config.get("AppKey");
             AdTimingAds.init(activity, appKey, new InitCallback() {
@@ -79,7 +79,7 @@ public class AdTimingNative extends CustomNativeEvent implements NativeAdListene
                     onInsError(AdapterErrorBuilder.buildLoadError(
                             AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, error.getErrorCode(), error.getErrorMessage()));
                 }
-            }, AdTimingAds.AD_TYPE.INTERACTIVE);
+            }, AdTimingAds.AD_TYPE.NONE);
             return;
         }
 
