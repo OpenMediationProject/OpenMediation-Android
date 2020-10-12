@@ -8,6 +8,7 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.chartboost.heliumsdk.HeliumSdk;
+import com.chartboost.heliumsdk.ad.HeliumAdError;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
@@ -19,7 +20,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public class ChartboostBidAdapter extends CustomAdsAdapter implements CbtInitCallback, CbtAdsCallback {
+public class ChartboostBidAdapter extends CustomAdsAdapter implements CbtInitCallback, CbtInterstitialAdCallback, CbtVideoAdCallback {
 
     private final static String APP_KEY = "AppKey";
     private ConcurrentMap<String, RewardedVideoCallback> mRvCallbacks;
@@ -119,10 +120,15 @@ public class ChartboostBidAdapter extends CustomAdsAdapter implements CbtInitCal
                 }
             } else {
                 if (callback != null) {
-                    mRvCallbacks.put(adUnitId, callback);
+                    HeliumAdError error = CbtSingleTon.getInstance().getError(adUnitId);
+                    if (error != null) {
+                        callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error.code, error.message));
+                    } else {
+                        callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "No Fill"));
+                    }
                 }
-                CbtSingleTon.getInstance().setAdsCallback(this);
-                CbtSingleTon.getInstance().loadRewardedVideo(adUnitId);
             }
         } else {
             if (callback != null) {
@@ -146,7 +152,7 @@ public class ChartboostBidAdapter extends CustomAdsAdapter implements CbtInitCal
                 if (callback != null) {
                     mRvCallbacks.put(adUnitId, callback);
                 }
-                CbtSingleTon.getInstance().setAdsCallback(this);
+                CbtSingleTon.getInstance().setVideoAdCallback(this);
                 CbtSingleTon.getInstance().showRewardedVideo(adUnitId);
             } else {
                 callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
@@ -219,10 +225,15 @@ public class ChartboostBidAdapter extends CustomAdsAdapter implements CbtInitCal
                 }
             } else {
                 if (callback != null) {
-                    mIsCallbacks.put(adUnitId, callback);
+                    HeliumAdError error = CbtSingleTon.getInstance().getError(adUnitId);
+                    if (error != null) {
+                        callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error.code, error.message));
+                    } else {
+                        callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "No Fill"));
+                    }
                 }
-                CbtSingleTon.getInstance().setAdsCallback(this);
-                CbtSingleTon.getInstance().loadInterstitial(adUnitId);
             }
         } else {
             if (callback != null) {
@@ -241,7 +252,7 @@ public class ChartboostBidAdapter extends CustomAdsAdapter implements CbtInitCal
                 if (callback != null) {
                     mIsCallbacks.put(adUnitId, callback);
                 }
-                CbtSingleTon.getInstance().setAdsCallback(this);
+                CbtSingleTon.getInstance().setInterstitialAdCallback(this);
                 CbtSingleTon.getInstance().showInterstitial(adUnitId);
             } else {
                 callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
@@ -261,27 +272,6 @@ public class ChartboostBidAdapter extends CustomAdsAdapter implements CbtInitCal
     }
 
     @Override
-    public void didRewardedLoadSuccess(String placementId) {
-        RewardedVideoCallback listener = mRvCallbacks.get(placementId);
-        if (listener == null) {
-            return;
-        }
-        listener.onRewardedVideoLoadSuccess();
-        CbtSingleTon.getInstance().setAdsCallback(null);
-    }
-
-    @Override
-    public void didRewardedLoadFailed(String placementId, String error) {
-        RewardedVideoCallback listener = mRvCallbacks.get(placementId);
-        if (listener == null) {
-            return;
-        }
-        listener.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
-                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
-        CbtSingleTon.getInstance().setAdsCallback(null);
-    }
-
-    @Override
     public void didRewardedShowed(String placementId) {
         RewardedVideoCallback listener = mRvCallbacks.get(placementId);
         if (listener == null) {
@@ -293,14 +283,13 @@ public class ChartboostBidAdapter extends CustomAdsAdapter implements CbtInitCal
     }
 
     @Override
-    public void didRewardedShowFailed(String placementId, String error) {
+    public void didRewardedShowFailed(String placementId, HeliumAdError error) {
         RewardedVideoCallback listener = mRvCallbacks.get(placementId);
         if (listener == null) {
             return;
         }
         listener.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
-        CbtSingleTon.getInstance().setAdsCallback(null);
+                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error.getCode(), error.getMessage()));
     }
 
     @Override
@@ -309,7 +298,6 @@ public class ChartboostBidAdapter extends CustomAdsAdapter implements CbtInitCal
         if (listener != null) {
             listener.onRewardedVideoAdClosed();
         }
-        CbtSingleTon.getInstance().setAdsCallback(null);
     }
 
     @Override
@@ -322,27 +310,6 @@ public class ChartboostBidAdapter extends CustomAdsAdapter implements CbtInitCal
     }
 
     @Override
-    public void didInterstitialLoadSuccess(String placementId) {
-        InterstitialAdCallback listener = mIsCallbacks.get(placementId);
-        if (listener == null) {
-            return;
-        }
-        listener.onInterstitialAdLoadSuccess();
-        CbtSingleTon.getInstance().setAdsCallback(null);
-    }
-
-    @Override
-    public void didInterstitialLoadFailed(String placementId, String error) {
-        InterstitialAdCallback listener = mIsCallbacks.get(placementId);
-        if (listener == null) {
-            return;
-        }
-        listener.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
-        CbtSingleTon.getInstance().setAdsCallback(null);
-    }
-
-    @Override
     public void didInterstitialShowed(String placementId) {
         InterstitialAdCallback listener = mIsCallbacks.get(placementId);
         if (listener == null) {
@@ -352,14 +319,13 @@ public class ChartboostBidAdapter extends CustomAdsAdapter implements CbtInitCal
     }
 
     @Override
-    public void didInterstitialShowFailed(String placementId, String error) {
+    public void didInterstitialShowFailed(String placementId, HeliumAdError error) {
         InterstitialAdCallback listener = mIsCallbacks.get(placementId);
         if (listener == null) {
             return;
         }
         listener.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
-        CbtSingleTon.getInstance().setAdsCallback(null);
+                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error.getCode(), error.getMessage()));
     }
 
     @Override
@@ -368,7 +334,6 @@ public class ChartboostBidAdapter extends CustomAdsAdapter implements CbtInitCal
         if (listener != null) {
             listener.onInterstitialAdClosed();
         }
-        CbtSingleTon.getInstance().setAdsCallback(null);
     }
 
     @Override

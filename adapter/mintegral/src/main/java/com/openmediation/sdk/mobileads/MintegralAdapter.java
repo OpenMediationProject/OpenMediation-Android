@@ -20,6 +20,7 @@ import com.mintegral.msdk.out.MTGBidRewardVideoHandler;
 import com.mintegral.msdk.out.MTGConfiguration;
 import com.mintegral.msdk.out.MTGRewardVideoHandler;
 import com.mintegral.msdk.out.RewardVideoListener;
+import com.mintegral.msdk.out.SDKInitStatusListener;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
@@ -31,9 +32,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MintegralAdapter extends CustomAdsAdapter {
-    private static final String TAG = "OM-Mintegral: ";
     private static final String PAY_LOAD = "pay_load";
-    private boolean mDidInitSdk;
     private ConcurrentHashMap<String, MTGInterstitialVideoHandler> mInterstitialAds;
     private ConcurrentHashMap<String, MTGRewardVideoHandler> mRvAds;
     private ConcurrentHashMap<String, MTGBidInterstitialVideoHandler> mInterstitialBidAds;
@@ -85,7 +84,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
     @Override
     public void setUserAge(Context context, int age) {
         super.setUserAge(context, age);
-        if (!mDidInitSdk) {
+        if (!MintegralSingleTon.getInstance().isInit()) {
             return;
         }
         if (mMIntegralUser == null) {
@@ -98,7 +97,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
     @Override
     public void setUserGender(Context context, String gender) {
         super.setUserGender(context, gender);
-        if (!mDidInitSdk) {
+        if (!MintegralSingleTon.getInstance().isInit()) {
             return;
         }
         if (mMIntegralUser == null) {
@@ -114,16 +113,27 @@ public class MintegralAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void initRewardedVideo(Activity activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
+    public void initRewardedVideo(final Activity activity, Map<String, Object> dataMap, final RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
-        String error = check(activity);
+        final String error = check(activity);
         if (TextUtils.isEmpty(error)) {
-            initSDK(activity.getApplicationContext());
-            if (mDidInitSdk) {
-                if (callback != null) {
-                    callback.onRewardedVideoInitSuccess();
+            initSDK(activity.getApplicationContext(), new SDKInitStatusListener() {
+                @Override
+                public void onInitSuccess() {
+                    if (callback != null) {
+                        callback.onRewardedVideoInitSuccess();
+                    }
+                    setCustomParam(activity);
                 }
-            }
+
+                @Override
+                public void onInitFail() {
+                    if (callback != null) {
+                        callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Mintegral Init Failed"));
+                    }
+                }
+            });
         } else {
             if (callback != null) {
                 callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
@@ -262,16 +272,27 @@ public class MintegralAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
+    public void initInterstitialAd(final Activity activity, Map<String, Object> dataMap, final InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
         String error = check(activity);
         if (TextUtils.isEmpty(error)) {
-            initSDK(activity.getApplicationContext());
-            if (mDidInitSdk) {
-                if (callback != null) {
-                    callback.onInterstitialAdInitSuccess();
+            initSDK(activity.getApplicationContext(), new SDKInitStatusListener() {
+                @Override
+                public void onInitSuccess() {
+                    if (callback != null) {
+                        callback.onInterstitialAdInitSuccess();
+                    }
+                    setCustomParam(activity);
                 }
-            }
+
+                @Override
+                public void onInitFail() {
+                    if (callback != null) {
+                        callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
+                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Mintegral Init Failed"));
+                    }
+                }
+            });
         } else {
             if (callback != null) {
                 callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
@@ -409,22 +430,16 @@ public class MintegralAdapter extends CustomAdsAdapter {
         }
     }
 
-    private void initSDK(Context context) {
-        if (!mDidInitSdk) {
-            mDidInitSdk = true;
-            String[] tmp = mAppKey.split("#");
-            String appId = tmp[0];
-            String key = tmp[1];
-            MIntegralSDK sdk = MIntegralSDKFactory.getMIntegralSDK();
-            Map<String, String> map = sdk.getMTGConfigurationMap(appId, key);
-            sdk.init(map, context);
+    private void initSDK(Context context, SDKInitStatusListener listener) {
+        MintegralSingleTon.getInstance().initSDK(context, mAppKey, listener);
+    }
 
-            if (mUserAge != null) {
-                setUserAge(context, mUserAge);
-            }
-            if (mUserGender != null) {
-                setUserGender(context, mUserGender);
-            }
+    private void setCustomParam(Context context) {
+        if (mUserAge != null) {
+            setUserAge(context, mUserAge);
+        }
+        if (mUserGender != null) {
+            setUserGender(context, mUserGender);
         }
     }
 

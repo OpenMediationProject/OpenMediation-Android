@@ -142,6 +142,7 @@ public class WaterFallHelper {
             }
             response.setLurl(lurl);
             response.setPrice(price);
+            response.setExpire(object.optInt("expire"));
             bidResponses.put(iid, response);
         }
         return bidResponses;
@@ -187,7 +188,6 @@ public class WaterFallHelper {
                 EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_NOT_FOUND, jsonObject);
             }
         }
-        //
         if (instancesList.size() == 0) {
             return Collections.emptyList();
         }
@@ -231,6 +231,10 @@ public class WaterFallHelper {
                 ins.setWfAbt(abt);
                 ins.setBidResponse(null);
                 instancesList.add((Instance) ins);
+            } else {
+                JSONObject jsonObject = PlacementUtils.placementEventParams(placement.getId());
+                JsonUtil.put(jsonObject, "iid", insArray.optInt(i));
+                EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_NOT_FOUND, jsonObject);
             }
         }
         //

@@ -5,13 +5,14 @@ package com.openmediation.sdk.utils;
 
 import android.text.TextUtils;
 
-import com.openmediation.sdk.utils.model.Instance;
 import com.openmediation.sdk.utils.model.BaseInstance;
+import com.openmediation.sdk.utils.model.Instance;
 import com.openmediation.sdk.utils.model.InstanceLoadStatus;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * The type Ins util.
@@ -127,6 +128,30 @@ public class InsUtil {
             }
             //extra insId check in case id is the same as other ad networks'
             if (TextUtils.equals(instanceId, String.valueOf(ins.getId()))) {
+                return ins;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Gets ins by id.
+     *
+     * @param instances  the instances
+     * @param instanceId the instance id
+     * @return the ins by id
+     */
+    public static Instance getInsById(CopyOnWriteArrayList<Instance> instances, int instanceId) {
+        if (instances == null || instances.isEmpty()) {
+            return null;
+        }
+
+        for (Instance ins : instances) {
+            if (ins == null) {
+                continue;
+            }
+            //extra insId check in case id is the same as other ad networks'
+            if (instanceId == ins.getId()) {
                 return ins;
             }
         }

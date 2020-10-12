@@ -188,7 +188,9 @@ public abstract class OmAds {
          * The Interstitial.
          */
         /*Ad type Interstitial*/
-        INTERSTITIAL("interstitial");
+        INTERSTITIAL("interstitial"),
+        /* No Preload*/
+        NONE("none");
 
         private String mValue;
 

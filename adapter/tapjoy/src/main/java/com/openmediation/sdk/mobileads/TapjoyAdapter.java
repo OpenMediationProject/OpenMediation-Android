@@ -66,13 +66,13 @@ public class TapjoyAdapter extends CustomAdsAdapter implements TJConnectListener
     @Override
     public void setGDPRConsent(Context context, boolean consent) {
         super.setGDPRConsent(context, consent);
-        Tapjoy.setUserConsent(consent ? "1" : "0");
+        Tapjoy.getPrivacyPolicy().setUserConsent(consent ? "1" : "0");
     }
 
     @Override
     public void setAgeRestricted(Context context, boolean restricted) {
         super.setAgeRestricted(context, restricted);
-        Tapjoy.belowConsentAge(restricted);
+        Tapjoy.getPrivacyPolicy().setBelowConsentAge(restricted);
     }
 
     @Override
@@ -400,7 +400,7 @@ public class TapjoyAdapter extends CustomAdsAdapter implements TJConnectListener
 
     @Override
     public void onVideoError(TJPlacement tjPlacement, String s) {
-        callbackOnMainThread(2, tjPlacement, null);
+        callbackOnMainThread(2, tjPlacement, new TJError(0, s));
     }
 
     @Override
@@ -425,25 +425,47 @@ public class TapjoyAdapter extends CustomAdsAdapter implements TJConnectListener
                         }
                         break;
                     case 1:
-                        if (videoCallback != null) {
-                            videoCallback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
-                                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, tjError.code, tjError.message));
-                            removeRvCallbackKey(placement);
-                        }
-                        if (isCallback != null) {
-                            isCallback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, tjError.code, tjError.message));
-                            removeIsCallbackKey(placement);
+                        if (tjError != null) {
+                            if (videoCallback != null) {
+                                videoCallback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, tjError.code, tjError.message));
+                                removeRvCallbackKey(placement);
+                            }
+                            if (isCallback != null) {
+                                isCallback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, tjError.code, tjError.message));
+                                removeIsCallbackKey(placement);
+                            }
+                        } else {
+                            if (videoCallback != null) {
+                                videoCallback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "No Fill"));
+                            }
+                            if (isCallback != null) {
+                                isCallback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "No Fill"));
+                            }
                         }
                         break;
                     case 2:
-                        if (videoCallback != null) {
-                            videoCallback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, tjError.code, tjError.message));
-                        }
-                        if (isCallback != null) {
-                            isCallback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, tjError.code, tjError.message));
+                        if (tjError != null) {
+                            if (videoCallback != null) {
+                                videoCallback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, tjError.code, tjError.message));
+                            }
+                            if (isCallback != null) {
+                                isCallback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, tjError.code, tjError.message));
+                            }
+                        } else {
+                            if (videoCallback != null) {
+                                videoCallback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Ad not ready"));
+                            }
+                            if (isCallback != null) {
+                                isCallback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Ad not ready"));
+                            }
                         }
                         break;
                     case 7:
@@ -498,14 +520,26 @@ public class TapjoyAdapter extends CustomAdsAdapter implements TJConnectListener
                         }
                         break;
                     case 9:
-                        if (videoCallback != null) {
-                            videoCallback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
-                                     AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, tjError.code, tjError.message));
-                        }
+                        if (tjError != null) {
+                            if (videoCallback != null) {
+                                videoCallback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
+                                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, tjError.code, tjError.message));
+                            }
 
-                        if (isCallback != null) {
-                            isCallback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
-                                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, tjError.code, tjError.message));
+                            if (isCallback != null) {
+                                isCallback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
+                                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, tjError.code, tjError.message));
+                            }
+                        } else {
+                            if (videoCallback != null) {
+                                videoCallback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
+                                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Init Error"));
+                            }
+
+                            if (isCallback != null) {
+                                isCallback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
+                                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Init Error"));
+                            }
                         }
                         break;
                     default:

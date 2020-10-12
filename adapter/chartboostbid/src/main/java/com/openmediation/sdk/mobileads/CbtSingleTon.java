@@ -38,8 +38,10 @@ public class CbtSingleTon {
     private ConcurrentMap<String, HeliumRewardedAd> mRvAds;
     private ConcurrentMap<String, HeliumInterstitialAd> mIsAds;
 
-    private CbtBidCallback mBidCallback;
-    private CbtAdsCallback mAdsCallback;
+    private ConcurrentMap<String, CbtBidCallback> mBidCallbacks;
+    private ConcurrentMap<String, HeliumAdError> mBidError;
+    private CbtInterstitialAdCallback mInterstitialAdCallback;
+    private CbtVideoAdCallback mVideoAdCallback;
 
     private volatile InitState mInitState = InitState.NOT_INIT;
 
@@ -50,6 +52,8 @@ public class CbtSingleTon {
     private CbtSingleTon() {
         mRvAds = new ConcurrentHashMap<>();
         mIsAds = new ConcurrentHashMap<>();
+        mBidCallbacks = new ConcurrentHashMap<>();
+        mBidError = new ConcurrentHashMap<>();
     }
 
     public static CbtSingleTon getInstance() {
@@ -77,6 +81,7 @@ public class CbtSingleTon {
                         }
                     } else {
                         mInitState = InitState.NOT_INIT;
+                        AdLog.getSingleton().LogD("Helium SDK initialized failed");
                         if (cbtCallback != null) {
                             cbtCallback.initFailed(error.getMessage());
                         }
@@ -94,18 +99,37 @@ public class CbtSingleTon {
         return mInitState;
     }
 
-    void setAdsCallback(CbtAdsCallback callback) {
-        mAdsCallback = callback;
+    void setInterstitialAdCallback(CbtInterstitialAdCallback callback) {
+        mInterstitialAdCallback = callback;
     }
 
-    void setBidCallback(CbtBidCallback callback) {
-        mBidCallback = callback;
+    void setVideoAdCallback(CbtVideoAdCallback callback) {
+        mVideoAdCallback = callback;
+    }
+
+    void addBidCallback(String placementId, CbtBidCallback callback) {
+        if (!TextUtils.isEmpty(placementId) && callback != null) {
+            mBidCallbacks.put(placementId, callback);
+        }
+    }
+
+    void removeBidCallback(String placementId) {
+        if (!TextUtils.isEmpty(placementId)) {
+            mBidCallbacks.remove(placementId);
+        }
     }
 
     void loadRewardedVideo(String adUnitId) {
         HeliumRewardedAd rewardedAd = new HeliumRewardedAd(adUnitId, new InnerRvListener());
         mRvAds.put(adUnitId, rewardedAd);
         rewardedAd.load();
+    }
+
+    HeliumAdError getError(String adUnitId) {
+        if (!TextUtils.isEmpty(adUnitId)) {
+            return mBidError.get(adUnitId);
+        }
+        return null;
     }
 
     boolean isRewardedVideoReady(String adUnitId) {
@@ -143,8 +167,8 @@ public class CbtSingleTon {
         @Override
         public void didReceiveWinningBid(String placementId, HashMap<String, String> hashMap) {
             AdLog.getSingleton().LogD("OM-ChartboostBid RewardVideo ad didReceiveWinningBid, placementId : " + placementId + ", " + hashMap);
-            if (getInstance().mBidCallback != null) {
-                getInstance().mBidCallback.onBidSuccess(placementId, hashMap);
+            if (getInstance().mBidCallbacks.containsKey(placementId)) {
+                getInstance().mBidCallbacks.get(placementId).onBidSuccess(placementId, hashMap);
             }
         }
 
@@ -152,46 +176,44 @@ public class CbtSingleTon {
         public void didCache(String placementId, HeliumAdError error) {
             if (error != null) {
                 AdLog.getSingleton().LogE("OM-ChartboostBid RewardedAd didCache ad error : " + placementId + " " + error.toString());
-                if (getInstance().mBidCallback != null) {
-                    getInstance().mBidCallback.onBidFailed(placementId, error.message);
-                } else {
-                    if (getInstance().mAdsCallback != null) {
-                        getInstance().mAdsCallback.didRewardedLoadFailed(placementId, "Helium " + error.toString());
-                    }
+                if (getInstance().mBidCallbacks.containsKey(placementId)) {
+                    getInstance().mBidCallbacks.get(placementId).onBidFailed(placementId, error.message);
+                }
+                if (!TextUtils.isEmpty(placementId)) {
+                    getInstance().mBidError.put(placementId, error);
                 }
                 return;
             }
-            AdLog.getSingleton().LogD("OM-ChartboostBid RewardedAd didCache ad load success " + placementId);
-            if (getInstance().mAdsCallback != null) {
-                getInstance().mAdsCallback.didRewardedLoadSuccess(placementId);
-            }
+            AdLog.getSingleton().LogD("Helium HeliumRewardedAd didCache ad load success " + placementId);
         }
 
         @Override
         public void didShow(String placementId, HeliumAdError error) {
-            if (getInstance().mAdsCallback == null) {
+            if (getInstance().mVideoAdCallback == null) {
                 return;
             }
             if (error != null) {
-                getInstance().mAdsCallback.didRewardedShowFailed(placementId, "Helium " + error.toString());
+                AdLog.getSingleton().LogE("Helium RewardedAd didCache ad error : " + placementId + " " + error.toString());
+                getInstance().mVideoAdCallback.didRewardedShowFailed(placementId, error);
                 return;
             }
-            AdLog.getSingleton().LogD("OM-ChartboostBid RewardVideo ad display");
-            getInstance().mAdsCallback.didRewardedShowed(placementId);
+            AdLog.getSingleton().LogD("Helium RewardVideo ad display");
+            getInstance().mVideoAdCallback.didRewardedShowed(placementId);
         }
 
         @Override
         public void didClose(String placementId, HeliumAdError error) {
-            AdLog.getSingleton().LogD("OM-ChartboostBid RewardVideo ad close");
-            if (getInstance().mAdsCallback != null) {
-                getInstance().mAdsCallback.didRewardedClosed(placementId);
+            AdLog.getSingleton().LogD("Helium RewardVideo ad close");
+            if (getInstance().mVideoAdCallback != null) {
+                getInstance().mVideoAdCallback.didRewardedClosed(placementId);
             }
         }
 
         @Override
         public void didReceiveReward(String placementId, String s1) {
-            if (getInstance().mAdsCallback != null) {
-                getInstance().mAdsCallback.didRewardedRewarded(placementId);
+            AdLog.getSingleton().LogD("Helium RewardVideo ad didReceiveReward");
+            if (getInstance().mVideoAdCallback != null) {
+                getInstance().mVideoAdCallback.didRewardedRewarded(placementId);
             }
         }
     }
@@ -200,48 +222,47 @@ public class CbtSingleTon {
 
         @Override
         public void didReceiveWinningBid(String placementId, HashMap<String, String> hashMap) {
-            AdLog.getSingleton().LogD("OM-ChartboostBid Interstitial ad didReceiveWinningBid, placementId : " + placementId + ", " + hashMap);
-            if (getInstance().mBidCallback != null) {
-                getInstance().mBidCallback.onBidSuccess(placementId, hashMap);
+            AdLog.getSingleton().LogD("Helium Interstitial ad didReceiveWinningBid, placementId : " + placementId + ", " + hashMap);
+            if (getInstance().mBidCallbacks.containsKey(placementId)) {
+                getInstance().mBidCallbacks.get(placementId).onBidSuccess(placementId, hashMap);
             }
         }
 
         @Override
         public void didCache(String placementId, HeliumAdError error) {
             if (error != null) {
-                if (getInstance().mBidCallback != null) {
-                    getInstance().mBidCallback.onBidFailed(placementId, error.message);
-                } else {
-                    if (getInstance().mAdsCallback != null) {
-                        getInstance().mAdsCallback.didInterstitialLoadFailed(placementId, error.toString());
-                    }
+                AdLog.getSingleton().LogE("Helium Interstitial ad load failed : " + error.toString());
+                if (getInstance().mBidCallbacks.containsKey(placementId)) {
+                    getInstance().mBidCallbacks.get(placementId).onBidFailed(placementId, error.message);
+                }
+                if (!TextUtils.isEmpty(placementId)) {
+                    getInstance().mBidError.put(placementId, error);
                 }
                 return;
             }
-            AdLog.getSingleton().LogD("OM-ChartboostBid Interstitial ad complete");
-            if (getInstance().mAdsCallback != null) {
-                getInstance().mAdsCallback.didInterstitialLoadSuccess(placementId);
-            }
+            AdLog.getSingleton().LogD("Helium Interstitial ad complete");
         }
 
         @Override
         public void didShow(String placementId, HeliumAdError error) {
             if (error != null) {
-                if (getInstance().mAdsCallback != null) {
-                    getInstance().mAdsCallback.didInterstitialShowFailed(placementId, error.toString());
+                AdLog.getSingleton().LogD("Helium Helium Interstitial ad show failed: " + error.toString());
+                if (getInstance().mInterstitialAdCallback != null) {
+                    getInstance().mInterstitialAdCallback.didInterstitialShowFailed(placementId, error);
                 }
                 return;
             }
-            if (getInstance().mAdsCallback != null) {
-                getInstance().mAdsCallback.didInterstitialShowed(placementId);
+            AdLog.getSingleton().LogD("Helium Helium Interstitial ad didShow");
+            if (getInstance().mInterstitialAdCallback != null) {
+                getInstance().mInterstitialAdCallback.didInterstitialShowed(placementId);
             }
         }
 
         @Override
         public void didClose(String placementId, HeliumAdError error) {
-            AdLog.getSingleton().LogD("OM-ChartboostBid Interstitial ad close");
-            if (getInstance().mAdsCallback != null) {
-                getInstance().mAdsCallback.didInterstitialClosed(placementId);
+            AdLog.getSingleton().LogD("Helium Helium Interstitial ad close");
+            if (getInstance().mInterstitialAdCallback != null) {
+                getInstance().mInterstitialAdCallback.didInterstitialClosed(placementId);
             }
         }
     }

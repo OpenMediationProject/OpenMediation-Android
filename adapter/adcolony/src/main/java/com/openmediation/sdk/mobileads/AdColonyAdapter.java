@@ -13,7 +13,6 @@ import com.adcolony.sdk.AdColonyInterstitial;
 import com.adcolony.sdk.AdColonyInterstitialListener;
 import com.adcolony.sdk.AdColonyReward;
 import com.adcolony.sdk.AdColonyRewardListener;
-import com.adcolony.sdk.AdColonyUserMetadata;
 import com.adcolony.sdk.AdColonyZone;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
@@ -56,35 +55,20 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
     @Override
     public void setGDPRConsent(Context context, boolean consent) {
         super.setGDPRConsent(context, consent);
-        mAdColonyOptions.setGDPRConsentString(consent ? "1" : "0");
-        mAdColonyOptions.setGDPRRequired(true);
-        AdColony.setAppOptions(mAdColonyOptions);
-    }
-
-    @Override
-    public void setUserAge(Context context, int age) {
-        super.setUserAge(context, age);
         try {
-            AdColonyUserMetadata userMetadata = mAdColonyOptions.getUserMetadata();
-            if (userMetadata == null) {
-                userMetadata = new AdColonyUserMetadata();
-            }
-            userMetadata.setUserAge(age);
-            mAdColonyOptions.setUserMetadata(userMetadata);
+            mAdColonyOptions.setPrivacyConsentString(AdColonyAppOptions.GDPR, consent ? "1" : "0");
+            mAdColonyOptions.setPrivacyFrameworkRequired(AdColonyAppOptions.GDPR, true);
             AdColony.setAppOptions(mAdColonyOptions);
         } catch (Exception ignored) {
         }
     }
 
     @Override
-    public void setUserGender(Context context, String gender) {
+    public void setUSPrivacyLimit(Context context, boolean value) {
+        super.setUSPrivacyLimit(context, value);
         try {
-            AdColonyUserMetadata userMetadata = mAdColonyOptions.getUserMetadata();
-            if (userMetadata == null) {
-                userMetadata = new AdColonyUserMetadata();
-            }
-            userMetadata.setUserGender(gender);
-            mAdColonyOptions.setUserMetadata(userMetadata);
+            mAdColonyOptions.setPrivacyConsentString(AdColonyAppOptions.CCPA, value ? "1" : "0");
+            mAdColonyOptions.setPrivacyFrameworkRequired(AdColonyAppOptions.CCPA, true);
             AdColony.setAppOptions(mAdColonyOptions);
         } catch (Exception ignored) {
         }

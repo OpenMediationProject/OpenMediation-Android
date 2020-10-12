@@ -4,7 +4,6 @@
 package com.openmediation.sdk.utils.model;
 
 import android.app.Activity;
-import android.content.Context;
 import android.util.SparseArray;
 
 import com.openmediation.sdk.core.runnable.LoadTimeoutRunnable;
@@ -268,37 +267,6 @@ public class Instance extends BaseInstance {
         }
         return instanceKeys;
     }
-
-    public void setGDPRConsent(Context context, boolean consent) {
-        if (mAdapter != null) {
-            mAdapter.setGDPRConsent(context, consent);
-        }
-    }
-
-    public void setAgeRestricted(Context context, boolean restricted) {
-        if (mAdapter != null) {
-            mAdapter.setAgeRestricted(context, restricted);
-        }
-    }
-
-    public void setUserAge(Context context, int age) {
-        if (mAdapter != null) {
-            mAdapter.setUserAge(context, age);
-        }
-    }
-
-    public void setUserGender(Context context, String gender) {
-        if (mAdapter != null) {
-            mAdapter.setUserGender(context, gender);
-        }
-    }
-
-    public void setUSPrivacyLimit(Context context, boolean value) {
-        if (mAdapter != null) {
-            mAdapter.setUSPrivacyLimit(context, value);
-        }
-    }
-
 
     /**
      * The enum Mediation state.

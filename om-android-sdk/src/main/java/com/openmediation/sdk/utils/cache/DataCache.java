@@ -5,6 +5,7 @@ package com.openmediation.sdk.utils.cache;
 
 import android.content.Context;
 
+import com.openmediation.sdk.core.AdapterRepository;
 import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.constant.CommonConstants;
 import com.openmediation.sdk.utils.crash.CrashUtil;
@@ -14,14 +15,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Observable;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Operations on Data Cache
  */
-public class DataCache  extends Observable {
+public class DataCache {
     private static String TABLE_NAME = "table_core";
     private static String TABLE_CREATE_COLUMN = "KEY VARCHAR(30),VALUE VARCHAR";
     private static String TABLE_COLUMN = "KEY,VALUE";
@@ -238,14 +238,9 @@ public class DataCache  extends Observable {
             CrashUtil.getSingleton().saveException(e);
         }
         lock.readLock().unlock();
-
-        notifyObservers();
+        AdapterRepository.getInstance().syncMetaData();
     }
 
-    @Override
-    public synchronized boolean hasChanged() {
-        return true;
-    }
     /**
      * Get t.
      *

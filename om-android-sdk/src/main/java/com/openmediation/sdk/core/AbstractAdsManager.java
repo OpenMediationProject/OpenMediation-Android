@@ -162,7 +162,6 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
     @Override
     public void onResume(Activity activity) {
         if (Preconditions.checkNotNull(activity)) {
-//            mActivity = activity;
             mActivityReference = new WeakReference<>(activity);
             if (mTotalIns != null && !mTotalIns.isEmpty()) {
                 for (Instance in : mTotalIns) {
@@ -175,7 +174,6 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
     @Override
     public void onPause(Activity activity) {
         if (Preconditions.checkNotNull(activity)) {
-//            mActivity = activity;
             mActivityReference = new WeakReference<>(activity);
             if (mTotalIns != null && !mTotalIns.isEmpty()) {
                 for (Instance in : mTotalIns) {
@@ -281,7 +279,6 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
         if (isInShowingProgress || !Preconditions.checkNotNull(mPlacement) || mTotalIns == null || mTotalIns.isEmpty()) {
             return false;
         }
-
         for (Instance in : mTotalIns) {
             if (!isInsAvailable(in)) {
                 resetMediationStateAndNotifyLose(in);
@@ -794,7 +791,6 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
             if (activity == null) {
                 return false;
             }
-//            mActivity = activity;
             mActivityReference = new WeakReference<>(activity);
         }
         return true;
@@ -861,9 +857,13 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
         Set<Integer> ids = mBidResponses.keySet();
         for (Integer id : ids) {
             if (availableIns.contains(id)) {
-                continue;
+                AdTimingBidResponse bidResponse = mBidResponses.get(id);
+                if (bidResponse != null && bidResponse.isExpired()) {
+                    resetMediationStateAndNotifyLose(InsUtil.getInsById(mTotalIns, id));
+                }
+            } else {
+                mBidResponses.remove(id);
             }
-            mBidResponses.remove(id);
         }
     }
 
@@ -907,6 +907,8 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
         if (bidResponse == null) {
             return;
         }
+        mBidResponses.remove(instance.getId());
+        instance.setBidResponse(null);
         AuctionUtil.notifyLose(instance, bidResponse, BidLoseReason.INVENTORY_DID_NOT_MATERIALISE.getValue());
     }
 
@@ -959,46 +961,6 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
         mAllLoadFailedCount.incrementAndGet();
         reportEvent(EventId.NO_MORE_OFFERS, AdsUtil.buildAbtReportData(mPlacement.getWfAbt(),
                 PlacementUtils.placementEventParams(mPlacement != null ? mPlacement.getId() : "")));
-    }
-
-    public void setGDPRConsent(boolean consent) {
-        if (mTotalIns != null && !mTotalIns.isEmpty()) {
-            for (Instance in : mTotalIns) {
-                in.setGDPRConsent(mActivityReference.get(), consent);
-            }
-        }
-    }
-
-    public void setAgeRestricted(boolean restricted) {
-        if (mTotalIns != null && !mTotalIns.isEmpty()) {
-            for (Instance in : mTotalIns) {
-                in.setAgeRestricted(mActivityReference.get(), restricted);
-            }
-        }
-    }
-
-    public void setUserAge(int age) {
-        if (mTotalIns != null && !mTotalIns.isEmpty()) {
-            for (Instance in : mTotalIns) {
-                in.setUserAge(mActivityReference.get(), age);
-            }
-        }
-    }
-
-    public void setUserGender(String gender) {
-        if (mTotalIns != null && !mTotalIns.isEmpty()) {
-            for (Instance in : mTotalIns) {
-                in.setUserGender(mActivityReference.get(), gender);
-            }
-        }
-    }
-
-    public void setUSPrivacyLimit(boolean value) {
-        if (mTotalIns != null && !mTotalIns.isEmpty()) {
-            for (Instance in : mTotalIns) {
-                in.setUSPrivacyLimit(mActivityReference.get(), value);
-            }
-        }
     }
 
     private void storeC2sResult(List<AdTimingBidResponse> c2sResult) {

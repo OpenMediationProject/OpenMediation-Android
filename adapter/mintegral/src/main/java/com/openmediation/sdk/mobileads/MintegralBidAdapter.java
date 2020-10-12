@@ -6,12 +6,10 @@ package com.openmediation.sdk.mobileads;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.mintegral.msdk.MIntegralSDK;
 import com.mintegral.msdk.mtgbid.out.BidListennning;
 import com.mintegral.msdk.mtgbid.out.BidLossCode;
 import com.mintegral.msdk.mtgbid.out.BidManager;
 import com.mintegral.msdk.mtgbid.out.BidResponsed;
-import com.mintegral.msdk.out.MIntegralSDKFactory;
 import com.openmediation.sdk.bid.AdTimingBidResponse;
 import com.openmediation.sdk.bid.BidAdapter;
 import com.openmediation.sdk.bid.BidCallback;
@@ -24,8 +22,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class MintegralBidAdapter extends BidAdapter {
     private static final String CLAZZ = "com.mintegral.msdk.mtgbid.out.BidManager";
+
     private ConcurrentHashMap<String, BidResponsed> mBidResponses;
-    private boolean mDidInitSdk;
     private Context mContext;
 
     public MintegralBidAdapter() {
@@ -35,35 +33,24 @@ public class MintegralBidAdapter extends BidAdapter {
     @Override
     public void initBid(Context context, Map<String, Object> dataMap, BidCallback callback) {
         super.initBid(context, dataMap, callback);
-        mContext = context;
-        initSDK(context, dataMap);
-    }
-
-    private void initSDK(Context context, Map<String, Object> dataMap) {
-        try {
-            if (mDidInitSdk || dataMap == null || context == null) {
-                return;
+        if (context != null) {
+            mContext = context.getApplicationContext();
+            try {
+                String appKey = String.valueOf(dataMap.get(BidConstance.BID_APP_KEY));
+                MintegralSingleTon.getInstance().initSDK(mContext, appKey, null);
+            } catch (Exception ignored) {
             }
-            String appKey = (String) dataMap.get(BidConstance.BID_APP_KEY);
-            String[] tmp = appKey.split("#");
-            String appId = tmp[0];
-            String key = tmp[1];
-            MIntegralSDK sdk = MIntegralSDKFactory.getMIntegralSDK();
-            Map<String, String> map = sdk.getMTGConfigurationMap(appId, key);
-            sdk.init(map, context.getApplicationContext());
-            mDidInitSdk = true;
-        } catch (Exception ignored) {
         }
     }
 
     @Override
     public String getBiddingToken(Context context) {
-        try {
-            Class clazz = Class.forName(CLAZZ);
-            if (mDidInitSdk) {
+        if (MintegralSingleTon.getInstance().isInit()) {
+            try {
+                Class clazz = Class.forName(CLAZZ);
                 return BidManager.getBuyerUid(context);
+            } catch (Exception ignored) {
             }
-        } catch (Exception ignored) {
         }
         return "";
     }
@@ -73,6 +60,7 @@ public class MintegralBidAdapter extends BidAdapter {
         super.executeBid(context, dataMap, callback);
         try {
             Class clazz = Class.forName(CLAZZ);
+            mContext = context.getApplicationContext();
             String unitId = (String) dataMap.get(BidConstance.BID_PLACEMENT_ID);
             if (TextUtils.isEmpty(unitId)) {
                 if (callback != null) {

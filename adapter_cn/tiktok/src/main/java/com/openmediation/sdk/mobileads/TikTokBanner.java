@@ -159,6 +159,11 @@ public class TikTokBanner extends CustomBannerEvent implements TTAdNative.Native
             @Override
             public void onCancel() {
             }
+
+            @Override
+            public void onRefuse() {
+
+            }
         });
     }
 

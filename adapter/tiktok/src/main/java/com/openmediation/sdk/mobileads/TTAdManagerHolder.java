@@ -6,6 +6,7 @@ package com.openmediation.sdk.mobileads;
 import android.content.Context;
 
 import com.bytedance.sdk.openadsdk.TTAdConfig;
+import com.bytedance.sdk.openadsdk.TTAdConstant;
 import com.bytedance.sdk.openadsdk.TTAdManager;
 import com.bytedance.sdk.openadsdk.TTAdSdk;
 
@@ -15,7 +16,7 @@ public class TTAdManagerHolder {
 
     public static TTAdManager get() {
         if (!sInit) {
-            throw new RuntimeException("TTAdSdk is not init, please check.");
+            return null;
         }
         return TTAdSdk.getAdManager();
     }
@@ -33,13 +34,10 @@ public class TTAdManagerHolder {
     private static TTAdConfig buildConfig(Context context, String appId, Boolean consent, Boolean ageRestricted) {
         TTAdConfig.Builder builder = new TTAdConfig.Builder()
                 .appId(appId)
-                .useTextureView(true)
-                .appName(context.getApplicationInfo().loadLabel(context.getPackageManager()).toString())
-                .allowShowPageWhenScreenLock(false)
-                .supportMultiProcess(false);
+                .appName(context.getApplicationInfo().loadLabel(context.getPackageManager()).toString());
         if (consent != null) {
             // 0 close GDRP Privacy protection ，1: open GDRP Privacy protection
-            builder.setGDPR(consent ? 0 : 1);
+            builder.setGDPR(consent ? 1 : 0);
         }
         if (ageRestricted != null) {
             // 0:adult ，1:child

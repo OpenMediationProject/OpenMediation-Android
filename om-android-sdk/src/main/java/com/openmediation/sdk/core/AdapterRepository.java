@@ -11,10 +11,7 @@ import com.openmediation.sdk.utils.AdapterUtil;
 import com.openmediation.sdk.utils.AdtUtil;
 import com.openmediation.sdk.utils.cache.DataCache;
 
-import java.util.Observable;
-import java.util.Observer;
-
-public class AdapterRepository implements Observer {
+public class AdapterRepository {
 
     private static final String KEY_GDPR_CONSENT = "MetaData_GDPRConsent";
     private static final String KEY_AGE_RESTRICTED = "MetaData_AgeRestricted";
@@ -26,16 +23,6 @@ public class AdapterRepository implements Observer {
 
     public static AdapterRepository getInstance() {
         return AdapterRepositoryHolder.mSingleton;
-    }
-
-    public void init() {
-        DataCache.getInstance().addObserver(this);
-    }
-
-    @Override
-    public void update(Observable o, Object arg) {
-        syncMetaData();
-        DataCache.getInstance().deleteObserver(this);
     }
 
     private static class AdapterRepositoryHolder {
@@ -219,7 +206,7 @@ public class AdapterRepository implements Observer {
         }
     }
 
-    private synchronized void syncMetaData() {
+    public synchronized void syncMetaData() {
         saveMetaData();
         mMetaData.setGDPRConsent(DataCache.getInstance().get(KEY_GDPR_CONSENT, boolean.class));
         mMetaData.setAgeRestricted(DataCache.getInstance().get(KEY_AGE_RESTRICTED, boolean.class));

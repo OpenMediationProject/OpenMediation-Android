@@ -79,6 +79,12 @@ public class AppLovinBanner extends CustomBannerEvent implements AppLovinAdLoadL
             return;
         }
         AppLovinAdSize adSize = getAdSize(activity, config);
+        if (adSize == null) {
+            onInsError(AdapterErrorBuilder.buildLoadError(
+                    AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, "unsupported banner size"));
+            return;
+        }
+
         mAppLovinAdView = new AppLovinAdView(mAppLovinSdk, adSize, mInstancesKey, activity);
         mAppLovinAdView.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         mAppLovinAdView.setAdLoadListener(this);
@@ -142,7 +148,7 @@ public class AppLovinBanner extends CustomBannerEvent implements AppLovinAdLoadL
             case DESC_LEADERBOARD:
                 return AppLovinAdSize.LEADER;
             case DESC_RECTANGLE:
-                return AppLovinAdSize.MREC;
+                return null;
             case DESC_SMART:
                 if (isLargeScreen(context)) {
                     return AppLovinAdSize.LEADER;

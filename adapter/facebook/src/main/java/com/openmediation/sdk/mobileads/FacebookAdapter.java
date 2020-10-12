@@ -20,7 +20,6 @@ import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
-import com.openmediation.sdk.utils.AdLog;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

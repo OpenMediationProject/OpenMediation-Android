@@ -234,6 +234,7 @@ public interface KeyConstants {
         String KEY_BTIME = "btime";
         String KEY_RAM = "ram";
         String KEY_TDM = "tdm";
+        String KEY_IFGP = "ifgp";
         /**
          * The constant KEY_ANDROID.
          */

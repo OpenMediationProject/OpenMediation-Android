@@ -20,6 +20,7 @@ final class BidAdapterUtil extends AdapterUtil {
         mBidAdapterPaths = new SparseArray<>();
         mBidAdapterPaths.put(MediationInfo.MEDIATION_ID_1, getBidAdapterPath(MediationInfo.MEDIATION_ID_1));
         mBidAdapterPaths.put(MediationInfo.MEDIATION_ID_3, getBidAdapterPath(MediationInfo.MEDIATION_ID_3));
+        mBidAdapterPaths.put(MediationInfo.MEDIATION_ID_5, getBidAdapterPath(MediationInfo.MEDIATION_ID_5));
         mBidAdapterPaths.put(MediationInfo.MEDIATION_ID_14, getBidAdapterPath(MediationInfo.MEDIATION_ID_14));
         mBidAdapterPaths.put(MediationInfo.MEDIATION_ID_17, getBidAdapterPath(MediationInfo.MEDIATION_ID_17));
     }
@@ -55,6 +56,9 @@ final class BidAdapterUtil extends AdapterUtil {
                 break;
             case MediationInfo.MEDIATION_ID_3:
                 path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_3)).concat(BID_ADAPTER);
+                break;
+            case MediationInfo.MEDIATION_ID_5:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_5)).concat(BID_ADAPTER);
                 break;
             case MediationInfo.MEDIATION_ID_14:
                 path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_14)).concat(BID_ADAPTER);

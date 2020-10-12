@@ -88,7 +88,11 @@ public class Event implements Parcelable {
             ts = jsonObject.optLong("ts");
             eid = jsonObject.optInt("eid", -1);
             msg = jsonObject.optString("msg");
-            pid = jsonObject.optInt("pid", -1);
+            try {
+                pid = Integer.parseInt(jsonObject.optString("pid"));
+            } catch (Exception e) {
+                pid = -1;
+            }
             mid = jsonObject.optInt("mid", -1);
             iid = jsonObject.optInt("iid", -1);
             adapterv = jsonObject.optString("adapterv");

@@ -22,29 +22,29 @@ dependencies {
   // AdTiming-Adapter
   implementation 'com.adtiming.adapters.om:adtiming:1.3.2'  
   // AdMob-Adapter
-  implementation 'com.adtiming.adapters.om:admob:1.3.1'
+  implementation 'com.adtiming.adapters.om:admob:1.3.2'
   // Facebook-Adapter
-  implementation 'com.adtiming.adapters.om:facebook:1.3.0'  
+  implementation 'com.adtiming.adapters.om:facebook:1.3.1'  
   // Unity-Adapter
   implementation 'com.adtiming.adapters.om:unity:1.3.0'
   // Vungle-Adapter
-  implementation 'com.adtiming.adapters.om:vungle:1.3.0'  
+  implementation 'com.adtiming.adapters.om:vungle:1.3.1'  
   // AdColony-Adapter
-  implementation 'com.adtiming.adapters.om:adcolony:1.3.0'
+  implementation 'com.adtiming.adapters.om:adcolony:1.3.1'
   // AppLovin-Adapter
-  implementation 'com.adtiming.adapters.om:applovin:1.3.0'  
+  implementation 'com.adtiming.adapters.om:applovin:1.3.1'  
   // MoPub-Adapter
   implementation 'com.adtiming.adapters.om:mopub:1.3.0'
   // Tapjoy-Adapter
-  implementation 'com.adtiming.adapters.om:tapjoy:1.3.0'
+  implementation 'com.adtiming.adapters.om:tapjoy:1.3.1'
   // Chartboost-Adapter
-  implementation 'com.adtiming.adapters.om:chartboost:1.3.0'  
+  implementation 'com.adtiming.adapters.om:chartboost:1.3.1'  
   // Mintegral-Adapter
-  implementation 'com.adtiming.adapters.om:mintegral:1.4.1'
+  implementation 'com.adtiming.adapters.om:mintegral:1.4.2'
   //TikTok-Adapter
-  implementation 'com.adtiming.adapters.om:tiktok:1.2.0'
+  implementation 'com.adtiming.adapters.om:tiktok:1.2.1'
   //IronSource-Adapter
-  implementation 'com.adtiming.adapters.om:ironsource:1.2.1'
+  implementation 'com.adtiming.adapters.om:ironsource:1.2.2'
   //Fyber-Adapter
   implementation 'com.adtiming.adapters.om:fyber:1.2.0'
 }

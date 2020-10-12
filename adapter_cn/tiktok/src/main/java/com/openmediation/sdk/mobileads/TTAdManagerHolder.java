@@ -39,8 +39,6 @@ public class TTAdManagerHolder {
                 .appId(appId)
                 .useTextureView(true)
                 .appName(context.getApplicationInfo().loadLabel(context.getPackageManager()).toString())
-                .allowShowPageWhenScreenLock(false)
-                .supportMultiProcess(false)
                 .build();
     }
 }

@@ -11,6 +11,7 @@ import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
@@ -50,6 +51,7 @@ public class AdMobBanner extends CustomBannerEvent {
             if (mUSPrivacyLimit != null) {
                 extras.putInt("rdp", mUSPrivacyLimit ? 1 : 0);
             }
+            builder.addNetworkExtrasBundle(com.google.ads.mediation.admob.AdMobAdapter.class, extras);
         }
         return builder.build();
     }
@@ -88,10 +90,11 @@ public class AdMobBanner extends CustomBannerEvent {
             }
 
             @Override
-            public void onAdFailedToLoad(int i) {
+            public void onAdFailedToLoad(LoadAdError loadAdError) {
+                super.onAdFailedToLoad(loadAdError);
                 if (!isDestroyed) {
                     onInsError(AdapterErrorBuilder.buildLoadError(
-                            AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, i, AdMobErrorUtil.getErrorString(i)));
+                            AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, loadAdError.getCode(), loadAdError.getMessage()));
                 }
             }
         });

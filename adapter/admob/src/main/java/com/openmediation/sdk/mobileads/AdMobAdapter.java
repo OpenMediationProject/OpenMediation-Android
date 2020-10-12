@@ -12,9 +12,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
+import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.initialization.InitializationStatus;
@@ -28,7 +30,6 @@ import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
-import com.openmediation.sdk.mobileads.admob.BuildConfig;
 import com.openmediation.sdk.utils.AdLog;
 
 import java.lang.ref.WeakReference;
@@ -64,7 +65,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
 
     @Override
     public String getAdapterVersion() {
-        return BuildConfig.VERSION_NAME;
+        return com.openmediation.sdk.mobileads.admob.BuildConfig.VERSION_NAME;
     }
 
     @Override
@@ -98,6 +99,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
             if (mUSPrivacyLimit != null) {
                 extras.putInt("rdp", mUSPrivacyLimit ? 1 : 0);
             }
+            builder.addNetworkExtrasBundle(com.google.ads.mediation.admob.AdMobAdapter.class, extras);
         }
         return builder.build();
     }
@@ -211,13 +213,11 @@ public class AdMobAdapter extends CustomAdsAdapter {
                         return;
                     }
                     RewardedAd rewardedAd = getRewardedAd(activity, adUnitId);
-                    if (rewardedAd != null) {
-                        if (!rewardedAd.isLoaded()) {
-                            rewardedAd.loadAd(createAdRequest(), createRvLoadListener(adUnitId, callback));
-                        } else {
-                            mAdUnitReadyStatus.put(adUnitId, true);
-                            callback.onRewardedVideoLoadSuccess();
-                        }
+                    if (!rewardedAd.isLoaded()) {
+                        rewardedAd.loadAd(createAdRequest(), createRvLoadListener(adUnitId, callback));
+                    } else {
+                        mAdUnitReadyStatus.put(adUnitId, true);
+                        callback.onRewardedVideoLoadSuccess();
                     }
                 } catch (Exception e) {
                     if (callback != null) {
@@ -295,13 +295,13 @@ public class AdMobAdapter extends CustomAdsAdapter {
             }
 
             @Override
-            public void onRewardedAdFailedToLoad(int i) {
-                super.onRewardedAdFailedToLoad(i);
+            public void onRewardedAdFailedToLoad(LoadAdError loadAdError) {
+                super.onRewardedAdFailedToLoad(loadAdError);
                 mRewardedAds.remove(adUnitId);
                 mRefAct.clear();
                 if (callback != null) {
                     callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
-                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, i, AdMobErrorUtil.getErrorString(i)));
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, loadAdError.getCode(), loadAdError.getMessage()));
                 }
             }
         };
@@ -319,11 +319,11 @@ public class AdMobAdapter extends CustomAdsAdapter {
             }
 
             @Override
-            public void onRewardedAdFailedToShow(int i) {
-                super.onRewardedAdFailedToShow(i);
+            public void onRewardedAdFailedToShow(AdError adError) {
+                super.onRewardedAdFailedToShow(adError);
                 if (callback != null) {
                     callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, i, AdMobErrorUtil.getErrorString(i)));
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, adError.getCode(), adError.getMessage()));
                 }
             }
 
@@ -499,13 +499,13 @@ public class AdMobAdapter extends CustomAdsAdapter {
             }
 
             @Override
-            public void onAdFailedToLoad(int i) {
-                super.onAdFailedToLoad(i);
+            public void onAdFailedToLoad(LoadAdError loadAdError) {
+                super.onAdFailedToLoad(loadAdError);
                 mInterstitialAds.remove(adUnitId);
                 mRefAct.clear();
                 if (callback != null) {
                     callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, i, AdMobErrorUtil.getErrorString(i)));
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, loadAdError.getCode(), loadAdError.getMessage()));
                 }
             }
 

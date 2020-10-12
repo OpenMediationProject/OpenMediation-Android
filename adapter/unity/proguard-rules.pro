@@ -39,7 +39,7 @@
 -keep class com.unity3d.services.** {
    *;
 }
--keep class com.adtiming.mediationsdk.mobileads.** {
-   *;
-}
+
+-keep class com.openmediation.sdk.mediation.** { *; }
+-keep class com.openmediation.sdk.mobileads.** { *; }
 -dontwarn com.google.ar.core.**

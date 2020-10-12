@@ -26,8 +26,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class IronSourceAdapter extends CustomAdsAdapter {
 
-    private static final String TAG = "OM-IronSource";
-
     private static AtomicBoolean mDidInitInterstitial = new AtomicBoolean(false);
 
     private final static List<IronSource.AD_UNIT> mIsAdUnitsToInit =
@@ -230,9 +228,6 @@ public class IronSourceAdapter extends CustomAdsAdapter {
 
     //region ISDemandOnlyInterstitialListener implementation.
     void onInterstitialAdReady(String instanceId) {
-        AdLog.getSingleton().LogD(TAG, String.format("IronSource Interstitial loaded successfully for instance %s "
-                , instanceId));
-
         InterstitialAdCallback callback = mIsCallbacks.get(instanceId);
         if (callback != null) {
             callback.onInterstitialAdLoadSuccess();
@@ -255,9 +250,6 @@ public class IronSourceAdapter extends CustomAdsAdapter {
     }
 
     void onInterstitialAdClosed(String instanceId) {
-        AdLog.getSingleton().LogD(TAG, String.format("IronSource Interstitial closed ad for instance %s",
-                instanceId));
-
         InterstitialAdCallback callback = mIsCallbacks.get(instanceId);
         if (callback != null) {
             callback.onInterstitialAdClosed();
@@ -273,9 +265,6 @@ public class IronSourceAdapter extends CustomAdsAdapter {
     }
 
     void onInterstitialAdClicked(String instanceId) {
-        AdLog.getSingleton().LogD(TAG, String.format("IronSource Interstitial ad clicked for instance %s",
-                instanceId));
-
         InterstitialAdCallback callback = mIsCallbacks.get(instanceId);
         if (callback != null) {
             callback.onInterstitialAdClick();
@@ -287,7 +276,6 @@ public class IronSourceAdapter extends CustomAdsAdapter {
      */
 
     void onRewardedVideoAdLoadSuccess(String instanceId) {
-        AdLog.getSingleton().LogD(TAG, String.format("IronSource load success for instanceId: %s", instanceId));
         RewardedVideoCallback callback = mRvCallbacks.get(instanceId);
         if (callback != null) {
             callback.onRewardedVideoLoadSuccess();
@@ -311,9 +299,6 @@ public class IronSourceAdapter extends CustomAdsAdapter {
     }
 
     void onRewardedVideoAdClosed(String instanceId) {
-        AdLog.getSingleton().LogD(TAG, String.format("IronSource Rewarded Video closed ad for instance %s",
-                instanceId));
-
         RewardedVideoCallback callback = mRvCallbacks.get(instanceId);
         if (callback != null) {
             callback.onRewardedVideoAdEnded();
@@ -322,8 +307,6 @@ public class IronSourceAdapter extends CustomAdsAdapter {
     }
 
     void onRewardedVideoAdRewarded(String instanceId) {
-        AdLog.getSingleton().LogD(TAG, String.format("IronSource Rewarded Video received reward for instance %s", instanceId));
-
         RewardedVideoCallback callback = mRvCallbacks.get(instanceId);
         if (callback != null) {
             callback.onRewardedVideoAdRewarded();
@@ -331,10 +314,6 @@ public class IronSourceAdapter extends CustomAdsAdapter {
     }
 
     void onRewardedVideoAdShowFailed(final String instanceId, IronSourceError error) {
-        final String message = String.format("IronSource Rewarded Video failed to show for instance %s with Error: %s",
-                instanceId, error.getErrorMessage());
-        AdLog.getSingleton().LogE(TAG, message);
-
         RewardedVideoCallback callback = mRvCallbacks.get(instanceId);
         if (callback != null) {
             callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
@@ -343,9 +322,6 @@ public class IronSourceAdapter extends CustomAdsAdapter {
     }
 
     void onRewardedVideoAdClicked(String instanceId) {
-        AdLog.getSingleton().LogD(TAG, String.format("IronSource Rewarded Video clicked for instance %s",
-                instanceId));
-
         RewardedVideoCallback callback = mRvCallbacks.get(instanceId);
         if (callback != null) {
             callback.onRewardedVideoAdClicked();

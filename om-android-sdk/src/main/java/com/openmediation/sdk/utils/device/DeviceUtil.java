@@ -9,17 +9,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
 import android.os.SystemClock;
-import android.text.TextUtils;
 import android.webkit.WebSettings;
 
 import com.openmediation.sdk.utils.AdtUtil;
@@ -28,8 +24,6 @@ import com.openmediation.sdk.utils.cache.DataCache;
 import com.openmediation.sdk.utils.constant.CommonConstants;
 import com.openmediation.sdk.utils.constant.KeyConstants;
 import com.openmediation.sdk.utils.crash.CrashUtil;
-
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -143,54 +137,6 @@ public class DeviceUtil {
             }
         }
         return sb.toString();
-    }
-
-    /**
-     * Gets facebook id.
-     *
-     * @param context the context
-     * @return the facebook id
-     */
-    public static String getFacebookId(Context context) {
-        String facebookId = "";
-        String[] projection = {"aid"};
-        Cursor cursor = null;
-        try {
-            if (!isFacebookInstall(context)) {
-                return facebookId;
-            }
-            cursor = context.getContentResolver().query(Uri.parse("content://com.facebook.katana.provider.AttributionIdProvider"),
-                    projection, null, null, null);
-            if (cursor == null || !cursor.moveToFirst()) {
-                return facebookId;
-            } else {
-                facebookId = cursor.getString(cursor.getColumnIndex("aid"));
-            }
-        } catch (Exception e) {
-            DeveloperLog.LogE("DeviceUtil", e);
-            DeveloperLog.LogE("Facebook ID get fail");
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
-        }
-        if (facebookId == null) {
-            facebookId = "";
-        }
-        return facebookId;
-    }
-
-    /**
-     *
-     */
-    private static boolean isFacebookInstall(Context context) {
-        try {
-            PackageInfo packageInfo = context.getPackageManager().getPackageInfo(CommonConstants.PKG_FB, PackageManager.GET_GIDS);
-            return packageInfo != null;
-        } catch (Exception e) {
-//            DeveloperLog.LogD("DeviceUtil", e);
-        }
-        return false;
     }
 
     /**
@@ -388,9 +334,13 @@ public class DeviceUtil {
         } finally {
             try {
                 if (process != null) {
-                    process.destroy();
+                    process.exitValue();
                 }
-            } catch (Exception ignore) {
+            } catch (Exception e) {
+                try {
+                    process.destroy();
+                } catch (Exception ignore) {
+                }
             }
         }
         return false;
@@ -472,44 +422,13 @@ public class DeviceUtil {
         return map;
     }
 
-    /**
-     * Gets install vending.
-     *
-     * @param context the context
-     * @return the install vending
-     */
-    public static JSONObject getInstallVending(Context context) {
-        LinkedHashMap<String, Integer> map = new LinkedHashMap<>();
-        int intValue;
-        try {
-            PackageManager packageManager = context.getPackageManager();
-            List<ApplicationInfo> installedApplications = packageManager.getInstalledApplications(PackageManager.GET_META_DATA);
-            Map<String, Integer> hashMap = new HashMap();
-            for (ApplicationInfo applicationInfo : installedApplications) {
-                String installerPackageName = packageManager.getInstallerPackageName(applicationInfo.packageName);
-                Integer num = hashMap.get(installerPackageName);
-                if (num == null) {
-                    intValue = 1;
-                } else {
-                    intValue = num.intValue() + 1;
-                }
-                hashMap.put(installerPackageName, intValue);
-            }
-            for (Map.Entry<String, Integer> entry : hashMap.entrySet()) {
-                String str = "other";
-                if (entry.getKey() == null) {
-                    map.put("os", entry.getValue());
-                } else if (entry.getKey().equals(CommonConstants.PKG_GP)) {
-                    map.put("gp", entry.getValue());
-                } else if (map.get(str) == null) {
-                    map.put(str, entry.getValue());
-                } else {
-                    map.put(str, entry.getValue() + map.get(str));
-                }
-            }
-        } catch (Exception e) {
+    public static int ifGp(Context context) {
+        if (context == null) {
+            return 0;
         }
-        return new JSONObject(map);
+        PackageManager manager = context.getPackageManager();
+        String installerPackageName = manager.getInstallerPackageName(context.getPackageName());
+        return CommonConstants.PKG_GP.equals(installerPackageName) ? 1 : 0;
     }
 
     public static long getBtime() {
@@ -544,22 +463,6 @@ public class DeviceUtil {
     }
 
     private static String generateUid() {
-        String androidId = "";
-        try {
-            androidId = android.provider.Settings.Secure.getString(AdtUtil.getApplication().getContentResolver(),
-                    android.provider.Settings.Secure.ANDROID_ID);
-        } catch (Exception e) {
-            androidId = "";
-        }
-        String serial = "serial";
-        try {
-            serial = android.os.Build.class.getField("SERIAL").get(null).toString();
-        } catch (Exception exception) {
-        }
-        if (TextUtils.isEmpty(serial)) {
-            serial = "serial";
-        }
-        // cobines the above with UUID
-        return new UUID(androidId.hashCode(), serial.hashCode()).toString();
+        return UUID.randomUUID().toString();
     }
 }

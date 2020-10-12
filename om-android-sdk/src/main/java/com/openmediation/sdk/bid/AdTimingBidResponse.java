@@ -12,6 +12,12 @@ public class AdTimingBidResponse {
     private String token;
     private String nurl;
     private String lurl;
+    private int expire;
+    private long createTime;
+
+    public AdTimingBidResponse() {
+        createTime = System.currentTimeMillis();
+    }
 
     public void setIid(int iid) {
         this.iid = iid;
@@ -75,5 +81,16 @@ public class AdTimingBidResponse {
 
     public void setLurl(String lurl) {
         this.lurl = lurl;
+    }
+
+    public void setExpire(int expire) {
+        this.expire = expire;
+    }
+
+    public boolean isExpired() {
+        if (expire <= 0) {
+            return false;
+        }
+        return (System.currentTimeMillis() - createTime) > (expire * 60 * 1000);
     }
 }

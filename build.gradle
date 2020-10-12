@@ -39,56 +39,55 @@ ext {
 //support 包相关包的引用
     dependencies = [
             //fb
-            "facebook"                   : 'com.facebook.android:audience-network-sdk:5.9.1',
+            "facebook"                   : 'com.facebook.android:audience-network-sdk:6.0.0',
             //admob
-            "admob"                      : 'com.google.android.gms:play-services-ads:19.1.0',
+            "admob"                      : 'com.google.android.gms:play-services-ads:19.4.0',
             //vungle
-            "vungle"                     : 'com.vungle:publisher-sdk-android:6.5.3',
+            "vungle"                     : 'com.vungle:publisher-sdk-android:6.7.1',
             //AdColony
-            "adcolony"                   : 'com.adcolony:sdk:4.1.4',
+            "adcolony"                   : 'com.adcolony:sdk:4.2.4',
             //Applovin
-            "applovin"                   : 'com.applovin:applovin-sdk:9.12.7',
+            "applovin"                   : 'com.applovin:applovin-sdk:9.14.1',
             //MoPub
-            "mopub"                      : 'com.mopub:mopub-sdk:5.13.0@aar',
+            "mopub"                      : 'com.mopub:mopub-sdk:5.13.1@aar',
             //TapJoy
-            "tapjoy"                     : 'com.tapjoy:tapjoy-android-sdk:12.4.2@aar',
+            "tapjoy"                     : 'com.tapjoy:tapjoy-android-sdk:12.7.0@aar',
             //chartboost
-            "chartboost"                 : 'com.chartboost:chartboost-sdk:8.0.2',
+            "chartboost"                 : 'com.chartboost:chartboost-sdk:8.1.0',
             //unity
-            "unity"                      : 'com.unity3d.ads:unity-ads:3.4.6',
+            "unity"                      : 'com.unity3d.ads:unity-ads:3.4.8',
             //gp-base
-            "play_service_base"          : 'com.google.android.gms:play-services-base:17.3.0',
+            "play_service_base"          : 'com.google.android.gms:play-services-base:17.4.0',
             //gp-ads-identifier
             "play_service_ads_identifier": 'com.google.android.gms:play-services-ads-identifier:17.0.0',
             //Mintegral
-            "mtg_version"                : '14.1.01',
+            "mtg_version"                : '14.4.51',
             // IronSource
-            "ironsource"                 : 'com.ironsource.sdk:mediationsdk:6.17.0',
-            "mytarget"                   : 'com.my.target:mytarget-sdk:5.8.4',
+            "ironsource"                 : 'com.ironsource.sdk:mediationsdk:7.0.1.1',
             "adtiming"                   : 'com.adtiming:mediation-sdk:6.6.1@aar',
-            "fyber"                      : '7.5.3',
-            "helium"                     : 'com.chartboost:helium:2.0.0',
-            "eventbus"                   : 'org.greenrobot:eventbus:3.1.1'
+            "fyber"                      : '7.7.0',
+            "pangle"                     : 'com.bytedance.sdk:pangle-sdk:3.1.5.3',
+            "helium"                     : 'com.chartboost:helium:2.0.4',
+            "eventbus"                   : 'org.greenrobot:eventbus:3.2.0'
     ]
 
     adapterVersion = [
             'adtiming'     : '1.3.2',
-            'admob'        : '1.3.1',
-            'facebook'     : '1.3.0',
+            'admob'        : '1.3.2',
+            'facebook'     : '1.3.1',
             'unity'        : '1.3.0',
-            'vungle'       : '1.3.0',
-            'adcolony'     : '1.3.0',
-            'applovin'     : '1.3.0',
+            'vungle'       : '1.3.1',
+            'adcolony'     : '1.3.1',
+            'applovin'     : '1.3.1',
             'mopub'        : '1.3.0',
-            'tapjoy'       : '1.3.0',
-            'chartboost'   : '1.3.0',
-            'chartboostbid': '1.0.0',
-            'tiktok'       : '1.2.0',
-            'mintegral'    : '1.4.1',
-            'mytarget'     : '1.0.0',
-            'ironsource'   : '1.2.1',
+            'tapjoy'       : '1.3.1',
+            'chartboost'   : '1.3.1',
+            'chartboostbid': '1.1.0',
+            'tiktok'       : '1.2.1',
+            'mintegral'    : '1.4.2',
+            'ironsource'   : '1.2.2',
             'fyber'        : '1.2.0',
-            'tiktok_cn'    : '1.3.0',
+            'tiktok_cn'    : '1.3.1',
             'tencentad_cn' : '1.2.0'
     ]
 }
@@ -122,6 +121,9 @@ allprojects {
         }
         maven {
             url "https://fyber.bintray.com/marketplace"
+        }
+        maven {
+            url "https://dl.bintray.com/mintegral-official/Mintegral_ad_SDK_Android"
         }
     }
 }

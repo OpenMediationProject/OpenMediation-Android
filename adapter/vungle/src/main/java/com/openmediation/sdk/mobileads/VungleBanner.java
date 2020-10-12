@@ -35,6 +35,12 @@ public class VungleBanner extends CustomBannerEvent implements LoadAdCallback, P
     }
 
     @Override
+    public void setUSPrivacyLimit(Context context, boolean value) {
+        super.setUSPrivacyLimit(context, value);
+        Vungle.updateCCPAStatus(value ? Vungle.Consent.OPTED_OUT : Vungle.Consent.OPTED_IN);
+    }
+
+    @Override
     public void loadAd(Activity activity, Map<String, String> config) throws Throwable {
         super.loadAd(activity, config);
         if (!check(activity, config)) {
@@ -77,12 +83,30 @@ public class VungleBanner extends CustomBannerEvent implements LoadAdCallback, P
 
     @Override
     public void onAdEnd(String id, boolean completed, boolean isCTAClicked) {
+
+    }
+
+    @Override
+    public void onAdEnd(String id) {
+
+    }
+
+    @Override
+    public void onAdClick(String id) {
         if (isDestroyed) {
             return;
         }
-        if (isCTAClicked) {
-            onInsClicked();
-        }
+        onInsClicked();
+    }
+
+    @Override
+    public void onAdRewarded(String id) {
+
+    }
+
+    @Override
+    public void onAdLeftApplication(String id) {
+
     }
 
     @Override
@@ -102,21 +126,20 @@ public class VungleBanner extends CustomBannerEvent implements LoadAdCallback, P
     }
 
     private void checkInitAndLoad(final Activity activity, Map<String, String> config) {
-        if (Vungle.isInitialized()) {
-            loadBanner();
-            return;
-        }
         String appKey = config.get("AppKey");
         if (TextUtils.isEmpty(appKey)) {
             onInsError(AdapterErrorBuilder.buildLoadCheckError(
                     AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, "Load Vungle error When init Vungle SDK with empty appKey"));
             return;
         }
-        Vungle.init(appKey, activity.getApplicationContext(), new InitCallback() {
+        VungleSingleTon.getInstance().init(activity, appKey, new InitCallback() {
             @Override
             public void onSuccess() {
                 if (mUserConsent != null) {
                     setGDPRConsent(activity, mUserConsent);
+                }
+                if (mUSPrivacyLimit != null) {
+                    setUSPrivacyLimit(activity, mUSPrivacyLimit);
                 }
                 loadBanner();
             }

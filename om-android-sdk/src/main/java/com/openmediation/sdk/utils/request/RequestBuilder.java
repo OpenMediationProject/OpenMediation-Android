@@ -584,6 +584,7 @@ public class RequestBuilder {
 //        androidBody.put(KeyConstants.Android.KEY_AS, DeviceUtil.getInstallVending(context));
 //        androidBody.put(KeyConstants.Android.KEY_FB_ID, DeviceUtil.getFacebookId(context));
         androidBody.put(KeyConstants.RequestBody.KEY_TDM, DeviceUtil.disk());
+        androidBody.put(KeyConstants.RequestBody.KEY_IFGP, DeviceUtil.ifGp(AdtUtil.getApplication()));
         return androidBody;
     }
 

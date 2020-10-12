@@ -10,6 +10,9 @@ import android.text.TextUtils;
 import com.chartboost.sdk.Chartboost;
 import com.chartboost.sdk.ChartboostDelegate;
 import com.chartboost.sdk.Model.CBError;
+import com.chartboost.sdk.Privacy.model.CCPA;
+import com.chartboost.sdk.Privacy.model.DataUseConsent;
+import com.chartboost.sdk.Privacy.model.GDPR;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
@@ -54,14 +57,12 @@ public class ChartboostAdapter extends CustomAdsAdapter {
                         String[] tmp = mAppKey.split("#");
                         String appId = tmp[0];
                         String signature = tmp[1];
-                        Chartboost.setPIDataUseConsent(activity, Chartboost.CBPIDataUseConsent.YES_BEHAVIORAL);
                         Chartboost.startWithAppId(activity.getApplication(), appId, signature);
                         Chartboost.setDelegate(mCbDelegate);
                         Chartboost.setMediation(Chartboost.CBMediation.CBMediationOther, getAdapterVersion(), "");
                         Chartboost.setShouldRequestInterstitialsInFirstSession(false);
                         Chartboost.setShouldPrefetchVideoContent(false);
                         Chartboost.setAutoCacheAds(true);
-
                     } catch (Exception e) {
                         AdLog.getSingleton().LogE("OM-Chartboost", e.getMessage());
                     }
@@ -81,11 +82,7 @@ public class ChartboostAdapter extends CustomAdsAdapter {
 
     @Override
     public String getMediationVersion() {
-        if (hasInit.get()) {
-            return Chartboost.getSDKVersion();
-        } else {
-            return "";
-        }
+        return Chartboost.getSDKVersion();
     }
 
     @Override
@@ -101,10 +98,24 @@ public class ChartboostAdapter extends CustomAdsAdapter {
     @Override
     public void setGDPRConsent(Context context, boolean consent) {
         super.setGDPRConsent(context, consent);
-        if (consent) {
-            Chartboost.setPIDataUseConsent(context, Chartboost.CBPIDataUseConsent.YES_BEHAVIORAL);
-        } else {
-            Chartboost.setPIDataUseConsent(context, Chartboost.CBPIDataUseConsent.NO_BEHAVIORAL);
+        if (context != null) {
+            if (consent) {
+                Chartboost.addDataUseConsent(context, new GDPR(GDPR.GDPR_CONSENT.BEHAVIORAL));
+            } else {
+                Chartboost.addDataUseConsent(context, new GDPR(GDPR.GDPR_CONSENT.NON_BEHAVIORAL));
+            }
+        }
+    }
+
+    @Override
+    public void setUSPrivacyLimit(Context context, boolean value) {
+        super.setUSPrivacyLimit(context, value);
+        if (context != null) {
+            DataUseConsent dataUseConsent = new CCPA(CCPA.CCPA_CONSENT.OPT_OUT_SALE);
+            if (!value) {
+                dataUseConsent = new CCPA(CCPA.CCPA_CONSENT.OPT_IN_SALE);
+            }
+            Chartboost.addDataUseConsent(context, dataUseConsent);
         }
     }
 

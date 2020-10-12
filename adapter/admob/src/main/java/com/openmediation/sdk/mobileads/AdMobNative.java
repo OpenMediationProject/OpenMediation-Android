@@ -16,6 +16,7 @@ import android.widget.TextView;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.formats.NativeAdOptions;
@@ -65,6 +66,7 @@ public class AdMobNative extends CustomNativeEvent {
             if (mUSPrivacyLimit != null) {
                 extras.putInt("rdp", mUSPrivacyLimit ? 1 : 0);
             }
+            builder.addNetworkExtrasBundle(com.google.ads.mediation.admob.AdMobAdapter.class, extras);
         }
         return builder.build();
     }
@@ -87,7 +89,7 @@ public class AdMobNative extends CustomNativeEvent {
             public void onUnifiedNativeAdLoaded(UnifiedNativeAd unifiedNativeAd) {
                 if (!isDestroyed) {
                     mUnifiedNativeAd = unifiedNativeAd;
-                    mAdInfo.setType(1);
+                    mAdInfo.setType(getMediation());
                     mAdInfo.setTitle(unifiedNativeAd.getHeadline());
                     mAdInfo.setDesc(unifiedNativeAd.getBody());
                     mAdInfo.setCallToActionText(unifiedNativeAd.getCallToAction());
@@ -100,11 +102,13 @@ public class AdMobNative extends CustomNativeEvent {
         //single image
         nativeAdOptionsBuilder.setRequestMultipleImages(false);
         mAdLoader = builder.withNativeAdOptions(nativeAdOptionsBuilder.build()).withAdListener(new AdListener() {
+
             @Override
-            public void onAdFailedToLoad(int errorCode) {
+            public void onAdFailedToLoad(LoadAdError loadAdError) {
+                super.onAdFailedToLoad(loadAdError);
                 if (!isDestroyed) {
                     onInsError(AdapterErrorBuilder.buildLoadError(
-                            AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, errorCode, AdMobErrorUtil.getErrorString(errorCode)));
+                            AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, loadAdError.getCode(), loadAdError.getMessage()));
                 }
             }
 

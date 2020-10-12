@@ -63,6 +63,7 @@ dependencies {
     implementation 'com.mintegral.msdk:reward:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mintegral.msdk:videocommon:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mintegral.msdk:interstitialvideo:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk:mtgbanner:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mintegral.msdk:common:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mintegral.msdk:mtgbid:' + rootProject.ext.dependencies.mtg_version
 
@@ -86,14 +87,15 @@ dependencies {
     implementation project(path: ':adapter:chartboost')
     implementation project(path: ':adapter:tapjoy')
     implementation project(path: ':adapter:mintegral')
-//    implementation(name: 'open_ad_sdk_2.1.5.0', ext: 'aar')
+
+//    implementation rootProject.ext.dependencies.pangle
 //    implementation project(path: ':adapter:tiktok')
     implementation project(path: ':adapter:ironsource')
 
-    //
-    implementation(name: 'open_ad_sdk_3.0.0.1', ext: 'aar')
+    // 国内版
+    implementation(name: 'open_ad_sdk_3.2.5.1', ext: 'aar')
     implementation project(path: ':adapter_cn:tiktok')
-    implementation(name: 'GDTSDK.unionNormal.4.211.1081', ext: 'aar')
+    implementation(name: 'GDTSDK.unionNoPlugin.4.270.1140', ext: 'aar')
     implementation project(path: ':adapter_cn:tencentad')
     implementation project(path: ':adapter:fyber')
     implementation project(path: ':miit_mdid_1.0.10')

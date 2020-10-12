@@ -4,6 +4,7 @@
 package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Handler;
 import android.os.Looper;
@@ -34,6 +35,14 @@ public class TikTokAdapter extends CustomAdsAdapter {
     public TikTokAdapter() {
         mTTRvAds = new ConcurrentHashMap<>();
         mTTFvAds = new ConcurrentHashMap<>();
+    }
+
+    @Override
+    public void setGDPRConsent(Context context, boolean consent) {
+        super.setGDPRConsent(context, consent);
+        if (TTAdManagerHolder.get() != null) {
+            TTAdManagerHolder.get().setGdpr(consent ? 1 : 0);
+        }
     }
 
     @Override
@@ -282,7 +291,9 @@ public class TikTokAdapter extends CustomAdsAdapter {
     private void realLoadFullScreenVideoAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
         AdSlot adSlot = buildAdSlotReq(activity, adUnitId);
         InnerIsAdListener listener = new InnerIsAdListener(callback, adUnitId);
-        mTTAdNative.loadFullScreenVideoAd(adSlot, listener);
+        if (mTTAdNative != null) {
+            mTTAdNative.loadFullScreenVideoAd(adSlot, listener);
+        }
     }
 
     private static class InnerAdInteractionListener implements TTFullScreenVideoAd.FullScreenVideoAdInteractionListener {
@@ -330,7 +341,9 @@ public class TikTokAdapter extends CustomAdsAdapter {
 
     private AdSlot buildAdSlotReq(Activity activity, final String adUnitId) {
         if (mTTAdNative == null) {
-            mTTAdNative = TTAdManagerHolder.get().createAdNative(activity.getApplicationContext());
+            if (TTAdManagerHolder.get() != null) {
+                mTTAdNative = TTAdManagerHolder.get().createAdNative(activity.getApplicationContext());
+            }
         }
         int orientation = TTAdConstant.HORIZONTAL;
         if (activity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
@@ -432,6 +445,10 @@ public class TikTokAdapter extends CustomAdsAdapter {
 
         @Override
         public void onRewardVerify(boolean rewardVerify, int rewardAmount, String rewardName) {
+        }
+
+        @Override
+        public void onSkippedVideo() {
         }
 
     }

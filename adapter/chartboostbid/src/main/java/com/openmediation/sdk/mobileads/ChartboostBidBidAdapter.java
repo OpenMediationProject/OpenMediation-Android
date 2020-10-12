@@ -48,9 +48,10 @@ public class ChartboostBidBidAdapter extends BidAdapter implements CbtBidCallbac
             return;
         }
 
-        CbtSingleTon.getInstance().setBidCallback(this);
         int adType = (int) dataMap.get(BidConstance.BID_AD_TYPE);
         String adUnitId = (String) dataMap.get(BidConstance.BID_PLACEMENT_ID);
+
+        CbtSingleTon.getInstance().addBidCallback(adUnitId, this);
         mBidCallbacks.put(adUnitId, callback);
         if (adType == BidConstance.INTERSTITIAL) {
             CbtSingleTon.getInstance().loadInterstitial(adUnitId);
@@ -76,7 +77,7 @@ public class ChartboostBidBidAdapter extends BidAdapter implements CbtBidCallbac
 
     @Override
     public void onBidSuccess(String placementId, Map<String, String> map) {
-        CbtSingleTon.getInstance().setBidCallback(null);
+        CbtSingleTon.getInstance().removeBidCallback(placementId);
         BidCallback callback = mBidCallbacks.get(placementId);
         if (callback == null) {
             return;
@@ -94,7 +95,7 @@ public class ChartboostBidBidAdapter extends BidAdapter implements CbtBidCallbac
 
     @Override
     public void onBidFailed(String placementId, String error) {
-        CbtSingleTon.getInstance().setBidCallback(null);
+        CbtSingleTon.getInstance().removeBidCallback(placementId);
         BidCallback callback = mBidCallbacks.get(placementId);
         if (callback == null) {
             return;
