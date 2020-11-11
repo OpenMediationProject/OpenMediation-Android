@@ -22,7 +22,6 @@ import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
-import com.openmediation.sdk.mobileads.mopub.BuildConfig;
 
 import java.util.Map;
 import java.util.Set;
@@ -59,7 +58,7 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
 
     @Override
     public String getAdapterVersion() {
-        return BuildConfig.VERSION_NAME;
+        return com.openmediation.sdk.mobileads.mopub.BuildConfig.VERSION_NAME;
     }
 
     @Override

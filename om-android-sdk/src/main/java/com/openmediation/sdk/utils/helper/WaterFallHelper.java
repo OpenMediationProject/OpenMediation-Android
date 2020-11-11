@@ -69,15 +69,6 @@ public class WaterFallHelper {
         return testInstanceMap;
     }
 
-
-    /**
-     * Wf request.
-     *
-     * @param type      the type
-     * @param s2sResult the response list
-     * @param callback  the callback
-     * @throws Exception the exception
-     */
     public static void wfRequest(PlacementInfo info, OmManager.LOAD_TYPE type,
                                  List<AdTimingBidResponse> c2sResult,
                                  List<AdTimingBidResponse> s2sResult,

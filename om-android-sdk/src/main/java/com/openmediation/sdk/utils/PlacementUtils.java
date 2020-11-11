@@ -69,13 +69,20 @@ public class PlacementUtils {
         }
 
         Set<String> keys = config.getPls().keySet();
+        List<Placement> placements = new ArrayList<>();
         for (String key : keys) {
             Placement placement = config.getPls().get(key);
-            if (placement != null && placement.getT() == adType && placement.getMain() == 1) {
+            if (placement == null || placement.getT() != adType) {
+                continue;
+            }
+            placements.add(placement);
+        }
+        for (Placement placement : placements) {
+            if (placement.getMain() == 1) {
                 return placement;
             }
         }
-        return null;
+        return placements.isEmpty() ? null : placements.get(0);
     }
 
     /**

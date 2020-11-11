@@ -14,9 +14,9 @@ import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.openmediation.sdk.mobileads.unity.BuildConfig;
 import com.openmediation.sdk.utils.AdLog;
+import com.unity3d.ads.IUnityAdsInitializationListener;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
-import com.unity3d.ads.metadata.MediationMetaData;
 import com.unity3d.ads.metadata.MetaData;
 
 import java.util.Map;
@@ -25,14 +25,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedListener {
 
-    private static final String TAG = "Om-Unity";
+    private static final String TAG = "Unity";
 
     private ConcurrentLinkedQueue<String> mRvLoadTrigerIds;
     private ConcurrentLinkedQueue<String> mIsLoadTrigerIds;
     private ConcurrentHashMap<String, InterstitialAdCallback> mIsCallbacks;
     private ConcurrentHashMap<String, RewardedVideoCallback> mRvCallbacks;
-
-    private boolean mDidInit = false;
 
     public UnityAdapter() {
         mIsLoadTrigerIds = new ConcurrentLinkedQueue<>();
@@ -87,30 +85,33 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
         }
     }
 
-    private synchronized void initSDK(Activity activity) {
-        if (!mDidInit) {
-            MediationMetaData mediationMetaData = new MediationMetaData(activity);
-            mediationMetaData.setName("Om");
-            mediationMetaData.setVersion(BuildConfig.VERSION_NAME);
-            mediationMetaData.commit();
-            UnityAds.addListener(this);
-            UnityAds.initialize(activity, mAppKey);
-            mDidInit = true;
-        }
+    private synchronized void initSDK(Activity activity, IUnityAdsInitializationListener listener) {
+        UnityAds.addListener(this);
+        UnitySingleTon.getInstance().init(activity, mAppKey, listener);
     }
 
     @Override
     public void initRewardedVideo(Activity activity, Map<String, Object> dataMap
-            , RewardedVideoCallback callback) {
+            , final RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
         String error = check(activity);
         if (TextUtils.isEmpty(error)) {
-            initSDK(activity);
-            if (mDidInit) {
-                if (callback != null) {
-                    callback.onRewardedVideoInitSuccess();
+            initSDK(activity, new IUnityAdsInitializationListener() {
+                @Override
+                public void onInitializationComplete() {
+                    if (callback != null) {
+                        callback.onRewardedVideoInitSuccess();
+                    }
                 }
-            }
+
+                @Override
+                public void onInitializationFailed(UnityAds.UnityAdsInitializationError error, String message) {
+                    if (callback != null) {
+                        callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, message));
+                    }
+                }
+            });
         } else {
             if (callback != null) {
                 callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
@@ -176,16 +177,26 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
     }
 
     @Override
-    public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
+    public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, final InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
         String error = check(activity);
         if (TextUtils.isEmpty(error)) {
-            initSDK(activity);
-            if (mDidInit) {
-                if (callback != null) {
-                    callback.onInterstitialAdInitSuccess();
+            initSDK(activity, new IUnityAdsInitializationListener() {
+                @Override
+                public void onInitializationComplete() {
+                    if (callback != null) {
+                        callback.onInterstitialAdInitSuccess();
+                    }
                 }
-            }
+
+                @Override
+                public void onInitializationFailed(UnityAds.UnityAdsInitializationError error, String message) {
+                    if (callback != null) {
+                        callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
+                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, message));
+                    }
+                }
+            });
         } else {
             if (callback != null) {
                 callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
@@ -283,7 +294,7 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
                         rvCallback.onRewardedVideoLoadSuccess();
                     } else {
                         rvCallback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
-                                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, newState.name()));
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, newState.name()));
                     }
                     mRvLoadTrigerIds.remove(placementId);
                 }

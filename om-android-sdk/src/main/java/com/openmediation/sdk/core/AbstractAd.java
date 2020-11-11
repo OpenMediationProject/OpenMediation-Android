@@ -160,6 +160,8 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
 
     /**
      * On ad show failed callback.
+     *
+     * @param error error message
      */
     protected void onAdShowFailedCallback(String error) {
     }
@@ -231,7 +233,7 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
     public void onBidComplete(List<AdTimingBidResponse> c2sResponses, List<AdTimingBidResponse> s2sResponses) {
         try {
             WaterFallHelper.wfRequest(getPlacementInfo(), mLoadType, c2sResponses, s2sResponses,
-                    InsUtil.getInstanceLoadStatuses(mLastInstances),this);
+                    InsUtil.getInstanceLoadStatuses(mLastInstances), this);
             if (mBidResponses == null) {
                 mBidResponses = new HashMap<>();
             }

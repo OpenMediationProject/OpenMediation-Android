@@ -5,6 +5,8 @@ package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class TikTokSplash extends CustomSplashEvent implements TTAdNative.SplashAdListener, TTSplashAd.AdInteractionListener {
-    private static String TAG = "OM-TikTok: ";
+    private static String TAG = "TikTok: ";
 
     private static final String CONFIG_TIMEOUT = "Timeout";
     private static final String CONFIG_WIDTH = "Width";
@@ -101,27 +103,32 @@ public class TikTokSplash extends CustomSplashEvent implements TTAdNative.Splash
     }
 
     @Override
-    public void show(ViewGroup container) {
+    public void show(final ViewGroup container) {
         if (!isReady()) {
             onInsShowFailed(AdapterErrorBuilder.buildShowError(
                     AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, "SplashAd not ready"));
             return;
         }
-        try {
-            TTSplashAd splashAd = mSplashAdMap.get(mInstancesKey);
-            mSplashAdMap.remove(mInstancesKey);
-            View splashView = splashAd.getSplashView();
-            if (splashView.getParent() instanceof ViewGroup) {
-                ViewGroup viewGroup = (ViewGroup) splashView.getParent();
-                viewGroup.removeView(splashView);
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    TTSplashAd splashAd = mSplashAdMap.get(mInstancesKey);
+                    mSplashAdMap.remove(mInstancesKey);
+                    View splashView = splashAd.getSplashView();
+                    if (splashView.getParent() instanceof ViewGroup) {
+                        ViewGroup viewGroup = (ViewGroup) splashView.getParent();
+                        viewGroup.removeView(splashView);
+                    }
+                    container.removeAllViews();
+                    container.addView(splashView);
+                    splashAd.setSplashInteractionListener(TikTokSplash.this);
+                } catch (Exception e) {
+                    onInsShowFailed(AdapterErrorBuilder.buildShowError(
+                            AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, e.getMessage()));
+                }
             }
-            container.removeAllViews();
-            container.addView(splashView);
-            splashAd.setSplashInteractionListener(this);
-        } catch (Exception e) {
-            onInsShowFailed(AdapterErrorBuilder.buildShowError(
-                    AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, e.getMessage()));
-        }
+        });
     }
 
     @Override

@@ -3,11 +3,14 @@ package com.openmediation.sdk.mobileads;
 import android.app.Activity;
 import android.text.TextUtils;
 
-import com.openmediation.sdk.mobileads.ironsource.BuildConfig;
 import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.logger.IronSourceError;
+import com.ironsource.mediationsdk.model.Placement;
 import com.ironsource.mediationsdk.sdk.ISDemandOnlyInterstitialListener;
 import com.ironsource.mediationsdk.sdk.ISDemandOnlyRewardedVideoListener;
+import com.ironsource.mediationsdk.sdk.InterstitialListener;
+import com.ironsource.mediationsdk.sdk.RewardedVideoListener;
+import com.openmediation.sdk.mobileads.ironsource.BuildConfig;
 import com.openmediation.sdk.utils.AdLog;
 
 import java.lang.ref.WeakReference;
@@ -18,7 +21,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * A centralized {@link ISDemandOnlyRewardedVideoListener} to forward IronSource ad events
  * to all {@link IronSourceAdapter} instances.
  */
-class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOnlyInterstitialListener {
+class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOnlyInterstitialListener,
+        RewardedVideoListener, InterstitialListener {
 
     /**
      * Constant used for IronSource internal reporting.
@@ -33,6 +37,12 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
      */
     private ConcurrentHashMap<String, IronSourceAdapter.INSTANCE_STATE> availableStates;
 
+    /**
+     * user mediation API only one InterstitialAd and RewardedVideoAd
+     */
+    private String mLastMediationIsInsId, mLastMediationVideoInsId;
+    private WeakReference<IronSourceAdapter> mLastIsAdapter, mLastVideoAdapter;
+
     static IronSourceManager getInstance() {
         return instance;
     }
@@ -42,12 +52,20 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
         availableStates = new ConcurrentHashMap<>();
         IronSource.setISDemandOnlyRewardedVideoListener(this);
         IronSource.setISDemandOnlyInterstitialListener(this);
+
+        // MediationAPI
+        IronSource.setRewardedVideoListener(this);
+        IronSource.setInterstitialListener(this);
     }
 
     void initIronSourceSDK(Activity activity, String appKey, List<IronSource.AD_UNIT> adUnits) {
         IronSource.setMediationType(MEDIATION_NAME + BuildConfig.VERSION_NAME);
         if (adUnits.size() > 0) {
-            IronSource.initISDemandOnly(activity, appKey, adUnits.toArray(new IronSource.AD_UNIT[adUnits.size()]));
+            if (IronSourceSetting.isMediationMode()) {
+                IronSource.init(activity, appKey, adUnits.toArray(new IronSource.AD_UNIT[adUnits.size()]));
+            } else {
+                IronSource.initISDemandOnly(activity, appKey, adUnits.toArray(new IronSource.AD_UNIT[adUnits.size()]));
+            }
         }
     }
 
@@ -60,6 +78,13 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
         IronSourceAdapter ironSourceAdapter = weakAdapter.get();
         if (ironSourceAdapter == null) {
             log("loadInterstitial - ironSourceAdapter is null");
+            return;
+        }
+
+        if (IronSourceSetting.isMediationMode()) {
+            mLastMediationIsInsId = instanceId;
+            mLastIsAdapter = weakAdapter;
+            IronSource.loadInterstitial();
             return;
         }
 
@@ -83,6 +108,12 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
         IronSourceAdapter ironSourceMediationAdapter = weakAdapter.get();
         if (ironSourceMediationAdapter == null) {
             log("loadRewardedVideo - ironSourceMediationAdapter is null");
+            return;
+        }
+
+        if (IronSourceSetting.isMediationMode()) {
+            mLastMediationVideoInsId = instanceId;
+            mLastVideoAdapter = weakAdapter;
             return;
         }
 
@@ -119,18 +150,32 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
     }
 
     void showRewardedVideo(String instanceId) {
-        IronSource.showISDemandOnlyRewardedVideo(instanceId);
+        if (IronSourceSetting.isMediationMode()) {
+            IronSource.showRewardedVideo(instanceId);
+        } else {
+            IronSource.showISDemandOnlyRewardedVideo(instanceId);
+        }
     }
 
     void showInterstitial(String instanceId) {
-        IronSource.showISDemandOnlyInterstitial(instanceId);
+        if (IronSourceSetting.isMediationMode()) {
+            IronSource.showInterstitial(instanceId);
+        } else {
+            IronSource.showISDemandOnlyInterstitial(instanceId);
+        }
     }
 
     boolean isRewardedVideoReady(String instanceId) {
+        if (IronSourceSetting.isMediationMode()) {
+            return IronSource.isRewardedVideoAvailable();
+        }
         return IronSource.isISDemandOnlyRewardedVideoAvailable(instanceId);
     }
 
     boolean isInterstitialReady(String instanceId) {
+        if (IronSourceSetting.isMediationMode()) {
+            return IronSource.isInterstitialReady();
+        }
         return IronSource.isISDemandOnlyInterstitialReady(instanceId);
     }
 
@@ -204,6 +249,7 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
             IronSourceAdapter ironSourceMediationAdapter = weakAdapter.get();
             if (ironSourceMediationAdapter != null) {
                 ironSourceMediationAdapter.onRewardedVideoAdOpened(instanceId);
+                ironSourceMediationAdapter.onRewardedVideoAdStarted(instanceId);
             }
         }
     }
@@ -221,6 +267,7 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
         if (weakAdapter != null) {
             IronSourceAdapter ironSourceMediationAdapter = weakAdapter.get();
             if (ironSourceMediationAdapter != null) {
+                ironSourceMediationAdapter.onRewardedVideoAdEnded(instanceId);
                 ironSourceMediationAdapter.onRewardedVideoAdClosed(instanceId);
             }
         }
@@ -353,6 +400,126 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
             if (ironSourceAdapter != null) {
                 ironSourceAdapter.onInterstitialAdClicked(instanceId);
             }
+        }
+    }
+
+
+    /**
+     * Mediation API
+     **/
+    @Override
+    public void onInterstitialAdReady() {
+        log("IronSourceManager got onInterstitialAdReady ");
+        if (!TextUtils.isEmpty(mLastMediationIsInsId) && mLastIsAdapter != null && mLastIsAdapter.get() != null) {
+            mLastIsAdapter.get().onInterstitialAdReady(mLastMediationIsInsId);
+        }
+    }
+
+    @Override
+    public void onInterstitialAdLoadFailed(IronSourceError ironSourceError) {
+        log("IronSourceManager got onInterstitialAdLoadFailed ");
+        if (!TextUtils.isEmpty(mLastMediationIsInsId) && mLastIsAdapter != null && mLastIsAdapter.get() != null) {
+            mLastIsAdapter.get().onInterstitialAdLoadFailed(mLastMediationIsInsId, ironSourceError);
+        }
+    }
+
+    @Override
+    public void onInterstitialAdOpened() {
+        log("IronSourceManager got onInterstitialAdOpened ");
+        if (!TextUtils.isEmpty(mLastMediationIsInsId) && mLastIsAdapter != null && mLastIsAdapter.get() != null) {
+            mLastIsAdapter.get().onInterstitialAdOpened(mLastMediationIsInsId);
+        }
+    }
+
+    @Override
+    public void onInterstitialAdClosed() {
+        log("IronSourceManager got onInterstitialAdClosed ");
+        if (!TextUtils.isEmpty(mLastMediationIsInsId) && mLastIsAdapter != null && mLastIsAdapter.get() != null) {
+            mLastIsAdapter.get().onInterstitialAdClosed(mLastMediationIsInsId);
+        }
+    }
+
+    @Override
+    public void onInterstitialAdShowSucceeded() {
+        log("IronSourceManager got onInterstitialAdShowSucceeded ");
+    }
+
+    @Override
+    public void onInterstitialAdShowFailed(IronSourceError ironSourceError) {
+        log("IronSourceManager got onInterstitialAdShowFailed ");
+        if (!TextUtils.isEmpty(mLastMediationIsInsId) && mLastIsAdapter != null && mLastIsAdapter.get() != null) {
+            mLastIsAdapter.get().onInterstitialAdShowFailed(mLastMediationIsInsId, ironSourceError);
+        }
+    }
+
+    @Override
+    public void onInterstitialAdClicked() {
+        log("IronSourceManager got onInterstitialAdClicked ");
+        if (!TextUtils.isEmpty(mLastMediationIsInsId) && mLastIsAdapter != null && mLastIsAdapter.get() != null) {
+            mLastIsAdapter.get().onInterstitialAdClicked(mLastMediationIsInsId);
+        }
+    }
+
+    @Override
+    public void onRewardedVideoAdOpened() {
+        log("IronSourceManager got IronSourceManager got onRewardedVideoAdOpened ");
+        if (!TextUtils.isEmpty(mLastMediationVideoInsId) && mLastVideoAdapter != null && mLastVideoAdapter.get() != null) {
+            mLastVideoAdapter.get().onRewardedVideoAdStarted(mLastMediationVideoInsId);
+            mLastVideoAdapter.get().onRewardedVideoAdOpened(mLastMediationVideoInsId);
+        }
+    }
+
+    @Override
+    public void onRewardedVideoAdClosed() {
+        log("IronSourceManager got onRewardedVideoAdClosed ");
+        if (!TextUtils.isEmpty(mLastMediationVideoInsId) && mLastVideoAdapter != null && mLastVideoAdapter.get() != null) {
+            mLastVideoAdapter.get().onRewardedVideoAdEnded(mLastMediationVideoInsId);
+            mLastVideoAdapter.get().onRewardedVideoAdClosed(mLastMediationVideoInsId);
+        }
+    }
+
+    @Override
+    public void onRewardedVideoAvailabilityChanged(boolean b) {
+        log("IronSourceManager got onRewardedVideoAvailabilityChanged " + b);
+        if (!b) {
+            return;
+        }
+        if (!TextUtils.isEmpty(mLastMediationVideoInsId) && mLastVideoAdapter != null && mLastVideoAdapter.get() != null) {
+            mLastVideoAdapter.get().onRewardedVideoAdLoadSuccess(mLastMediationVideoInsId);
+        }
+    }
+
+    @Override
+    public void onRewardedVideoAdStarted() {
+        log("IronSourceManager got onRewardedVideoAdStarted ");
+    }
+
+    @Override
+    public void onRewardedVideoAdEnded() {
+        log("IronSourceManager got onRewardedVideoAdEnded ");
+    }
+
+    @Override
+    public void onRewardedVideoAdRewarded(Placement placement) {
+        log("IronSourceManager got onRewardedVideoAdRewarded ");
+        if (!TextUtils.isEmpty(mLastMediationVideoInsId) && mLastVideoAdapter != null && mLastVideoAdapter.get() != null) {
+            mLastVideoAdapter.get().onRewardedVideoAdRewarded(mLastMediationVideoInsId);
+        }
+    }
+
+    @Override
+    public void onRewardedVideoAdShowFailed(IronSourceError ironSourceError) {
+        log("IronSourceManager got onRewardedVideoAdShowFailed " + ironSourceError);
+        if (!TextUtils.isEmpty(mLastMediationVideoInsId) && mLastVideoAdapter != null && mLastVideoAdapter.get() != null) {
+            mLastVideoAdapter.get().onRewardedVideoAdShowFailed(mLastMediationVideoInsId, ironSourceError);
+        }
+    }
+
+    @Override
+    public void onRewardedVideoAdClicked(Placement placement) {
+        log("IronSourceManager got onRewardedVideoAdClicked " + placement);
+        if (!TextUtils.isEmpty(mLastMediationVideoInsId) && mLastVideoAdapter != null && mLastVideoAdapter.get() != null) {
+            mLastVideoAdapter.get().onRewardedVideoAdClicked(mLastMediationVideoInsId);
         }
     }
 }

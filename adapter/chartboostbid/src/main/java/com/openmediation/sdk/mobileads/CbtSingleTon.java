@@ -15,8 +15,10 @@ import com.chartboost.heliumsdk.ad.HeliumRewardedAdListener;
 import com.openmediation.sdk.utils.AdLog;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class CbtSingleTon {
 
@@ -45,6 +47,8 @@ public class CbtSingleTon {
 
     private volatile InitState mInitState = InitState.NOT_INIT;
 
+    private List<CbtInitCallback> mCallbacks = new CopyOnWriteArrayList<>();
+
     private static class CbtHolder {
         private static final CbtSingleTon INSTANCE = new CbtSingleTon();
     }
@@ -63,7 +67,22 @@ public class CbtSingleTon {
     public void init(Context context, String appKey, final CbtInitCallback cbtCallback) {
         try {
             if (TextUtils.isEmpty(appKey)) {
-                cbtCallback.initFailed("app key is empty");
+                if (cbtCallback != null) {
+                    cbtCallback.initFailed("app key is empty");
+                }
+                return;
+            }
+
+            if (InitState.INIT_SUCCESS == mInitState) {
+                if (cbtCallback != null) {
+                    cbtCallback.initSuccess();
+                }
+                return;
+            }
+            if (cbtCallback != null) {
+                mCallbacks.add(cbtCallback);
+            }
+            if (InitState.INIT_PENDING == mInitState) {
                 return;
             }
             mInitState = InitState.INIT_PENDING;
@@ -76,22 +95,32 @@ public class CbtSingleTon {
                     if (error == null) {
                         mInitState = InitState.INIT_SUCCESS;
                         AdLog.getSingleton().LogD("Helium SDK initialized successfully");
-                        if (cbtCallback != null) {
-                            cbtCallback.initSuccess();
+                        for (CbtInitCallback callback : mCallbacks) {
+                            if (callback != null) {
+                                callback.initSuccess();
+                            }
                         }
                     } else {
                         mInitState = InitState.NOT_INIT;
                         AdLog.getSingleton().LogD("Helium SDK initialized failed");
-                        if (cbtCallback != null) {
-                            cbtCallback.initFailed(error.getMessage());
+                        for (CbtInitCallback callback : mCallbacks) {
+                            if (callback != null) {
+                                callback.initFailed(error.getMessage());
+                            }
                         }
                     }
+                    mCallbacks.clear();
                 }
             });
         } catch (Exception e) {
             mInitState = InitState.NOT_INIT;
             AdLog.getSingleton().LogE("OM-ChartboostBid", e.getMessage());
-            cbtCallback.initFailed(e.getMessage());
+            for (CbtInitCallback callback : mCallbacks) {
+                if (callback != null) {
+                    callback.initFailed(e.getMessage());
+                }
+            }
+            mCallbacks.clear();
         }
     }
 

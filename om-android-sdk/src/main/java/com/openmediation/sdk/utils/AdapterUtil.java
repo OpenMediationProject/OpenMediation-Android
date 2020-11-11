@@ -69,7 +69,7 @@ public class AdapterUtil {
                 jsonArray.put(unityAdNetwork.toJson());
                 // set GDPR Age Gender
                 AdapterRepository.getInstance().setCustomParams(adapter);
-            } catch (Exception e) {
+            } catch (Throwable e) {
 //                CrashUtil.getSingleton().saveException(e);
 //                DeveloperLog.LogD("AdapterUtil getAdns : ", e);
             }

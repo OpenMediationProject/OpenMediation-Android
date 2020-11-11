@@ -37,7 +37,6 @@ public class TTAdManagerHolder {
     private static TTAdConfig buildConfig(Context context, String appId) {
         return new TTAdConfig.Builder()
                 .appId(appId)
-                .useTextureView(true)
                 .appName(context.getApplicationInfo().loadLabel(context.getPackageManager()).toString())
                 .build();
     }

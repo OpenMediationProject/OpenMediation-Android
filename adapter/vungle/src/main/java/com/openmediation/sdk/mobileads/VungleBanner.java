@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomBannerEvent;
 import com.openmediation.sdk.mediation.MediationInfo;
+import com.openmediation.sdk.utils.AdLog;
 import com.vungle.warren.AdConfig;
 import com.vungle.warren.Banners;
 import com.vungle.warren.InitCallback;
@@ -78,7 +79,6 @@ public class VungleBanner extends CustomBannerEvent implements LoadAdCallback, P
 
     @Override
     public void onAdStart(String id) {
-
     }
 
     @Override
@@ -116,6 +116,10 @@ public class VungleBanner extends CustomBannerEvent implements LoadAdCallback, P
         }
         onInsError(AdapterErrorBuilder.buildLoadError(
                 AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, exception.getExceptionCode(), exception.getMessage()));
+    }
+
+    @Override
+    public void onAdViewed(String id) {
     }
 
     private void loadBanner() {

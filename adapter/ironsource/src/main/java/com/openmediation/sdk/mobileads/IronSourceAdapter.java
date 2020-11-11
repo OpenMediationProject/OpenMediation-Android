@@ -72,18 +72,6 @@ public class IronSourceAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void setUserAge(Context context, int age) {
-        super.setUserAge(context, age);
-        IronSource.setAge(age);
-    }
-
-    @Override
-    public void setUserGender(Context context, String gender) {
-        super.setUserGender(context, gender);
-        IronSource.setGender(gender);
-    }
-
-    @Override
     public void setUSPrivacyLimit(Context context, boolean value) {
         super.setUSPrivacyLimit(context, value);
         String sell = value ? "true" : "false";
@@ -294,14 +282,26 @@ public class IronSourceAdapter extends CustomAdsAdapter {
         RewardedVideoCallback callback = mRvCallbacks.get(instanceId);
         if (callback != null) {
             callback.onRewardedVideoAdShowSuccess();
+        }
+    }
+
+    void onRewardedVideoAdStarted(String instanceId) {
+        RewardedVideoCallback callback = mRvCallbacks.get(instanceId);
+        if (callback != null) {
             callback.onRewardedVideoAdStarted();
+        }
+    }
+
+    void onRewardedVideoAdEnded(String instanceId) {
+        RewardedVideoCallback callback = mRvCallbacks.get(instanceId);
+        if (callback != null) {
+            callback.onRewardedVideoAdEnded();
         }
     }
 
     void onRewardedVideoAdClosed(String instanceId) {
         RewardedVideoCallback callback = mRvCallbacks.get(instanceId);
         if (callback != null) {
-            callback.onRewardedVideoAdEnded();
             callback.onRewardedVideoAdClosed();
         }
     }

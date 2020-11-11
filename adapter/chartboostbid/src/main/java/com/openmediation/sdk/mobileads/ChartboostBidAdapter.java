@@ -14,13 +14,12 @@ import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
-import com.openmediation.sdk.utils.AdLog;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public class ChartboostBidAdapter extends CustomAdsAdapter implements CbtInitCallback, CbtInterstitialAdCallback, CbtVideoAdCallback {
+public class ChartboostBidAdapter extends CustomAdsAdapter implements CbtInterstitialAdCallback, CbtVideoAdCallback {
 
     private final static String APP_KEY = "AppKey";
     private ConcurrentMap<String, RewardedVideoCallback> mRvCallbacks;
@@ -73,35 +72,35 @@ public class ChartboostBidAdapter extends CustomAdsAdapter implements CbtInitCal
 
     @Override
     public void initRewardedVideo(Activity activity, Map<String, Object> dataMap
-            , RewardedVideoCallback callback) {
+            , final RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
         String checkError = check(activity);
         if (TextUtils.isEmpty(checkError)) {
-            CbtSingleTon.InitState initState = CbtSingleTon.getInstance().getInitState();
-            switch (initState) {
-                case NOT_INIT:
-                    if (dataMap.get("pid") != null && callback != null) {
-                        mRvCallbacks.put((String) dataMap.get("pid"), callback);
-                    }
-                    CbtSingleTon.getInstance().init(activity, String.valueOf(dataMap.get(APP_KEY)), this);
-                    break;
-                case INIT_PENDING:
-                    if (dataMap.get("pid") != null && callback != null) {
-                        mRvCallbacks.put((String) dataMap.get("pid"), callback);
-                    }
-                    break;
-                case INIT_SUCCESS:
+            if (dataMap.get("pid") != null && callback != null) {
+                mRvCallbacks.put((String) dataMap.get("pid"), callback);
+            }
+            CbtSingleTon.getInstance().init(activity, String.valueOf(dataMap.get(APP_KEY)), new CbtInitCallback() {
+                @Override
+                public void initSuccess() {
                     if (callback != null) {
                         callback.onRewardedVideoInitSuccess();
                     }
                     setCustomParam();
-                    break;
-                default:
-                    break;
-            }
+                }
+
+                @Override
+                public void initFailed(String error) {
+                    if (callback != null) {
+                        callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
+                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
+                    }
+                }
+            });
         } else {
-            callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
-                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, checkError));
+            if (callback != null) {
+                callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, checkError));
+            }
         }
     }
 
@@ -172,35 +171,35 @@ public class ChartboostBidAdapter extends CustomAdsAdapter implements CbtInitCal
     }
 
     @Override
-    public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
+    public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, final InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
         String checkError = check(activity);
         if (TextUtils.isEmpty(checkError)) {
-            CbtSingleTon.InitState initState = CbtSingleTon.getInstance().getInitState();
-            switch (initState) {
-                case NOT_INIT:
-                    if (dataMap.get("pid") != null && callback != null) {
-                        mIsCallbacks.put((String) dataMap.get("pid"), callback);
-                    }
-                    CbtSingleTon.getInstance().init(activity, String.valueOf(dataMap.get(APP_KEY)), this);
-                    break;
-                case INIT_PENDING:
-                    if (dataMap.get("pid") != null && callback != null) {
-                        mIsCallbacks.put((String) dataMap.get("pid"), callback);
-                    }
-                    break;
-                case INIT_SUCCESS:
+            if (dataMap.get("pid") != null && callback != null) {
+                mIsCallbacks.put((String) dataMap.get("pid"), callback);
+            }
+            CbtSingleTon.getInstance().init(activity, String.valueOf(dataMap.get(APP_KEY)), new CbtInitCallback() {
+                @Override
+                public void initSuccess() {
                     if (callback != null) {
                         callback.onInterstitialAdInitSuccess();
                     }
                     setCustomParam();
-                    break;
-                default:
-                    break;
-            }
+                }
+
+                @Override
+                public void initFailed(String error) {
+                    if (callback != null) {
+                        callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
+                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
+                    }
+                }
+            });
         } else {
-            callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
-                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, checkError));
+            if (callback != null) {
+                callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, checkError));
+            }
         }
     }
 
@@ -333,38 +332,6 @@ public class ChartboostBidAdapter extends CustomAdsAdapter implements CbtInitCal
         InterstitialAdCallback listener = mIsCallbacks.get(placementId);
         if (listener != null) {
             listener.onInterstitialAdClosed();
-        }
-    }
-
-    @Override
-    public void initSuccess() {
-        onInitCallback(null);
-    }
-
-    @Override
-    public void initFailed(String error) {
-        onInitCallback(error);
-    }
-
-    private void onInitCallback(String error) {
-        if (TextUtils.isEmpty(error)) {
-            AdLog.getSingleton().LogD("OM-ChartboostBid: SDK initialized successfully");
-            for (Map.Entry<String, RewardedVideoCallback> videoCallbackEntry : mRvCallbacks.entrySet()) {
-                videoCallbackEntry.getValue().onRewardedVideoInitSuccess();
-            }
-            for (Map.Entry<String, InterstitialAdCallback> interstitialAdCallbackEntry : mIsCallbacks.entrySet()) {
-                interstitialAdCallbackEntry.getValue().onInterstitialAdInitSuccess();
-            }
-            setCustomParam();
-        } else {
-            for (Map.Entry<String, RewardedVideoCallback> videoCallbackEntry : mRvCallbacks.entrySet()) {
-                videoCallbackEntry.getValue().onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
-                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
-            }
-            for (Map.Entry<String, InterstitialAdCallback> interstitialAdCallbackEntry : mIsCallbacks.entrySet()) {
-                interstitialAdCallbackEntry.getValue().onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
-                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
-            }
         }
     }
 

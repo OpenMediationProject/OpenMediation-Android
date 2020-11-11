@@ -34,8 +34,8 @@ public class BannerAd {
 
     public void loadAd() {
         if (mBanner != null) {
-            mBanner.loadAd(OmManager.LOAD_TYPE.MANUAL);
             mBanner.setManualTriggered(true);
+            mBanner.loadAd(OmManager.LOAD_TYPE.MANUAL);
         }
     }
 

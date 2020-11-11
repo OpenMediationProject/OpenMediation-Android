@@ -10,7 +10,7 @@ public interface CommonConstants {
     int PLAT_FORM_ANDROID = 1;
     int API_VERSION = 1;
 
-    String SDK_VERSION_NAME = "1.3.3";
+    String SDK_VERSION_NAME = "1.3.4";
 
     String ADTYPE_BANNER = "Banner";
     String ADTYPE_NATIVE = "Native";

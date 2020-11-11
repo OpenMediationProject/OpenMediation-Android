@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.text.TextUtils;
+import android.widget.ImageView;
 
 import com.mopub.volley.Request;
 import com.mopub.volley.Response;
@@ -20,7 +21,7 @@ final class MoPubUtil {
                         Response.ErrorListener errorListener) {
         try {
             Request<Bitmap> request = new ImageRequest(url, listener, 0, 0,
-                    Bitmap.Config.ARGB_4444, errorListener);
+                    ImageView.ScaleType.CENTER_INSIDE, Bitmap.Config.ARGB_4444, errorListener);
             Volley.newRequestQueue(context,null).add(request);
         } catch (Exception e) {
             errorListener.onErrorResponse(new VolleyError(e.getMessage()));

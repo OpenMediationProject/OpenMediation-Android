@@ -20,7 +20,6 @@ import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
-import com.openmediation.sdk.mobileads.tiktok.BuildConfig;
 import com.openmediation.sdk.utils.AdLog;
 
 import java.util.Map;
@@ -28,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class TikTokAdapter extends CustomAdsAdapter {
-    private static String TAG = "OM-TikTok: ";
+    private static String TAG = "TikTok: ";
     private TTAdNative mTTAdNative;
     private ConcurrentMap<String, TTRewardVideoAd> mTTRvAds;
     private ConcurrentMap<String, TTFullScreenVideoAd> mTTFvAds;
@@ -45,7 +44,7 @@ public class TikTokAdapter extends CustomAdsAdapter {
 
     @Override
     public String getAdapterVersion() {
-        return BuildConfig.VERSION_NAME;
+        return com.openmediation.sdk.mobileads.tiktok.BuildConfig.VERSION_NAME;
     }
 
     @Override
@@ -413,7 +412,6 @@ public class TikTokAdapter extends CustomAdsAdapter {
 
         @Override
         public void onAdClose() {
-            AdLog.getSingleton().LogD(TAG + "rewardVideoAd close");
             if (callback != null) {
                 callback.onRewardedVideoAdClosed();
             }
@@ -436,7 +434,7 @@ public class TikTokAdapter extends CustomAdsAdapter {
         }
 
         @Override
-        public void onRewardVerify(boolean rewardVerify, int rewardAmount, String rewardName) {
+        public void onRewardVerify(boolean b, int i, String s, int i1, String s1) {
         }
 
         @Override

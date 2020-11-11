@@ -12,6 +12,7 @@ import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
+import com.openmediation.sdk.utils.AdLog;
 import com.vungle.warren.BuildConfig;
 import com.vungle.warren.InitCallback;
 import com.vungle.warren.LoadAdCallback;
@@ -370,6 +371,10 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
                         AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error.getExceptionCode(), error.getLocalizedMessage()));
             }
         }
+    }
+
+    @Override
+    public void onAdViewed(String id) {
     }
 
     private class LoadCallback implements LoadAdCallback {

@@ -191,9 +191,6 @@ public abstract class AbstractHybridAd extends AbstractAd {
         onInsError(instances, error);
     }
 
-    /**
-     * SDK Check Error
-     */
     protected synchronized void onInsError(BaseInstance instances, String error) {
         AdapterError adapterError = null;
         switch (getAdType()) {

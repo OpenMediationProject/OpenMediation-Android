@@ -9,10 +9,9 @@ import android.content.Context;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomBannerEvent;
 import com.openmediation.sdk.mediation.MediationInfo;
-import com.openmediation.sdk.mobileads.unity.BuildConfig;
 import com.openmediation.sdk.utils.AdLog;
+import com.unity3d.ads.IUnityAdsInitializationListener;
 import com.unity3d.ads.UnityAds;
-import com.unity3d.ads.metadata.MediationMetaData;
 import com.unity3d.ads.metadata.MetaData;
 import com.unity3d.services.banners.BannerErrorInfo;
 import com.unity3d.services.banners.BannerView;
@@ -22,8 +21,7 @@ import java.util.Map;
 
 
 public class UnityBanner extends CustomBannerEvent implements BannerView.IListener {
-    private static final String TAG = "OM-Unity: ";
-    private boolean mDidInit = false;
+    private static final String TAG = "Unity: ";
 
     private BannerView mBannerView;
 
@@ -58,30 +56,32 @@ public class UnityBanner extends CustomBannerEvent implements BannerView.IListen
     }
 
     @Override
-    public void loadAd(Activity activity, Map<String, String> config) throws Throwable {
+    public void loadAd(final Activity activity, final Map<String, String> config) throws Throwable {
         super.loadAd(activity, config);
 
         if (!check(activity, config)) {
             return;
         }
         AdLog.getSingleton().LogD(TAG + "Unity Banner Ad Start Load : " + mInstancesKey);
-        if (!mDidInit) {
-            initSDK(activity, config.get("AppKey"));
-            mDidInit = true;
-        }
+        initSDK(activity, config.get("AppKey"), new IUnityAdsInitializationListener() {
+            @Override
+            public void onInitializationComplete() {
+                UnityBannerSize bannerSize = getAdSize(activity, config);
+                BannerView bannerView = new BannerView(activity, mInstancesKey, bannerSize);
+                bannerView.setListener(UnityBanner.this);
+                bannerView.load();
+            }
 
-        UnityBannerSize bannerSize = getAdSize(activity, config);
-        BannerView bannerView = new BannerView(activity, mInstancesKey, bannerSize);
-        bannerView.setListener(this);
-        bannerView.load();
+            @Override
+            public void onInitializationFailed(UnityAds.UnityAdsInitializationError error, String message) {
+                onInsError(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, message));
+            }
+        });
     }
 
-    private synchronized void initSDK(Activity activity, String appKey) {
-        MediationMetaData mediationMetaData = new MediationMetaData(activity);
-        mediationMetaData.setName("Om");
-        mediationMetaData.setVersion(BuildConfig.VERSION_NAME);
-        mediationMetaData.commit();
-        UnityAds.initialize(activity, appKey);
+    private synchronized void initSDK(Activity activity, String appKey, IUnityAdsInitializationListener listener) {
+        UnitySingleTon.getInstance().init(activity, appKey, listener);
     }
 
     @Override

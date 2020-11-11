@@ -35,6 +35,8 @@ public class FacebookNative extends CustomNativeEvent implements NativeAdListene
     private AdOptionsView adOptionsView;
     private MediaView mediaView;
     private AdIconView adIconView;
+    private com.facebook.ads.MediaView mFbMediaView;
+    private com.facebook.ads.MediaView mFbIconView;
 
     @Override
     public void registerNativeView(NativeAdView adView) {
@@ -75,20 +77,18 @@ public class FacebookNative extends CustomNativeEvent implements NativeAdListene
                 adView.addView(adOptionsView, layoutParams);
             }
 
-            com.facebook.ads.MediaView fb_mediaView = null;
             if (mediaView != null) {
                 mediaView.removeAllViews();
-                fb_mediaView = new com.facebook.ads.MediaView(adView.getContext());
-                mediaView.addView(fb_mediaView);
+                mFbMediaView = new com.facebook.ads.MediaView(adView.getContext());
+                mediaView.addView(mFbMediaView);
             }
-            com.facebook.ads.MediaView fbAdIconView = null;
             if (adIconView != null) {
                 adIconView.removeAllViews();
-                fbAdIconView = new com.facebook.ads.MediaView(adView.getContext());
-                adIconView.addView(fbAdIconView);
+                mFbIconView = new com.facebook.ads.MediaView(adView.getContext());
+                adIconView.addView(mFbIconView);
             }
             //pay attention to the order of fb_mediaView and adIconView here
-            this.nativeAd.registerViewForInteraction(fbNativeAdLayout, fb_mediaView, fbAdIconView, views);
+            this.nativeAd.registerViewForInteraction(fbNativeAdLayout, mFbMediaView, mFbIconView, views);
 
             if (adOptionsView != null) {
                 adOptionsView.bringToFront();
@@ -121,7 +121,14 @@ public class FacebookNative extends CustomNativeEvent implements NativeAdListene
 
     @Override
     public void destroy(Activity activity) {
+        if (mFbMediaView != null) {
+            mFbMediaView.destroy();
+        }
+        if (mFbIconView != null) {
+            mFbIconView.destroy();
+        }
         if (nativeAd != null) {
+            nativeAd.unregisterView();
             nativeAd.destroy();
             nativeAd = null;
         }

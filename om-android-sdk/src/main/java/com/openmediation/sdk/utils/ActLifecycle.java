@@ -21,9 +21,9 @@ public class ActLifecycle implements Application.ActivityLifecycleCallbacks {
                     Charset.forName(CommonConstants.CHARTSET_UTF8)),
             new String(Base64.decode("Y29tLmdvb2dsZS5hbmRyb2lkLmdtcy5hZHM=", Base64.NO_WRAP),
                     Charset.forName(CommonConstants.CHARTSET_UTF8)),
-            new String(Base64.decode("Y29tLmZhY2Vib29r", Base64.NO_WRAP),
+            new String(Base64.decode("Y29tLmZhY2Vib29rLmFkcw==", Base64.NO_WRAP),
                     Charset.forName(CommonConstants.CHARTSET_UTF8)),
-            new String(Base64.decode("Y29tLnVuaXR5M2Q=", Base64.NO_WRAP),
+            new String(Base64.decode("Y29tLnVuaXR5M2Quc2VydmljZXMuYWRz", Base64.NO_WRAP),
                     Charset.forName(CommonConstants.CHARTSET_UTF8)),
             new String(Base64.decode("Y29tLnZ1bmdsZQ==", Base64.NO_WRAP),
                     Charset.forName(CommonConstants.CHARTSET_UTF8)),
@@ -36,6 +36,18 @@ public class ActLifecycle implements Application.ActivityLifecycleCallbacks {
             new String(Base64.decode("Y29tLnRhcGpveQ==", Base64.NO_WRAP),
                     Charset.forName(CommonConstants.CHARTSET_UTF8)),
             new String(Base64.decode("Y29tLmNoYXJ0Ym9vc3Q=", Base64.NO_WRAP),
+                    Charset.forName(CommonConstants.CHARTSET_UTF8)),
+            new String(Base64.decode("Y29tLmJ5dGVkYW5jZS5zZGs=", Base64.NO_WRAP),
+                    Charset.forName(CommonConstants.CHARTSET_UTF8)),
+            new String(Base64.decode("Y29tLmlyb25zb3VyY2Uuc2RrLmNvbnRyb2xsZXI=", Base64.NO_WRAP),
+                    Charset.forName(CommonConstants.CHARTSET_UTF8)),
+            new String(Base64.decode("Y29tLm15LnRhcmdldA==", Base64.NO_WRAP),
+                    Charset.forName(CommonConstants.CHARTSET_UTF8)),
+            new String(Base64.decode("Y29tLm1pbnRlZ3JhbC5tc2Rr", Base64.NO_WRAP),
+                    Charset.forName(CommonConstants.CHARTSET_UTF8)),
+            new String(Base64.decode("Y29tLmNoYXJ0Ym9vc3RfaGVsaXVtLnNkaw==", Base64.NO_WRAP),
+                    Charset.forName(CommonConstants.CHARTSET_UTF8)),
+            new String(Base64.decode("Y29tLnFxLmUuYWRz", Base64.NO_WRAP),
                     Charset.forName(CommonConstants.CHARTSET_UTF8))
     };
     private AtomicReference<Activity> mThisActivity = new AtomicReference<>(null);
@@ -66,7 +78,6 @@ public class ActLifecycle implements Application.ActivityLifecycleCallbacks {
 
     @Override
     public void onActivityCreated(Activity activity, Bundle bundle) {
-        mThisActivity.set(activity);
     }
 
     @Override

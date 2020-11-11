@@ -111,9 +111,6 @@ public class AdTimingAuctionManager {
         bid(context, placementId, adType, null, callback);
     }
 
-    /**
-     * merge c2s / s2s
-     */
     public void bid(Context context, String placementId, int adType, AdSize adSize, AuctionCallback callback) {
         resetBidResponse(placementId);
         if (!mBidInstances.containsKey(placementId)) {

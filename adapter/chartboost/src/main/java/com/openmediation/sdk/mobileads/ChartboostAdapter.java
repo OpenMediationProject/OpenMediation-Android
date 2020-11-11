@@ -29,12 +29,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ChartboostAdapter extends CustomAdsAdapter {
 
-    private AtomicBoolean hasInit = new AtomicBoolean(false);
+    private final AtomicBoolean hasInit = new AtomicBoolean(false);
 
-    private ConcurrentLinkedQueue<String> mRvLoadTriggerIds;
-    private ConcurrentLinkedQueue<String> mIsLoadTriggerIds;
-    private ConcurrentMap<String, RewardedVideoCallback> mRvCallbacks;
-    private ConcurrentMap<String, InterstitialAdCallback> mIsCallbacks;
+    private final ConcurrentLinkedQueue<String> mRvLoadTriggerIds;
+    private final ConcurrentLinkedQueue<String> mIsLoadTriggerIds;
+    private final ConcurrentMap<String, RewardedVideoCallback> mRvCallbacks;
+    private final ConcurrentMap<String, InterstitialAdCallback> mIsCallbacks;
+    private final ConcurrentMap<String, RewardedVideoCallback> mRvInitCallbacks;
+    private final ConcurrentMap<String, InterstitialAdCallback> mIsInitCallbacks;
 
     private CbCallback mCbDelegate;
 
@@ -43,6 +45,8 @@ public class ChartboostAdapter extends CustomAdsAdapter {
         mRvLoadTriggerIds = new ConcurrentLinkedQueue<>();
         mRvCallbacks = new ConcurrentHashMap<>();
         mIsCallbacks = new ConcurrentHashMap<>();
+        mRvInitCallbacks = new ConcurrentHashMap<>();
+        mIsInitCallbacks = new ConcurrentHashMap<>();
     }
 
     private void initSDK(final Activity activity) {
@@ -72,12 +76,14 @@ public class ChartboostAdapter extends CustomAdsAdapter {
     }
 
     private void onInitCallback() {
-        for (Map.Entry<String, RewardedVideoCallback> videoCallbackEntry : mRvCallbacks.entrySet()) {
+        for (Map.Entry<String, RewardedVideoCallback> videoCallbackEntry : mRvInitCallbacks.entrySet()) {
             videoCallbackEntry.getValue().onRewardedVideoInitSuccess();
         }
-        for (Map.Entry<String, InterstitialAdCallback> interstitialAdCallbackEntry : mIsCallbacks.entrySet()) {
+        mRvInitCallbacks.clear();
+        for (Map.Entry<String, InterstitialAdCallback> interstitialAdCallbackEntry : mIsInitCallbacks.entrySet()) {
             interstitialAdCallbackEntry.getValue().onInterstitialAdInitSuccess();
         }
+        mIsInitCallbacks.clear();
     }
 
     @Override
@@ -125,8 +131,8 @@ public class ChartboostAdapter extends CustomAdsAdapter {
         super.initRewardedVideo(activity, dataMap, callback);
         String checkError = check(activity);
         if (TextUtils.isEmpty(checkError)) {
-            mRvCallbacks.put((String) dataMap.get("pid"), callback);
             if (!hasInit.get()) {
+                mRvInitCallbacks.put((String) dataMap.get("pid"), callback);
                 initSDK(activity);
             } else {
                 callback.onRewardedVideoInitSuccess();
@@ -198,8 +204,8 @@ public class ChartboostAdapter extends CustomAdsAdapter {
         super.initInterstitialAd(activity, dataMap, callback);
         String checkError = check(activity);
         if (TextUtils.isEmpty(checkError)) {
-            mIsCallbacks.put((String) dataMap.get("pid"), callback);
             if (!hasInit.get()) {
+                mIsInitCallbacks.put((String) dataMap.get("pid"), callback);
                 initSDK(activity);
             } else {
                 callback.onInterstitialAdInitSuccess();

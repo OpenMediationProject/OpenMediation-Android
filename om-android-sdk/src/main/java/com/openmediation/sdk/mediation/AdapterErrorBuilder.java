@@ -31,9 +31,6 @@ public class AdapterErrorBuilder {
         return new AdapterError(errorCode, resultingMessage);
     }
 
-    /**
-     * error from ADN
-     */
     public static AdapterError buildLoadError(String adUnit, String adapterName, String errorMsg) {
         String resultingMessage = "" + adUnit + " Load Failed" + (!TextUtils.isEmpty(adapterName) ? " " + adapterName : "") + " - ";
         if (TextUtils.isEmpty(errorMsg)) {
@@ -45,9 +42,6 @@ public class AdapterErrorBuilder {
         return error;
     }
 
-    /**
-     * error from SDK check
-     */
     public static AdapterError buildLoadCheckError(String adUnit, String adapterName, String errorMsg) {
         String resultingMessage = "" + adUnit + " Load Failed" + (!TextUtils.isEmpty(adapterName) ? " " + adapterName : "") + " - ";
         if (TextUtils.isEmpty(errorMsg)) {

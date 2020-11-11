@@ -403,14 +403,6 @@ public class RequestBuilder {
         body.put(KeyConstants.RequestBody.KEY_REGS, regs);
     }
 
-    /**
-     * Build wf request body byte [ ].
-     *
-     * @param c2sResult the responses
-     * @param extras    the extras
-     * @return the byte [ ]
-     * @throws Exception the exception
-     */
     public static byte[] buildWfRequestBody(PlacementInfo info, List<AdTimingBidResponse> c2sResult, List<AdTimingBidResponse> s2sResult,
                                             List<InstanceLoadStatus> statusList,
                                             String... extras) throws Exception {

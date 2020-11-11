@@ -11,33 +11,45 @@ import java.util.concurrent.TimeUnit;
 
 public class AdsScheduleTask implements Runnable {
     private AbstractAdsManager adsManager;
-    private int delay = 0;
+    private int delay;
 
-    public AdsScheduleTask(AbstractAdsManager manager) {
+    public AdsScheduleTask(AbstractAdsManager manager, int initDelay) {
         adsManager = manager;
+        delay = initDelay;
     }
 
     @Override
     public void run() {
         try {
+            DeveloperLog.LogD("execute adsScheduleTask");
             if (adsManager == null) {
                 return;
             }
             adsManager.loadAdWithInterval();
             int count = adsManager.getAllLoadFailedCount();
             Map<Integer, Integer> rfs = adsManager.getRfs();
-            if (rfs == null) {
+            if (rfs == null || rfs.isEmpty()) {
                 return;
             }
             Set<Integer> keys = rfs.keySet();
-            for (Integer key : keys) {
-                if (count < key) {
-                    delay = rfs.get(key);
-                    break;
+            Integer[] integers = keys.toArray(new Integer[keys.size()]);
+            int maxCount = integers[integers.length - 1];
+            if (count >= maxCount) {
+                delay = rfs.get(maxCount);
+            } else {
+                for (Integer key : keys) {
+                    if (count < key) {
+                        delay = rfs.get(key);
+                        break;
+                    }
                 }
             }
-            DeveloperLog.LogD("execute adsScheduleTask delay : " + delay);
-            WorkExecutor.execute(this, delay, TimeUnit.SECONDS);
+            if (delay > 0) {
+                DeveloperLog.LogD("execute adsScheduleTask delay : " + delay + ", fail count = " + count);
+                WorkExecutor.execute(this, delay, TimeUnit.SECONDS);
+            } else {
+                DeveloperLog.LogD("can't execute adsScheduleTask delay : " + delay);
+            }
         } catch (Exception e) {
             CrashUtil.getSingleton().saveException(e);
         }

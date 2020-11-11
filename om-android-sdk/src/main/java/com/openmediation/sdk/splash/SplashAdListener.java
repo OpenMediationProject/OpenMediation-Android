@@ -9,6 +9,7 @@ public interface SplashAdListener {
 
     /**
      * called when SplashAd load error
+     * @param error error message
      */
     void onSplashAdFailed(String error);
 

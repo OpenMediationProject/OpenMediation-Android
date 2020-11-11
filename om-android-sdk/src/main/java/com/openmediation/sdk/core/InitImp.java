@@ -54,6 +54,7 @@ public final class InitImp {
      * @param activity the activity
      * @param appKey   the app key
      * @param callback the callback
+     * @param channel  the channel
      */
     public static void init(final Activity activity, final String appKey, String channel, final InitCallback callback) {
         //
@@ -220,7 +221,11 @@ public final class InitImp {
                     return;
                 }
                 initUtil();
-                DataCache.getInstance().setMEM(KeyConstants.Request.KEY_APP_KEY, appKey);
+                DataCache.getInstance().setMEM(KeyConstants.KEY_APP_KEY, appKey);
+                if (TextUtils.isEmpty(appChannel)) {
+                    appChannel = "";
+                }
+                DataCache.getInstance().setMEM(KeyConstants.KEY_APP_CHANNEL, appChannel);
                 AdvertisingIdClient.getGaid(AdtUtil.getApplication(), new AdvertisingIdClient.OnGetGaidListener() {
                     @Override
                     public void onGetGaid(String gaid) {

@@ -5,19 +5,18 @@ package com.openmediation.sdk.utils.helper;
 
 import android.text.TextUtils;
 import android.util.SparseArray;
-import android.util.SparseBooleanArray;
 
-import com.openmediation.sdk.utils.AdapterUtil;
-import com.openmediation.sdk.utils.AdtUtil;
-import com.openmediation.sdk.utils.model.Instance;
 import com.openmediation.sdk.core.imp.interstitialad.IsInstance;
 import com.openmediation.sdk.core.imp.rewardedvideo.RvInstance;
+import com.openmediation.sdk.utils.AdapterUtil;
+import com.openmediation.sdk.utils.AdtUtil;
 import com.openmediation.sdk.utils.constant.CommonConstants;
 import com.openmediation.sdk.utils.crash.CrashUtil;
 import com.openmediation.sdk.utils.model.ApiConfigurations;
 import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.Configurations;
 import com.openmediation.sdk.utils.model.Events;
+import com.openmediation.sdk.utils.model.Instance;
 import com.openmediation.sdk.utils.model.Mediation;
 import com.openmediation.sdk.utils.model.Placement;
 import com.openmediation.sdk.utils.model.Scene;
@@ -34,8 +33,8 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Init config response parse helper
@@ -149,7 +148,6 @@ public class ConfigurationHelper {
         if (len == 0) {
             return placementMap;
         }
-        SparseBooleanArray mainPlacements = new SparseBooleanArray();
         for (int i = 0; i < len; i++) {
             JSONObject placementObject = placementArray.optJSONObject(i);
             String placementId = String.valueOf(placementObject.optInt("id"));
@@ -164,7 +162,7 @@ public class ConfigurationHelper {
             placement.setRf(placementObject.optInt("rf"));
             JSONObject rfsObject = placementObject.optJSONObject("rfs");
             if (rfsObject != null) {
-                Map<Integer, Integer> rfsMap = new LinkedHashMap<>();
+                Map<Integer, Integer> rfsMap = new TreeMap<>();
                 Iterator<String> keys = rfsObject.keys();
                 while (keys.hasNext()) {
                     String key = keys.next();
@@ -179,16 +177,7 @@ public class ConfigurationHelper {
             placement.setPt(placementObject.optInt("pt"));
             placement.setRlw(placementObject.optInt("rlw"));
             placement.setHasHb(placementObject.optInt("hb") == 1);
-            if (placementObject.has("main")) {
-                placement.setMain(placementObject.optInt("main"));
-            } else {
-                if (!mainPlacements.get(adType, false)) {
-                    if (placementObject.optInt("ia") != 1) {
-                        placement.setMain(1);
-                        mainPlacements.append(adType, true);
-                    }
-                }
-            }
+            placement.setMain(placementObject.optInt("main"));
             placement.setScenes(formatScenes(placementObject.optJSONArray("scenes")));
             placement.setInsMap(formatInstances(placementId, mapps, adType, placementObject.optJSONArray("ins")));
             placementMap.put(placementId, placement);

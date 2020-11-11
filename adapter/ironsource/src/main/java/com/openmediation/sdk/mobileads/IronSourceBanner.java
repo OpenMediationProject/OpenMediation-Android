@@ -33,18 +33,6 @@ public class IronSourceBanner extends CustomBannerEvent implements BannerListene
     }
 
     @Override
-    public void setUserAge(Context context, int age) {
-        super.setUserAge(context, age);
-        IronSource.setAge(age);
-    }
-
-    @Override
-    public void setUserGender(Context context, String gender) {
-        super.setUserGender(context, gender);
-        IronSource.setGender(gender);
-    }
-
-    @Override
     public void setUSPrivacyLimit(Context context, boolean value) {
         super.setUSPrivacyLimit(context, value);
         String sell = value ? "true" : "false";

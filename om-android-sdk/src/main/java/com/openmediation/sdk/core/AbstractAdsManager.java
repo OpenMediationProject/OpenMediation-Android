@@ -203,6 +203,17 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
     protected void loadAdWithAction(OmManager.LOAD_TYPE type) {
         DeveloperLog.LogD("loadAdWithAction : " + mPlacement + " action: " + type.toString());
 
+        if (isInLoadingProgress() || isInShowingProgress()) {
+            Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
+                    , ErrorCode.MSG_LOAD_INVALID_REQUEST, ErrorCode.CODE_INTERNAL_REQUEST_PLACEMENTID);
+            DeveloperLog.LogE("load ad for placement : " +
+                    (Preconditions.checkNotNull(mPlacement) ? mPlacement.getId() : "") + " failed cause : " + error);
+            AdsUtil.loadBlockedReport(Preconditions.checkNotNull(mPlacement) ? mPlacement.getId() : "", error);
+            callbackLoadError(error);
+            return;
+        }
+
+        isInLoadingProgress = true;
         int availableCount = InsUtil.instanceCount(mTotalIns, Instance.MEDIATION_STATE.AVAILABLE);
 
         //if load is manually triggered
@@ -332,8 +343,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
                 callbackLoadFailedOnManual(error);
             }
             if (!hasCache) {
-                reportEvent(EventId.NO_MORE_OFFERS, AdsUtil.buildAbtReportData(mPlacement.getWfAbt(),
-                        PlacementUtils.placementEventParams(mPlacement != null ? mPlacement.getId() : "")));
+                whenAllLoadFailed();
             }
             if (shouldNotifyAvailableChanged(hasCache)) {
                 onAvailabilityChanged(hasCache, error);
@@ -438,7 +448,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
     @Override
     public void onSuccess() {
         //only trigged by manual 
-        delayLoad(OmManager.LOAD_TYPE.MANUAL);
+        loadAdWithAction(OmManager.LOAD_TYPE.MANUAL);
     }
 
     @Override
@@ -540,7 +550,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
                     Map<Integer, AdTimingBidResponse> bidResponseMap = WaterFallHelper.getS2sBidResponse(clInfo);
                     if (bidResponseMap != null && !bidResponseMap.isEmpty()) {
                         if (mBidResponses == null) {
-                            mBidResponses = new HashMap<>();
+                            mBidResponses = new ConcurrentHashMap<>();
                         }
                         mBidResponses.putAll(bidResponseMap);
                     }
@@ -586,29 +596,30 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
      * schedules Load Ad Task
      */
     private void scheduleLoadAdTask() {
-        if (mPlacement == null || mPlacement.getRfs() == null) {
+        if (mPlacement == null || mPlacement.getRfs() == null || mPlacement.getRfs().isEmpty()) {
             return;
         }
         Map<Integer, Integer> rfs = mPlacement.getRfs();
         Collection<Integer> values = rfs.values();
         int delay = 0;
         for (Integer value : values) {
-            if (value <= 0) {
-                return;
+            // get first positive delay number
+            if (value > 0) {
+                delay = value;
+                break;
             }
-            delay = value;
-            break;
         }
-        mDidScheduleTaskStarted.set(true);
-        DeveloperLog.LogD("post adsScheduleTask delay : " + delay);
-        WorkExecutor.execute(new AdsScheduleTask(this), delay,
-                TimeUnit.SECONDS);
+        if (delay > 0) {
+            mDidScheduleTaskStarted.set(true);
+            DeveloperLog.LogD("post adsScheduleTask delay : " + delay);
+            WorkExecutor.execute(new AdsScheduleTask(this, delay), delay,
+                    TimeUnit.SECONDS);
+        }
     }
 
     private void delayLoad(final OmManager.LOAD_TYPE type) {
         try {
             AdLog.getSingleton().LogD("Ad load placementId: " + getPlacementId());
-            isInLoadingProgress = true;
             mLoadType = type;
             isAReadyReported.set(false);
             removeBidResponseWhenLoad();
@@ -636,22 +647,20 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
         }
     }
 
+    private boolean isInLoadingProgress() {
+        return isInLoadingProgress;
+    }
+
+    private boolean isInShowingProgress() {
+        return isInShowingProgress;
+    }
+
     /**
      * load can start if
      * 1.Activity available
      * 2.network available
      */
     private Error checkLoadAvailable() {
-        //does nothing if Showing in Progress
-        if (isInShowingProgress || isInLoadingProgress) {
-            Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
-                    , ErrorCode.MSG_LOAD_INVALID_REQUEST, ErrorCode.CODE_INTERNAL_REQUEST_PLACEMENTID);
-            DeveloperLog.LogD("loadAdWithAction: " + mPlacement + ", type:"
-                    + mLoadType.toString() + " stopped," +
-                    " cause current is in loading/showing progress");
-            callbackLoadError(error);
-            return error;
-        }
         //activity available?
         if (!checkActRef()) {
             Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
@@ -803,7 +812,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
      * 3.placement isn't null
      */
     private Error checkShowAvailable(String scene) {
-        if (isInShowingProgress) {
+        if (isInShowingProgress()) {
             DeveloperLog.LogE("show ad failed,current is showing");
             return ErrorBuilder.build(-1, "show ad failed,current is showing", -1);
         }
@@ -890,6 +899,8 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
             return;
         }
         AdTimingBidResponse bidResponse = mBidResponses.get(instance.getId());
+        mBidResponses.remove(instance.getId());
+        instance.setBidResponse(null);
         if (bidResponse == null) {
             return;
         }
@@ -904,11 +915,11 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
             return;
         }
         AdTimingBidResponse bidResponse = mBidResponses.get(instance.getId());
+        mBidResponses.remove(instance.getId());
+        instance.setBidResponse(null);
         if (bidResponse == null) {
             return;
         }
-        mBidResponses.remove(instance.getId());
-        instance.setBidResponse(null);
         AuctionUtil.notifyLose(instance, bidResponse, BidLoseReason.INVENTORY_DID_NOT_MATERIALISE.getValue());
     }
 
@@ -920,11 +931,11 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
             return;
         }
         AdTimingBidResponse bidResponse = mBidResponses.get(instance.getId());
+        mBidResponses.remove(instance.getId());
+        instance.setBidResponse(null);
         if (bidResponse == null) {
             return;
         }
-        mBidResponses.remove(instance.getId());
-        instance.setBidResponse(null);
         AuctionUtil.notifyLose(instance, bidResponse, BidLoseReason.INTERNAL.getValue());
     }
 

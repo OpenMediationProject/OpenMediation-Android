@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 
 public class TikTokBanner extends CustomBannerEvent implements TTAdNative.NativeExpressAdListener {
-    private static String TAG = "OM-TikTok: ";
     private TTAdNative mTTAdNative;
     private TTNativeExpressAd mTTAd;
     private View mBannerView;

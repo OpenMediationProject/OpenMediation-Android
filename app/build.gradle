@@ -93,7 +93,7 @@ dependencies {
     implementation project(path: ':adapter:ironsource')
 
     // 国内版
-    implementation(name: 'open_ad_sdk_3.2.5.1', ext: 'aar')
+    implementation(name: 'open_ad_sdk_3.3.0.0', ext: 'aar')
     implementation project(path: ':adapter_cn:tiktok')
     implementation(name: 'GDTSDK.unionNoPlugin.4.270.1140', ext: 'aar')
     implementation project(path: ':adapter_cn:tencentad')

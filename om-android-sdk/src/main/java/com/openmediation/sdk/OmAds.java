@@ -31,7 +31,7 @@ public abstract class OmAds {
      * @param activity required param
      * @param appKey   required param: current app's identifier
      * @param callback the callback
-     * @param channel the Channel of App Store
+     * @param channel  the Channel of App Store
      * @param types    optional param: ad types to be preloaded; null means preload all
      */
     public static void init(Activity activity, String appKey, String channel, InitCallback callback, AD_TYPE... types) {
@@ -86,6 +86,7 @@ public abstract class OmAds {
 
     /**
      * setLogEnable
+     *
      * @param debug enable log output
      */
     public static void setLogEnable(boolean debug) {
@@ -95,6 +96,7 @@ public abstract class OmAds {
     /**
      * setGDPRConsent "true" is Accepted, "false" is Refuse.
      * According to the GDPR, set method of this property must be called before "init", or by default will collect user's information.
+     *
      * @param consent whether the user provided consent
      */
     public static void setGDPRConsent(boolean consent) {
@@ -103,6 +105,7 @@ public abstract class OmAds {
 
     /**
      * Set user age restricted
+     *
      * @param restricted whether you want your content treated as child-directed for purposes of COPPA
      */
     public static void setAgeRestricted(boolean restricted) {
@@ -111,6 +114,7 @@ public abstract class OmAds {
 
     /**
      * Set this property to configure the user's age.
+     *
      * @param age user age
      */
     public static void setUserAge(int age) {
@@ -119,6 +123,7 @@ public abstract class OmAds {
 
     /**
      * Set the gender of the current user. "male" or "female"
+     *
      * @param gender user gender
      */
     public static void setUserGender(String gender) {
@@ -130,6 +135,8 @@ public abstract class OmAds {
      * true : If the user has opted out of "sale" of personal information
      * false : If "sale" of personal information is permitted
      * set method of this property must be called before "init", or by default will collect user's information.
+     *
+     * @param value privacy limit
      */
     public static void setUSPrivacyLimit(boolean value) {
         OmManager.getInstance().setUSPrivacyLimit(value);
@@ -137,6 +144,7 @@ public abstract class OmAds {
 
     /**
      * The user's current consent status
+     *
      * @return consent status
      */
     public static Boolean getGDPRConsent() {
@@ -145,6 +153,7 @@ public abstract class OmAds {
 
     /**
      * The user's COPPA status
+     *
      * @return COPPA status
      */
     public static Boolean getAgeRestricted() {
@@ -153,6 +162,7 @@ public abstract class OmAds {
 
     /**
      * The user's current age
+     *
      * @return the user's current age
      */
     public static Integer getUserAge() {
@@ -161,6 +171,7 @@ public abstract class OmAds {
 
     /**
      * The user's current gender
+     *
      * @return the user's current gender
      */
     public static String getUserGender() {
@@ -169,6 +180,7 @@ public abstract class OmAds {
 
     /**
      * The user's CCPA status
+     *
      * @return CCPA status
      */
     public static Boolean getUSPrivacyLimit() {

@@ -37,17 +37,15 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
     private boolean mDidInited = false;
     private AppLovinSdk mAppLovinSDk;
 
-    private ConcurrentMap<String, AppLovinInterstitialAdDialog> mIsAds;
-    private ConcurrentMap<String, AppLovinAd> mAppLovinIsAds;
-    private ConcurrentMap<String, InterstitialAdCallback> mIsCallbacks;
+    private final ConcurrentMap<String, AppLovinAd> mAppLovinIsAds;
+    private final ConcurrentMap<String, InterstitialAdCallback> mIsCallbacks;
 
-    private ConcurrentMap<String, AppLovinIncentivizedInterstitial> mRvAds;
-    private ConcurrentMap<String, RewardedVideoCallback> mRvCallbacks;
+    private final ConcurrentMap<String, AppLovinIncentivizedInterstitial> mRvAds;
+    private final ConcurrentMap<String, RewardedVideoCallback> mRvCallbacks;
 
     static final int AGE_RESTRICTION = 16;
 
     public AppLovinAdapter() {
-        mIsAds = new ConcurrentHashMap<>();
         mAppLovinIsAds = new ConcurrentHashMap<>();
         mIsCallbacks = new ConcurrentHashMap<>();
 
@@ -154,7 +152,7 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
             AppLovinIncentivizedInterstitial videoAd = getVideo(activity, adUnitId);
             if (videoAd == null) {
                 callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
-                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Ad LoadFailed"));
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Ad LoadFailed"));
             } else {
                 if (videoAd.isAdReadyToDisplay()) {
                     if (callback != null) {
@@ -215,6 +213,9 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
                 }
                 return;
             }
+            if (callback != null) {
+                mRvCallbacks.put(adUnitId, callback);
+            }
             videoAd.show(activity, null, this,
                     this, this);
         }
@@ -233,15 +234,6 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
         if (TextUtils.isEmpty(error)) {
             initSDK(activity);
             if (mDidInited) {
-                AppLovinInterstitialAdDialog interstitialAd = AppLovinInterstitialAd.create(mAppLovinSDk, activity);
-
-                String pid = (String) dataMap.get("pid");
-                if (!TextUtils.isEmpty(pid)) {
-                    mIsAds.put(pid, interstitialAd);
-                    mIsCallbacks.put(pid, callback);
-                    interstitialAd.setAdClickListener(this);
-                    interstitialAd.setAdDisplayListener(this);
-                }
                 if (callback != null) {
                     callback.onInterstitialAdInitSuccess();
                 }
@@ -259,6 +251,12 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
         super.loadInterstitialAd(activity, adUnitId, callback);
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
+            if (isInterstitialAdAvailable(adUnitId)) {
+                if (callback != null) {
+                    callback.onInterstitialAdLoadSuccess();
+                }
+                return;
+            }
             if (mAppLovinSDk != null) {
                 mAppLovinSDk.getAdService().loadNextAdForZoneId(adUnitId, new AppLovinAdLoadListener() {
                     @Override
@@ -300,23 +298,27 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
             return;
         }
         if (isInterstitialAdAvailable(adUnitId)) {
-            AppLovinInterstitialAdDialog adDialog = mIsAds.get(adUnitId);
-            if (adDialog != null) {
-                adDialog.showAndRender(mAppLovinIsAds.get(adUnitId));
+            AppLovinInterstitialAdDialog interstitialAd = AppLovinInterstitialAd.create(mAppLovinSDk, activity);
+            if (interstitialAd != null) {
+                interstitialAd.setAdClickListener(this);
+                interstitialAd.setAdDisplayListener(this);
+                if (callback != null) {
+                    mIsCallbacks.put(adUnitId, callback);
+                }
+                interstitialAd.showAndRender(mAppLovinIsAds.get(adUnitId));
                 mAppLovinIsAds.remove(adUnitId);
             }
         } else {
             if (callback != null) {
                 callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "not ready"));
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "not ready"));
             }
         }
     }
 
     @Override
     public boolean isInterstitialAdAvailable(String adUnitId) {
-        AppLovinInterstitialAdDialog adDialog = mIsAds.get(adUnitId);
-        return adDialog != null && mAppLovinIsAds.containsKey(adUnitId);
+        return mAppLovinIsAds.containsKey(adUnitId);
     }
 
     @Override
