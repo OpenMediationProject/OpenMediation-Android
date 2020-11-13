@@ -247,6 +247,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
         if (availableCount < mCacheSize) {
             delayLoad(type);
         } else {
+            isInLoadingProgress = false;
             DeveloperLog.LogD("cache is full, cancel this request");
             error = ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
                     , "cache is full, cancel this request", ErrorCode.CODE_INTERNAL_UNKNOWN_OTHER);
