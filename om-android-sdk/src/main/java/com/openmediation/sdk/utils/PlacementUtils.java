@@ -112,6 +112,53 @@ public class PlacementUtils {
         return jsonObject;
     }
 
+    protected static ImpRecord parseFromJson(String s) {
+        if (TextUtils.isEmpty(s)) {
+            return null;
+        }
+        DeveloperLog.LogD("imp string : " + s);
+        ImpRecord impRecord = new ImpRecord();
+        try {
+            DeveloperLog.LogD("PlacementUtils imp string : " + Uri.decode(s));
+            JSONObject object = new JSONObject(Uri.decode(s));
+            Map<String, Map<String, ImpRecord.Imp>> impMap = new HashMap<>();
+            Iterator<String> keys = object.keys();
+            while (keys.hasNext()) {
+                String key = keys.next();
+                Map<String, ImpRecord.Imp> imps = jsonToImps(object.optJSONArray(key));
+                if (imps != null && !imps.isEmpty()) {
+                    impMap.put(key, imps);
+                }
+            }
+            impRecord.setImpMap(impMap);
+            return impRecord;
+        } catch (JSONException e) {
+            DeveloperLog.LogD("PlacementUtils", e);
+            CrashUtil.getSingleton().saveException(e);
+            return null;
+        }
+    }
+
+    private static Map<String, ImpRecord.Imp> jsonToImps(JSONArray array) {
+        if (array == null || array.length() == 0) {
+            return null;
+        }
+        Map<String, ImpRecord.Imp> map = new HashMap<>();
+        int len = array.length();
+        for (int i = 0; i < len; i++) {
+            JSONObject object = array.optJSONObject(i);
+            ImpRecord.Imp imp = new ImpRecord.Imp();
+            imp.setLashImpTime(object.optLong("last_imp_time"));
+            imp.setImpCount(object.optInt("imp_count"));
+            imp.setTime(object.optString("time"));
+            String pkgName = object.optString("pkg_name");
+            imp.setPkgName(pkgName);
+            imp.setPlacmentId(object.optString("placement_id"));
+            map.put(pkgName, imp);
+        }
+        return map;
+    }
+
     private static List<ImpRecord.DayImp> jsonToDayImps(JSONArray array) {
         if (array == null || array.length() == 0) {
             return null;
@@ -126,6 +173,40 @@ public class PlacementUtils {
             dayImps.add(dayImp);
         }
         return dayImps;
+    }
+
+    protected static String transformToString(ImpRecord impRecord) {
+        try {
+            JSONObject object = new JSONObject();
+            Map<String, Map<String, ImpRecord.Imp>> impMap = impRecord.getImpMap();
+            Set<String> keys = impMap.keySet();
+            for (String key : keys) {
+                Map<String, ImpRecord.Imp> map = impMap.get(key);
+                if (map == null || map.isEmpty()) {
+                    continue;
+                }
+                JSONArray array = new JSONArray();
+                for (Map.Entry<String, ImpRecord.Imp> imp : map.entrySet()) {
+                    if (imp.getValue() == null) {
+                        continue;
+                    }
+                    JSONObject o = new JSONObject();
+                    o.put("imp_count", imp.getValue().getImpCount());
+                    o.put("last_imp_time", imp.getValue().getLashImpTime());
+                    o.put("pkg_name", imp.getValue().getPkgName());
+                    o.put("placement_id", imp.getValue().getPlacmentId());
+                    o.put("time", imp.getValue().getTime());
+
+                    array.put(o);
+                }
+                object.put(key, array);
+            }
+            return object.toString();
+        } catch (Exception e) {
+            DeveloperLog.LogD("PlacementUtils", e);
+            CrashUtil.getSingleton().saveException(e);
+            return null;
+        }
     }
 
     /**

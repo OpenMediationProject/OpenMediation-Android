@@ -8,11 +8,14 @@ import android.text.TextUtils;
 
 import com.openmediation.sdk.InitCallback;
 import com.openmediation.sdk.core.imp.interstitialad.IsManager;
+import com.openmediation.sdk.core.imp.promotion.CpManager;
 import com.openmediation.sdk.core.imp.rewardedvideo.RvManager;
 import com.openmediation.sdk.core.imp.splash.SplashAdManager;
 import com.openmediation.sdk.interstitial.InterstitialAdListener;
 import com.openmediation.sdk.mediation.MediationInterstitialListener;
 import com.openmediation.sdk.mediation.MediationRewardVideoListener;
+import com.openmediation.sdk.promotion.PromotionAdListener;
+import com.openmediation.sdk.promotion.PromotionAdRect;
 import com.openmediation.sdk.utils.AdLog;
 import com.openmediation.sdk.utils.AdsUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
@@ -50,18 +53,22 @@ import static com.openmediation.sdk.OmAds.AD_TYPE;
 public final class OmManager implements InitCallback {
     private Map<String, IsManager> mIsManagers;
     private Map<String, RvManager> mRvManagers;
+    private Map<String, CpManager> mCpManagers;
     private ConcurrentMap<String, Set<InterstitialAdListener>> mIsListeners;
     private ConcurrentMap<String, Set<RewardedVideoListener>> mRvListeners;
+    private ConcurrentMap<String, Set<PromotionAdListener>> mCpListeners;
 
     private ConcurrentMap<String, MediationInterstitialListener> mMediationIsListeners;
     private ConcurrentMap<String, MediationRewardVideoListener> mMediationRvListeners;
 
     private ConcurrentLinkedQueue<String> mDelayLoadIs;
     private ConcurrentLinkedQueue<String> mDelayLoadRv;
+    private ConcurrentLinkedQueue<String> mDelayLoadCp;
 
     private List<AD_TYPE> mPreloadAdTypes;
     private AtomicBoolean mDidRvInit = new AtomicBoolean(false);
     private AtomicBoolean mDidIsInit = new AtomicBoolean(false);
+    private AtomicBoolean mDidCpInit = new AtomicBoolean(false);
     private boolean mIsInForeground = true;
     private static ConcurrentLinkedQueue<InitCallback> mInitCallbacks = new ConcurrentLinkedQueue<>();
 
@@ -113,8 +120,12 @@ public final class OmManager implements InitCallback {
     private OmManager() {
         mIsManagers = new HashMap<>();
         mRvManagers = new HashMap<>();
+        mCpManagers = new HashMap<>();
+
         mIsListeners = new ConcurrentHashMap<>();
         mRvListeners = new ConcurrentHashMap<>();
+        mCpListeners = new ConcurrentHashMap<>();
+
         mPreloadAdTypes = new ArrayList<>();
     }
 
@@ -191,6 +202,15 @@ public final class OmManager implements InitCallback {
                 }
             }
         }
+
+        if (!mCpManagers.isEmpty()) {
+            Set<Map.Entry<String, CpManager>> entries = mCpManagers.entrySet();
+            for (Map.Entry<String, CpManager> managerEntry : entries) {
+                if (managerEntry != null) {
+                    managerEntry.getValue().onResume(activity);
+                }
+            }
+        }
     }
 
     /**
@@ -213,6 +233,15 @@ public final class OmManager implements InitCallback {
             for (Map.Entry<String, RvManager> rvManagerEntry : rvEntrys) {
                 if (rvManagerEntry != null) {
                     rvManagerEntry.getValue().onPause(activity);
+                }
+            }
+        }
+
+        if (!mCpManagers.isEmpty()) {
+            Set<Map.Entry<String, CpManager>> entries = mCpManagers.entrySet();
+            for (Map.Entry<String, CpManager> managerEntry : entries) {
+                if (managerEntry != null) {
+                    managerEntry.getValue().onPause(activity);
                 }
             }
         }
@@ -606,6 +635,131 @@ public final class OmManager implements InitCallback {
         }
     }
 
+    /**
+     * Only one listener exists in the whole lifecycle
+     *
+     * @param placementId placementId
+     * @param listener    PromotionAd listener
+     */
+    public void setPromotionAdListener(String placementId, PromotionAdListener listener) {
+        addPromotionAdListener(placementId, listener);
+    }
+
+    public void addPromotionAdListener(String placementId, PromotionAdListener listener) {
+        addPromotionAdListener(placementId, listener, false);
+    }
+
+    private void addPromotionAdListener(String placementId, PromotionAdListener listener, boolean reAdd) {
+        CpManager manager = getCpManager(placementId);
+        if (manager != null) {
+            manager.setPromotionAdListener(listener);
+        } else {
+            if (reAdd) {
+                return;
+            }
+            if (mCpListeners == null) {
+                mCpListeners = new ConcurrentHashMap<>();
+            }
+            Set<PromotionAdListener> listeners = mCpListeners.get(placementId);
+            if (listeners == null) {
+                listeners = new HashSet<>();
+            }
+            listeners.add(listener);
+            mCpListeners.put(placementId, listeners);
+        }
+    }
+
+    /**
+     * Only developers call this method
+     */
+    public void loadPromotionAd(String placementId) {
+        AdsUtil.callActionReport(EventId.CALLED_LOAD, placementId, null, CommonConstants.PROMOTION);
+        CpManager manager = getCpManager(placementId);
+        if (manager != null) {
+            manager.loadPromotionAd();
+        } else {
+            if (isInitRunning()) {
+                if (mDelayLoadCp == null) {
+                    mDelayLoadCp = new ConcurrentLinkedQueue<>();
+                }
+                mDelayLoadCp.add(placementId);
+            } else {
+                if (mCpListeners != null && mCpListeners.containsKey(placementId)) {
+                    Set<PromotionAdListener> listeners = mCpListeners.get(placementId);
+                    if (listeners == null || listeners.isEmpty()) {
+                        AdLog.getSingleton().LogE(ErrorCode.MSG_LOAD_SDK_UNINITIALIZED);
+                    } else {
+                        for (PromotionAdListener listener : listeners) {
+                            listener.onPromotionAdAvailabilityChanged(false);
+                        }
+                    }
+                } else {
+                    AdLog.getSingleton().LogE(ErrorCode.MSG_LOAD_SDK_UNINITIALIZED);
+                }
+            }
+        }
+    }
+
+    public boolean isPromotionAdReady(String placementId) {
+        CpManager manager = getCpManager(placementId);
+        if (manager != null) {
+            boolean result = manager.isPromotionAdReady();
+            if (result) {
+                AdsUtil.callActionReport(EventId.CALLED_IS_READY_TRUE, placementId, null, CommonConstants.PROMOTION);
+            } else {
+                AdsUtil.callActionReport(EventId.CALLED_IS_READY_FALSE, placementId, null, CommonConstants.PROMOTION);
+            }
+            return result;
+        }
+        AdsUtil.callActionReport(EventId.CALLED_IS_READY_FALSE, placementId, null, CommonConstants.PROMOTION);
+        return false;
+    }
+
+    /**
+     * Shows the given scene's InteractiveAd, shows default if the scene does not exist
+     *
+     * @param scene       scene name
+     * @param placementId placementId
+     */
+    public void showPromotionAd(Activity activity, String placementId, PromotionAdRect rect, String scene) {
+        AdsUtil.callActionReport(EventId.CALLED_SHOW, placementId, scene, CommonConstants.PROMOTION);
+        CpManager manager = getCpManager(placementId);
+        if (manager != null) {
+            manager.showPromotionAd(activity, rect, scene);
+        } else {
+            if (mCpListeners != null && mCpListeners.containsKey(placementId)) {
+                Set<PromotionAdListener> listeners = mCpListeners.get(placementId);
+                if (listeners == null || listeners.isEmpty()) {
+                    AdLog.getSingleton().LogE(ErrorCode.MSG_LOAD_SDK_UNINITIALIZED);
+                } else {
+                    for (PromotionAdListener listener : listeners) {
+                        listener.onPromotionAdShowFailed(
+                                SceneUtil.getScene(PlacementUtils.getPlacement(placementId), scene),
+                                new Error(ErrorCode.CODE_SHOW_SDK_UNINITIALIZED,
+                                        ErrorCode.MSG_SHOW_SDK_UNINITIALIZED, -1));
+                    }
+                }
+            } else {
+                AdLog.getSingleton().LogE(ErrorCode.MSG_SHOW_SDK_UNINITIALIZED);
+            }
+        }
+
+    }
+
+    /**
+     * Shows the given scene's PromotionAd, shows default if the scene does not exist
+     *
+     * @param placementId placementId
+     */
+    public void hidePromotionAd(String placementId) {
+        CpManager manager = getCpManager(placementId);
+        if (manager != null) {
+            manager.hidePromotionAd();
+        } else {
+            AdLog.getSingleton().LogE(ErrorCode.MSG_SHOW_SDK_UNINITIALIZED);
+        }
+    }
+
     @Override
     public void onSuccess() {
         initManagerWithDefaultPlacementId();
@@ -648,6 +802,19 @@ public final class OmManager implements InitCallback {
                 }
             }
             mRvListeners.clear();
+        }
+
+        if (mCpListeners != null && !mCpListeners.isEmpty()) {
+            Set<Map.Entry<String, Set<PromotionAdListener>>> entries = mCpListeners.entrySet();
+            for (Map.Entry<String, Set<PromotionAdListener>> entry : entries) {
+                if (entry != null) {
+                    Set<PromotionAdListener> listeners = entry.getValue();
+                    for (PromotionAdListener listener : listeners) {
+                        addPromotionAdListener(entry.getKey(), listener, true);
+                    }
+                }
+            }
+            mCpListeners.clear();
         }
 
         if (mMediationRvListeners != null && !mMediationRvListeners.isEmpty()) {
@@ -694,6 +861,9 @@ public final class OmManager implements InitCallback {
         if (mIsListeners != null) {
             mIsListeners.clear();
         }
+        if (mCpListeners != null) {
+            mCpListeners.clear();
+        }
     }
 
     private IsManager getIsManager(String placementId) {
@@ -722,6 +892,20 @@ public final class OmManager implements InitCallback {
             placementId = placement.getId();
         }
         return mRvManagers.get(placementId);
+    }
+
+    private CpManager getCpManager(String placementId) {
+        if (!isInit()) {
+            return null;
+        }
+        if (TextUtils.isEmpty(placementId)) {
+            Placement placement = getPlacement("", CommonConstants.PROMOTION);
+            if (placement == null) {
+                return null;
+            }
+            placementId = placement.getId();
+        }
+        return mCpManagers.get(placementId);
     }
 
     private void initManagerWithDefaultPlacementId() {
@@ -760,6 +944,14 @@ public final class OmManager implements InitCallback {
                         break;
                     case CommonConstants.SPLASH:
                         SplashAdManager.getInstance().initSplashAd(placementId);
+                        break;
+                    case CommonConstants.PROMOTION:
+                        if (mCpManagers != null && !mCpManagers.containsKey(placementId)) {
+                            CpManager manager = new CpManager();
+                            manager.setCurrentPlacement(placement);
+                            mCpManagers.put(placementId, manager);
+                        }
+                        break;
                     default:
                         break;
 
@@ -801,6 +993,12 @@ public final class OmManager implements InitCallback {
                 }
                 preloadIS(placementMap.entrySet());
                 startScheduleIs();
+            } else if (adType == AD_TYPE.PROMOTION) {
+                if (mDidCpInit.get()) {
+                    return;
+                }
+                preloadCP(placementMap.entrySet());
+                startScheduleCp();
             }
         }
     }
@@ -834,12 +1032,15 @@ public final class OmManager implements InitCallback {
             DeveloperLog.LogD("preload all ad");
             preloadIS(placements);
             preloadRV(placements);
+            preloadCP(placements);
         } else {
             for (AD_TYPE adType : mPreloadAdTypes) {
                 if (adType == AD_TYPE.INTERSTITIAL) {
                     preloadIS(placements);
                 } else if (adType == AD_TYPE.REWARDED_VIDEO) {
                     preloadRV(placements);
+                } else if (adType == AD_TYPE.PROMOTION) {
+                    preloadCP(placements);
                 }
             }
         }
@@ -881,16 +1082,37 @@ public final class OmManager implements InitCallback {
         }
     }
 
+    private void preloadCP(Set<Map.Entry<String, Placement>> placements) {
+        DeveloperLog.LogD("preloadCP");
+        mDidCpInit.set(true);
+        for (Map.Entry<String, Placement> placementEntry : placements) {
+            Placement placement = placementEntry.getValue();
+            if (placement != null) {
+                int type = placement.getT();
+                if (type == CommonConstants.PROMOTION) {
+                    CpManager manager = getCpManager(placement.getId());
+                    if (manager != null) {
+                        DeveloperLog.LogD("preloadCP for placementId : " + placement.getId());
+                        manager.loadAdWithAction(LOAD_TYPE.INIT);
+                    }
+                }
+            }
+        }
+    }
+
     private void startScheduleTaskWithPreloadType() {
         if (mPreloadAdTypes.isEmpty()) {
             startScheduleRv();
             startScheduleIs();
+            startScheduleCp();
         } else {
             for (AD_TYPE adType : mPreloadAdTypes) {
                 if (adType == AD_TYPE.REWARDED_VIDEO) {
                     startScheduleRv();
                 } else if (adType == AD_TYPE.INTERSTITIAL) {
                     startScheduleIs();
+                } else if (adType == AD_TYPE.PROMOTION) {
+                    startScheduleCp();
                 }
             }
         }
@@ -920,6 +1142,18 @@ public final class OmManager implements InitCallback {
         }
     }
 
+    private void startScheduleCp() {
+        if (!mCpManagers.isEmpty()) {
+            Set<Map.Entry<String, CpManager>> entries = mCpManagers.entrySet();
+            for (Map.Entry<String, CpManager> managerEntry : entries) {
+                if (managerEntry != null) {
+                    DeveloperLog.LogD("startScheduleCp for placementId : " + managerEntry.getKey());
+                    managerEntry.getValue().initPromotionAd();
+                }
+            }
+        }
+    }
+
     private void checkHasLoadWhileInInitProgress() {
         if (mDelayLoadIs != null) {
             for (String delayLoadI : mDelayLoadIs) {
@@ -930,6 +1164,12 @@ public final class OmManager implements InitCallback {
         if (mDelayLoadRv != null) {
             for (String s : mDelayLoadRv) {
                 loadRewardedVideo(s);
+            }
+        }
+
+        if (mDelayLoadCp != null) {
+            for (String s : mDelayLoadCp) {
+                loadPromotionAd(s);
             }
         }
     }
@@ -972,17 +1212,21 @@ public final class OmManager implements InitCallback {
                 }
             }
         }
-    }
 
-    private static void callActionReport(int eventId, String placementId, String scene, int adType) {
-        if (TextUtils.isEmpty(placementId)) {
-            Placement placement = PlacementUtils.getPlacement(adType);
-            if (placement != null) {
-                placementId = placement.getId();
+        if (mDelayLoadCp != null) {
+            for (String s : mDelayLoadCp) {
+                if (mCpListeners != null && !mCpListeners.isEmpty()) {
+                    Set<PromotionAdListener> listeners = mCpListeners.get(s);
+                    if (listeners == null || listeners.isEmpty()) {
+                        AdLog.getSingleton().LogE(ErrorCode.MSG_LOAD_SDK_UNINITIALIZED);
+                    } else {
+                        for (PromotionAdListener listener : listeners) {
+                            listener.onPromotionAdAvailabilityChanged(false);
+                        }
+                    }
+                }
             }
         }
-        Scene s = SceneUtil.getScene(PlacementUtils.getPlacement(placementId), scene);
-        AdsUtil.callActionReport(placementId, s != null ? s.getId() : 0, eventId);
     }
 
     public void setGDPRConsent(boolean consent) {

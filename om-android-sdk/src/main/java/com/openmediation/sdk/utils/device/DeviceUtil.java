@@ -11,11 +11,13 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
 import android.os.SystemClock;
+import android.text.TextUtils;
 import android.webkit.WebSettings;
 
 import com.openmediation.sdk.utils.AdtUtil;
@@ -43,6 +45,8 @@ import java.util.TimeZone;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
 /**
  * Utils for Android native APIs
@@ -137,6 +141,20 @@ public class DeviceUtil {
             }
         }
         return sb.toString();
+    }
+
+    /**
+     * @return 0: google play installed, 1: not
+     */
+    public static int isGpInstall(Context context) {
+        try {
+            PackageInfo packageInfo = context.getPackageManager().getPackageInfo(CommonConstants.PKG_GP, PackageManager.GET_GIDS);
+            return packageInfo != null ? 0 : 1;
+        } catch (Exception e) {
+            DeveloperLog.LogD("DeviceUtil", e);
+//            CrashUtil.getSingleton().saveException(e);
+        }
+        return 1;
     }
 
     /**
@@ -464,5 +482,24 @@ public class DeviceUtil {
 
     private static String generateUid() {
         return UUID.randomUUID().toString();
+    }
+
+    public static void openBrowser(Context activity, String url) {
+        if (TextUtils.isEmpty(url) || activity == null) {
+            return;
+        }
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
+        intent.setData(Uri.parse(url));
+        activity.startActivity(intent);
+    }
+
+    public static boolean isPkgInstalled(String pkg) {
+        try {
+            PackageInfo packageInfo = AdtUtil.getApplication().getPackageManager().getPackageInfo(pkg, PackageManager.GET_GIDS);
+            return packageInfo != null;
+        } catch (Exception e) {
+        }
+        return false;
     }
 }

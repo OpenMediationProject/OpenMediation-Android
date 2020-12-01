@@ -8,12 +8,25 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.util.DisplayMetrics;
+import android.util.TypedValue;
 
 /**
  * The type Density util.
  */
 public class DensityUtil {
     private DensityUtil() {
+    }
+
+    public static int dip2px(Context context, float dpValue) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dpValue, context.getResources().getDisplayMetrics());
+    }
+
+    /**
+     *
+     */
+    public static int px2dip(Context context, float pxValue) {
+        final float scale = context.getResources().getDisplayMetrics().densityDpi;
+        return (int) ((pxValue * 160) / scale + 0.5f);
     }
 
     /**

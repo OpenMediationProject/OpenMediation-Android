@@ -150,33 +150,43 @@ public class NetworkChecker {
     private static NetType getMobileNetType(Context context) {
         TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 
-        switch (telephonyManager.getNetworkType()) {
-            //2G
-            case TelephonyManager.NETWORK_TYPE_GPRS:
-            case TelephonyManager.NETWORK_TYPE_EDGE:
-            case TelephonyManager.NETWORK_TYPE_CDMA:
-            case TelephonyManager.NETWORK_TYPE_1xRTT:
-            case TelephonyManager.NETWORK_TYPE_IDEN:
-                return NetType.MOBILE_2G;
-            //3G
-            case TelephonyManager.NETWORK_TYPE_UMTS:
-            case TelephonyManager.NETWORK_TYPE_EVDO_0:
-            case TelephonyManager.NETWORK_TYPE_EVDO_A:
-            case TelephonyManager.NETWORK_TYPE_HSDPA:
-            case TelephonyManager.NETWORK_TYPE_HSUPA:
-            case TelephonyManager.NETWORK_TYPE_HSPA:
-            case TelephonyManager.NETWORK_TYPE_EVDO_B:
-            case TelephonyManager.NETWORK_TYPE_EHRPD:
-            case TelephonyManager.NETWORK_TYPE_HSPAP:
-                return NetType.MOBILE_3G;
-            //4G
-            case TelephonyManager.NETWORK_TYPE_LTE:
-            case TelephonyManager.NETWORK_TYPE_GSM:
-            case TelephonyManager.NETWORK_TYPE_TD_SCDMA:
-                return NetType.MOBILE_4G;
-            //add 5g,6g here
-            default:
-                return NetType.MOBILE;
+        if (telephonyManager == null) {
+            return NetType.MOBILE;
+        }
+        try {
+            int networkType = telephonyManager.getNetworkType();
+            switch (networkType) {
+                //2G
+                case TelephonyManager.NETWORK_TYPE_GPRS:
+                case TelephonyManager.NETWORK_TYPE_EDGE:
+                case TelephonyManager.NETWORK_TYPE_CDMA:
+                case TelephonyManager.NETWORK_TYPE_1xRTT:
+                case TelephonyManager.NETWORK_TYPE_IDEN:
+                    return NetType.MOBILE_2G;
+                //3G
+                case TelephonyManager.NETWORK_TYPE_UMTS:
+                case TelephonyManager.NETWORK_TYPE_EVDO_0:
+                case TelephonyManager.NETWORK_TYPE_EVDO_A:
+                case TelephonyManager.NETWORK_TYPE_HSDPA:
+                case TelephonyManager.NETWORK_TYPE_HSUPA:
+                case TelephonyManager.NETWORK_TYPE_HSPA:
+                case TelephonyManager.NETWORK_TYPE_EVDO_B:
+                case TelephonyManager.NETWORK_TYPE_EHRPD:
+                case TelephonyManager.NETWORK_TYPE_HSPAP:
+                    return NetType.MOBILE_3G;
+                //4G
+                case TelephonyManager.NETWORK_TYPE_LTE:
+                case TelephonyManager.NETWORK_TYPE_GSM:
+                case TelephonyManager.NETWORK_TYPE_TD_SCDMA:
+                    return NetType.MOBILE_4G;
+                case TelephonyManager.NETWORK_TYPE_NR:
+                    return NetType.MOBILE_5G;
+                //add 6g here
+                default:
+                    return NetType.MOBILE;
+            }
+        } catch (Exception e) {
+            return NetType.MOBILE;
         }
     }
 }

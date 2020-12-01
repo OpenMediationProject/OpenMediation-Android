@@ -51,12 +51,16 @@ dependencies {
     implementation rootProject.ext.dependencies.play_service_ads_identifier
     //chartboost
     implementation rootProject.ext.dependencies.chartboost
+    implementation rootProject.ext.dependencies.play_service_base
+    implementation rootProject.ext.dependencies.play_service_ads_identifier
     //unity
     implementation rootProject.ext.dependencies.unity
     //ironsource
     implementation rootProject.ext.dependencies.ironsource
 
+    // AdTiming
     implementation rootProject.ext.dependencies.adtiming
+    // Mintegral
     implementation 'com.mintegral.msdk:videojs:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mintegral.msdk:mtgjscommon:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mintegral.msdk:playercommon:' + rootProject.ext.dependencies.mtg_version
@@ -67,13 +71,23 @@ dependencies {
     implementation 'com.mintegral.msdk:common:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mintegral.msdk:mtgbid:' + rootProject.ext.dependencies.mtg_version
 
+    // ironSource
     implementation rootProject.ext.dependencies.ironsource
+    implementation rootProject.ext.dependencies.play_service_ads_identifier
+    implementation 'com.google.android.gms:play-services-basement:17.5.0'
 
+    // Fyber
     implementation "com.fyber.vamp:core-sdk:${rootProject.ext.dependencies.fyber}"
     implementation "com.fyber.vamp:video-kit:${rootProject.ext.dependencies.fyber}"
     implementation "com.fyber.vamp:mraid-kit:${rootProject.ext.dependencies.fyber}"
 
-    implementation 'androidx.appcompat:appcompat:1.1.0'
+    // Helium
+    implementation rootProject.ext.dependencies.helium
+    implementation rootProject.ext.dependencies.eventbus
+    implementation rootProject.ext.dependencies.play_service_base
+    implementation rootProject.ext.dependencies.play_service_ads_identifier
+
+    implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation project(path: ':adapter:admob')
     implementation project(path: ':adapter:adtiming')
@@ -85,10 +99,12 @@ dependencies {
     implementation project(path: ':adapter:applovin')
     implementation project(path: ':adapter:facebook')
     implementation project(path: ':adapter:chartboost')
+    implementation project(path: ':adapter:chartboostbid')
     implementation project(path: ':adapter:tapjoy')
     implementation project(path: ':adapter:mintegral')
 
 //    implementation rootProject.ext.dependencies.pangle
+//    implementation rootProject.ext.dependencies.play_service_ads_identifier
 //    implementation project(path: ':adapter:tiktok')
     implementation project(path: ':adapter:ironsource')
 

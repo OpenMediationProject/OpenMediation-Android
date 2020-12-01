@@ -16,7 +16,7 @@ public class StringRequestBody implements RequestBody {
     private final String mContentType;
 
     public StringRequestBody(String body) {
-        this(body, Headers.VALUE_APPLICATION_STREAM);
+        this(body, Headers.VALUE_APPLICATION_JSON);
     }
 
     public StringRequestBody(String body, String contentType) {

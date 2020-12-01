@@ -10,6 +10,9 @@ public class ApiConfigurations {
     private String ic;
     private String iap;
     private String hb;
+    private String cd;
+    private String cpcl;
+    private String cppl;
 
     public String getWf() {
         return wf;
@@ -57,5 +60,29 @@ public class ApiConfigurations {
 
     public String getHb() {
         return hb;
+    }
+
+    public void setCd(String cd) {
+        this.cd = cd;
+    }
+
+    public String getCd() {
+        return cd;
+    }
+
+    public String getCpcl() {
+        return cpcl;
+    }
+
+    public void setCpcl(String cpcl) {
+        this.cpcl = cpcl;
+    }
+
+    public String getCppl() {
+        return cppl;
+    }
+
+    public void setCppl(String cppl) {
+        this.cppl = cppl;
     }
 }

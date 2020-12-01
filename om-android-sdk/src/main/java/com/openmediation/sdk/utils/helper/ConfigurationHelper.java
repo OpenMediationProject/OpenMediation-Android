@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import android.util.SparseArray;
 
 import com.openmediation.sdk.core.imp.interstitialad.IsInstance;
+import com.openmediation.sdk.core.imp.promotion.CpInstance;
 import com.openmediation.sdk.core.imp.rewardedvideo.RvInstance;
 import com.openmediation.sdk.utils.AdapterUtil;
 import com.openmediation.sdk.utils.AdtUtil;
@@ -138,7 +139,10 @@ public class ConfigurationHelper {
         configurations.setEr(jsonObject.optString("er"));
         configurations.setIc(jsonObject.optString("ic"));
         configurations.setIap(jsonObject.optString("iap"));
+        configurations.setCd(jsonObject.optString("cd"));
         configurations.setHb(jsonObject.optString("hb"));
+        configurations.setCpcl(jsonObject.optString("cpcl"));
+        configurations.setCppl(jsonObject.optString("cppl"));
         return configurations;
     }
 
@@ -171,7 +175,7 @@ public class ConfigurationHelper {
                 }
                 placement.setRfs(rfsMap);
             }
-            placement.setCs(placementObject.optInt("cs"));
+            placement.setCs(placementObject.optInt("cs", 1));
             placement.setBs(placementObject.optInt("bs"));
             placement.setFo(placementObject.optInt("fo"));
             placement.setPt(placementObject.optInt("pt"));
@@ -229,7 +233,7 @@ public class ConfigurationHelper {
             instance.setHb(insObject.optInt("hb"));
             int hbt = insObject.optInt("hbt");
             if (hbt < 1000) {
-                hbt = 5000;
+                hbt = CommonConstants.HEAD_BIDDING_TIMEOUT;
             }
             instance.setHbt(hbt);
             instanceSparseArray.put(instancesId, instance);
@@ -247,6 +251,10 @@ public class ConfigurationHelper {
                 IsInstance isInstance = new IsInstance();
                 isInstance.setMediationState(Instance.MEDIATION_STATE.NOT_INITIATED);
                 return isInstance;
+            case CommonConstants.PROMOTION:
+                CpInstance instance = new CpInstance();
+                instance.setMediationState(Instance.MEDIATION_STATE.NOT_INITIATED);
+                return instance;
             default:
                 return new Instance();
         }

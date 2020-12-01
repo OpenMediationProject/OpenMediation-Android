@@ -26,7 +26,9 @@ import com.openmediation.sdk.utils.PlacementUtils;
 import com.openmediation.sdk.utils.Preconditions;
 import com.openmediation.sdk.utils.SceneUtil;
 import com.openmediation.sdk.utils.WorkExecutor;
+import com.openmediation.sdk.utils.cache.DataCache;
 import com.openmediation.sdk.utils.constant.CommonConstants;
+import com.openmediation.sdk.utils.constant.KeyConstants;
 import com.openmediation.sdk.utils.crash.CrashUtil;
 import com.openmediation.sdk.utils.device.DeviceUtil;
 import com.openmediation.sdk.utils.error.Error;
@@ -149,12 +151,17 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
 
         if (instance.getHb() == 1) {
             instance.reportInsLoad(EventId.INSTANCE_PAYLOAD_REQUEST);
-            AdTimingBidResponse bidResponse = mBidResponses.get(instance.getId());
+            AdTimingBidResponse bidResponse = null;
+            if (mBidResponses != null) {
+                bidResponse = mBidResponses.get(instance.getId());
+            }
             instance.setBidResponse(bidResponse);
             inLoadWithBid(instance, AuctionUtil.generateMapRequestData(bidResponse));
         } else {
             instance.reportInsLoad(EventId.INSTANCE_LOAD);
-            LrReportHelper.report(instance, mLoadType.getValue(), mPlacement.getWfAbt(), CommonConstants.INSTANCE_LOAD, 0);
+            if (mPlacement.getT() != CommonConstants.PROMOTION) {
+                LrReportHelper.report(instance, mLoadType.getValue(), mPlacement.getWfAbt(), CommonConstants.INSTANCE_LOAD, 0);
+            }
             insLoad(instance);
         }
     }
@@ -257,16 +264,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
 
     @Override
     protected void showAd(String scene) {
-        Error error = checkShowAvailable(scene);
-        if (Preconditions.checkNotNull(error)) {
-            callbackShowError(error);
-            return;
-        }
-
-        if (AdRateUtil.shouldBlockScene(mPlacement.getId(), mScene)) {
-            error = ErrorBuilder.build(ErrorCode.CODE_SHOW_SCENE_CAPPED
-                    , ErrorCode.MSG_SHOW_SCENE_CAPPED, -1);
-            callbackShowError(error);
+        if (!shouldShowAd(scene)) {
             return;
         }
         for (Instance in : mTotalIns) {
@@ -274,16 +272,15 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
                 resetMediationStateAndNotifyLose(in);
                 continue;
             }
-            insShow(in);
 
-            notifyInsBidWin(in);
             AdLog.getSingleton().LogD("Ad show placementId: " + getPlacementId());
+            notifyInsBidWin(in);
+            DataCache.getInstance().setMEM(in.getKey() + KeyConstants.KEY_DISPLAY_SCENE, mScene.getN());
+            DataCache.getInstance().setMEM(in.getKey() + KeyConstants.KEY_DISPLAY_ABT, mPlacement.getWfAbt());
+            insShow(in);
             return;
         }
-        error = ErrorBuilder.build(ErrorCode.CODE_SHOW_NO_AD_READY
-                , ErrorCode.MSG_SHOW_NO_AD_READY, -1);
-        DeveloperLog.LogE(error.toString());
-        callbackShowError(error);
+        callShowError();
     }
 
     @Override
@@ -357,7 +354,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
 
     @Override
     protected synchronized void onInsReady(final Instance instance) {
-        if (instance.getHb() != 1) {
+        if (instance.getHb() != 1 && mPlacement.getT() != CommonConstants.PROMOTION) {
             LrReportHelper.report(instance, mLoadType.getValue(), mPlacement.getWfAbt(), CommonConstants.INSTANCE_READY, 0);
         }
         mAllLoadFailedCount.set(0);
@@ -372,8 +369,10 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
         if (shouldNotifyAvailableChanged(true)) {
             if (!isAReadyReported.get()) {
                 isAReadyReported.set(true);
-                LrReportHelper.report(instance.getPlacementId(), mLoadType.getValue(), mPlacement.getWfAbt(),
-                        CommonConstants.WATERFALL_READY, 0);
+                if (mPlacement.getT() != CommonConstants.PROMOTION) {
+                    LrReportHelper.report(instance.getPlacementId(), mLoadType.getValue(), mPlacement.getWfAbt(),
+                            CommonConstants.WATERFALL_READY, 0);
+                }
             }
             onAvailabilityChanged(true, null);
         }
@@ -409,6 +408,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
             bid = 1;
         }
         LrReportHelper.report(instance, mScene != null ? mScene.getId() : -1, mLoadType.getValue(),
+                mPlacement == null ? -1 : mPlacement.getWfAbt(),
                 CommonConstants.INSTANCE_IMPR, bid);
         //if availability changed from false to true
         if (shouldNotifyAvailableChanged(false)) {
@@ -425,6 +425,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
             bid = 1;
         }
         LrReportHelper.report(instance, mScene != null ? mScene.getId() : -1, mLoadType.getValue(),
+                mPlacement == null ? -1 : mPlacement.getWfAbt(),
                 CommonConstants.INSTANCE_CLICK, bid);
     }
 
@@ -502,8 +503,10 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
                 int availableCount = InsUtil.instanceCount(mTotalIns, Instance.MEDIATION_STATE.AVAILABLE);
                 if (availableCount > 0) {
                     isAReadyReported.set(true);
-                    LrReportHelper.report(mPlacement.getId(), mLoadType.getValue(), mPlacement.getWfAbt(),
-                            CommonConstants.WATERFALL_READY, 0);
+                    if (mPlacement.getT() != CommonConstants.PROMOTION) {
+                        LrReportHelper.report(mPlacement.getId(), mLoadType.getValue(), mPlacement.getWfAbt(),
+                                CommonConstants.WATERFALL_READY, 0);
+                    }
                 }
             }
 
@@ -522,42 +525,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
             }
             mPlacement.setWfAbt(clInfo.optInt("abt"));
             List<Instance> tmp = WaterFallHelper.getListInsResult(clInfo, mPlacement);
-            if (tmp == null || tmp.isEmpty()) {
-                if (lastAvailableIns == null || lastAvailableIns.isEmpty()) {
-                    Error error = new Error(ErrorCode.CODE_LOAD_NO_AVAILABLE_AD
-                            , ErrorCode.MSG_LOAD_NO_AVAILABLE_AD, ErrorCode.CODE_INTERNAL_SERVER_ERROR);
-                    DeveloperLog.LogE(error.toString() + ", tmp:" + tmp + ", last:" + lastAvailableIns);
-                    callbackLoadError(error);
-                } else {
-                    DeveloperLog.LogD("request cl success, but ins[] is empty, but has history");
-                    isInLoadingProgress = false;
-                }
-            } else {
-                if (lastAvailableIns != null && !lastAvailableIns.isEmpty()) {
-                    InsUtil.reOrderIns(lastAvailableIns, tmp);
-                }
-                mTotalIns.clear();
-                mTotalIns.addAll(tmp);
-                InsUtil.resetInsStateOnClResponse(mTotalIns);
-                DeveloperLog.LogD("TotalIns is : " + mTotalIns.toString());
-                int availableCount = InsUtil.instanceCount(mTotalIns, Instance.MEDIATION_STATE.AVAILABLE);
-                reSizeCacheSize();
-                DeveloperLog.LogD("after cl, cache size is : " + mCacheSize);
-                //if availableCount == mCacheSize, do not load any new instance
-                if (availableCount == mCacheSize) {
-                    DeveloperLog.LogD("no new ins should be loaded, current load progress finish");
-                    isInLoadingProgress = false;
-                } else {
-                    Map<Integer, AdTimingBidResponse> bidResponseMap = WaterFallHelper.getS2sBidResponse(clInfo);
-                    if (bidResponseMap != null && !bidResponseMap.isEmpty()) {
-                        if (mBidResponses == null) {
-                            mBidResponses = new ConcurrentHashMap<>();
-                        }
-                        mBidResponses.putAll(bidResponseMap);
-                    }
-                    doLoadOnUiThread();
-                }
-            }
+            internalLoad(lastAvailableIns, clInfo, tmp);
         } catch (Exception e) {
             Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_SERVER_ERROR
                     , ErrorCode.MSG_LOAD_SERVER_ERROR, ErrorCode.CODE_INTERNAL_UNKNOWN_OTHER);
@@ -567,6 +535,47 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
             callbackLoadError(error);
         } finally {
             IOUtil.closeQuietly(response);
+        }
+    }
+
+    private void internalLoad(List<Instance> lastAvailableIns, JSONObject clInfo, List<Instance> tmp) {
+        if (tmp == null || tmp.isEmpty()) {
+            if (lastAvailableIns == null || lastAvailableIns.isEmpty()) {
+                Error error = new Error(ErrorCode.CODE_LOAD_NO_AVAILABLE_AD
+                        , ErrorCode.MSG_LOAD_NO_AVAILABLE_AD, ErrorCode.CODE_INTERNAL_SERVER_ERROR);
+                DeveloperLog.LogE(error.toString() + ", tmp:" + tmp + ", last:" + lastAvailableIns);
+                callbackLoadError(error);
+            } else {
+                DeveloperLog.LogD("request cl success, but ins[] is empty, but has history");
+                isInLoadingProgress = false;
+            }
+        } else {
+            if (lastAvailableIns != null && !lastAvailableIns.isEmpty()) {
+                InsUtil.reOrderIns(lastAvailableIns, tmp);
+            }
+            mTotalIns.clear();
+            mTotalIns.addAll(tmp);
+            InsUtil.resetInsStateOnClResponse(mTotalIns);
+            DeveloperLog.LogD("TotalIns is : " + mTotalIns.toString());
+            int availableCount = InsUtil.instanceCount(mTotalIns, Instance.MEDIATION_STATE.AVAILABLE);
+            reSizeCacheSize();
+            DeveloperLog.LogD("after cl, cache size is : " + mCacheSize);
+            //if availableCount == mCacheSize, do not load any new instance
+            if (availableCount == mCacheSize) {
+                DeveloperLog.LogD("no new ins should be loaded, current load progress finishes");
+                isInLoadingProgress = false;
+            } else {
+                if (mPlacement != null) {
+                    Map<Integer, AdTimingBidResponse> bidResponseMap = WaterFallHelper.getS2sBidResponse(clInfo);
+                    if (bidResponseMap != null && !bidResponseMap.isEmpty()) {
+                        if (mBidResponses == null) {
+                            mBidResponses = new ConcurrentHashMap<>();
+                        }
+                        mBidResponses.putAll(bidResponseMap);
+                    }
+                }
+                doLoadOnUiThread();
+            }
         }
     }
 
@@ -624,6 +633,11 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
             mLoadType = type;
             isAReadyReported.set(false);
             removeBidResponseWhenLoad();
+            if (mPlacement != null && mPlacement.getT() == CommonConstants.PROMOTION) {
+                internalLoad(null, null, InsUtil.getInstanceList(mPlacement));
+                return;
+            }
+
             WorkExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -783,6 +797,29 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
             return true;
         }
         return false;
+    }
+
+    private boolean shouldShowAd(String scene) {
+        Error error = checkShowAvailable(scene);
+        if (Preconditions.checkNotNull(error)) {
+            callbackShowError(error);
+            return false;
+        }
+
+        if (AdRateUtil.shouldBlockScene(mPlacement.getId(), mScene)) {
+            error = ErrorBuilder.build(ErrorCode.CODE_SHOW_SCENE_CAPPED
+                    , ErrorCode.MSG_SHOW_SCENE_CAPPED, -1);
+            callbackShowError(error);
+            return false;
+        }
+        return true;
+    }
+
+    private void callShowError() {
+        Error error = ErrorBuilder.build(ErrorCode.CODE_SHOW_NO_AD_READY
+                , ErrorCode.MSG_SHOW_NO_AD_READY, -1);
+        DeveloperLog.LogE(error.toString());
+        callbackShowError(error);
     }
 
     /**

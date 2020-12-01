@@ -6,6 +6,7 @@ package com.openmediation.sdk.core;
 import com.openmediation.sdk.interstitial.InterstitialAdListener;
 import com.openmediation.sdk.mediation.MediationInterstitialListener;
 import com.openmediation.sdk.mediation.MediationRewardVideoListener;
+import com.openmediation.sdk.promotion.PromotionAdListener;
 import com.openmediation.sdk.utils.AdsUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.HandlerUtil;
@@ -23,6 +24,7 @@ import java.util.Set;
 public class ListenerWrapper {
     private Set<RewardedVideoListener> mRvListeners;
     private Set<InterstitialAdListener> mIsListeners;
+    private PromotionAdListener mPromotionAdListener;
     private MediationRewardVideoListener mMediationRvListener;
     private MediationInterstitialListener mMediationIsListener;
 
@@ -61,6 +63,10 @@ public class ListenerWrapper {
 
     public void removeInterstitialListener(InterstitialAdListener listener) {
         mIsListeners.remove(listener);
+    }
+
+    public void setPromotionAdListener(PromotionAdListener listener) {
+        mPromotionAdListener = listener;
     }
 
     public void setPlacementId(String placementId) {
@@ -467,6 +473,80 @@ public class ListenerWrapper {
                 public void run() {
                     mMediationIsListener.onInterstitialAdClicked();
                     AdsUtil.callbackActionReport(EventId.CALLBACK_CLICK, mPlacementId, scene, null);
+                }
+            });
+        }
+    }
+
+    public void onPromotionAdAvailabilityChanged(final boolean available) {
+        DeveloperLog.LogD("onPromotionAdAvailabilityChanged : " + available);
+        if (canSendCallback(mPromotionAdListener)) {
+            sendCallback(new Runnable() {
+
+                @Override
+                public void run() {
+                    mPromotionAdListener.onPromotionAdAvailabilityChanged(available);
+                    if (available) {
+                        AdsUtil.callbackActionReport(EventId.CALLBACK_LOAD_SUCCESS, mPlacementId, null, null);
+                    } else {
+                        AdsUtil.callbackActionReport(EventId.CALLBACK_LOAD_ERROR, mPlacementId, null, null);
+                    }
+                }
+            });
+        }
+    }
+
+    public void onPromotionAdClicked(final Scene scene) {
+        DeveloperLog.LogD("onPromotionAdClicked");
+        if (canSendCallback(mPromotionAdListener)) {
+            sendCallback(new Runnable() {
+
+                @Override
+                public void run() {
+                    mPromotionAdListener.onPromotionAdClicked(scene);
+                    AdsUtil.callbackActionReport(EventId.CALLBACK_CLICK, mPlacementId, scene, null);
+                }
+            });
+        }
+    }
+
+    public void onPromotionAdShowed(final Scene scene) {
+        DeveloperLog.LogD("onPromotionAdShowed");
+        if (canSendCallback(mPromotionAdListener)) {
+            sendCallback(new Runnable() {
+
+                @Override
+                public void run() {
+                    mPromotionAdListener.onPromotionAdShowed(scene);
+                    AdsUtil.callbackActionReport(EventId.CALLBACK_PRESENT_SCREEN, mPlacementId, scene, null);
+                }
+            });
+        }
+    }
+
+    public void onPromotionAdShowFailed(final Scene scene, final Error error) {
+        DeveloperLog.LogD("onInteractiveAdShowFailed");
+        if (canSendCallback(mPromotionAdListener)) {
+            sendCallback(new Runnable() {
+
+                @Override
+                public void run() {
+                    mPromotionAdListener.onPromotionAdShowFailed(scene, error);
+                    AdsUtil.callbackActionReport(EventId.CALLBACK_SHOW_FAILED, mPlacementId, scene, error);
+                }
+            });
+        }
+    }
+
+    public void onPromotionAdHidden(final Scene scene) {
+        DeveloperLog.LogD("onPromotionAdHidden");
+        if (canSendCallback(mPromotionAdListener)) {
+            sendCallback(new Runnable() {
+
+                @Override
+                public void run() {
+                    mPromotionAdListener.onPromotionAdHidden(scene);
+                    AdsUtil.callbackActionReport(EventId.CALLBACK_DISMISS_SCREEN, mPlacementId, scene, null);
                 }
             });
         }

@@ -10,7 +10,7 @@ public interface CommonConstants {
     int PLAT_FORM_ANDROID = 1;
     int API_VERSION = 1;
 
-    String SDK_VERSION_NAME = "1.3.4";
+    String SDK_VERSION_NAME = "2.0.0";
 
     String ADTYPE_BANNER = "Banner";
     String ADTYPE_NATIVE = "Native";
@@ -32,7 +32,22 @@ public interface CommonConstants {
     int VIDEO = 2;
     int INTERSTITIAL = 3;
     int SPLASH = 4;
+    int PROMOTION = 5;
 
     String DB_NAME = "omDB.db";
     int DB_VERSION = 1;
+
+    int HEAD_BIDDING_TIMEOUT = 5000;
+
+
+    String FILE_HEADER_SUFFIX = "-header";
+    String KEY_REQUEST_TIME = "request_time";
+    String KEY_CONTENT_TYPE = "Content-Type";
+    String KEY_CACHE_CONTROL = "Cache-Control";
+    String KEY_ETAG = "ETag";
+    String KEY_LAST_MODIFIED = "Last-Modified";
+    String KEY_MAX_AGE = "max-age";
+    String KEY_IF_NONE_MATCH = "If-None-Match";
+    String KEY_IF_MODIFIED_SINCE = "If-Modified-Since";
+    String KEY_LOCATION = "Location";
 }

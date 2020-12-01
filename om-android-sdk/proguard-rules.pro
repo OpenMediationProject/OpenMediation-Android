@@ -24,7 +24,7 @@
 -dontskipnonpubliclibraryclasses
 # SDK API
 -keep class com.openmediation.sdk.mediation.**{*;}
-
+-keep class com.openmediation.sdk.utils.**{*;}
 # Mediation interface
 -keep class com.openmediation.sdk.mobileads.**{*;}
 

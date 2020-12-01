@@ -14,6 +14,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.CharArrayWriter;
 import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.Flushable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -375,5 +379,30 @@ public class IOUtil {
             out.write(buf, 0, size);
         }
         out.flush();
+    }
+
+    public static FileInputStream getFileInputStream(File file) throws FileNotFoundException {
+        if (file == null || !file.exists()) {
+            return null;
+        }
+        return new FileInputStream(file);
+    }
+
+    public static void writeToFile(InputStream in, File file) throws IOException {
+        FileOutputStream out = new FileOutputStream(file);
+        copy(in, out);
+        closeQuietly(out);
+    }
+
+    public static void writeToFile(byte[] bytes, File file) throws IOException {
+        FileOutputStream out = null;
+        try {
+            out = new FileOutputStream(file);
+            out.write(bytes);
+        } finally {
+            if (out != null) {
+                closeQuietly(out);
+            }
+        }
     }
 }

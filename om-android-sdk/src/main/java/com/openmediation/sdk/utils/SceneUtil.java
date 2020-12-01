@@ -48,6 +48,17 @@ public class SceneUtil {
         return jsonObject;
     }
 
+    public static int getSceneId(String placementId) {
+        int sceneId = 0;
+        if (DataCache.getInstance().containsKey(placementId + "_scene")) {
+            Scene scene = DataCache.getInstance().get(placementId + "_scene", Scene.class);
+            if (scene != null) {
+                sceneId = scene.getId();
+            }
+        }
+        return sceneId;
+    }
+
     private static Scene getDefaultScene(Map<String, Scene> sceneMap) {
         Scene sceneValue = null;
         for (Map.Entry<String, Scene> sceneEntry : sceneMap.entrySet()) {

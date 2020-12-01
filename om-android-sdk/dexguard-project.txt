@@ -29,6 +29,7 @@
 -keep class com.openmediation.sdk.mediation.**{*;}
 -keep class com.openmediation.sdk.nativead.**{*;}
 -keep class com.openmediation.sdk.splash.**{*;}
+-keep class com.openmediation.sdk.promotion.**{*;}
 -keep class com.openmediation.sdk.utils.**{*;}
 -keep class com.openmediation.sdk.video.**{*;}
 -keep class com.openmediation.sdk.OmAds{*;}

@@ -25,6 +25,9 @@ public interface KeyConstants {
      */
     String KEY_APP_CHANNEL = "AppChannel";
 
+    String KEY_DISPLAY_SCENE = "display_sceneName";
+    String KEY_DISPLAY_ABT = "display_abt";
+
     /**
      * The interface Request.
      */
@@ -229,6 +232,8 @@ public interface KeyConstants {
         /*int       low power, 0:No,1:Yes*/
         String KEY_LOWP = "lowp";
 
+        String KEY_LCY = "lcy";
+
         /**********************   for Config(init) server API     */
         String KEY_ADNS = "adns";           //List<AdNetwork>  mediated AdNetworks
         String KEY_BTIME = "btime";
@@ -257,6 +262,8 @@ public interface KeyConstants {
         /************************     for cl server API       */
         /*float     IAP, inAppPurchase               1*/
         String KEY_IAP = "iap";
+        /*string    AppIDs to be banned, sperated by comma      com.bb,com.ee*/
+        String KEY_BA = "ba";
         /**
          * The constant KEY_IMPRTIMES.
          */
@@ -298,6 +305,17 @@ public interface KeyConstants {
         String KEY_CCPA = "ccpa";
 
         String KEY_GAID = "AdvertisingId";
+
+        /**
+         * AppsFlyer ID
+         */
+        String KEY_AF_ID = "afid";
+
+        /*int32     noGooglePlay flag, 0 or missing: GP installed, 1:GP not installed   1*/
+        String KEY_NG = "ng";
+
+        /*EXT*/
+        String KEY_EXT = "ext";
     }
 
     /**
@@ -708,5 +726,22 @@ public interface KeyConstants {
          */
         /*@see DeviceUtil.getSystemProperties  string    persist.sys.nativebridge*/
         String KEY_NATIVE_BRIDGE = "persist.sys.nativebridge";
+    }
+
+    interface Response {
+        /*String AppName */
+        String KEY_APP_NAME = "app_name";
+        /*int32     AppFileSize     0*/
+        String KEY_APP_SIZE = "app_size";
+        /*int32     AppRating count     1393613*/
+        String KEY_RATING_COUNT = "rating_count";
+        /*Array of string carousel images URLs       */
+        String KEY_IMGS = "imgs";
+        /*int8      shows adt mark, 0:hide,1:show*/
+        String KEY_MK = "mk";
+        /*int32    in seconds*/
+        String KEY_EXPIRE = "expire";
+        /*Object of PlayIn          PlayIn*/
+        String KEY_PI = "pi";
     }
 }

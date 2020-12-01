@@ -260,6 +260,19 @@ public class RequestBuilder {
                 .format());
     }
 
+    public static String buildCdUrl(String host) {
+        if (TextUtils.isEmpty(host)) {
+            return "";
+        }
+        return host.concat("?") + new RequestBuilder()
+                .p(KeyConstants.Request.KEY_API_VERSION, "2")
+                .p(KeyConstants.Request.KEY_PLATFORM, CommonConstants.PLAT_FORM_ANDROID)
+                .p(KeyConstants.Request.KEY_SDK_VERSION, CommonConstants.SDK_VERSION_NAME)
+                .p(KeyConstants.Request.KEY_APP_KEY, DataCache.getInstance().getFromMem(KeyConstants.KEY_APP_KEY, String.class))
+                .format();
+    }
+
+
     /**
      * Build lr request body byte [ ].
      *
@@ -309,21 +322,16 @@ public class RequestBuilder {
     public static byte[] buildConfigRequestBody(JSONArray adapters) throws Exception {
         Context context = AdtUtil.getApplication();
         JSONObject body = getRequestBodyBaseJson();
-        body.put(KeyConstants.RequestBody.KEY_TZ, DeviceUtil.getTimeZone());
-        body.put(KeyConstants.RequestBody.KEY_LANG_NAME, DeviceUtil.getLocaleInfo().get(KeyConstants.RequestBody.KEY_LANG_NAME));
-        body.put(KeyConstants.RequestBody.KEY_BUILD, Build.DISPLAY);
-        body.put(KeyConstants.RequestBody.KEY_LIP, DeviceUtil.getHostIp());
-        body.put(KeyConstants.RequestBody.KEY_ADNS, adapters);
         body.put(KeyConstants.RequestBody.KEY_BTIME, DeviceUtil.getBtime());
         body.put(KeyConstants.RequestBody.KEY_RAM, DeviceUtil.getTotalRAM(context));
+        body.put(KeyConstants.RequestBody.KEY_ADNS, adapters);
         body.put(KeyConstants.RequestBody.KEY_ANDROID, buildAndroidRequestBody(context));
 
         DeveloperLog.LogD("init params:" + body.toString());
-
         return Gzip.inGZip(body.toString().getBytes(Charset.forName(CommonConstants.CHARTSET_UTF8)));
     }
 
-    private static JSONObject getRequestBodyBaseJson() throws Exception {
+    public static JSONObject getRequestBodyBaseJson() throws Exception {
         JSONObject body = new JSONObject();
         Map<String, Object> map = DeviceUtil.getLocaleInfo();
         Context context = AdtUtil.getApplication();
@@ -331,26 +339,30 @@ public class RequestBuilder {
         body.put(KeyConstants.RequestBody.KEY_FLT, DeviceUtil.getFlt());
         body.put(KeyConstants.RequestBody.KEY_FIT, DeviceUtil.getFit());
         body.put(KeyConstants.RequestBody.KEY_ZO, DeviceUtil.getTimeZoneOffset());
+        body.put(KeyConstants.RequestBody.KEY_TZ, DeviceUtil.getTimeZone());
         body.put(KeyConstants.RequestBody.KEY_SESSION, DeviceUtil.getSessionId());
         body.put(KeyConstants.RequestBody.KEY_UID, DeviceUtil.getUid());
         Map<String, Object> gaidMap = getGaidMap(context);
         for (Map.Entry<String, Object> integerEntry : gaidMap.entrySet()) {
             body.put(integerEntry.getKey(), integerEntry.getValue());
         }
-        body.put(KeyConstants.RequestBody.KEY_JB, DeviceUtil.isRoot() ? 1 : 0);
         body.put(KeyConstants.RequestBody.KEY_LANG, map.get(KeyConstants.RequestBody.KEY_LANG));
-        body.put(KeyConstants.RequestBody.KEY_LCOUNTRY, map.get(KeyConstants.RequestBody.KEY_LCOUNTRY));
+        body.put(KeyConstants.RequestBody.KEY_LANG_NAME, DeviceUtil.getLocaleInfo().get(KeyConstants.RequestBody.KEY_LANG_NAME));
+        body.put(KeyConstants.RequestBody.KEY_JB, DeviceUtil.isRoot() ? 1 : 0);
         body.put(KeyConstants.RequestBody.KEY_BUNDLE, context != null ? context.getPackageName() : "");
         body.put(KeyConstants.RequestBody.KEY_MAKE, Build.MANUFACTURER);
         body.put(KeyConstants.RequestBody.KEY_BRAND, Build.BRAND);
         body.put(KeyConstants.RequestBody.KEY_MODEL, Build.MODEL);
         body.put(KeyConstants.RequestBody.KEY_OSV, Build.VERSION.RELEASE);
+        body.put(KeyConstants.RequestBody.KEY_BUILD, Build.DISPLAY);
         body.put(KeyConstants.RequestBody.KEY_APPV, DeviceUtil.getVersionName(context));
+        body.put(KeyConstants.RequestBody.KEY_W, DensityUtil.getPhoneWidth(context));
+        body.put(KeyConstants.RequestBody.KEY_H, DensityUtil.getPhoneHeight(context));
         body.put(KeyConstants.RequestBody.KEY_CONT, NetworkChecker.getConnectType(context));
         body.put(KeyConstants.RequestBody.KEY_CARRIER, NetworkChecker.getNetworkOperator(context));
+        body.put(KeyConstants.RequestBody.KEY_LIP, DeviceUtil.getHostIp());
+        body.put(KeyConstants.RequestBody.KEY_LCOUNTRY, map.get(KeyConstants.RequestBody.KEY_LCOUNTRY));
         body.put(KeyConstants.RequestBody.KEY_FM, DeviceUtil.getFm());
-        String channel = DataCache.getInstance().getFromMem(KeyConstants.KEY_APP_CHANNEL, String.class);
-        body.put(KeyConstants.RequestBody.KEY_CHANNEL, channel);
         Map<String, Integer> battery = DeviceUtil.getBatteryInfo(context);
         if (battery == null || battery.isEmpty()) {
             body.put(KeyConstants.RequestBody.KEY_BATTERY, 0);
@@ -367,8 +379,9 @@ public class RequestBuilder {
                 body.put(KeyConstants.RequestBody.KEY_BATTERY, 0);
             }
         }
-        body.put(KeyConstants.RequestBody.KEY_W, DensityUtil.getPhoneWidth(context));
-        body.put(KeyConstants.RequestBody.KEY_H, DensityUtil.getPhoneHeight(context));
+        String channel = DataCache.getInstance().getFromMem(KeyConstants.KEY_APP_CHANNEL, String.class);
+        body.put(KeyConstants.RequestBody.KEY_CHANNEL, channel);
+
         appendRegsObject(body, OmManager.getInstance().getMetaData());
         return body;
     }
@@ -533,6 +546,19 @@ public class RequestBuilder {
         return Gzip.inGZip(body.toString().getBytes(Charset.forName(CommonConstants.CHARTSET_UTF8)));
     }
 
+    public static byte[] buildCdRequestBody(int type, Object data) throws Exception {
+        JSONObject jsonObject = getRequestBodyBaseJson();
+        JsonUtil.put(jsonObject, "type", type);
+        JSONObject object = null;
+        if (data instanceof Map) {
+            object = new JSONObject((Map) data);
+        } else if (data instanceof String) {
+            object = new JSONObject((String) data);
+        }
+        JsonUtil.put(jsonObject, "cd", object);
+        return Gzip.inGZip(jsonObject.toString().getBytes(Charset.forName(CommonConstants.CHARTSET_UTF8)));
+    }
+
     private static JSONObject buildAndroidRequestBody(Context context) throws Exception {
         JSONObject androidBody = new JSONObject();
         androidBody.put(KeyConstants.Android.KEY_DEVICE, Build.DEVICE);
@@ -550,7 +576,6 @@ public class RequestBuilder {
         androidBody.put(KeyConstants.Android.KEY_XDP, Integer.toString(DensityUtil.getXdpi(context)));
         androidBody.put(KeyConstants.Android.KEY_YDP, Integer.toString(DensityUtil.getYdpi(context)));
         androidBody.put(KeyConstants.Android.KEY_DFPID, DeviceUtil.getUniquePsuedoId());
-        androidBody.put(KeyConstants.Android.KEY_TIME_ZONE, DeviceUtil.getTimeZone());
         androidBody.put(KeyConstants.Android.KEY_ARCH, DeviceUtil.getSystemProperties(KeyConstants.Device.KEY_RO_ARCH));
         androidBody.put(KeyConstants.Android.KEY_CHIPNAME, DeviceUtil.getSystemProperties(KeyConstants.Device.KEY_RO_CHIPNAME));
         androidBody.put(KeyConstants.Android.KEY_BRIDGE, DeviceUtil.getSystemProperties(KeyConstants.Device.KEY_RO_BRIDGE));
@@ -568,13 +593,6 @@ public class RequestBuilder {
         androidBody.put(KeyConstants.Android.KEY_BUILD_USER, DeviceUtil.getSystemProperties(KeyConstants.Device.KEY_RO_BUILD_USER));
         androidBody.put(KeyConstants.Android.KEY_KERNEL_QEMU, DeviceUtil.getSystemProperties(KeyConstants.Device.KEY_RO_KERNEL_QEMU));
         androidBody.put(KeyConstants.Android.KEY_HARDWARE, DeviceUtil.getSystemProperties(KeyConstants.Device.KEY_RO_HARDWARE));
-
-//        JSONArray sensorArray = SensorManager.getSingleton().getSensorData();
-//        androidBody.put(KeyConstants.Android.KEY_SENSOR_SIZE, sensorArray != null ? sensorArray.length() : 0);
-//        androidBody.put(KeyConstants.Android.KEY_SENSORS, sensorArray);
-//
-//        androidBody.put(KeyConstants.Android.KEY_AS, DeviceUtil.getInstallVending(context));
-//        androidBody.put(KeyConstants.Android.KEY_FB_ID, DeviceUtil.getFacebookId(context));
         androidBody.put(KeyConstants.RequestBody.KEY_TDM, DeviceUtil.disk());
         androidBody.put(KeyConstants.RequestBody.KEY_IFGP, DeviceUtil.ifGp(AdtUtil.getApplication()));
         return androidBody;

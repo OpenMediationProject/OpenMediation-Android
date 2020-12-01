@@ -23,7 +23,9 @@ import com.openmediation.sdk.utils.InsUtil;
 import com.openmediation.sdk.utils.PlacementUtils;
 import com.openmediation.sdk.utils.Preconditions;
 import com.openmediation.sdk.utils.WorkExecutor;
+import com.openmediation.sdk.utils.cache.DataCache;
 import com.openmediation.sdk.utils.constant.CommonConstants;
+import com.openmediation.sdk.utils.constant.KeyConstants;
 import com.openmediation.sdk.utils.crash.CrashUtil;
 import com.openmediation.sdk.utils.device.DeviceUtil;
 import com.openmediation.sdk.utils.error.Error;
@@ -427,6 +429,9 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
         if (isDestroyed) {
             return;
         }
+        if (mPlacement.getT()==CommonConstants.PROMOTION){
+            return;
+        }
         if (isManualTriggered) {
             LrReportHelper.report(mPlacementId, OmManager.LOAD_TYPE.MANUAL.getValue(), mPlacement.getWfAbt(),
                     CommonConstants.WATERFALL_READY, 0);
@@ -445,6 +450,9 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
         if (isDestroyed) {
             return;
         }
+        if (mPlacement.getT() == CommonConstants.PROMOTION) {
+            return;
+        }
         if (isManualTriggered) {
             LrReportHelper.report(instances, OmManager.LOAD_TYPE.MANUAL.getValue(), mPlacement.getWfAbt(),
                     CommonConstants.INSTANCE_LOAD, 0);
@@ -461,6 +469,9 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
      */
     void iReadyReport(BaseInstance instances) {
         if (isDestroyed || instances.getHb() == 1) {
+            return;
+        }
+        if (mPlacement.getT() == CommonConstants.PROMOTION) {
             return;
         }
         if (isManualTriggered) {

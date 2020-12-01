@@ -82,7 +82,7 @@ public class IapHelper {
     }
 
 
-    static String getIap() {
+    public static String getIap() {
         try {
             String iapStr = DataCache.getInstance().get(IAP_NUMBER, String.class);
             if (TextUtils.isEmpty(iapStr)) {

@@ -38,4 +38,5 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     testImplementation 'junit:junit:4.12'
     implementation project(path: ':miit_mdid_1.0.10')
+    implementation 'com.appsflyer:af-android-sdk:5.2.0'
 }

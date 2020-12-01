@@ -4,10 +4,12 @@
 package com.openmediation.sdk.utils;
 
 import android.text.TextUtils;
+import android.util.SparseArray;
 
 import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.Instance;
 import com.openmediation.sdk.utils.model.InstanceLoadStatus;
+import com.openmediation.sdk.utils.model.Placement;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -170,5 +172,20 @@ public class InsUtil {
             }
         }
         return statusList;
+    }
+
+    public static CopyOnWriteArrayList<Instance> getInstanceList(Placement placement) {
+        if (placement == null || placement.getInsMap() == null || placement.getInsMap().size() == 0) {
+            return null;
+        }
+        SparseArray<BaseInstance> insMap = placement.getInsMap();
+        CopyOnWriteArrayList<Instance> list = new CopyOnWriteArrayList<>();
+        for (int i = 0; i < insMap.size(); i++) {
+            BaseInstance instance = insMap.valueAt(i);
+            if (instance instanceof Instance) {
+                list.add((Instance) instance);
+            }
+        }
+        return list;
     }
 }

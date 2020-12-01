@@ -18,7 +18,8 @@ import java.util.Map;
  * At runtime, the mediation SDK will find and instantiate a CustomAdsAdapter subclass as needed
  * and invoke its methods.
  */
-public abstract class CustomAdsAdapter extends CustomAdParams implements RewardedVideoApi, InterstitialAdApi, BannerAdApi {
+public abstract class CustomAdsAdapter extends CustomAdParams implements RewardedVideoApi,
+        InterstitialAdApi, BannerAdApi, PromotionAdApi {
 
     protected String mAppKey;
 
@@ -35,6 +36,11 @@ public abstract class CustomAdsAdapter extends CustomAdParams implements Rewarde
 
     @Override
     public void initBannerAd(Activity activity, Map<String, Object> dataMap, BannerAdCallback callback) {
+        initData(activity, dataMap);
+    }
+
+    @Override
+    public void initPromotionAd(Activity activity, Map<String, Object> dataMap, PromotionAdCallback callback) {
         initData(activity, dataMap);
     }
 
@@ -118,6 +124,23 @@ public abstract class CustomAdsAdapter extends CustomAdParams implements Rewarde
     @Override
     public void destroyBannerAd() {
 
+    }
+
+    @Override
+    public void loadPromotionAd(Activity activity, String adUnitId, Map<String, Object> extras, PromotionAdCallback callback) {
+    }
+
+    @Override
+    public void showPromotionAd(Activity activity, String adUnitId, Map<String, Object> extras, PromotionAdCallback callback) {
+    }
+
+    @Override
+    public void hidePromotionAd(String adUnitId, PromotionAdCallback callback) {
+    }
+
+    @Override
+    public boolean isPromotionAdAvailable(String adUnitId) {
+        return false;
     }
 
     protected String check(Activity activity, String adUnitId) {

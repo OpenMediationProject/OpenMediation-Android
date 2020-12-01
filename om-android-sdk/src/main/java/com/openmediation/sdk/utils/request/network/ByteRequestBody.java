@@ -21,7 +21,7 @@ public class ByteRequestBody implements RequestBody {
     }
 
     public ByteRequestBody(byte[] body, Charset charset) {
-        this(body, charset, Headers.VALUE_APPLICATION_STREAM);
+        this(body, charset, Headers.VALUE_APPLICATION_JSON);
     }
 
     public ByteRequestBody(byte[] body, String contentType) {

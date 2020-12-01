@@ -92,7 +92,7 @@ public class ChartboostBidAdapter extends CustomAdsAdapter implements CbtInterst
                 public void initFailed(String error) {
                     if (callback != null) {
                         callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
-                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
                     }
                 }
             });
@@ -227,10 +227,10 @@ public class ChartboostBidAdapter extends CustomAdsAdapter implements CbtInterst
                     HeliumAdError error = CbtSingleTon.getInstance().getError(adUnitId);
                     if (error != null) {
                         callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error.code, error.message));
+                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error.code, error.message));
                     } else {
                         callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "No Fill"));
+                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "No Fill"));
                     }
                 }
             }

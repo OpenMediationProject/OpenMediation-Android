@@ -21,7 +21,9 @@ import com.openmediation.sdk.mediation.CustomBannerEvent;
 import com.openmediation.sdk.utils.AdsUtil;
 import com.openmediation.sdk.utils.HandlerUtil;
 import com.openmediation.sdk.utils.PlacementUtils;
+import com.openmediation.sdk.utils.cache.DataCache;
 import com.openmediation.sdk.utils.constant.CommonConstants;
+import com.openmediation.sdk.utils.constant.KeyConstants;
 import com.openmediation.sdk.utils.crash.CrashUtil;
 import com.openmediation.sdk.utils.error.ErrorCode;
 import com.openmediation.sdk.utils.event.EventId;
@@ -102,6 +104,7 @@ public final class BannerImp extends AbstractHybridAd implements View.OnAttachSt
             placementInfo.put("height", String.valueOf(mAdSize.getHeight()));
             placementInfo.put("description", mAdSize.getDescription());
         }
+        DataCache.getInstance().setMEM(instances.getKey() + KeyConstants.KEY_DISPLAY_ABT, mPlacement.getWfAbt());
         bannerEvent.loadAd(mActRef.get(), placementInfo);
     }
 

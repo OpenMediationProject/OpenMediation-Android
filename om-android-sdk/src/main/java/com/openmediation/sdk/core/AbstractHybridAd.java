@@ -136,9 +136,7 @@ public abstract class AbstractHybridAd extends AbstractAd {
     protected synchronized void onInsReady(boolean doInsReadyReport, final BaseInstance instances, Object o) {
         if (doInsReadyReport) {
             DeveloperLog.LogD("do ins ready report");
-            if (instances.getHb() != 1) {
-                iReadyReport(instances);
-            }
+            iReadyReport(instances);
         } else {
             DeveloperLog.LogD("do ins useless report");
         }

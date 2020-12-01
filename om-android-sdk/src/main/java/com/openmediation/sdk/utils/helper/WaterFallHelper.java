@@ -99,6 +99,9 @@ public class WaterFallHelper {
     }
 
     public static Map<Integer, AdTimingBidResponse> getS2sBidResponse(JSONObject clInfo) {
+        if (clInfo == null) {
+            return null;
+        }
         JSONArray bidresp = clInfo.optJSONArray("bidresp");
         if (bidresp == null || bidresp.length() == 0) {
             return null;
@@ -123,12 +126,12 @@ public class WaterFallHelper {
             response.setPayLoad(adm);
             double price = object.optDouble("price", 0);
             String nurl = object.optString("nurl");
-            if (nurl.contains(AUCTION_PRICE)) {
+            if (!TextUtils.isEmpty(nurl) && nurl.contains(AUCTION_PRICE)) {
                 nurl = nurl.replace(AUCTION_PRICE, String.valueOf(price));
             }
             response.setNurl(nurl);
             String lurl = object.optString("lurl");
-            if (lurl.contains(AUCTION_PRICE)) {
+            if (!TextUtils.isEmpty(lurl) && lurl.contains(AUCTION_PRICE)) {
                 lurl = lurl.replace(AUCTION_PRICE, String.valueOf(price + 0.1));
             }
             response.setLurl(lurl);

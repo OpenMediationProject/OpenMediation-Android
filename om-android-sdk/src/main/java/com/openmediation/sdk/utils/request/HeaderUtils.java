@@ -11,7 +11,8 @@ public final class HeaderUtils {
     public static Headers getBaseHeaders() {
         Headers headers = new Headers();
         headers.set("User-Agent", DataCache.getInstance().get("UserAgent", String.class));
-        headers.set("Content-Type", Headers.VALUE_APPLICATION_STREAM);
+        headers.set("Content-Type", Headers.VALUE_APPLICATION_JSON);
+        headers.set("Content-Encoding", "gzip");
         return headers;
     }
 }

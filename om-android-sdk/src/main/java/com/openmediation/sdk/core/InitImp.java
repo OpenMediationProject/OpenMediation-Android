@@ -8,6 +8,7 @@ import android.text.TextUtils;
 
 import com.openmediation.sdk.InitCallback;
 import com.openmediation.sdk.bid.AdTimingAuctionManager;
+import com.openmediation.sdk.utils.AFManager;
 import com.openmediation.sdk.utils.ActLifecycle;
 import com.openmediation.sdk.utils.AdLog;
 import com.openmediation.sdk.utils.AdtUtil;
@@ -156,6 +157,7 @@ public final class InitImp {
     private static void doAfterGetConfig(String appKey, Configurations config) {
         try {
             DeveloperLog.enableDebug(AdtUtil.getApplication(), config.getD() == 1);
+            AFManager.checkAfDataStatus();
             EventUploadManager.getInstance().updateReportSettings(config);
             //reports error logs
             CrashUtil.getSingleton().uploadException(config, appKey);

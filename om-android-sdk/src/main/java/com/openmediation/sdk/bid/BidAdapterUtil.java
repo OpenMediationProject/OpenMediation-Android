@@ -23,6 +23,7 @@ final class BidAdapterUtil extends AdapterUtil {
         mBidAdapterPaths.put(MediationInfo.MEDIATION_ID_5, getBidAdapterPath(MediationInfo.MEDIATION_ID_5));
         mBidAdapterPaths.put(MediationInfo.MEDIATION_ID_14, getBidAdapterPath(MediationInfo.MEDIATION_ID_14));
         mBidAdapterPaths.put(MediationInfo.MEDIATION_ID_17, getBidAdapterPath(MediationInfo.MEDIATION_ID_17));
+        mBidAdapterPaths.put(MediationInfo.MEDIATION_ID_19, getBidAdapterPath(MediationInfo.MEDIATION_ID_19));
     }
 
     static BidAdapter getBidAdapter(int mediationId) {
@@ -38,7 +39,7 @@ final class BidAdapterUtil extends AdapterUtil {
                 mBidAdapters.put(mediationId, bidAdapter);
                 return bidAdapter;
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             CrashUtil.getSingleton().saveException(e);
         }
         return null;
@@ -65,6 +66,9 @@ final class BidAdapterUtil extends AdapterUtil {
                 break;
             case MediationInfo.MEDIATION_ID_17:
                 path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_17)).concat(BID_ADAPTER);
+                break;
+            case MediationInfo.MEDIATION_ID_19:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_19)).concat(BID_ADAPTER);
                 break;
             default:
                 break;

@@ -12,6 +12,7 @@ public class AdapterErrorBuilder {
     public static final String AD_UNIT_BANNER = "Banner";
     public static final String AD_UNIT_NATIVE = "Native";
     public static final String AD_UNIT_SPLASH = "Splash";
+    public static final String AD_UNIT_PROMOTION = "Promotion";
 
     public static AdapterError buildInitError(String adUnit, String adapterName, String errorMsg) {
         String resultingMessage = "" + adUnit + " Init Failed" + (!TextUtils.isEmpty(adapterName) ? " " + adapterName : "") + " - ";

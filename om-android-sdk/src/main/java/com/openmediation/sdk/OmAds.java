@@ -6,6 +6,7 @@ package com.openmediation.sdk;
 import android.app.Activity;
 
 import com.openmediation.sdk.core.OmManager;
+import com.openmediation.sdk.utils.AFManager;
 import com.openmediation.sdk.utils.AdLog;
 
 /**
@@ -91,6 +92,24 @@ public abstract class OmAds {
      */
     public static void setLogEnable(boolean debug) {
         AdLog.getSingleton().isDebug(debug);
+    }
+
+    /**
+     * Report Appsflyer conversion data
+     *
+     * @param conversionData
+     */
+    public static void sendAFConversionData(Object conversionData) {
+        AFManager.sendAFConversionData(conversionData);
+    }
+
+    /**
+     * Report Appsflyer deeplink data
+     *
+     * @param conversionData
+     */
+    public static void sendAFDeepLinkData(Object conversionData) {
+        AFManager.sendAFDeepLinkData(conversionData);
     }
 
     /**
@@ -201,6 +220,8 @@ public abstract class OmAds {
          */
         /*Ad type Interstitial*/
         INTERSTITIAL("interstitial"),
+        /*Ad type Promotion*/
+        PROMOTION("promotion"),
         /* No Preload*/
         NONE("none");
 
