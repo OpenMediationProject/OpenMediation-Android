@@ -17,7 +17,7 @@ android {
 }
 
 dependencies {
-  implementation 'com.adtiming.om:om-android-sdk:1.3.2'
+  implementation 'com.adtiming.om:om-android-sdk:1.3.4'
 
   // AdTiming-Adapter
   implementation 'com.adtiming.adapters.om:adtiming:1.3.2'  
