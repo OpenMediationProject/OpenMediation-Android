@@ -17,36 +17,38 @@ android {
 }
 
 dependencies {
-  implementation 'com.adtiming.om:om-android-sdk:1.3.4'
+  implementation 'com.openmediation:om-android-sdk:2.0.0'
 
   // AdTiming-Adapter
-  implementation 'com.adtiming.adapters.om:adtiming:1.3.2'  
+  implementation 'com.openmediation.adapters:adtiming:2.0.0'
   // AdMob-Adapter
-  implementation 'com.adtiming.adapters.om:admob:1.3.2'
+  implementation 'com.openmediation.adapters:admob:2.0.0'
   // Facebook-Adapter
-  implementation 'com.adtiming.adapters.om:facebook:1.3.2'
+  implementation 'com.openmediation.adapters:facebook:2.0.0'
   // Unity-Adapter
-  implementation 'com.adtiming.adapters.om:unity:1.3.1'
+  implementation 'com.openmediation.adapters:unity:2.0.0'
   // Vungle-Adapter
-  implementation 'com.adtiming.adapters.om:vungle:1.3.2'
+  implementation 'com.openmediation.adapters:vungle:2.0.0'
   // AdColony-Adapter
-  implementation 'com.adtiming.adapters.om:adcolony:1.3.1'
+  implementation 'com.openmediation.adapters:adcolony:2.0.0'
   // AppLovin-Adapter
-  implementation 'com.adtiming.adapters.om:applovin:1.3.2'
+  implementation 'com.openmediation.adapters:applovin:2.0.0'
   // MoPub-Adapter
-  implementation 'com.adtiming.adapters.om:mopub:1.3.1'
+  implementation 'com.openmediation.adapters:mopub:2.0.0'
   // Tapjoy-Adapter
-  implementation 'com.adtiming.adapters.om:tapjoy:1.3.1'
+  implementation 'com.openmediation.adapters:tapjoy:2.0.0'
   // Chartboost-Adapter
-  implementation 'com.adtiming.adapters.om:chartboost:1.3.2'
+  implementation 'com.openmediation.adapters:chartboost:2.0.0'
   // Mintegral-Adapter
-  implementation 'com.adtiming.adapters.om:mintegral:1.4.2'
+  implementation 'com.openmediation.adapters:mintegral:2.0.0'
   //TikTok-Adapter
-  implementation 'com.adtiming.adapters.om:tiktok:1.2.1'
+  implementation 'com.openmediation.adapters:tiktok:2.0.0'
   //IronSource-Adapter
-  implementation 'com.adtiming.adapters.om:ironsource:1.3.0'
+  implementation 'com.openmediation.adapters:ironsource:2.0.0'
   //Fyber-Adapter
-  implementation 'com.adtiming.adapters.om:fyber:1.2.0'
+  implementation 'com.openmediation.adapters:fyber:2.0.0'
+  //CrossPromotion-Adapter
+  implementation 'com.openmediation.adapters:crosspromotion:1.0.0'
 }
 ```
 
