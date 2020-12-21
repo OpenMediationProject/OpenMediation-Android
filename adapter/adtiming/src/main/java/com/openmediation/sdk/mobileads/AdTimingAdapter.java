@@ -7,13 +7,12 @@ import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.adtiming.mediationsdk.AdTimingAds;
-import com.adtiming.mediationsdk.InitCallback;
-import com.adtiming.mediationsdk.adt.interstitial.AdTimingInterstitialAd;
-import com.adtiming.mediationsdk.adt.interstitial.InterstitialAdListener;
-import com.adtiming.mediationsdk.adt.video.AdTimingRewardedVideo;
-import com.adtiming.mediationsdk.adt.video.RewardedVideoListener;
-import com.adtiming.mediationsdk.utils.error.AdTimingError;
+import com.adtbid.sdk.AdTimingAds;
+import com.adtbid.sdk.interstitial.AdTimingInterstitialAd;
+import com.adtbid.sdk.interstitial.InterstitialAdListener;
+import com.adtbid.sdk.utils.error.AdTimingError;
+import com.adtbid.sdk.video.AdTimingRewardedVideo;
+import com.adtbid.sdk.video.RewardedVideoListener;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
@@ -31,7 +30,6 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
     private static final String PAY_LOAD = "pay_load";
     private ConcurrentMap<String, RewardedVideoCallback> mVideoListeners;
     private ConcurrentMap<String, InterstitialAdCallback> mInterstitialListeners;
-    private volatile InitState mInitState = InitState.NOT_INIT;
 
     public AdTimingAdapter() {
         mVideoListeners = new ConcurrentHashMap<>();
@@ -105,31 +103,9 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
             return;
         }
         String pid = (String) dataMap.get("pid");
-        switch (mInitState) {
-            case NOT_INIT:
-                mVideoListeners.put(pid, callback);
-                String appKey = (String) dataMap.get("AppKey");
-                initSDK(activity, appKey);
-                break;
-            case INIT_PENDING:
-                mVideoListeners.put(pid, callback);
-                break;
-            case INIT_SUCCESS:
-                callback.onRewardedVideoInitSuccess();
-                break;
-            case INIT_FAIL:
-                callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
-                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "AdTiming initRewardedVideo failed"));
-                break;
-            default:
-                break;
-        }
-    }
-
-    @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
-        super.loadRewardedVideo(activity, adUnitId, callback);
-        loadRewardedVideoAd(activity, adUnitId, null, callback);
+        mVideoListeners.put(pid, callback);
+        String appKey = (String) dataMap.get("AppKey");
+        initSDK(activity, appKey);
     }
 
     @Override
@@ -187,31 +163,9 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
             return;
         }
         String pid = (String) dataMap.get("pid");
-        switch (mInitState) {
-            case NOT_INIT:
-                mInterstitialListeners.put(pid, callback);
-                String appKey = (String) dataMap.get("AppKey");
-                initSDK(activity, appKey);
-                break;
-            case INIT_PENDING:
-                mInterstitialListeners.put(pid, callback);
-                break;
-            case INIT_SUCCESS:
-                callback.onInterstitialAdInitSuccess();
-                break;
-            case INIT_FAIL:
-                callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
-                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "AdTiming initInterstitialAd failed"));
-                break;
-            default:
-                break;
-        }
-    }
-
-    @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
-        super.loadInterstitialAd(activity, adUnitId, callback);
-        loadIsAd(activity, adUnitId, null, callback);
+        mInterstitialListeners.put(pid, callback);
+        String appKey = (String) dataMap.get("AppKey");
+        initSDK(activity, appKey);
     }
 
     @Override
@@ -260,18 +214,16 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
     }
 
     private void initSDK(final Activity activity, String appKey) {
-        mInitState = InitState.INIT_PENDING;
-        AdTimingAds.init(activity, appKey, new InitCallback() {
+        AdTimingSingleTon.getInstance().initAdTiming(activity, appKey, new AdTimingSingleTon.AdTimingInitCallback() {
             @Override
             public void onSuccess() {
-                AdTimingSingleTon.getInstance().initAdTiming(activity);
-                mInitState = InitState.INIT_SUCCESS;
                 if (!mVideoListeners.isEmpty()) {
                     for (Map.Entry<String, RewardedVideoCallback> rewardedVideoCallbackEntry : mVideoListeners.entrySet()) {
                         if (rewardedVideoCallbackEntry != null) {
                             rewardedVideoCallbackEntry.getValue().onRewardedVideoInitSuccess();
                         }
                     }
+                    mVideoListeners.clear();
                 }
 
                 if (!mInterstitialListeners.isEmpty()) {
@@ -281,30 +233,32 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
                         }
                     }
                 }
+                mInterstitialListeners.clear();
             }
 
             @Override
             public void onError(AdTimingError adTimingError) {
-                mInitState = InitState.INIT_FAIL;
                 if (!mVideoListeners.isEmpty()) {
                     for (Map.Entry<String, RewardedVideoCallback> rewardedVideoCallbackEntry : mVideoListeners.entrySet()) {
                         if (rewardedVideoCallbackEntry != null) {
                             rewardedVideoCallbackEntry.getValue().onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
-                                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, adTimingError.getErrorCode(), adTimingError.getErrorMessage()));
+                                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, adTimingError.getCode(), adTimingError.getMessage()));
                         }
                     }
+                    mVideoListeners.clear();
                 }
 
                 if (!mInterstitialListeners.isEmpty()) {
                     for (Map.Entry<String, InterstitialAdCallback> interstitialAdCallbackEntry : mInterstitialListeners.entrySet()) {
                         if (interstitialAdCallbackEntry != null) {
                             interstitialAdCallbackEntry.getValue().onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
-                                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, adTimingError.getErrorCode(), adTimingError.getErrorMessage()));
+                                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, adTimingError.getCode(), adTimingError.getMessage()));
                         }
                     }
+                    mInterstitialListeners.clear();
                 }
             }
-        }, AdTimingAds.AD_TYPE.NONE);
+        });
     }
 
     @Override
@@ -344,13 +298,13 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
     }
 
     @Override
-    public void onInterstitialAdLoadFailed(String placementId, com.adtiming.mediationsdk.adt.utils.error.AdTimingError error) {
+    public void onInterstitialAdLoadFailed(String placementId, AdTimingError error) {
         try {
             AdLog.getSingleton().LogE(TAG + "InterstitialAd Load Failed: " + error);
             InterstitialAdCallback callback = mInterstitialListeners.get(placementId);
             if (callback != null) {
                 callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error.getCode(), error.getMessage()));
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error.getCode(), error.getMessage()));
             }
         } catch (Exception ignored) {
         }
@@ -369,11 +323,7 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
     }
 
     @Override
-    public void onInterstitialAdEvent(String placementId, String event) {
-    }
-
-    @Override
-    public void onInterstitialAdShowFailed(String placementId, com.adtiming.mediationsdk.adt.utils.error.AdTimingError error) {
+    public void onInterstitialAdShowFailed(String placementId, AdTimingError error) {
         try {
             InterstitialAdCallback callback = mInterstitialListeners.get(placementId);
             if (callback != null) {
@@ -434,12 +384,12 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
     }
 
     @Override
-    public void onRewardedVideoAdLoadFailed(String placementId, com.adtiming.mediationsdk.adt.utils.error.AdTimingError error) {
+    public void onRewardedVideoAdLoadFailed(String placementId, AdTimingError error) {
         try {
             RewardedVideoCallback callback = mVideoListeners.get(placementId);
             if (callback != null) {
                 callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
-                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error.getCode(), error.getMessage()));
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error.getCode(), error.getMessage()));
             }
         } catch (Exception ignored) {
         }
@@ -458,11 +408,7 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
     }
 
     @Override
-    public void onVideoAdEvent(String placementId, String event) {
-    }
-
-    @Override
-    public void onRewardedVideoAdShowFailed(String placementId, com.adtiming.mediationsdk.adt.utils.error.AdTimingError error) {
+    public void onRewardedVideoAdShowFailed(String placementId, AdTimingError error) {
         try {
             AdLog.getSingleton().LogE(TAG + "onVideoAdShowFailed : " + placementId + " cause :" + error);
             RewardedVideoCallback callback = mVideoListeners.get(placementId);
@@ -496,27 +442,5 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
             }
         } catch (Exception ignored) {
         }
-    }
-
-    /**
-     * AdTiming sdk init state
-     */
-    private enum InitState {
-        /**
-         *
-         */
-        NOT_INIT,
-        /**
-         *
-         */
-        INIT_PENDING,
-        /**
-         *
-         */
-        INIT_SUCCESS,
-        /**
-         *
-         */
-        INIT_FAIL
     }
 }

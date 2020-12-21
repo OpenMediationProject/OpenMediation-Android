@@ -8,12 +8,12 @@ import android.content.Context;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
-import com.adtiming.mediationsdk.AdTimingAds;
-import com.adtiming.mediationsdk.InitCallback;
-import com.adtiming.mediationsdk.adt.nativead.Ad;
-import com.adtiming.mediationsdk.adt.nativead.NativeAd;
-import com.adtiming.mediationsdk.adt.nativead.NativeAdListener;
-import com.adtiming.mediationsdk.utils.error.AdTimingError;
+import com.adtbid.sdk.AdTimingAds;
+import com.adtbid.sdk.InitCallback;
+import com.adtbid.sdk.nativead.Ad;
+import com.adtbid.sdk.nativead.NativeAd;
+import com.adtbid.sdk.nativead.NativeAdListener;
+import com.adtbid.sdk.utils.error.AdTimingError;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomNativeEvent;
 import com.openmediation.sdk.mediation.MediationInfo;
@@ -65,25 +65,19 @@ public class AdTimingNative extends CustomNativeEvent implements NativeAdListene
         if (!check(activity, config)) {
             return;
         }
-        AdTimingSingleTon.getInstance().initAdTiming(activity);
-        if (!AdTimingAds.isInit()) {
-            String appKey = config.get("AppKey");
-            AdTimingAds.init(activity, appKey, new InitCallback() {
-                @Override
-                public void onSuccess() {
-                    loadNativeAd(activity, config);
-                }
+        String appKey = config.get("AppKey");
+        AdTimingSingleTon.getInstance().initAdTiming(activity, appKey, new AdTimingSingleTon.AdTimingInitCallback() {
+            @Override
+            public void onSuccess() {
+                loadNativeAd(activity, config);
+            }
 
-                @Override
-                public void onError(AdTimingError error) {
-                    onInsError(AdapterErrorBuilder.buildLoadError(
-                            AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, error.getErrorCode(), error.getErrorMessage()));
-                }
-            }, AdTimingAds.AD_TYPE.NONE);
-            return;
-        }
-
-        loadNativeAd(activity, config);
+            @Override
+            public void onError(AdTimingError error) {
+                onInsError(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, error.getCode(), error.getMessage()));
+            }
+        });
     }
 
     @Override
@@ -92,38 +86,36 @@ public class AdTimingNative extends CustomNativeEvent implements NativeAdListene
             if (isDestroyed || mAd == null) {
                 return;
             }
-            com.adtiming.mediationsdk.nativead.NativeAdView nativeAdView =
-                    new com.adtiming.mediationsdk.nativead.NativeAdView(adView.getContext());
+            com.adtbid.sdk.nativead.NativeAdView adnNativeAdView =
+                    new com.adtbid.sdk.nativead.NativeAdView(adView.getContext());
+
             if (adView.getMediaView() != null) {
                 MediaView mediaView = adView.getMediaView();
-
-                if (mAd.getContent() != null) {
-                    mediaView.removeAllViews();
-                    ImageView imageView = new ImageView(adView.getContext());
-                    mediaView.addView(imageView);
-                    imageView.setImageBitmap(mAd.getContent());
-                    imageView.getLayoutParams().width = RelativeLayout.LayoutParams.MATCH_PARENT;
-                    imageView.getLayoutParams().height = RelativeLayout.LayoutParams.MATCH_PARENT;
-                }
-                adView.setMediaView(mediaView);
+                mediaView.removeAllViews();
+                com.adtbid.sdk.nativead.MediaView adnMediaView = new com.adtbid.sdk.nativead.MediaView(adView.getContext());
+                mediaView.addView(adnMediaView);
+                RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,
+                        RelativeLayout.LayoutParams.WRAP_CONTENT);
+                layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+                adnMediaView.setLayoutParams(layoutParams);
+                adnNativeAdView.setMediaView(adnMediaView);
             }
 
             if (adView.getAdIconView() != null) {
-                AdIconView adIconView = adView.getAdIconView();
-                if (mAd.getIcon() != null) {
-                    adIconView.removeAllViews();
-                    ImageView iconImageView = new ImageView(adView.getContext());
-                    adIconView.addView(iconImageView);
-                    iconImageView.setImageBitmap(mAd.getIcon());
-                    iconImageView.getLayoutParams().width = RelativeLayout.LayoutParams.MATCH_PARENT;
-                    iconImageView.getLayoutParams().height = RelativeLayout.LayoutParams.MATCH_PARENT;
-                }
-                adView.setAdIconView(adIconView);
+                AdIconView iconView = adView.getAdIconView();
+                iconView.removeAllViews();
+                com.adtbid.sdk.nativead.AdIconView adnIconView = new com.adtbid.sdk.nativead.AdIconView(adView.getContext());
+                iconView.addView(adnIconView);
+                adnIconView.getLayoutParams().width = RelativeLayout.LayoutParams.MATCH_PARENT;
+                adnIconView.getLayoutParams().height = RelativeLayout.LayoutParams.MATCH_PARENT;
+                adnNativeAdView.setAdIconView(adnIconView);
             }
-            nativeAdView.setCallToActionView(adView.getCallToActionView());
-            nativeAdView.setTitleView(adView.getTitleView());
-            nativeAdView.setDescView(adView.getDescView());
-            mNativeAd.registerNativeAdView(nativeAdView);
+
+            adnNativeAdView.setCallToActionView(adView.getCallToActionView());
+            adnNativeAdView.setTitleView(adView.getTitleView());
+            adnNativeAdView.setDescView(adView.getDescView());
+            adView.addView(adnNativeAdView);
+            mNativeAd.registerNativeAdView(adnNativeAdView);
         } catch (Throwable ignored) {
         }
     }
@@ -175,7 +167,7 @@ public class AdTimingNative extends CustomNativeEvent implements NativeAdListene
     }
 
     @Override
-    public void onNativeAdFailed(String placementId, com.adtiming.mediationsdk.adt.utils.error.AdTimingError error) {
+    public void onNativeAdFailed(String placementId, AdTimingError error) {
         if (!isDestroyed) {
             onInsError(AdapterErrorBuilder.buildLoadError(
                     AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, error.getCode(), error.getMessage()));
@@ -190,7 +182,7 @@ public class AdTimingNative extends CustomNativeEvent implements NativeAdListene
     }
 
     @Override
-    public void onNativeAdShowFailed(String s, com.adtiming.mediationsdk.adt.utils.error.AdTimingError adTimingError) {
+    public void onNativeAdShowFailed(String s, AdTimingError adTimingError) {
 
     }
 

@@ -61,15 +61,15 @@ dependencies {
     // AdTiming
     implementation rootProject.ext.dependencies.adtiming
     // Mintegral
-    implementation 'com.mintegral.msdk:videojs:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mintegral.msdk:mtgjscommon:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mintegral.msdk:playercommon:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mintegral.msdk:reward:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mintegral.msdk:videocommon:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mintegral.msdk:interstitialvideo:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mintegral.msdk:mtgbanner:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mintegral.msdk:common:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mintegral.msdk:mtgbid:' + rootProject.ext.dependencies.mtg_version
+//    implementation 'com.mintegral.msdk.oversea:videojs:' + rootProject.ext.dependencies.mtg_version
+//    implementation 'com.mintegral.msdk.oversea:mtgjscommon:' + rootProject.ext.dependencies.mtg_version
+//    implementation 'com.mintegral.msdk.oversea:playercommon:' + rootProject.ext.dependencies.mtg_version
+//    implementation 'com.mintegral.msdk.oversea:reward:' + rootProject.ext.dependencies.mtg_version
+//    implementation 'com.mintegral.msdk.oversea:videocommon:' + rootProject.ext.dependencies.mtg_version
+//    implementation 'com.mintegral.msdk.oversea:interstitialvideo:' + rootProject.ext.dependencies.mtg_version
+//    implementation 'com.mintegral.msdk.oversea:mtgbanner:' + rootProject.ext.dependencies.mtg_version
+//    implementation 'com.mintegral.msdk.oversea:common:' + rootProject.ext.dependencies.mtg_version
+//    implementation 'com.mintegral.msdk.oversea:mtgbid:' + rootProject.ext.dependencies.mtg_version
 
     // ironSource
     implementation rootProject.ext.dependencies.ironsource
@@ -99,22 +99,43 @@ dependencies {
     implementation project(path: ':adapter:applovin')
     implementation project(path: ':adapter:facebook')
     implementation project(path: ':adapter:chartboost')
-    implementation project(path: ':adapter:chartboostbid')
+    implementation project(path: ':adapter:helium')
     implementation project(path: ':adapter:tapjoy')
-    implementation project(path: ':adapter:mintegral')
+//    implementation project(path: ':adapter:mintegral')
 
 //    implementation rootProject.ext.dependencies.pangle
 //    implementation rootProject.ext.dependencies.play_service_ads_identifier
 //    implementation project(path: ':adapter:tiktok')
     implementation project(path: ':adapter:ironsource')
+    implementation project(path: ':adapter:fyber')
 
     // 国内版
-    implementation(name: 'open_ad_sdk_3.3.0.0', ext: 'aar')
-    implementation project(path: ':adapter_cn:tiktok')
-    implementation(name: 'GDTSDK.unionNoPlugin.4.270.1140', ext: 'aar')
-    implementation project(path: ':adapter_cn:tencentad')
-    implementation project(path: ':adapter:fyber')
+    // OAID
     implementation project(path: ':miit_mdid_1.0.10')
+    // TikTok
+    implementation(name: 'open_ad_sdk_3.4.1.0', ext: 'aar')
+    implementation project(path: ':adapter_cn:tiktok_cn')
+
+    // TencentAds
+    implementation(name: 'GDTSDK.unionNoPlugin.4.294.1164', ext: 'aar')
+    implementation project(path: ':adapter_cn:tencentad_cn')
+
+    // Mintegral
+    implementation 'com.mintegral.msdk.china:videojs:' + rootProject.ext.dependencies.mtg_china_version
+    implementation 'com.mintegral.msdk.china:mtgjscommon:' + rootProject.ext.dependencies.mtg_china_version
+    implementation 'com.mintegral.msdk.china:playercommon:' + rootProject.ext.dependencies.mtg_china_version
+    implementation 'com.mintegral.msdk.china:reward:' + rootProject.ext.dependencies.mtg_china_version
+    implementation 'com.mintegral.msdk.china:videocommon:' + rootProject.ext.dependencies.mtg_china_version
+    implementation 'com.mintegral.msdk.china:chinacommon:' + rootProject.ext.dependencies.mtg_china_version
+    implementation 'com.mintegral.msdk.china:interstitialvideo:' + rootProject.ext.dependencies.mtg_china_version
+    implementation 'com.mintegral.msdk.china:mtgbanner:' + rootProject.ext.dependencies.mtg_china_version
+    implementation 'com.mintegral.msdk.china:mtgdownloads:' + rootProject.ext.dependencies.mtg_china_version
+    implementation 'com.mintegral.msdk.china:mtgbid:' + rootProject.ext.dependencies.mtg_china_version
+    implementation project(path: ':adapter_cn:mintegral_cn')
+
+
+    implementation project(path: ':crosspromotion-sdk')
+    implementation project(path: ':adapter:crosspromotion')
 }
 
 repositories {

@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.text.TextUtils;
 
 import com.openmediation.sdk.InitCallback;
+import com.openmediation.sdk.InitConfiguration;
 import com.openmediation.sdk.bid.AdTimingAuctionManager;
 import com.openmediation.sdk.utils.AFManager;
 import com.openmediation.sdk.utils.ActLifecycle;
@@ -53,11 +54,10 @@ public final class InitImp {
      * init method
      *
      * @param activity the activity
-     * @param appKey   the app key
      * @param callback the callback
      * @param channel  the channel
      */
-    public static void init(final Activity activity, final String appKey, String channel, final InitCallback callback) {
+    public static void init(final Activity activity, InitConfiguration configuration, final InitCallback callback) {
         //
         if (hasInit.get()) {
             return;
@@ -82,7 +82,7 @@ public final class InitImp {
         ActLifecycle.getInstance().init(activity);
         EventUploadManager.getInstance().init(activity.getApplicationContext());
         EventUploadManager.getInstance().uploadEvent(EventId.INIT_START);
-        WorkExecutor.execute(new InitAsyncRunnable(appKey, channel));
+        WorkExecutor.execute(new InitAsyncRunnable(configuration));
     }
 
     /**
@@ -95,7 +95,10 @@ public final class InitImp {
         if (DataCache.getInstance().containsKey(KeyConstants.KEY_APP_KEY)) {
             String appKey = DataCache.getInstance().getFromMem(KeyConstants.KEY_APP_KEY, String.class);
             String appChannel = DataCache.getInstance().getFromMem(KeyConstants.KEY_APP_CHANNEL, String.class);
-            InitImp.init(activity, appKey, appChannel, new InitCallback() {
+            String initHost = DataCache.getInstance().getFromMem(KeyConstants.KEY_INIT_HOST, String.class);
+            InitConfiguration configuration = new InitConfiguration.Builder().appKey(appKey)
+                    .channel(appChannel).initHost(initHost).build();
+            InitImp.init(activity, configuration, new InitCallback() {
                 @Override
                 public void onSuccess() {
                     DeveloperLog.LogD("reInitSDK success");
@@ -132,11 +135,12 @@ public final class InitImp {
         return isInitRunning.get();
     }
 
-    private static void requestConfig(Activity activity, String appKey) {
+    private static void requestConfig(Activity activity, InitConfiguration configuration) {
         try {
             DeveloperLog.LogD("Om init request config");
             //requests Config
-            ConfigurationHelper.getConfiguration(appKey, new InitRequestCallback(activity, appKey));
+            ConfigurationHelper.getConfiguration(configuration.getAppKey(), configuration.getInitHost(),
+                    new InitRequestCallback(activity, configuration.getAppKey()));
         } catch (Exception e) {
             DeveloperLog.LogD("requestConfig  exception : ", e);
             CrashUtil.getSingleton().saveException(e);
@@ -204,41 +208,42 @@ public final class InitImp {
     }
 
     private static class InitAsyncRunnable implements Runnable {
+        private InitConfiguration initConfiguration;
 
-        private String appKey;
-        private String appChannel;
-
-        private InitAsyncRunnable(String appKey, String appChannel) {
-            this.appKey = appKey;
-            this.appChannel = appChannel;
+        private InitAsyncRunnable(InitConfiguration configuration) {
+            this.initConfiguration = configuration;
         }
 
         @Override
         public void run() {
             try {
                 final Activity activity = ActLifecycle.getInstance().getActivity();
-                Error error = SdkUtil.banRun(activity, appKey);
+                Error error = SdkUtil.banRun(activity, initConfiguration.getAppKey());
                 if (error != null) {
                     callbackInitErrorOnUIThread(error);
                     return;
                 }
                 initUtil();
-                DataCache.getInstance().setMEM(KeyConstants.KEY_APP_KEY, appKey);
+                DataCache.getInstance().setMEM(KeyConstants.KEY_APP_KEY, initConfiguration.getAppKey());
+                String appChannel = initConfiguration.getChannel();
                 if (TextUtils.isEmpty(appChannel)) {
                     appChannel = "";
                 }
                 DataCache.getInstance().setMEM(KeyConstants.KEY_APP_CHANNEL, appChannel);
+                if (!TextUtils.isEmpty(initConfiguration.getInitHost())) {
+                    DataCache.getInstance().setMEM(KeyConstants.KEY_INIT_HOST, initConfiguration.getInitHost());
+                }
                 AdvertisingIdClient.getGaid(AdtUtil.getApplication(), new AdvertisingIdClient.OnGetGaidListener() {
                     @Override
                     public void onGetGaid(String gaid) {
                         if (!TextUtils.isEmpty(gaid)) {
                             DataCache.getInstance().set(KeyConstants.RequestBody.KEY_GAID, gaid);
-                            requestConfig(activity, appKey);
+                            requestConfig(activity, initConfiguration);
                         } else {
                             OaidHelper.getOaid(AdtUtil.getApplication(), new OaidHelper.oaidListener() {
                                 @Override
                                 public void onGetOaid(String oaid) {
-                                    requestConfig(activity, appKey);
+                                    requestConfig(activity, initConfiguration);
                                 }
                             });
                         }

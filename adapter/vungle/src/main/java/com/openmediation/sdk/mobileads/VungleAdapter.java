@@ -12,7 +12,6 @@ import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
-import com.openmediation.sdk.utils.AdLog;
 import com.vungle.warren.BuildConfig;
 import com.vungle.warren.InitCallback;
 import com.vungle.warren.LoadAdCallback;
@@ -141,12 +140,6 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, final String adUnitId, final RewardedVideoCallback callback) {
-        super.loadRewardedVideo(activity, adUnitId, callback);
-        loadRv(activity, adUnitId, null, callback);
-    }
-
-    @Override
     public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
         loadRv(activity, adUnitId, extras, callback);
@@ -229,12 +222,6 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
             callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
                     AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
         }
-    }
-
-    @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
-        super.loadInterstitialAd(activity, adUnitId, callback);
-        loadIs(activity, adUnitId, null, callback);
     }
 
     @Override

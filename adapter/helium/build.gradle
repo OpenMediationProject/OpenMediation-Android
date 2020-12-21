@@ -1,0 +1,37 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion rootProject.ext.version.compileSdkVersion
+
+
+    defaultConfig {
+        minSdkVersion rootProject.ext.version.minSdkVersion
+        targetSdkVersion rootProject.ext.version.targetSdkVersion
+        versionCode rootProject.ext.version.versionCode
+        versionName rootProject.ext.adapterVersion.helium
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt')
+            consumerProguardFiles 'proguard-rules.pro'
+        }
+    }
+
+}
+
+android.libraryVariants.all { variant ->
+    variant.outputs.all {
+        outputFileName = project.name +'.aar'
+    }
+}
+
+dependencies {
+    implementation project (':om-android-sdk')
+    // Chartboost helium
+    implementation rootProject.ext.dependencies.helium
+    implementation rootProject.ext.dependencies.eventbus
+    implementation rootProject.ext.dependencies.play_service_base
+    implementation rootProject.ext.dependencies.play_service_ads_identifier
+}

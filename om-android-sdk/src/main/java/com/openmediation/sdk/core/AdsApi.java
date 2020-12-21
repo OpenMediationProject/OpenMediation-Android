@@ -57,16 +57,9 @@ public abstract class AdsApi {
      * Instance loads ads
      *
      * @param instance the instance to load ads
-     */
-    protected abstract void insLoad(Instance instance);
-
-    /**
-     * In load with bid.
-     *
-     * @param instance the instance
      * @param extras   the extras
      */
-    protected abstract void inLoadWithBid(Instance instance, Map<String, Object> extras);
+    protected abstract void insLoad(Instance instance, Map<String, Object> extras);
 
     /**
      * Called when availability changes

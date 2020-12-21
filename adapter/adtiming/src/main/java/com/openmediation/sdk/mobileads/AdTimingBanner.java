@@ -7,12 +7,11 @@ import android.app.Activity;
 import android.content.Context;
 import android.view.View;
 
-import com.adtiming.mediationsdk.AdTimingAds;
-import com.adtiming.mediationsdk.InitCallback;
-import com.adtiming.mediationsdk.adt.banner.AdtAdSize;
-import com.adtiming.mediationsdk.adt.banner.BannerAd;
-import com.adtiming.mediationsdk.adt.banner.BannerAdListener;
-import com.adtiming.mediationsdk.utils.error.AdTimingError;
+import com.adtbid.sdk.AdTimingAds;
+import com.adtbid.sdk.banner.AdSize;
+import com.adtbid.sdk.banner.BannerAd;
+import com.adtbid.sdk.banner.BannerAdListener;
+import com.adtbid.sdk.utils.error.AdTimingError;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomBannerEvent;
 import com.openmediation.sdk.mediation.MediationInfo;
@@ -65,24 +64,19 @@ public class AdTimingBanner extends CustomBannerEvent implements BannerAdListene
         if (!check(activity, config)) {
             return;
         }
-        AdTimingSingleTon.getInstance().initAdTiming(activity);
-        if (!AdTimingAds.isInit()) {
-            String appKey = config.get("AppKey");
-            AdTimingAds.init(activity, appKey, new InitCallback() {
-                @Override
-                public void onSuccess() {
-                    loadBanner(activity, config);
-                }
+        String appKey = config.get("AppKey");
+        AdTimingSingleTon.getInstance().initAdTiming(activity, appKey, new AdTimingSingleTon.AdTimingInitCallback() {
+            @Override
+            public void onSuccess() {
+                loadBanner(activity, config);
+            }
 
-                @Override
-                public void onError(AdTimingError error) {
-                    onInsError(AdapterErrorBuilder.buildLoadError(
-                            AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error.getErrorCode(), error.getErrorMessage()));
-                }
-            }, AdTimingAds.AD_TYPE.NONE);
-            return;
-        }
-        loadBanner(activity, config);
+            @Override
+            public void onError(AdTimingError adTimingError) {
+                onInsError(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, adTimingError.getCode(), adTimingError.getMessage()));
+            }
+        });
     }
 
     @Override
@@ -105,7 +99,7 @@ public class AdTimingBanner extends CustomBannerEvent implements BannerAdListene
         }
         mBannerAd = new BannerAd(activity, mInstancesKey);
         mBannerAd.setAdListener(this);
-        AdtAdSize adSize = getAdSize(activity, config);
+        AdSize adSize = getAdSize(activity, config);
         mBannerAd.setAdSize(adSize);
         mBannerAd.loadAdWithPayload(payload);
     }
@@ -118,7 +112,7 @@ public class AdTimingBanner extends CustomBannerEvent implements BannerAdListene
     }
 
     @Override
-    public void onBannerAdFailed(String placementId, com.adtiming.mediationsdk.adt.utils.error.AdTimingError error) {
+    public void onBannerAdFailed(String placementId, AdTimingError error) {
         if (!isDestroyed) {
             onInsError(AdapterErrorBuilder.buildLoadError(
                     AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error.getCode(), error.getMessage()));
@@ -133,29 +127,25 @@ public class AdTimingBanner extends CustomBannerEvent implements BannerAdListene
     }
 
     @Override
-    public void onBannerAdShowFailed(String placementId, com.adtiming.mediationsdk.adt.utils.error.AdTimingError error) {
+    public void onBannerAdShowFailed(String placementId, AdTimingError error) {
 
     }
 
-    @Override
-    public void onBannerAdEvent(String placementId, String event) {
-    }
-
-    private AdtAdSize getAdSize(Context context, Map<String, String> config) {
+    private AdSize getAdSize(Context context, Map<String, String> config) {
         String bannerDesc = getBannerDesc(config);
         switch (bannerDesc) {
             case DESC_LEADERBOARD:
-                return AdtAdSize.LEADERBOARD;
+                return AdSize.LEADERBOARD;
             case DESC_RECTANGLE:
-                return AdtAdSize.MEDIUM_RECTANGLE;
+                return AdSize.MEDIUM_RECTANGLE;
             case DESC_SMART:
                 if (isLargeScreen(context)) {
-                    return AdtAdSize.LEADERBOARD;
+                    return AdSize.LEADERBOARD;
                 } else {
-                    return AdtAdSize.BANNER;
+                    return AdSize.BANNER;
                 }
             default:
-                return AdtAdSize.BANNER;
+                return AdSize.BANNER;
         }
     }
 }

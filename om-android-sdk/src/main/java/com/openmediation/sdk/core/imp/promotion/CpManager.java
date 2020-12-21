@@ -112,15 +112,9 @@ public final class CpManager extends AbstractAdsManager implements CpManagerList
     }
 
     @Override
-    protected void insLoad(Instance instance) {
+    protected void insLoad(Instance instance, Map<String, Object> extras) {
         CpInstance cpInstance = (CpInstance) instance;
-        cpInstance.loadCp(mActivityReference.get());
-    }
-
-    @Override
-    protected void inLoadWithBid(Instance instance, Map<String, Object> extras) {
-        CpInstance cpInstance = (CpInstance) instance;
-        cpInstance.loadCpWithBid(mActivityReference.get(), extras);
+        cpInstance.loadCp(mActivityReference.get(), extras);
     }
 
     @Override

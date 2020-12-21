@@ -45,17 +45,7 @@ public class IsInstance extends Instance implements InterstitialAdCallback, Load
         }
     }
 
-    void loadIs(Activity activity) {
-        setMediationState(MEDIATION_STATE.LOAD_PENDING);
-        if (mAdapter != null) {
-            DeveloperLog.LogD("load InterstitialAd : " + getMediationId() + " key : " + getKey());
-            startInsLoadTimer(this);
-            mAdapter.loadInterstitialAd(activity, getKey(), this);
-            mLoadStart = System.currentTimeMillis();
-        }
-    }
-
-    void loadIsWithBid(Activity activity, Map<String, Object> extras) {
+    void loadIs(Activity activity, Map<String, Object> extras) {
         setMediationState(MEDIATION_STATE.LOAD_PENDING);
         if (mAdapter != null) {
             DeveloperLog.LogD("load InterstitialAd : " + getMediationId() + " key : " + getKey());

@@ -2,7 +2,7 @@ package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
 
-import com.openmediation.sdk.adn.OmAdNetwork;
+import com.crosspromotion.sdk.CrossPromotionAds;
 
 public class CrossPromotionSingleTon {
 
@@ -24,7 +24,7 @@ public class CrossPromotionSingleTon {
             if (activity == null) {
                 return false;
             }
-            OmAdNetwork.init(activity);
+            CrossPromotionAds.init(activity);
             isDidInit = true;
             return true;
         }

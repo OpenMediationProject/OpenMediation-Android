@@ -26,15 +26,6 @@ public interface InterstitialAdApi {
      *
      * @param activity must be an activity
      * @param adUnitId ad unit id on third-party ad networks
-     * @param callback {@link InterstitialAdCallback}
-     */
-    void loadInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback);
-
-    /**
-     * Calls third-party ad networks to get ads
-     *
-     * @param activity must be an activity
-     * @param adUnitId ad unit id on third-party ad networks
      * @param extras   the extras
      * @param callback {@link InterstitialAdCallback}
      */

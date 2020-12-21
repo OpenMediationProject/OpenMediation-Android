@@ -84,12 +84,6 @@ public class FacebookAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
-        super.loadRewardedVideo(activity, adUnitId, callback);
-        loadRv(activity, adUnitId, null, callback);
-    }
-
-    @Override
     public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras,
                                   RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
@@ -166,13 +160,6 @@ public class FacebookAdapter extends CustomAdsAdapter {
                         AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
             }
         }
-
-    }
-
-    @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
-        super.loadInterstitialAd(activity, adUnitId, callback);
-        loadInterstitial(activity, adUnitId, null, callback);
     }
 
     @Override

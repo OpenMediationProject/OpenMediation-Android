@@ -5,7 +5,7 @@ package com.openmediation.sdk.mobileads;
 
 import android.content.Context;
 
-import com.openmediation.sdk.adn.bid.BidderTokenProvider;
+import com.crosspromotion.sdk.bid.BidderTokenProvider;
 import com.openmediation.sdk.bid.BidAdapter;
 
 public class CrossPromotionBidAdapter extends BidAdapter {

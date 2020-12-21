@@ -7,10 +7,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.view.View;
 
-import com.openmediation.sdk.adn.banner.AdSize;
-import com.openmediation.sdk.adn.banner.BannerAd;
-import com.openmediation.sdk.adn.banner.BannerAdListener;
-import com.openmediation.sdk.adn.utils.error.Error;
+import com.crosspromotion.sdk.banner.AdSize;
+import com.crosspromotion.sdk.banner.BannerAd;
+import com.crosspromotion.sdk.banner.BannerAdListener;
+import com.crosspromotion.sdk.utils.error.Error;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomBannerEvent;
 import com.openmediation.sdk.mediation.MediationInfo;

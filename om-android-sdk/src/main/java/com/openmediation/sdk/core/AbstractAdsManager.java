@@ -156,13 +156,11 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
                 bidResponse = mBidResponses.get(instance.getId());
             }
             instance.setBidResponse(bidResponse);
-            inLoadWithBid(instance, AuctionUtil.generateMapRequestData(bidResponse));
+            insLoad(instance, PlacementUtils.getLoadExtrasMap(instance, bidResponse));
         } else {
             instance.reportInsLoad(EventId.INSTANCE_LOAD);
-            if (mPlacement.getT() != CommonConstants.PROMOTION) {
-                LrReportHelper.report(instance, mLoadType.getValue(), mPlacement.getWfAbt(), CommonConstants.INSTANCE_LOAD, 0);
-            }
-            insLoad(instance);
+            LrReportHelper.report(instance, mLoadType.getValue(), mPlacement.getWfAbt(), CommonConstants.INSTANCE_LOAD, 0);
+            insLoad(instance, PlacementUtils.getLoadExtrasMap(instance, null));
         }
     }
 
@@ -354,7 +352,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
 
     @Override
     protected synchronized void onInsReady(final Instance instance) {
-        if (instance.getHb() != 1 && mPlacement.getT() != CommonConstants.PROMOTION) {
+        if (instance.getHb() != 1) {
             LrReportHelper.report(instance, mLoadType.getValue(), mPlacement.getWfAbt(), CommonConstants.INSTANCE_READY, 0);
         }
         mAllLoadFailedCount.set(0);
@@ -369,10 +367,8 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
         if (shouldNotifyAvailableChanged(true)) {
             if (!isAReadyReported.get()) {
                 isAReadyReported.set(true);
-                if (mPlacement.getT() != CommonConstants.PROMOTION) {
-                    LrReportHelper.report(instance.getPlacementId(), mLoadType.getValue(), mPlacement.getWfAbt(),
-                            CommonConstants.WATERFALL_READY, 0);
-                }
+                LrReportHelper.report(instance.getPlacementId(), mLoadType.getValue(), mPlacement.getWfAbt(),
+                        CommonConstants.WATERFALL_READY, 0);
             }
             onAvailabilityChanged(true, null);
         }
@@ -503,10 +499,8 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
                 int availableCount = InsUtil.instanceCount(mTotalIns, Instance.MEDIATION_STATE.AVAILABLE);
                 if (availableCount > 0) {
                     isAReadyReported.set(true);
-                    if (mPlacement.getT() != CommonConstants.PROMOTION) {
-                        LrReportHelper.report(mPlacement.getId(), mLoadType.getValue(), mPlacement.getWfAbt(),
-                                CommonConstants.WATERFALL_READY, 0);
-                    }
+                    LrReportHelper.report(mPlacement.getId(), mLoadType.getValue(), mPlacement.getWfAbt(),
+                            CommonConstants.WATERFALL_READY, 0);
                 }
             }
 
@@ -851,8 +845,8 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
      */
     private Error checkShowAvailable(String scene) {
         if (isInShowingProgress()) {
-            DeveloperLog.LogE("show ad failed,current is showing");
-            return ErrorBuilder.build(-1, "show ad failed,current is showing", -1);
+            DeveloperLog.LogE("show ad failed, current is showing");
+            return ErrorBuilder.build(-1, "show ad failed, current is showing", -1);
         }
         //Activity is available?
         if (!checkActRef()) {

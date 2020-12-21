@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.text.TextUtils;
 
 import com.openmediation.sdk.InitCallback;
+import com.openmediation.sdk.InitConfiguration;
 import com.openmediation.sdk.core.imp.interstitialad.IsManager;
 import com.openmediation.sdk.core.imp.promotion.CpManager;
 import com.openmediation.sdk.core.imp.rewardedvideo.RvManager;
@@ -20,6 +21,7 @@ import com.openmediation.sdk.utils.AdLog;
 import com.openmediation.sdk.utils.AdsUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.PlacementUtils;
+import com.openmediation.sdk.utils.Preconditions;
 import com.openmediation.sdk.utils.SceneUtil;
 import com.openmediation.sdk.utils.cache.DataCache;
 import com.openmediation.sdk.utils.constant.CommonConstants;
@@ -34,7 +36,6 @@ import com.openmediation.sdk.utils.model.Scene;
 import com.openmediation.sdk.video.RewardedVideoListener;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -70,6 +71,7 @@ public final class OmManager implements InitCallback {
     private AtomicBoolean mDidIsInit = new AtomicBoolean(false);
     private AtomicBoolean mDidCpInit = new AtomicBoolean(false);
     private boolean mIsInForeground = true;
+    private String mCustomDeviceId = "";
     private static ConcurrentLinkedQueue<InitCallback> mInitCallbacks = new ConcurrentLinkedQueue<>();
 
     private static final class OmHolder {
@@ -141,30 +143,29 @@ public final class OmManager implements InitCallback {
     /**
      * The actual init method
      *
-     * @param activity required param
-     * @param appKey   required param, current app's identifier with Om
-     * @param channel  the Channel of App Store
-     * @param callback the callback
-     * @param types    Optional param, Ad types for preloading; preloads all if null
+     * @param activity      required param
+     * @param configuration required param, include appKey,channel,initHost logEnable and so on
+     * @param callback      the callback
      */
-    public void init(Activity activity, String appKey, String channel, InitCallback callback, AD_TYPE... types) {
+    public void init(Activity activity, InitConfiguration configuration, InitCallback callback) {
+        Preconditions.checkNotNull(configuration, true);
         if (InitImp.isInit()) {
             if (callback != null) {
                 callback.onSuccess();
             }
             //checks for preloading and scheduled tasks
-            anotherInitCalledAfterInitSuccess(types);
+            anotherInitCalledAfterInitSuccess(configuration.getAdTypes());
             return;
         } else if (InitImp.isInitRunning()) {
             pendingInit(callback);
         } else {
             pendingInit(callback);
-            InitImp.init(activity, appKey, channel, this);
+            InitImp.init(activity, configuration, this);
         }
 
         //adds for use after initialization
-        if (types != null && types.length > 0) {
-            mPreloadAdTypes.addAll(Arrays.asList(types));
+        if (configuration.getAdTypes() != null && !configuration.getAdTypes().isEmpty()) {
+            mPreloadAdTypes.addAll(configuration.getAdTypes());
         }
     }
 
@@ -273,6 +274,14 @@ public final class OmManager implements InitCallback {
      */
     public void setIAP(float iapCount, String currency) {
         IapHelper.setIap(iapCount, currency);
+    }
+
+    public void setCustomDeviceId(String customDeviceId){
+        mCustomDeviceId = customDeviceId;
+    }
+
+    public String getCustomDeviceId(){
+        return mCustomDeviceId;
     }
 
     /**
@@ -965,9 +974,9 @@ public final class OmManager implements InitCallback {
      *
      * @param adTypes AD_TYPEs to be preloaded
      */
-    private void anotherInitCalledAfterInitSuccess(AD_TYPE... adTypes) {
+    private void anotherInitCalledAfterInitSuccess(List<AD_TYPE> adTypes) {
         DeveloperLog.LogD("anotherInitCalledAfterInitSuccess");
-        if (adTypes == null) {
+        if (adTypes == null||adTypes.isEmpty()) {
             return;
         }
         Configurations config = DataCache.getInstance().getFromMem(KeyConstants.KEY_CONFIGURATION, Configurations.class);

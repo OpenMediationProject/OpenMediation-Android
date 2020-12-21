@@ -525,7 +525,7 @@ public class ListenerWrapper {
     }
 
     public void onPromotionAdShowFailed(final Scene scene, final Error error) {
-        DeveloperLog.LogD("onInteractiveAdShowFailed");
+        DeveloperLog.LogD("onPromotionAdShowFailed");
         if (canSendCallback(mPromotionAdListener)) {
             sendCallback(new Runnable() {
 

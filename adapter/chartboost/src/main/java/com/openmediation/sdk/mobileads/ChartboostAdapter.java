@@ -144,8 +144,8 @@ public class ChartboostAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
-        super.loadRewardedVideo(activity, adUnitId, callback);
+    public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
+        super.loadRewardedVideo(activity, adUnitId, extras, callback);
         String checkError = check(activity, adUnitId);
         if (TextUtils.isEmpty(checkError)) {
             if (Chartboost.hasRewardedVideo(adUnitId)) {
@@ -217,8 +217,8 @@ public class ChartboostAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
-        super.loadInterstitialAd(activity, adUnitId, callback);
+    public void loadInterstitialAd(Activity activity, String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback) {
+        super.loadInterstitialAd(activity, adUnitId, extras, callback);
         String checkError = check(activity, adUnitId);
         if (TextUtils.isEmpty(checkError)) {
             if (Chartboost.hasInterstitial(adUnitId)) {

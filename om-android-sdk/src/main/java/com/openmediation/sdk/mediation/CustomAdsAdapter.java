@@ -73,12 +73,6 @@ public abstract class CustomAdsAdapter extends CustomAdParams implements Rewarde
      */
     public abstract int getAdNetworkId();
 
-
-    @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
-
-    }
-
     @Override
     public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
 
@@ -92,12 +86,6 @@ public abstract class CustomAdsAdapter extends CustomAdParams implements Rewarde
     @Override
     public boolean isRewardedVideoAvailable(String adUnitId) {
         return false;
-    }
-
-
-    @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
-
     }
 
     @Override

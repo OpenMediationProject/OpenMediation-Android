@@ -160,7 +160,8 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
+        super.loadRewardedVideo(activity, adUnitId, extras, callback);
         String error = MoPubUtil.check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
             if (!mRvCallback.containsKey(adUnitId)) {
@@ -312,8 +313,8 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
     }
 
     @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
-        super.loadInterstitialAd(activity, adUnitId, callback);
+    public void loadInterstitialAd(Activity activity, String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback) {
+        super.loadInterstitialAd(activity, adUnitId, extras, callback);
         String error = MoPubUtil.check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
             MoPubInterstitial interstitial = getInterstitialAd(activity, adUnitId);

@@ -11,7 +11,6 @@ import android.widget.RelativeLayout;
 
 import com.mintegral.msdk.MIntegralConstans;
 import com.mintegral.msdk.MIntegralSDK;
-import com.mintegral.msdk.MIntegralUser;
 import com.mintegral.msdk.out.BannerAdListener;
 import com.mintegral.msdk.out.BannerSize;
 import com.mintegral.msdk.out.MIntegralSDKFactory;
@@ -27,7 +26,6 @@ public class MintegralBanner extends CustomBannerEvent implements BannerAdListen
 
     private static final String PAY_LOAD = "pay_load";
     private MTGBannerView mBannerView;
-    private MIntegralUser mMIntegralUser;
 
     @Override
     public void setGDPRConsent(final Context context, final boolean consent) {
@@ -44,36 +42,6 @@ public class MintegralBanner extends CustomBannerEvent implements BannerAdListen
         super.setUSPrivacyLimit(context, value);
         MIntegralSDK sdk = MIntegralSDKFactory.getMIntegralSDK();
         sdk.setDoNotTrackStatus(value);
-    }
-
-    @Override
-    public void setUserAge(Context context, int age) {
-        super.setUserAge(context, age);
-        if (!MintegralSingleTon.getInstance().isInit()) {
-            return;
-        }
-        if (mMIntegralUser == null) {
-            mMIntegralUser = new MIntegralUser();
-        }
-        mMIntegralUser.setAge(age);
-        MIntegralSDKFactory.getMIntegralSDK().reportUser(mMIntegralUser);
-    }
-
-    @Override
-    public void setUserGender(Context context, String gender) {
-        super.setUserGender(context, gender);
-        if (!MintegralSingleTon.getInstance().isInit()) {
-            return;
-        }
-        if (mMIntegralUser == null) {
-            mMIntegralUser = new MIntegralUser();
-        }
-        if ("male".equals(gender)) {
-            mMIntegralUser.setGender(1);
-        } else if ("female".equals(gender)) {
-            mMIntegralUser.setGender(2);
-        }
-        MIntegralSDKFactory.getMIntegralSDK().reportUser(mMIntegralUser);
     }
 
     @Override

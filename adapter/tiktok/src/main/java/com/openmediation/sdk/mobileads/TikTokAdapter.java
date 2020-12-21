@@ -4,7 +4,6 @@
 package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Handler;
 import android.os.Looper;
@@ -38,14 +37,6 @@ public class TikTokAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void setGDPRConsent(Context context, boolean consent) {
-        super.setGDPRConsent(context, consent);
-        if (TTAdManagerHolder.get() != null) {
-            TTAdManagerHolder.get().setGdpr(consent ? 1 : 0);
-        }
-    }
-
-    @Override
     public String getMediationVersion() {
         return TTAdSdk.getAdManager().getSDKVersion();
     }
@@ -75,12 +66,6 @@ public class TikTokAdapter extends CustomAdsAdapter {
                         AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
             }
         }
-    }
-
-    @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
-        super.loadRewardedVideo(activity, adUnitId, callback);
-        loadRvAd(activity, adUnitId, callback);
     }
 
     @Override
@@ -168,12 +153,6 @@ public class TikTokAdapter extends CustomAdsAdapter {
                         AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
             }
         }
-    }
-
-    @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
-        super.loadInterstitialAd(activity, adUnitId, callback);
-        loadInterstitial(activity, adUnitId, callback);
     }
 
     @Override
@@ -430,7 +409,6 @@ public class TikTokAdapter extends CustomAdsAdapter {
         @Override
         public void onVideoComplete() {
             if (callback != null) {
-                callback.onRewardedVideoAdRewarded();
                 callback.onRewardedVideoAdEnded();
             }
         }
@@ -445,6 +423,9 @@ public class TikTokAdapter extends CustomAdsAdapter {
 
         @Override
         public void onRewardVerify(boolean rewardVerify, int rewardAmount, String rewardName) {
+            if (callback != null && rewardVerify) {
+                callback.onRewardedVideoAdRewarded();
+            }
         }
 
         @Override

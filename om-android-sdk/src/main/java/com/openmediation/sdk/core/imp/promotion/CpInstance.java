@@ -21,7 +21,6 @@ import com.openmediation.sdk.utils.model.Scene;
 
 import java.util.Map;
 
-
 /**
  * CpInstance
  */
@@ -41,16 +40,7 @@ public class CpInstance extends Instance implements PromotionAdCallback, LoadTim
         }
     }
 
-    void loadCp(Activity activity) {
-        setMediationState(MEDIATION_STATE.LOAD_PENDING);
-        if (mAdapter != null) {
-            DeveloperLog.LogD("load PromotionAd : " + getMediationId() + " key : " + getKey());
-            startInsLoadTimer(this);
-            mAdapter.loadPromotionAd(activity, getKey(), null, this);
-        }
-    }
-
-    void loadCpWithBid(Activity activity, Map<String, Object> extras) {
+    void loadCp(Activity activity, Map<String, Object> extras) {
         setMediationState(MEDIATION_STATE.LOAD_PENDING);
         if (mAdapter != null) {
             DeveloperLog.LogD("load PromotionAd : " + getMediationId() + " key : " + getKey());

@@ -25,7 +25,6 @@ import java.util.Map;
 public final class RvManager extends AbstractAdsManager implements RvManagerListener {
     private Map<String, String> mExtIds = new HashMap<>();
 
-
     public RvManager() {
         super();
     }
@@ -102,15 +101,9 @@ public final class RvManager extends AbstractAdsManager implements RvManagerList
     }
 
     @Override
-    protected void insLoad(Instance instance) {
+    protected void insLoad(Instance instance, Map<String, Object> extras) {
         RvInstance rvInstance = (RvInstance) instance;
-        rvInstance.loadRv(mActivityReference.get());
-    }
-
-    @Override
-    protected void inLoadWithBid(Instance instance, Map<String, Object> extras) {
-        RvInstance rvInstance = (RvInstance) instance;
-        rvInstance.loadRvWithBid(mActivityReference.get(), extras);
+        rvInstance.loadRv(mActivityReference.get(), extras);
     }
 
     @Override

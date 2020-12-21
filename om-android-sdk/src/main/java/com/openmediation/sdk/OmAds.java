@@ -17,26 +17,15 @@ public abstract class OmAds {
     /**
      * mediation SDK init method
      *
-     * @param activity required param
-     * @param appKey   required param: current app's identifier
-     * @param callback the callback
-     * @param types    optional param: ad types to be preloaded; null means preload all
+     * @param activity      required param
+     * @param configuration required param: include appKey,channel,initHost logEnable and so on
+     * @param callback      the callback
      */
-    public static void init(Activity activity, String appKey, InitCallback callback, AD_TYPE... types) {
-        init(activity, appKey, "", callback, types);
-    }
-
-    /**
-     * mediation SDK init method
-     *
-     * @param activity required param
-     * @param appKey   required param: current app's identifier
-     * @param callback the callback
-     * @param channel  the Channel of App Store
-     * @param types    optional param: ad types to be preloaded; null means preload all
-     */
-    public static void init(Activity activity, String appKey, String channel, InitCallback callback, AD_TYPE... types) {
-        OmManager.getInstance().init(activity, appKey, channel, callback, types);
+    public static void init(Activity activity, InitConfiguration configuration, InitCallback callback) {
+        if (configuration != null) {
+            AdLog.getSingleton().isDebug(configuration.isLogEnable());
+        }
+        OmManager.getInstance().init(activity, configuration, callback);
     }
 
     /**
@@ -92,6 +81,10 @@ public abstract class OmAds {
      */
     public static void setLogEnable(boolean debug) {
         AdLog.getSingleton().isDebug(debug);
+    }
+
+    public static void setCustomDeviceId(String customDeviceId){
+        OmManager.getInstance().setCustomDeviceId(customDeviceId);
     }
 
     /**

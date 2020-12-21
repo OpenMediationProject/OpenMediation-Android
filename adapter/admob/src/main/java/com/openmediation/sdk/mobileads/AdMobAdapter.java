@@ -198,8 +198,8 @@ public class AdMobAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void loadRewardedVideo(final Activity activity, final String adUnitId, final RewardedVideoCallback callback) {
-        super.loadRewardedVideo(activity, adUnitId, callback);
+    public void loadRewardedVideo(final Activity activity, final String adUnitId, Map<String, Object> extras, final RewardedVideoCallback callback) {
+        super.loadRewardedVideo(activity, adUnitId, extras, callback);
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -395,8 +395,8 @@ public class AdMobAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void loadInterstitialAd(final Activity activity, final String adUnitId, final InterstitialAdCallback callback) {
-        super.loadInterstitialAd(activity, adUnitId, callback);
+    public void loadInterstitialAd(final Activity activity, final String adUnitId, Map<String, Object> extras, final InterstitialAdCallback callback) {
+        super.loadInterstitialAd(activity, adUnitId, extras, callback);
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {

@@ -11,7 +11,6 @@ import android.text.TextUtils;
 
 import com.mintegral.msdk.MIntegralConstans;
 import com.mintegral.msdk.MIntegralSDK;
-import com.mintegral.msdk.MIntegralUser;
 import com.mintegral.msdk.interstitialvideo.out.InterstitialVideoListener;
 import com.mintegral.msdk.interstitialvideo.out.MTGBidInterstitialVideoHandler;
 import com.mintegral.msdk.interstitialvideo.out.MTGInterstitialVideoHandler;
@@ -38,8 +37,6 @@ public class MintegralAdapter extends CustomAdsAdapter {
     private ConcurrentHashMap<String, MTGBidInterstitialVideoHandler> mInterstitialBidAds;
     private ConcurrentHashMap<String, MTGBidRewardVideoHandler> mRvBidAds;
     private ConcurrentHashMap<String, Boolean> mBidAdUnits;
-
-    private MIntegralUser mMIntegralUser;
 
     public MintegralAdapter() {
         mInterstitialAds = new ConcurrentHashMap<>();
@@ -82,37 +79,6 @@ public class MintegralAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void setUserAge(Context context, int age) {
-        super.setUserAge(context, age);
-        if (!MintegralSingleTon.getInstance().isInit()) {
-            return;
-        }
-        if (mMIntegralUser == null) {
-            mMIntegralUser = new MIntegralUser();
-        }
-        mMIntegralUser.setAge(age);
-        MIntegralSDKFactory.getMIntegralSDK().reportUser(mMIntegralUser);
-    }
-
-    @Override
-    public void setUserGender(Context context, String gender) {
-        super.setUserGender(context, gender);
-        if (!MintegralSingleTon.getInstance().isInit()) {
-            return;
-        }
-        if (mMIntegralUser == null) {
-            mMIntegralUser = new MIntegralUser();
-        }
-        // 1male,2 female; set up not mandatory if unknown
-        if ("male".equals(gender)) {
-            mMIntegralUser.setGender(1);
-        } else if ("female".equals(gender)) {
-            mMIntegralUser.setGender(2);
-        }
-        MIntegralSDKFactory.getMIntegralSDK().reportUser(mMIntegralUser);
-    }
-
-    @Override
     public void initRewardedVideo(final Activity activity, Map<String, Object> dataMap, final RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
         final String error = check(activity);
@@ -142,13 +108,6 @@ public class MintegralAdapter extends CustomAdsAdapter {
         }
     }
 
-    @Override
-    public void loadRewardedVideo(final Activity activity, final String adUnitId, final RewardedVideoCallback callback) {
-        super.loadRewardedVideo(activity, adUnitId, callback);
-        realLoadRvAd(activity, adUnitId, null, callback);
-    }
-
-    @Override
     public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
         realLoadRvAd(activity, adUnitId, extras, callback);
@@ -301,13 +260,6 @@ public class MintegralAdapter extends CustomAdsAdapter {
         }
     }
 
-    @Override
-    public void loadInterstitialAd(final Activity activity, final String adUnitId, final InterstitialAdCallback callback) {
-        super.loadInterstitialAd(activity, adUnitId, callback);
-        realLoadIsAd(activity, adUnitId, null, callback);
-    }
-
-    @Override
     public void loadInterstitialAd(Activity activity, String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, extras, callback);
         realLoadIsAd(activity, adUnitId, extras, callback);

@@ -92,8 +92,8 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
-        super.loadRewardedVideo(activity, adUnitId, callback);
+    public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
+        super.loadRewardedVideo(activity, adUnitId, extras, callback);
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
             AdColonyInterstitial rvAd = mAdColonyAds.get(adUnitId);

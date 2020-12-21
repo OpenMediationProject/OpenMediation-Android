@@ -6,15 +6,15 @@ package com.openmediation.sdk.mobileads;
 import android.app.Activity;
 import android.text.TextUtils;
 
-import com.openmediation.sdk.adn.OmAdNetwork;
-import com.openmediation.sdk.adn.interstitial.InterstitialAd;
-import com.openmediation.sdk.adn.interstitial.InterstitialAdListener;
-import com.openmediation.sdk.adn.promotion.PromotionAd;
-import com.openmediation.sdk.adn.promotion.PromotionAdListener;
-import com.openmediation.sdk.adn.promotion.PromotionAdRect;
-import com.openmediation.sdk.adn.utils.error.Error;
-import com.openmediation.sdk.adn.video.RewardedVideo;
-import com.openmediation.sdk.adn.video.RewardedVideoListener;
+import com.crosspromotion.sdk.CrossPromotionAds;
+import com.crosspromotion.sdk.interstitial.InterstitialAd;
+import com.crosspromotion.sdk.interstitial.InterstitialAdListener;
+import com.crosspromotion.sdk.promotion.PromotionAd;
+import com.crosspromotion.sdk.promotion.PromotionAdListener;
+import com.crosspromotion.sdk.promotion.PromotionAdRect;
+import com.crosspromotion.sdk.utils.error.Error;
+import com.crosspromotion.sdk.video.RewardedVideo;
+import com.crosspromotion.sdk.video.RewardedVideoListener;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
@@ -42,7 +42,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
 
     @Override
     public String getMediationVersion() {
-        return OmAdNetwork.getSDKVersion();
+        return CrossPromotionAds.getSDKVersion();
     }
 
     @Override
@@ -75,12 +75,6 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
                         AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "initRewardedVideo failed"));
             }
         }
-    }
-
-    @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
-        super.loadRewardedVideo(activity, adUnitId, callback);
-        loadRewardedVideoAd(activity, adUnitId, null, callback);
     }
 
     @Override
@@ -159,12 +153,6 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
                         AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "initInterstitialAd failed"));
             }
         }
-    }
-
-    @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
-        super.loadInterstitialAd(activity, adUnitId, callback);
-        loadIsAd(activity, adUnitId, null, callback);
     }
 
     @Override

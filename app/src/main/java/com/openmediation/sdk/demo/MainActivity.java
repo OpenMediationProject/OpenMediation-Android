@@ -20,6 +20,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.openmediation.sdk.InitCallback;
+import com.openmediation.sdk.InitConfiguration;
 import com.openmediation.sdk.OmAds;
 import com.openmediation.sdk.banner.AdSize;
 import com.openmediation.sdk.banner.BannerAd;
@@ -33,6 +34,9 @@ import com.openmediation.sdk.nativead.MediaView;
 import com.openmediation.sdk.nativead.NativeAd;
 import com.openmediation.sdk.nativead.NativeAdListener;
 import com.openmediation.sdk.nativead.NativeAdView;
+import com.openmediation.sdk.promotion.PromotionAd;
+import com.openmediation.sdk.promotion.PromotionAdListener;
+import com.openmediation.sdk.promotion.PromotionAdRect;
 import com.openmediation.sdk.utils.error.Error;
 import com.openmediation.sdk.utils.model.Scene;
 import com.openmediation.sdk.video.RewardedVideoAd;
@@ -44,7 +48,8 @@ public class MainActivity extends Activity {
     private Button interstitialButton;
     private Button bannerButton;
     private Button nativeButton;
-    private Button splashButton;
+    private Button promotionButton;
+    private boolean isShowPromotion = false;
 
     private LinearLayout adContainer;
     private View adView;
@@ -65,7 +70,7 @@ public class MainActivity extends Activity {
         }
         rewardVideoButton = findViewById(R.id.btn_reward_video);
         interstitialButton = findViewById(R.id.btn_interstitial);
-        splashButton = findViewById(R.id.btn_splash);
+        promotionButton = findViewById(R.id.btn_promotion);
         bannerButton = findViewById(R.id.btn_banner);
         nativeButton = findViewById(R.id.btn_native);
         adContainer = findViewById(R.id.ad_container);
@@ -76,12 +81,19 @@ public class MainActivity extends Activity {
         if (InterstitialAd.isReady()) {
             setInterstitialButtonStat(true);
         }
+        if (PromotionAd.isReady()) {
+            setPromotionButtonStat(true);
+        }
     }
 
     private void initSDK() {
+        setPromotionListener();
         NewApiUtils.printLog("start init sdk");
-        OmAds.setLogEnable(true);
-        OmAds.init(this, NewApiUtils.APPKEY, new InitCallback() {
+        InitConfiguration configuration = new InitConfiguration.Builder()
+                .appKey(NewApiUtils.APPKEY)
+                .logEnable(true)
+                .build();
+        OmAds.init(this, configuration, new InitCallback() {
             @Override
             public void onSuccess() {
                 NewApiUtils.printLog("init success");
@@ -174,6 +186,38 @@ public class MainActivity extends Activity {
         });
     }
 
+    private void setPromotionListener() {
+        PromotionAd.setAdListener(new PromotionAdListener() {
+            @Override
+            public void onPromotionAdAvailabilityChanged(boolean available) {
+                if (available) {
+                    setPromotionButtonStat(true);
+                }
+                NewApiUtils.printLog("onPromotionAdAvailabilityChanged " + available);
+            }
+
+            @Override
+            public void onPromotionAdShowed(Scene scene) {
+                NewApiUtils.printLog("onPromotionAdShowed " + scene);
+            }
+
+            @Override
+            public void onPromotionAdShowFailed(Scene scene, Error error) {
+                NewApiUtils.printLog("onPromotionAdShowFailed " + scene);
+            }
+
+            @Override
+            public void onPromotionAdHidden(Scene scene) {
+                NewApiUtils.printLog("onPromotionAdHidden " + scene);
+            }
+
+            @Override
+            public void onPromotionAdClicked(Scene scene) {
+                NewApiUtils.printLog("onPromotionAdClicked " + scene);
+            }
+        });
+    }
+
     public void showRewardVideo(View view) {
         RewardedVideoAd.showAd();
         setRewardVideoButtonStat(false);
@@ -184,6 +228,15 @@ public class MainActivity extends Activity {
         setInterstitialButtonStat(false);
     }
 
+    public void showPromotion(View view) {
+        PromotionAdRect adRect = new PromotionAdRect();
+        adRect.setWidth(132);
+        adRect.setScaleY(0.07f);
+        adRect.setAngle(10);
+        PromotionAd.showAd(this, adRect);
+        isShowPromotion = true;
+        setPromotionButtonStat(false);
+    }
 
     public void showSplash(View view) {
         startActivity(new Intent(MainActivity.this, SplashAdActivity.class));
@@ -296,7 +349,6 @@ public class MainActivity extends Activity {
         });
 
         nativeAd.loadAd();
-
     }
 
     private void setRewardVideoButtonStat(boolean isEnable) {
@@ -314,6 +366,25 @@ public class MainActivity extends Activity {
             interstitialButton.setText("Show Interstitial Ad");
         } else {
             interstitialButton.setText("Interstitial Ad Loading...");
+        }
+    }
+
+    private void setPromotionButtonStat(boolean isEnable) {
+        promotionButton.setEnabled(isEnable);
+        if (isEnable) {
+            promotionButton.setText("Show Promotion Ad");
+        } else {
+            promotionButton.setText("Promotion Ad Loading...");
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (isShowPromotion) {
+            PromotionAd.hideAd();
+            isShowPromotion = false;
+        } else {
+            super.onBackPressed();
         }
     }
 

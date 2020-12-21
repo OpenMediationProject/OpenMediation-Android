@@ -52,12 +52,15 @@ public class ConfigurationHelper {
      * @param requestCallback the request callback
      * @throws Exception the exception
      */
-    public static void getConfiguration(String appKey, Request.OnRequestCallback requestCallback) throws Exception {
+    public static void getConfiguration(String appKey, String host, Request.OnRequestCallback requestCallback) throws Exception {
         if (requestCallback == null) {
             return;
         }
         //
-        String initUrl = RequestBuilder.buildInitUrl(appKey);
+        if (TextUtils.isEmpty(host)) {
+            host = CommonConstants.INIT_URL;
+        }
+        String initUrl = RequestBuilder.buildInitUrl(host, appKey);
         if (TextUtils.isEmpty(initUrl)) {
             requestCallback.onRequestFailed("empty Url");
             return;

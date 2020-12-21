@@ -1,0 +1,47 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion rootProject.ext.version.compileSdkVersion
+
+    defaultConfig {
+        minSdkVersion rootProject.ext.version.minSdkVersion
+        targetSdkVersion rootProject.ext.version.targetSdkVersion
+        versionCode rootProject.ext.version.versionCode
+        versionName rootProject.ext.adapterVersion.mintegral_cn
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    useLibrary 'org.apache.http.legacy'
+}
+
+android.libraryVariants.all { variant ->
+    variant.outputs.all {
+        outputFileName = project.name +'.aar'
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation project(':om-android-sdk')
+    implementation 'com.mintegral.msdk.china:videojs:' + rootProject.ext.dependencies.mtg_china_version
+    implementation 'com.mintegral.msdk.china:mtgjscommon:' + rootProject.ext.dependencies.mtg_china_version
+    implementation 'com.mintegral.msdk.china:playercommon:' + rootProject.ext.dependencies.mtg_china_version
+    implementation 'com.mintegral.msdk.china:reward:' + rootProject.ext.dependencies.mtg_china_version
+    implementation 'com.mintegral.msdk.china:videocommon:' + rootProject.ext.dependencies.mtg_china_version
+    implementation 'com.mintegral.msdk.china:chinacommon:' + rootProject.ext.dependencies.mtg_china_version
+    implementation 'com.mintegral.msdk.china:interstitialvideo:' + rootProject.ext.dependencies.mtg_china_version
+    implementation 'com.mintegral.msdk.china:mtgbanner:' + rootProject.ext.dependencies.mtg_china_version
+    implementation 'com.mintegral.msdk.china:mtgdownloads:' + rootProject.ext.dependencies.mtg_china_version
+    implementation 'com.mintegral.msdk.china:mtgbid:' + rootProject.ext.dependencies.mtg_china_version
+}
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}

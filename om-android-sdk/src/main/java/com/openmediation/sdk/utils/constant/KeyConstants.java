@@ -25,6 +25,8 @@ public interface KeyConstants {
      */
     String KEY_APP_CHANNEL = "AppChannel";
 
+    String KEY_INIT_HOST = "InitHost";
+
     String KEY_DISPLAY_SCENE = "display_sceneName";
     String KEY_DISPLAY_ABT = "display_abt";
 
@@ -289,6 +291,8 @@ public interface KeyConstants {
          * The constant KEY_CHANNEL.
          */
         String KEY_CHANNEL = "cnl";
+
+        String KEY_CDID = "cdid";
 
         /*Age*/
         String KEY_AGE = "age";

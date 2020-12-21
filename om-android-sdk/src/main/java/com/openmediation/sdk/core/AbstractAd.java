@@ -429,9 +429,6 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
         if (isDestroyed) {
             return;
         }
-        if (mPlacement.getT()==CommonConstants.PROMOTION){
-            return;
-        }
         if (isManualTriggered) {
             LrReportHelper.report(mPlacementId, OmManager.LOAD_TYPE.MANUAL.getValue(), mPlacement.getWfAbt(),
                     CommonConstants.WATERFALL_READY, 0);
@@ -450,9 +447,6 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
         if (isDestroyed) {
             return;
         }
-        if (mPlacement.getT() == CommonConstants.PROMOTION) {
-            return;
-        }
         if (isManualTriggered) {
             LrReportHelper.report(instances, OmManager.LOAD_TYPE.MANUAL.getValue(), mPlacement.getWfAbt(),
                     CommonConstants.INSTANCE_LOAD, 0);
@@ -469,9 +463,6 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
      */
     void iReadyReport(BaseInstance instances) {
         if (isDestroyed || instances.getHb() == 1) {
-            return;
-        }
-        if (mPlacement.getT() == CommonConstants.PROMOTION) {
             return;
         }
         if (isManualTriggered) {

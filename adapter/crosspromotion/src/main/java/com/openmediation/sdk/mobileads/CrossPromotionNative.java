@@ -7,10 +7,10 @@ import android.app.Activity;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
-import com.openmediation.sdk.adn.nativead.Ad;
-import com.openmediation.sdk.adn.utils.error.Error;
-import com.openmediation.sdk.adn.nativead.NativeAd;
-import com.openmediation.sdk.adn.nativead.NativeAdListener;
+import com.crosspromotion.sdk.nativead.Ad;
+import com.crosspromotion.sdk.utils.error.Error;
+import com.crosspromotion.sdk.nativead.NativeAd;
+import com.crosspromotion.sdk.nativead.NativeAdListener;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomNativeEvent;
 import com.openmediation.sdk.mediation.MediationInfo;

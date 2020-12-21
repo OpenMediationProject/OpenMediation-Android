@@ -61,19 +61,19 @@
                 android:text="Interstitial Ad Loading..."
                 android:textAllCaps="false"
                 android:textSize="20sp" />
-                android:background="@drawable/btn_background"/>
+            android:background="@drawable/btn_background"/>
 
             <Button
                 android:id="@+id/btn_splash"
-                android:layout_marginTop="20dp"
                 android:layout_width="300dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="Show Splash Ad"
-                android:textSize="20sp"
-                android:textAllCaps="false"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/btn_background"
                 android:onClick="showSplash"
-                android:background="@drawable/btn_background"/>
+                android:text="Show Splash Ad"
+                android:textAllCaps="false"
+                android:textSize="20sp" />
 
             <Button
                 android:id="@+id/btn_banner"
@@ -96,6 +96,18 @@
                 android:background="@drawable/btn_background"
                 android:onClick="loadAndShowNative"
                 android:text="Load And Show Native Ad"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/btn_promotion"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/btn_background"
+                android:enabled="false"
+                android:onClick="showPromotion"
+                android:text="Promotion Ad Loading..."
                 android:textAllCaps="false"
                 android:textSize="20sp" />
 

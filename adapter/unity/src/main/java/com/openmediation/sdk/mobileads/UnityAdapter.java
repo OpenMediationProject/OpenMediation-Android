@@ -121,8 +121,8 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
-        super.loadRewardedVideo(activity, adUnitId, callback);
+    public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
+        super.loadRewardedVideo(activity, adUnitId, extras, callback);
         String checkError = check(activity, adUnitId);
         if (TextUtils.isEmpty(checkError)) {
             if (callback != null) {
@@ -206,8 +206,8 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
     }
 
     @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
-        super.loadInterstitialAd(activity, adUnitId, callback);
+    public void loadInterstitialAd(Activity activity, String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback) {
+        super.loadInterstitialAd(activity, adUnitId, extras, callback);
         String checkError = check(activity, adUnitId);
         if (TextUtils.isEmpty(checkError)) {
             if (callback != null) {

@@ -39,7 +39,7 @@ public interface MediationInfo {
     String MEDIATION_NAME_13 = "VGlrVG9r";
     String MEDIATION_NAME_14 = "TWludGVncmFs";
     String MEDIATION_NAME_15 = "SXJvblNvdXJjZQ==";
-    String MEDIATION_NAME_17 = "Q2hhcnRib29zdEJpZA==";
+    String MEDIATION_NAME_17 = "SGVsaXVt";
     String MEDIATION_NAME_19 = "Q3Jvc3NQcm9tb3Rpb24=";
     String MEDIATION_NAME_30 = "RnliZXI=";
 }

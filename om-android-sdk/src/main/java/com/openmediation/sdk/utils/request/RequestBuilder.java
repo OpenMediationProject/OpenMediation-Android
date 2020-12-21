@@ -20,7 +20,6 @@ import com.openmediation.sdk.utils.cache.DataCache;
 import com.openmediation.sdk.utils.constant.CommonConstants;
 import com.openmediation.sdk.utils.constant.KeyConstants;
 import com.openmediation.sdk.utils.device.DeviceUtil;
-import com.openmediation.sdk.utils.device.ImeiUtil;
 import com.openmediation.sdk.utils.event.Event;
 import com.openmediation.sdk.utils.model.InstanceLoadStatus;
 import com.openmediation.sdk.utils.model.PlacementInfo;
@@ -194,8 +193,8 @@ public class RequestBuilder {
      * @param appKey the app key
      * @return the string
      */
-    public static String buildInitUrl(String appKey) {
-        return CommonConstants.INIT_URL.concat("?").concat(new RequestBuilder()
+    public static String buildInitUrl(String host, String appKey) {
+        return host.concat("?").concat(new RequestBuilder()
                 .p(KeyConstants.Request.KEY_API_VERSION, CommonConstants.API_VERSION)
                 .p(KeyConstants.Request.KEY_PLATFORM, CommonConstants.PLAT_FORM_ANDROID)
                 .p(KeyConstants.Request.KEY_SDK_VERSION, CommonConstants.SDK_VERSION_NAME)
@@ -342,7 +341,7 @@ public class RequestBuilder {
         body.put(KeyConstants.RequestBody.KEY_TZ, DeviceUtil.getTimeZone());
         body.put(KeyConstants.RequestBody.KEY_SESSION, DeviceUtil.getSessionId());
         body.put(KeyConstants.RequestBody.KEY_UID, DeviceUtil.getUid());
-        Map<String, Object> gaidMap = getGaidMap(context);
+        Map<String, Object> gaidMap = getGaidMap();
         for (Map.Entry<String, Object> integerEntry : gaidMap.entrySet()) {
             body.put(integerEntry.getKey(), integerEntry.getValue());
         }
@@ -381,7 +380,7 @@ public class RequestBuilder {
         }
         String channel = DataCache.getInstance().getFromMem(KeyConstants.KEY_APP_CHANNEL, String.class);
         body.put(KeyConstants.RequestBody.KEY_CHANNEL, channel);
-
+        body.put(KeyConstants.RequestBody.KEY_CDID,OmManager.getInstance().getCustomDeviceId());
         appendRegsObject(body, OmManager.getInstance().getMetaData());
         return body;
     }
@@ -598,7 +597,7 @@ public class RequestBuilder {
         return androidBody;
     }
 
-    private static Map<String, Object> getGaidMap(Context context) {
+    private static Map<String, Object> getGaidMap() {
         Map<String, Object> map = new HashMap<>();
         int dType;
         String did;
@@ -606,9 +605,6 @@ public class RequestBuilder {
         if (!TextUtils.isEmpty(gaid)) {
             did = gaid;
             dType = 2;
-        } else if (!TextUtils.isEmpty(ImeiUtil.getIMEI(context))) {
-            did = ImeiUtil.getIMEI(context);
-            dType = 5;
         } else if (!TextUtils.isEmpty(OaidHelper.getOaid())) {
             did = OaidHelper.getOaid();
             dType = 4;

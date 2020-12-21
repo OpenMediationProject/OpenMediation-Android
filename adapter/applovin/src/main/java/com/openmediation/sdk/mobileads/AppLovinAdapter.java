@@ -145,8 +145,8 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
 
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, final RewardedVideoCallback callback) {
-        super.loadRewardedVideo(activity, adUnitId, callback);
+    public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras, final RewardedVideoCallback callback) {
+        super.loadRewardedVideo(activity, adUnitId, extras, callback);
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
             AppLovinIncentivizedInterstitial videoAd = getVideo(activity, adUnitId);
@@ -247,8 +247,8 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
     }
 
     @Override
-    public void loadInterstitialAd(Activity activity, final String adUnitId, final InterstitialAdCallback callback) {
-        super.loadInterstitialAd(activity, adUnitId, callback);
+    public void loadInterstitialAd(Activity activity, final String adUnitId, Map<String, Object> extras, final InterstitialAdCallback callback) {
+        super.loadInterstitialAd(activity, adUnitId, extras, callback);
         String error = check(activity, adUnitId);
         if (TextUtils.isEmpty(error)) {
             if (isInterstitialAdAvailable(adUnitId)) {

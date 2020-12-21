@@ -1,0 +1,37 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion rootProject.ext.version.compileSdkVersion
+
+
+    defaultConfig {
+        minSdkVersion rootProject.ext.version.minSdkVersion
+        targetSdkVersion rootProject.ext.version.targetSdkVersion
+        versionCode rootProject.ext.version.versionCode
+        versionName rootProject.ext.adapterVersion.tencentad_cn
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+android.libraryVariants.all { variant ->
+    variant.outputs.all {
+        outputFileName = project.name + '.aar'
+    }
+}
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation project(':om-android-sdk')
+    implementation(name: 'GDTSDK.unionNoPlugin.4.294.1164', ext: 'aar')
+}
+
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}

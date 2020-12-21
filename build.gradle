@@ -9,7 +9,7 @@ buildscript {
         maven { url "https://s3.amazonaws.com/moat-sdk-builds" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.1'
+        classpath 'com.android.tools.build:gradle:3.5.4'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -23,10 +23,10 @@ task clean(type: Delete) {
 ext {
     //版本信息配置
     version = [
-            "buildToolsVersion": "29.0.2",
-            "compileSdkVersion": 29,
+            "buildToolsVersion": "20.0.2",
+            "compileSdkVersion": 30,
             "minSdkVersion"    : 16,
-            "targetSdkVersion" : 29,
+            "targetSdkVersion" : 30,
             "versionCode"      : 11,
             "versionName"      : "1.1.0"
     ]
@@ -38,57 +38,63 @@ ext {
 
 //support 包相关包的引用
     dependencies = [
-            //fb
+            "adtiming"                   : 'com.adtiming:adnetwork:6.8.0@aar',
+            //fb https://developers.facebook.com/docs/audience-network/changelog-android/
             "facebook"                   : 'com.facebook.android:audience-network-sdk:6.2.0',
-            //admob
+            //admob https://developers.google.com/admob/android/rel-notes
             "admob"                      : 'com.google.android.gms:play-services-ads:19.5.0',
-            //vungle
+            //vungle https://github.com/Vungle/Android-SDK/blob/master/CHANGELOG.md
             "vungle"                     : 'com.vungle:publisher-sdk-android:6.8.1',
-            //AdColony
+            //AdColony https://github.com/AdColony/AdColony-Android-SDK/blob/master/CHANGELOG.md
             "adcolony"                   : 'com.adcolony:sdk:4.3.0',
-            //Applovin
-            "applovin"                   : 'com.applovin:applovin-sdk:9.14.4',
-            //MoPub
-            "mopub"                      : 'com.mopub:mopub-sdk:5.14.0@aar',
-            //TapJoy
-            "tapjoy"                     : 'com.tapjoy:tapjoy-android-sdk:12.7.0@aar',
-            //chartboost
-            "chartboost"                 : 'com.chartboost:chartboost-sdk:8.1.0',
-            //unity
-            "unity"                      : 'com.unity3d.ads:unity-ads:3.5.0',
+            //Applovin https://bintray.com/applovin/Android/sdk_android
+            "applovin"                   : 'com.applovin:applovin-sdk:9.14.10',
+            //MoPub https://developers.mopub.com/publishers/android/changelog/
+            "mopub"                      : 'com.mopub:mopub-sdk:5.15.0@aar',
+            //TapJoy https://ltv.tapjoy.com/d/sdks
+            "tapjoy"                     : 'com.tapjoy:tapjoy-android-sdk:12.7.1@aar',
+            //chartboost https://answers.chartboost.com/en-us/child_article/android-amazon
+            "chartboost"                 : 'com.chartboost:chartboost-sdk:8.2.0',
+            //unity https://github.com/Unity-Technologies/unity-ads-android/releases
+            "unity"                      : 'com.unity3d.ads:unity-ads:3.5.1@aar',
             //gp-base.
             "play_service_base"          : 'com.google.android.gms:play-services-base:17.5.0',
             //gp-ads-identifier
             "play_service_ads_identifier": 'com.google.android.gms:play-services-ads-identifier:17.0.0',
-            //Mintegral
-            "mtg_version"                : '14.6.01',
-            // IronSource
+            //Mintegral http://cdn-adn.rayjump.com/cdn-adn/v2/markdown_v2/index.html?file=sdk-m_sdk-android&lang=en
+            "mtg_version"                : '15.3.11',
+            "mtg_china_version"          : '15.3.02',
+            // IronSource https://developers.ironsrc.com/ironsource-mobile/android/android-sdk
             "ironsource"                 : 'com.ironsource.sdk:mediationsdk:7.0.3.1',
-            "adtiming"                   : 'com.adtiming:mediation-sdk:6.6.1@aar',
-            "fyber"                      : '7.7.2',
-            "pangle"                     : 'com.bytedance.sdk:pangle-sdk:3.1.5.4',
-            "helium"                     : 'com.chartboost:helium:2.1.0',
+            // adtiming https://support.adtiming.com/hc/en-us/articles/360025307893
+            "fyber"                      : '7.7.3',
+            // https://www.pangleglobal.com/
+            "pangle"                     : 'com.bytedance.sdk:pangle-sdk:3.1.7.4',
+            // https://helium.chartboost.com/
+            "helium"                     : 'com.chartboost:helium:2.2.0',
             "eventbus"                   : 'org.greenrobot:eventbus:3.2.0'
     ]
 
     adapterVersion = [
-            'adtiming'     : '1.3.2',
-            'admob'        : '1.3.2',
-            'facebook'     : '1.3.2',
-            'unity'        : '1.3.1',
-            'vungle'       : '1.3.2',
-            'adcolony'     : '1.3.1',
-            'applovin'     : '1.3.2',
-            'mopub'        : '1.3.1',
-            'tapjoy'       : '1.3.1',
-            'chartboost'   : '1.3.2',
-            'chartboostbid': '1.1.1',
-            'tiktok'       : '1.2.1',
-            'mintegral'    : '1.4.2',
-            'ironsource'   : '1.3.0',
-            'fyber'        : '1.2.0',
-            'tiktok_cn'    : '1.3.2',
-            'tencentad_cn' : '1.2.1'
+            'adtiming'       : '2.0.0',
+            'admob'          : '2.0.0',
+            'facebook'       : '2.0.0',
+            'unity'          : '2.0.0',
+            'vungle'         : '2.0.0',
+            'adcolony'       : '2.0.0',
+            'applovin'       : '2.0.0',
+            'mopub'          : '2.0.0',
+            'tapjoy'         : '2.0.0',
+            'chartboost'     : '2.0.0',
+            'helium'         : '2.0.0',
+            'tiktok'         : '2.0.0',
+            'mintegral'      : '2.0.0',
+            'ironsource'     : '2.0.0',
+            'fyber'          : '2.0.0',
+            'crosspromotion' : '1.0.0',
+            'tiktok_cn'      : '2.0.0',
+            'tencentad_cn'   : '2.0.0',
+            'mintegral_cn'   : '2.0.0',
     ]
 }
 
@@ -123,7 +129,10 @@ allprojects {
             url "https://fyber.bintray.com/marketplace"
         }
         maven {
-            url "https://dl.bintray.com/mintegral-official/Mintegral_ad_SDK_Android"
+            url "https://dl.bintray.com/mintegral-official/mintegral_ad_sdk_android_for_oversea"
+        }
+        maven {
+            url "https://dl.bintray.com/mintegral-official/Andorid_ad_SDK_for_china"
         }
     }
 }

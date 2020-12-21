@@ -13,7 +13,6 @@ import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.openmediation.sdk.mobileads.ironsource.BuildConfig;
-import com.openmediation.sdk.utils.AdLog;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -110,8 +109,8 @@ public class IronSourceAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void loadRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
-        super.loadRewardedVideo(activity, adUnitId, callback);
+    public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
+        super.loadRewardedVideo(activity, adUnitId, extras, callback);
         String checkError = check(activity, adUnitId);
         if (TextUtils.isEmpty(checkError)) {
             if (isRewardedVideoAvailable(adUnitId) && callback != null) {
@@ -172,8 +171,8 @@ public class IronSourceAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void loadInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
-        super.loadInterstitialAd(activity, adUnitId, callback);
+    public void loadInterstitialAd(Activity activity, String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback) {
+        super.loadInterstitialAd(activity, adUnitId, extras, callback);
         String checkError = check(activity, adUnitId);
         if (TextUtils.isEmpty(checkError)) {
             if (isInterstitialAdAvailable(adUnitId) && callback != null) {
