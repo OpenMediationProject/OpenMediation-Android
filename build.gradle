@@ -72,14 +72,15 @@ ext {
             "pangle"                     : 'com.bytedance.sdk:pangle-sdk:3.1.7.4',
             // https://helium.chartboost.com/
             "helium"                     : 'com.chartboost:helium:2.2.0',
-            "eventbus"                   : 'org.greenrobot:eventbus:3.2.0'
+            "eventbus"                   : 'org.greenrobot:eventbus:3.2.0',
+            "tencentad"                  : 'com.qq.e.union:union:4.294.1164'
     ]
 
     adapterVersion = [
             'adtiming'       : '2.0.0',
             'admob'          : '2.0.0',
             'facebook'       : '2.0.0',
-            'unity'          : '2.0.0',
+            'unity'          : '2.0.1',
             'vungle'         : '2.0.0',
             'adcolony'       : '2.0.0',
             'applovin'       : '2.0.0',

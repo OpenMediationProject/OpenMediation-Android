@@ -38,7 +38,7 @@ public class BaseWebView extends android.webkit.WebView {
         }
 
         if (Build.VERSION.SDK_INT >= 21) {
-            settings.setMixedContentMode(1);
+            settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         }
 
         settings.setNeedInitialFocus(true);

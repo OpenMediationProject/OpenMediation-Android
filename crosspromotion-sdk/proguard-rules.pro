@@ -30,3 +30,4 @@
 -keep class com.crosspromotion.sdk.CrossPromotionAds{*;}
 -keep class com.crosspromotion.sdk.utils.webview.JsBridge{*;}
 -keep class * extends android.app.Activity
+-repackageclasses 'com.crosspromotion.sdk.a'

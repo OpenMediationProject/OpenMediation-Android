@@ -113,11 +113,11 @@ dependencies {
     // OAID
     implementation project(path: ':miit_mdid_1.0.10')
     // TikTok
-    implementation(name: 'open_ad_sdk_3.4.1.0', ext: 'aar')
+    implementation(name: 'open_ad_sdk_3.4.0.1', ext: 'aar')
     implementation project(path: ':adapter_cn:tiktok_cn')
 
     // TencentAds
-    implementation(name: 'GDTSDK.unionNoPlugin.4.294.1164', ext: 'aar')
+    implementation rootProject.ext.dependencies.tencentad
     implementation project(path: ':adapter_cn:tencentad_cn')
 
     // Mintegral

@@ -3,7 +3,7 @@ ext {
             'adtiming'      : '2.0.0',
             'admob'         : '2.0.0',
             'facebook'      : '2.0.0',
-            'unity'         : '2.0.0',
+            'unity'         : '2.0.1',
             'vungle'        : '2.0.0',
             'adcolony'      : '2.0.0',
             'applovin'      : '2.0.0',
