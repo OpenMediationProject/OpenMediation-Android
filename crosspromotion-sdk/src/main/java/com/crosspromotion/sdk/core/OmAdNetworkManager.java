@@ -21,7 +21,6 @@ import com.crosspromotion.sdk.video.RewardedVideoListener;
 import java.util.HashMap;
 import java.util.Map;
 
-
 public final class OmAdNetworkManager {
     private Map<String, InterstitialAdImp> mIsManagers;
     private Map<String, VideoAdImp> mRvManagers;
@@ -76,19 +75,10 @@ public final class OmAdNetworkManager {
      *
      * @param placementId the placement id
      */
-    public void loadInterstitialAd(String placementId) {
-        loadInterstitialAd(placementId, null);
-    }
-
-    /**
-     * Load interstitial ad.
-     *
-     * @param placementId the placement id
-     */
-    public void loadInterstitialAd(String placementId, String payload) {
+    public void loadInterstitialAd(String placementId, String payload, Map extras) {
         InterstitialAdImp isManager = getIsManager(placementId);
         if (isManager != null) {
-            isManager.loadAdsWithPayload(payload);
+            isManager.loadAdsWithPayload(payload, extras);
         }
     }
 
@@ -140,14 +130,10 @@ public final class OmAdNetworkManager {
      *
      * @param placementId the placement id
      */
-    public void loadRewardedVideo(String placementId) {
-        loadRewardedVideo(placementId, null);
-    }
-
-    public void loadRewardedVideo(String placementId, String payload) {
+    public void loadRewardedVideo(String placementId, String payload, Map extras) {
         VideoAdImp rvManager = getRvManager(placementId);
         if (rvManager != null) {
-            rvManager.loadAdsWithPayload(payload);
+            rvManager.loadAdsWithPayload(payload, extras);
         }
     }
 
@@ -187,10 +173,10 @@ public final class OmAdNetworkManager {
         }
     }
 
-    public void loadPromotionAd(String placementId) {
+    public void loadPromotionAd(String placementId, Map extras) {
         PromotionAdImp manager = getPromotionManager(placementId);
         if (manager != null) {
-            manager.loadAds();
+            manager.loadAds(extras);
         }
     }
 

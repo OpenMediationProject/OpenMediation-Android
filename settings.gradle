@@ -4,5 +4,6 @@ include ':adapter:applovin', ':adapter:chartboost', ':adapter:adcolony', ':adapt
         ':adapter:unity', ':adapter:facebook', ':adapter:mopub', ':adapter:fyber',
         ':om-android-sdk', ':adapter:admob', ':app', ':adapter:crosspromotion',
         ':adapter_cn:tiktok_cn', ':adapter_cn:tencentad_cn', ':adapter_cn:mintegral_cn', ':adapter:helium',
-        ':miit_mdid_1.0.10'
+        ':miit_mdid_1.0.10',
+        ':adapter_cn:sigmob_cn',
 rootProject.name = 'AdTiming-OpenMediation-Android'

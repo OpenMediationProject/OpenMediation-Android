@@ -7,6 +7,8 @@ import android.app.Activity;
 
 import com.crosspromotion.sdk.core.OmAdNetworkManager;
 
+import java.util.Map;
+
 public final class PromotionAd {
 
     /**
@@ -21,8 +23,8 @@ public final class PromotionAd {
     /**
      * Load ad.
      */
-    public static void loadAd(String placementId) {
-        OmAdNetworkManager.getInstance().loadPromotionAd(placementId);
+    public static void loadAd(String placementId, Map extras) {
+        OmAdNetworkManager.getInstance().loadPromotionAd(placementId, extras);
     }
 
     /**

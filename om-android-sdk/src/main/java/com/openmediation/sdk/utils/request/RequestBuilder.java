@@ -7,8 +7,8 @@ import android.content.Context;
 import android.os.Build;
 import android.text.TextUtils;
 
-import com.openmediation.sdk.core.MetaData;
 import com.openmediation.sdk.bid.AdTimingBidResponse;
+import com.openmediation.sdk.core.MetaData;
 import com.openmediation.sdk.core.OmManager;
 import com.openmediation.sdk.utils.AdtUtil;
 import com.openmediation.sdk.utils.DensityUtil;
@@ -380,7 +380,7 @@ public class RequestBuilder {
         }
         String channel = DataCache.getInstance().getFromMem(KeyConstants.KEY_APP_CHANNEL, String.class);
         body.put(KeyConstants.RequestBody.KEY_CHANNEL, channel);
-        body.put(KeyConstants.RequestBody.KEY_CDID,OmManager.getInstance().getCustomDeviceId());
+        body.put(KeyConstants.RequestBody.KEY_CDID, OmManager.getInstance().getCustomDeviceId());
         appendRegsObject(body, OmManager.getInstance().getMetaData());
         return body;
     }

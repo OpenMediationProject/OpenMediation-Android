@@ -72,7 +72,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
                 callback.onRewardedVideoInitSuccess();
             } else {
                 callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
-                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "initRewardedVideo failed"));
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "InitRewardedVideo failed"));
             }
         }
     }
@@ -100,7 +100,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
         if (extras != null && extras.containsKey(PAY_LOAD)) {
             payload = String.valueOf(extras.get(PAY_LOAD));
         }
-        RewardedVideo.loadAdWithPayload(adUnitId, payload);
+        RewardedVideo.loadAdWithPayload(adUnitId, payload, extras);
     }
 
     @Override
@@ -123,7 +123,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
         } else {
             if (callback != null) {
                 callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "no reward ad or not ready"));
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "No reward ad or not ready"));
             }
         }
     }
@@ -150,7 +150,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
                 callback.onInterstitialAdInitSuccess();
             } else {
                 callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
-                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "initInterstitialAd failed"));
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "InitInterstitialAd failed"));
             }
         }
     }
@@ -176,7 +176,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
             mInterstitialListeners.put(adUnitId, callback);
         }
         InterstitialAd.setAdListener(adUnitId, this);
-        InterstitialAd.loadAdWithPayload(adUnitId, payload);
+        InterstitialAd.loadAdWithPayload(adUnitId, payload, extras);
     }
 
     @Override
@@ -197,7 +197,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
         } else {
             if (callback != null) {
                 callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "no interstitial ad or not ready"));
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "No interstitial ad or not ready"));
             }
         }
     }
@@ -224,7 +224,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
                 callback.onPromotionAdInitSuccess();
             } else {
                 callback.onPromotionAdInitFailed(AdapterErrorBuilder.buildInitError(
-                        AdapterErrorBuilder.AD_UNIT_PROMOTION, mAdapterName, "initPromotionAd failed"));
+                        AdapterErrorBuilder.AD_UNIT_PROMOTION, mAdapterName, "InitPromotionAd failed"));
             }
         }
     }
@@ -244,13 +244,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
             mPromotionListeners.put(adUnitId, callback);
         }
         PromotionAd.setAdListener(adUnitId, this);
-        if (isPromotionAdAvailable(adUnitId)) {
-            if (callback != null) {
-                callback.onPromotionAdLoadSuccess();
-            }
-        } else {
-            PromotionAd.loadAd(adUnitId);
-        }
+        PromotionAd.loadAd(adUnitId, extras);
     }
 
     @Override
@@ -282,7 +276,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
     public void hidePromotionAd(String adUnitId, PromotionAdCallback callback) {
         super.hidePromotionAd(adUnitId, callback);
         if (TextUtils.isEmpty(adUnitId)) {
-            AdLog.getSingleton().LogE("CrossPromotionAdapter", "HidePromotionAd Failed: adUnitId is empty");
+            AdLog.getSingleton().LogE("CrossPromotionAdapter", "HidePromotionAd Failed: AdUnitId is empty");
             return;
         }
         PromotionAd.setAdListener(adUnitId, this);

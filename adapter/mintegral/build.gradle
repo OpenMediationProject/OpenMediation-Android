@@ -34,13 +34,13 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':om-android-sdk')
 
-    implementation 'com.mintegral.msdk:videojs:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mintegral.msdk:mtgjscommon:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mintegral.msdk:playercommon:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mintegral.msdk:reward:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mintegral.msdk:videocommon:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mintegral.msdk:interstitialvideo:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mintegral.msdk:mtgbanner:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mintegral.msdk:common:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mintegral.msdk:mtgbid:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk.oversea:videojs:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk.oversea:mtgjscommon:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk.oversea:playercommon:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk.oversea:reward:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk.oversea:videocommon:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk.oversea:interstitialvideo:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk.oversea:mtgbanner:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk.oversea:common:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mintegral.msdk.oversea:mtgbid:' + rootProject.ext.dependencies.mtg_version
 }

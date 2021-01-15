@@ -26,6 +26,7 @@ import com.openmediation.sdk.utils.request.network.Request;
 import org.json.JSONObject;
 
 import java.nio.charset.Charset;
+import java.util.Map;
 
 
 /**
@@ -41,7 +42,7 @@ public class WaterFallHelper {
      * @throws Exception the exception
      */
     public static void wfRequest(PlacementInfo info, int loadType,
-                                 Request.OnRequestCallback callback) throws Exception {
+                                 Request.OnRequestCallback callback, Map<String, Object> extras) throws Exception {
 
         Configurations config = DataCache.getInstance().getFromMem(KeyConstants.KEY_CONFIGURATION, Configurations.class);
         if (config == null || config.getApi() == null || TextUtils.isEmpty(config.getApi().getCpcl())) {
@@ -49,7 +50,7 @@ public class WaterFallHelper {
             return;
         }
         String url = buildCPCLUrl(config.getApi().getCpcl());
-        byte[] bytes = buildClRequestBody(info.getId(),
+        byte[] bytes = buildClRequestBody(extras, info.getId(),
                 String.valueOf(info.getWidth()),
                 String.valueOf(info.getHeight()),
                 String.valueOf(PUtils.getPlacementImprCount(info.getId())),
@@ -84,7 +85,7 @@ public class WaterFallHelper {
      * @return the byte [ ]
      * @throws Exception the exception
      */
-    private static byte[] buildClRequestBody(String... extras) throws Exception {
+    private static byte[] buildClRequestBody(Map<String, Object> map, String... extras) throws Exception {
         JSONObject body = RequestBuilder.getRequestBodyBaseJson();
         body.put(KeyConstants.RequestBody.KEY_PID, extras[0]);
         if (!"0".equals(extras[1])) {
@@ -97,8 +98,10 @@ public class WaterFallHelper {
         body.put(KeyConstants.RequestBody.KEY_IAP, Float.valueOf(extras[4]));
         body.put(KeyConstants.RequestBody.KEY_NG, DeviceUtil.isGpInstall(AdtUtil.getApplication()));
         body.put(KeyConstants.RequestBody.KEY_ACT, extras[5]);
-
-        DeveloperLog.LogD("request wf params : " + body.toString());
+        if (map != null && map.get("InstanceId") != null) {
+            body.put(KeyConstants.RequestBody.KEY_IID, map.get("InstanceId"));
+        }
+        DeveloperLog.LogD("request cp/cl params : " + body.toString());
         return Gzip.inGZip(body.toString().getBytes(Charset.forName("UTF-8")));
     }
 }

@@ -1,5 +1,6 @@
 package com.openmediation.sdk.mediation;
 
+import android.app.Activity;
 import android.view.ViewGroup;
 
 public abstract class CustomSplashEvent extends CustomAdEvent {
@@ -7,7 +8,9 @@ public abstract class CustomSplashEvent extends CustomAdEvent {
     /**
      * @param container the Splash AD Container
      */
-    public abstract void show(ViewGroup container);
+    public void show(Activity activity, ViewGroup container) {}
+
+    public void show(Activity activity) {}
 
     public abstract boolean isReady();
 

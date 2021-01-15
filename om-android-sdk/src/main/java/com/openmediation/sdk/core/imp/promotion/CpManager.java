@@ -71,8 +71,12 @@ public final class CpManager extends AbstractAdsManager implements CpManagerList
         return isPlacementAvailable();
     }
 
-    public void setPromotionAdListener(PromotionAdListener listener) {
-        mListenerWrapper.setPromotionAdListener(listener);
+    public void addPromotionAdListener(PromotionAdListener listener) {
+        mListenerWrapper.addPromotionAdListener(listener);
+    }
+
+    public void removePromotionAdListener(PromotionAdListener listener) {
+        mListenerWrapper.removePromotionAdListener(listener);
     }
 
     @Override

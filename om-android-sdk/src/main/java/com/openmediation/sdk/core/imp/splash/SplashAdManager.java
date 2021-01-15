@@ -122,20 +122,36 @@ public class SplashAdManager {
         splashAdImp.setAdListener(listener);
     }
 
-    public void show(ViewGroup container) {
-        this.show(container, "");
+    public void show(Activity activity, ViewGroup container) {
+        this.show(activity, container, "");
     }
 
-    public void show(ViewGroup container, String placementId) {
+    public void show(Activity activity) {
+        this.show(activity, "");
+    }
+
+    public void show(Activity activity, ViewGroup container, String placementId) {
         AdsUtil.callActionReport(EventId.CALLED_SHOW, placementId, null, CommonConstants.SPLASH);
         SplashAdImp splashAdImp = getSplashAd(placementId);
         if (splashAdImp == null) {
             if (placementId != null && mSplashListeners.containsKey(placementId)) {
-                mSplashListeners.get(placementId).onSplashAdShowFailed("Placement Not Found");
+                mSplashListeners.get(placementId).onSplashAdShowFailed("SplashAd Show Failed: Placement Not Found");
             }
             return;
         }
-        splashAdImp.show(container);
+        splashAdImp.show(activity, container);
+    }
+
+    public void show(Activity activity, String placementId) {
+        AdsUtil.callActionReport(EventId.CALLED_SHOW, placementId, null, CommonConstants.SPLASH);
+        SplashAdImp splashAdImp = getSplashAd(placementId);
+        if (splashAdImp == null) {
+            if (placementId != null && mSplashListeners.containsKey(placementId)) {
+                mSplashListeners.get(placementId).onSplashAdShowFailed("SplashAd Show Failed: Placement Not Found");
+            }
+            return;
+        }
+        splashAdImp.show(activity);
     }
 
     private SplashAdImp getSplashAd(String placementId) {

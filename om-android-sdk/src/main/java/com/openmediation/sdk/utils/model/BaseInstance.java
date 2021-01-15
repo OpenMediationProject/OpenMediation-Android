@@ -300,7 +300,7 @@ public class BaseInstance extends Frequency {
 
     public void onInsReLoadFailed(AdapterError error) {
         JSONObject data = buildReportData();
-        if (error == null) {
+        if (error != null) {
             JsonUtil.put(data, "code", error.getCode());
             JsonUtil.put(data, "msg", error.getMessage());
         }

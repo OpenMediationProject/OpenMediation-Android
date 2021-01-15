@@ -34,7 +34,7 @@ public class SplashAdActivity extends Activity implements SplashAdListener {
     @Override
     public void onSplashAdLoad() {
         Log.e("SplashAdActivity", "----------- onSplashAdLoad ----------");
-        SplashAd.showAd(mSplashContainer);
+        SplashAd.showAd(SplashAdActivity.this, mSplashContainer);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.openmediation.sdk.splash;
 
 
+import android.app.Activity;
 import android.view.ViewGroup;
 
 import com.openmediation.sdk.core.imp.splash.SplashAdManager;
@@ -31,7 +32,11 @@ public class SplashAd {
         return SplashAdManager.getInstance().isReady();
     }
 
-    public static void showAd(ViewGroup container) {
-        SplashAdManager.getInstance().show(container);
+    public static void showAd(Activity activity, ViewGroup container) {
+        SplashAdManager.getInstance().show(activity, container);
+    }
+
+    public static void showAd(Activity activity) {
+        SplashAdManager.getInstance().show(activity);
     }
 }

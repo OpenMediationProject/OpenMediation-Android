@@ -18,15 +18,20 @@ import com.qq.e.comm.util.AdError;
 import java.util.Map;
 
 public class TencentAdSplash extends CustomSplashEvent implements SplashADListener {
-    private static String TAG = "OM-TencentAd: ";
 
     private SplashAD mSplashAD;
 
     private long mExpireTimestamp;
 
     @Override
-    public void loadAd(Activity activity, Map<String, String> config) {
+    public void loadAd(Activity activity, Map<String, String> config) throws Throwable {
+        super.loadAd(activity, config);
         if (!check(activity, config)) {
+            return;
+        }
+        if (!check(activity)) {
+            onInsError(AdapterErrorBuilder.buildLoadError(
+                    AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, "Activity is null"));
             return;
         }
         GDTADManager.getInstance().initWith(activity.getApplicationContext(), config.get("AppKey"));
@@ -55,11 +60,24 @@ public class TencentAdSplash extends CustomSplashEvent implements SplashADListen
     }
 
     @Override
-    public void show(ViewGroup container) {
-        if (isDestroyed) {
+    public void show(Activity activity) {
+        super.show(activity);
+        showSplashAd(null);
+    }
+
+    @Override
+    public void show(Activity activity, ViewGroup container) {
+        super.show(activity, container);
+        showSplashAd(container);
+    }
+
+    private void showSplashAd(ViewGroup container) {
+        if (container == null) {
+            onInsShowFailed(AdapterErrorBuilder.buildShowError(
+                    AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, "Splash container is null, please use \"SplashAd.showAd(Activity, ViewGroup)\""));
             return;
         }
-        if (mSplashAD == null) {
+        if (!isReady()) {
             onInsShowFailed(AdapterErrorBuilder.buildShowError(
                     AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, "SplashAd not ready"));
             return;

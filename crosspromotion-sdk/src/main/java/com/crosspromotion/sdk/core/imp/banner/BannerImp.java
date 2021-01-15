@@ -339,7 +339,7 @@ public final class BannerImp extends AbstractAdsManager implements JsBridge.Mess
         public void run() {
             try {
                 updateRefreshStatus(true);
-                loadAds();
+                loadAds(mLoadParams);
             } catch (Exception e) {
                 updateRefreshStatus(false);
                 CrashUtil.getSingleton().saveException(e);

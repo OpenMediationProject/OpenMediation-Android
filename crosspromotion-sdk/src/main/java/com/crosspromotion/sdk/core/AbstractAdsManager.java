@@ -37,6 +37,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -51,6 +52,8 @@ public abstract class AbstractAdsManager implements Request.OnRequestCallback {
     private HandlerUtil.HandlerHolder mHandler;
     private TimeoutRunnable mTimeoutRunnable;
     private int mTimeout;
+
+    protected Map mLoadParams;
 
     public AbstractAdsManager(String placementId) {
         mPlacementId = placementId;
@@ -80,15 +83,16 @@ public abstract class AbstractAdsManager implements Request.OnRequestCallback {
         mHandler = null;
     }
 
-    public void loadAds() {
-        loadAdsWithPayload(null);
+    public void loadAds(Map extras) {
+        loadAdsWithPayload(null, extras);
     }
 
-    public void loadAdsWithPayload(String payload) {
-        delayLoad(payload);
+    public void loadAdsWithPayload(String payload, Map extras) {
+        delayLoad(payload, extras);
     }
 
-    private void delayLoad(String payload) {
+    private void delayLoad(String payload, Map extras) {
+        mLoadParams = extras;
         if (isInLoadingProgress) {
             return;
         }
@@ -106,7 +110,7 @@ public abstract class AbstractAdsManager implements Request.OnRequestCallback {
                 }
 
                 //2:interval,4:manual
-                WaterFallHelper.wfRequest(getPlacementInfo(), isIntervalLoadType() ? 2 : 4, this);
+                WaterFallHelper.wfRequest(getPlacementInfo(), isIntervalLoadType() ? 2 : 4, this, extras);
             } else {
                 if (isCacheAdsType()) {
                     mAdBean = null;
@@ -330,13 +334,6 @@ public abstract class AbstractAdsManager implements Request.OnRequestCallback {
         final List<String> res = new ArrayList<>();
         final int adType = getAdType();
         switch (adType) {
-            case CommonConstants.BANNER:
-                if (adBean.getResources() == null || adBean.getResources().isEmpty()) {
-                    onAdsLoadFailed(ErrorBuilder.build(ErrorCode.CODE_LOAD_SERVER_ERROR));
-                    return;
-                }
-                res.add(adBean.getResources().get(0));
-                break;
             case CommonConstants.NATIVE:
                 List<String> imgUrls = adBean.getMainimgUrl();
                 if (imgUrls == null || imgUrls.isEmpty()) {
@@ -348,29 +345,24 @@ public abstract class AbstractAdsManager implements Request.OnRequestCallback {
                     res.add(adBean.getIconUrl());
                 }
                 break;
-            case CommonConstants.INTERSTITIAL:
-            case CommonConstants.VIDEO:
-            case CommonConstants.PROMOTION:
-                if (adBean.getResources() != null) {
-                    if (!adBean.getResources().isEmpty()) {
-                        res.addAll(adBean.getResources());
-                    }
-                    if (!TextUtils.isEmpty(adBean.getIconUrl())) {
-                        res.add(adBean.getIconUrl());
-                    }
-                    if (!TextUtils.isEmpty(adBean.getVideoUrl())) {
-                        res.add(adBean.getVideoUrl());
-                    }
-                    List<String> imgUrlList = adBean.getMainimgUrl();
-                    if (imgUrlList != null && imgUrlList.size() > 0) {
-                        res.addAll(imgUrlList);
-                    }
-                } else {
+            default:
+                if (adBean.getResources() == null || adBean.getResources().isEmpty()) {
                     onAdsLoadFailed(ErrorBuilder.build(ErrorCode.CODE_LOAD_SERVER_ERROR));
                     return;
                 }
-                break;
-            default:
+                if (!adBean.getResources().isEmpty()) {
+                    res.addAll(adBean.getResources());
+                }
+                if (!TextUtils.isEmpty(adBean.getIconUrl())) {
+                    res.add(adBean.getIconUrl());
+                }
+                if (!TextUtils.isEmpty(adBean.getVideoUrl())) {
+                    res.add(adBean.getVideoUrl());
+                }
+                List<String> imgUrlList = adBean.getMainimgUrl();
+                if (imgUrlList != null && imgUrlList.size() > 0) {
+                    res.addAll(imgUrlList);
+                }
                 break;
         }
 

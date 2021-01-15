@@ -79,4 +79,12 @@ public class PromotionAd extends BaseOmAds {
     public static void setAdListener(PromotionAdListener listener) {
         OmManager.getInstance().setPromotionAdListener("", listener);
     }
+
+    public static void addAdListener(PromotionAdListener listener) {
+        OmManager.getInstance().addPromotionAdListener("", listener);
+    }
+
+    public static void removeAdListener(PromotionAdListener listener) {
+        OmManager.getInstance().removePromotionAdListener("", listener);
+    }
 }

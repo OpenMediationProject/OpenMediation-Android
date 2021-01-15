@@ -4,6 +4,7 @@
 package com.openmediation.sdk.mediation;
 
 import android.app.Activity;
+import android.os.Build;
 import android.text.TextUtils;
 
 import java.util.Map;
@@ -23,6 +24,30 @@ public abstract class CustomAdEvent extends CustomAdParams {
     public abstract int getMediation();
 
     public abstract void destroy(Activity activity);
+
+    protected boolean check(Activity activity) {
+        return !isDestroyed(activity);
+    }
+
+    /**
+     * Checks if an Activity is available
+     *
+     * @param activity the given activity
+     * @return activity availability
+     */
+    private boolean isDestroyed(Activity activity) {
+        boolean flage = false;
+        if (Build.VERSION.SDK_INT >= 17) {
+            if (activity == null || activity.isDestroyed()) {
+                flage = true;
+            }
+        } else {
+            if (activity == null || activity.isFinishing()) {
+                flage = true;
+            }
+        }
+        return flage;
+    }
 
     protected boolean check(Activity activity, Map<String, String> config) {
         mPlacementId = config.get("PlacementId");

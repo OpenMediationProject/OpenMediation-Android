@@ -32,14 +32,14 @@ public class CrossPromotionBanner extends CustomBannerEvent implements BannerAdL
             payload = config.get(PAY_LOAD);
         }
         if (mBannerAd != null) {
-            mBannerAd.loadAdWithPayload(payload);
+            mBannerAd.loadAdWithPayload(payload, config);
             return;
         }
         mBannerAd = new BannerAd(activity, mInstancesKey);
         mBannerAd.setAdListener(this);
         AdSize adSize = getAdSize(activity, config);
         mBannerAd.setAdSize(adSize);
-        mBannerAd.loadAdWithPayload(payload);
+        mBannerAd.loadAdWithPayload(payload, config);
     }
 
     @Override

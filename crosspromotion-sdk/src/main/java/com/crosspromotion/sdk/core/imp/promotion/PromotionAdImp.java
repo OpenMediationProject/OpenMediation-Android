@@ -21,6 +21,7 @@ import com.openmediation.sdk.utils.constant.CommonConstants;
 import com.openmediation.sdk.utils.model.Placement;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -70,7 +71,12 @@ public final class PromotionAdImp extends AbstractAdsManager {
     }
 
     @Override
-    public void loadAds() {
+    public void loadAds(Map extras) {
+        mLoadParams = extras;
+        boolean ready = internalReady();
+        if (ready) {
+            callbackAdsReady();
+        }
         updateStock();
     }
 
@@ -129,10 +135,8 @@ public final class PromotionAdImp extends AbstractAdsManager {
             super.onAdsLoadSuccess(adBean);
             mShouldCallback.set(false);
         }
-        DeveloperLog.LogE("PromotionAd onAdsLoadSuccess: " + mPlacementId);
-        DeveloperLog.LogE("PromotionAd onAdsLoadSuccess: Stock size is " + mStockQueue.size() + ", AdBeanQueue size is " + mAdBeanQueue.size() + ",\n"
+        DeveloperLog.LogD("PromotionAd onAdsLoadSuccess: PlacementId: "+ mPlacementId + ", Stock size is " + mStockQueue.size() + ", AdBeanQueue size is " + mAdBeanQueue.size() + ",\n"
                 + "SuccessCount is " + mSuccessCount.get() + ", FailedCount is " + mFailedCount.get() + ", PendingCount is " + mPendingCount.get());
-//        afterCallback();
     }
 
     @Override
@@ -146,14 +150,14 @@ public final class PromotionAdImp extends AbstractAdsManager {
             return;
         }
         mFailedCount.incrementAndGet();
-        DeveloperLog.LogE("PromotionAd onAdsLoadFailed: " + mPlacementId + ", " + error);
-        DeveloperLog.LogE("PromotionAd onAdsLoadFailed: Stock size is " + mStockQueue.size() + ", AdBeanQueue size is " + mAdBeanQueue.size() + ",\n"
+        DeveloperLog.LogD("PromotionAd onAdsLoadFailed: " + mPlacementId + ", " + error);
+        DeveloperLog.LogD("PromotionAd onAdsLoadFailed: Stock size is " + mStockQueue.size() + ", AdBeanQueue size is " + mAdBeanQueue.size() + ",\n"
                 + "SuccessCount is " + mSuccessCount.get() + ", FailedCount is " + mFailedCount.get() + ", PendingCount is " + mPendingCount.get());
         // download finish
         if (mAdBeanQueue.isEmpty()) {
             // all failed
             if (mFailedCount.get() >= mPendingCount.get()) {
-                DeveloperLog.LogE("PromotionAd called super.onAdsLoadFailed(error)");
+                DeveloperLog.LogD("PromotionAd called super.onAdsLoadFailed(error)");
                 if (mShouldCallback.get()) {
                     super.onAdsLoadFailed(error);
                     mShouldCallback.set(false);
@@ -195,7 +199,7 @@ public final class PromotionAdImp extends AbstractAdsManager {
         while (!mAdBeanQueue.isEmpty()) {
             AdBean adBean = mAdBeanQueue.poll();
             mPendingCount.incrementAndGet();
-            DeveloperLog.LogE("PromotionAd download resource mPendingCount.get()  = " + mPendingCount.get());
+            DeveloperLog.LogD("PromotionAd download resource mPendingCount.get()  = " + mPendingCount.get());
             preLoadResImpl(adBean);
             if (mPendingCount.get() >= mStock - size) {
                 break;
@@ -205,7 +209,7 @@ public final class PromotionAdImp extends AbstractAdsManager {
 
     private void afterCallback() {
         if (canPreload() && !isStocking()) {
-            DeveloperLog.LogE("PromotionAd afterCallback: called internalPreLoad()");
+            DeveloperLog.LogD("PromotionAd afterCallback: called internalPreLoad()");
             internalPreLoad();
         }
     }
@@ -234,17 +238,17 @@ public final class PromotionAdImp extends AbstractAdsManager {
         if (size >= mStock) {
             return;
         }
-        DeveloperLog.LogE("PromotionAd updateStock: Stock size is " + size + ", AdBeanQueue size is " + mAdBeanQueue.size() + ",\n"
+        DeveloperLog.LogD("PromotionAd updateStock: Stock size is " + size + ", AdBeanQueue size is " + mAdBeanQueue.size() + ",\n"
                 + "SuccessCount is " + mSuccessCount.get() + ", FailedCount is " + mFailedCount.get() + ", PendingCount is " + mPendingCount.get());
         if (isStocking()) {
-            DeveloperLog.LogE("PromotionAd updateStock resource downloading, return");
+            DeveloperLog.LogD("PromotionAd updateStock resource downloading, return");
             return;
         }
         if (canPreload()) {
             internalPreLoad();
         } else {
             mShouldCallback.set(true);
-            super.loadAds();
+            super.loadAds(mLoadParams);
         }
     }
 

@@ -320,6 +320,9 @@ public interface KeyConstants {
 
         /*EXT*/
         String KEY_EXT = "ext";
+
+        /*TAGS*/
+        String KEY_TAGS = "tags";
     }
 
     /**

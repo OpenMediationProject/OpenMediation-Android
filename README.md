@@ -1,4 +1,4 @@
-﻿# OpenMediation SDK for Android
+# OpenMediation SDK for Android
 Thanks for taking a look at OpenMediation! We offers diversified and competitive monetization solution and supports a variety of Ad formats including Native Ad, Interstitial Ad, Banner Ad, and Rewarded Video Ad. The OpenMediation platform works with multiple ad networks include AdMob, Facebook, UnityAds, Vungle, AdColony, AppLovin, MoPub, Tapjoy, Chartboost and Mintegral etc.
 
 ## Communication
@@ -17,12 +17,12 @@ android {
 }
 
 dependencies {
-  implementation 'com.openmediation:om-android-sdk:2.0.0'
+  implementation 'com.openmediation:om-android-sdk:2.0.2'
 
   // AdTiming-Adapter
-  implementation 'com.openmediation.adapters:adtiming:2.0.0'
+  implementation 'com.openmediation.adapters:adtiming:2.0.1'
   // AdMob-Adapter
-  implementation 'com.openmediation.adapters:admob:2.0.0'
+  implementation 'com.openmediation.adapters:admob:2.0.1'
   // Facebook-Adapter
   implementation 'com.openmediation.adapters:facebook:2.0.0'
   // Unity-Adapter
@@ -48,7 +48,7 @@ dependencies {
   //Fyber-Adapter
   implementation 'com.openmediation.adapters:fyber:2.0.0'
   //CrossPromotion-Adapter
-  implementation 'com.openmediation.adapters:crosspromotion:1.0.0'
+  implementation 'com.openmediation.adapters:crosspromotion:1.0.1'
 }
 ```
 

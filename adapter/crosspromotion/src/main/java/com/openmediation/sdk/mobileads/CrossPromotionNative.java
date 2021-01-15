@@ -37,12 +37,12 @@ public class CrossPromotionNative extends CustomNativeEvent implements NativeAdL
             payload = config.get(PAY_LOAD);
         }
         if (mNativeAd != null) {
-            mNativeAd.loadAdWithPayload(payload);
+            mNativeAd.loadAdWithPayload(payload, config);
             return;
         }
         mNativeAd = new NativeAd(activity, mInstancesKey);
         mNativeAd.setAdListener(this);
-        mNativeAd.loadAdWithPayload(payload);
+        mNativeAd.loadAdWithPayload(payload, config);
     }
 
     @Override

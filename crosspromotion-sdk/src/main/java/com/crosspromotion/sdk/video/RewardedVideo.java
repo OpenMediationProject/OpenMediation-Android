@@ -2,6 +2,8 @@ package com.crosspromotion.sdk.video;
 
 import com.crosspromotion.sdk.core.OmAdNetworkManager;
 
+import java.util.Map;
+
 public final class RewardedVideo {
     /**
      * Returns default placement availability
@@ -15,12 +17,8 @@ public final class RewardedVideo {
     /**
      * Loads ads with default placement
      */
-    public static void loadAd(String placementId) {
-        OmAdNetworkManager.getInstance().loadRewardedVideo(placementId);
-    }
-
-    public static void loadAdWithPayload(String placementId, String payload) {
-        OmAdNetworkManager.getInstance().loadRewardedVideo(placementId, payload);
+    public static void loadAdWithPayload(String placementId, String payload, Map extras) {
+        OmAdNetworkManager.getInstance().loadRewardedVideo(placementId, payload, extras);
     }
 
     /**

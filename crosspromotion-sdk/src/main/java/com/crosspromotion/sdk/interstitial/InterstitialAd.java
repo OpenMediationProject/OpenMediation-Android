@@ -5,6 +5,8 @@ package com.crosspromotion.sdk.interstitial;
 
 import com.crosspromotion.sdk.core.OmAdNetworkManager;
 
+import java.util.Map;
+
 public final class InterstitialAd {
 
     /**
@@ -19,12 +21,8 @@ public final class InterstitialAd {
     /**
      * Load ad.
      */
-    public static void loadAd(String placementId) {
-        OmAdNetworkManager.getInstance().loadInterstitialAd(placementId);
-    }
-
-    public static void loadAdWithPayload(String placementId, String payload) {
-        OmAdNetworkManager.getInstance().loadInterstitialAd(placementId, payload);
+    public static void loadAdWithPayload(String placementId, String payload, Map extras) {
+        OmAdNetworkManager.getInstance().loadInterstitialAd(placementId, payload, extras);
     }
 
     /**

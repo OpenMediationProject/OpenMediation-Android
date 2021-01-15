@@ -17,11 +17,10 @@ import com.bytedance.sdk.openadsdk.TTSplashAd;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomSplashEvent;
 import com.openmediation.sdk.mediation.MediationInfo;
+import com.openmediation.sdk.splash.SplashAd;
 import com.openmediation.sdk.utils.AdLog;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 public class TikTokSplash extends CustomSplashEvent implements TTAdNative.SplashAdListener, TTSplashAd.AdInteractionListener {
     private static String TAG = "TikTok: ";
@@ -31,15 +30,18 @@ public class TikTokSplash extends CustomSplashEvent implements TTAdNative.Splash
     private static final String CONFIG_HEIGHT = "Height";
 
     private TTAdNative mTTAdNative;
-    private ConcurrentMap<String, TTSplashAd> mSplashAdMap;
+    private TTSplashAd mSplashAd;
 
     @Override
-    public void loadAd(Activity activity, Map<String, String> config) {
+    public void loadAd(Activity activity, Map<String, String> config) throws Throwable {
+        super.loadAd(activity, config);
         if (!check(activity, config)) {
             return;
         }
-        if (mSplashAdMap == null) {
-            mSplashAdMap = new ConcurrentHashMap<>();
+        if (!check(activity)) {
+            onInsError(AdapterErrorBuilder.buildLoadError(
+                    AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, "Activity is null"));
+            return;
         }
         initTTSDKConfig(activity, config);
         loadSplashAd(activity, mInstancesKey, config);
@@ -55,7 +57,7 @@ public class TikTokSplash extends CustomSplashEvent implements TTAdNative.Splash
     @Override
     public void destroy(Activity activity) {
         isDestroyed = true;
-        mSplashAdMap.clear();
+        mSplashAd = null;
         mTTAdNative = null;
     }
 
@@ -103,7 +105,23 @@ public class TikTokSplash extends CustomSplashEvent implements TTAdNative.Splash
     }
 
     @Override
-    public void show(final ViewGroup container) {
+    public void show(Activity activity) {
+        super.show(activity);
+        showSplashAd(null);
+    }
+
+    @Override
+    public void show(Activity activity, final ViewGroup container) {
+        super.show(activity, container);
+        showSplashAd(container);
+    }
+
+    private void showSplashAd(final ViewGroup container) {
+        if (container == null) {
+            onInsShowFailed(AdapterErrorBuilder.buildShowError(
+                    AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, "Splash container is null, please use \"SplashAd.showAd(Activity, ViewGroup)\""));
+            return;
+        }
         if (!isReady()) {
             onInsShowFailed(AdapterErrorBuilder.buildShowError(
                     AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, "SplashAd not ready"));
@@ -113,16 +131,14 @@ public class TikTokSplash extends CustomSplashEvent implements TTAdNative.Splash
             @Override
             public void run() {
                 try {
-                    TTSplashAd splashAd = mSplashAdMap.get(mInstancesKey);
-                    mSplashAdMap.remove(mInstancesKey);
-                    View splashView = splashAd.getSplashView();
+                    mSplashAd.setSplashInteractionListener(TikTokSplash.this);
+                    View splashView = mSplashAd.getSplashView();
                     if (splashView.getParent() instanceof ViewGroup) {
                         ViewGroup viewGroup = (ViewGroup) splashView.getParent();
                         viewGroup.removeView(splashView);
                     }
                     container.removeAllViews();
                     container.addView(splashView);
-                    splashAd.setSplashInteractionListener(TikTokSplash.this);
                 } catch (Exception e) {
                     onInsShowFailed(AdapterErrorBuilder.buildShowError(
                             AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, e.getMessage()));
@@ -133,7 +149,7 @@ public class TikTokSplash extends CustomSplashEvent implements TTAdNative.Splash
 
     @Override
     public boolean isReady() {
-        return !isDestroyed && !TextUtils.isEmpty(mInstancesKey) && mSplashAdMap != null && mSplashAdMap.containsKey(mInstancesKey);
+        return !isDestroyed && !TextUtils.isEmpty(mInstancesKey) && mSplashAd != null;
     }
 
     @Override
@@ -169,7 +185,7 @@ public class TikTokSplash extends CustomSplashEvent implements TTAdNative.Splash
                     AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, "Splash ad Load Failed: TTSplashAd is null"));
             return;
         }
-        mSplashAdMap.put(mInstancesKey, ttSplashAd);
+        mSplashAd = ttSplashAd;
         AdLog.getSingleton().LogD(TAG + "Splash ad onSplashAdLoad");
         onInsReady(null);
     }

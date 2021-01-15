@@ -9,6 +9,8 @@ import com.openmediation.sdk.core.OmManager;
 import com.openmediation.sdk.utils.AFManager;
 import com.openmediation.sdk.utils.AdLog;
 
+import java.util.Map;
+
 /**
  * The type Om ads.
  */
@@ -88,7 +90,7 @@ public abstract class OmAds {
     }
 
     /**
-     * Report Appsflyer conversion data
+     * Report AppsFlyer conversion data
      *
      * @param conversionData
      */
@@ -97,7 +99,7 @@ public abstract class OmAds {
     }
 
     /**
-     * Report Appsflyer deeplink data
+     * Report AppsFlyer deeplink data
      *
      * @param conversionData
      */

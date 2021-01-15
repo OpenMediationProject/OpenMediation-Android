@@ -97,16 +97,20 @@ public class SplashAdImp extends AbstractHybridAd {
         return isReady(mCurrentIns);
     }
 
-    public void show(ViewGroup container) {
-        if (container == null) {
-            onAdShowFailed("SplashAd Container is null");
-            return;
-        }
+    public void show(Activity activity, ViewGroup container) {
         if (!isReady()) {
-            onAdShowFailed("SplashAd not ready");
+            onAdShowFailed("SplashAd Show Failed: Not Ready");
             return;
         }
-        getAdEvent(mCurrentIns).show(container);
+        getAdEvent(mCurrentIns).show(activity, container);
+    }
+
+    public void show(Activity activity) {
+        if (!isReady()) {
+            onAdShowFailed("SplashAd Show Failed: Not Ready");
+            return;
+        }
+        getAdEvent(mCurrentIns).show(activity);
     }
 
     private void onAdShowFailed(final String error) {

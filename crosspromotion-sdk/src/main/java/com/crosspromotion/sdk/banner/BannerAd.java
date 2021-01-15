@@ -8,6 +8,8 @@ import android.widget.FrameLayout;
 
 import com.crosspromotion.sdk.core.imp.banner.BannerImp;
 
+import java.util.Map;
+
 public class BannerAd extends FrameLayout {
 
     private BannerImp mBannerImp;
@@ -25,12 +27,8 @@ public class BannerAd extends FrameLayout {
         mBannerImp.setAdSize(adSize);
     }
 
-    public void loadAd() {
-        mBannerImp.loadAds();
-    }
-
-    public void loadAdWithPayload(String payload) {
-        mBannerImp.loadAdsWithPayload(payload);
+    public void loadAdWithPayload(String payload, Map extras) {
+        mBannerImp.loadAdsWithPayload(payload, extras);
     }
 
     public void destroy() {

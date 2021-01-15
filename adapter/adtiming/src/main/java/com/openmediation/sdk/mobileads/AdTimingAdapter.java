@@ -28,10 +28,14 @@ import java.util.concurrent.ConcurrentMap;
 public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoListener, InterstitialAdListener {
     private static final String TAG = "OM-AdTiming: ";
     private static final String PAY_LOAD = "pay_load";
+    private ConcurrentMap<String, RewardedVideoCallback> mInitVideoListeners;
+    private ConcurrentMap<String, InterstitialAdCallback> mInitInterstitialListeners;
     private ConcurrentMap<String, RewardedVideoCallback> mVideoListeners;
     private ConcurrentMap<String, InterstitialAdCallback> mInterstitialListeners;
 
     public AdTimingAdapter() {
+        mInitVideoListeners = new ConcurrentHashMap<>();
+        mInitInterstitialListeners = new ConcurrentHashMap<>();
         mVideoListeners = new ConcurrentHashMap<>();
         mInterstitialListeners = new ConcurrentHashMap<>();
     }
@@ -103,7 +107,7 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
             return;
         }
         String pid = (String) dataMap.get("pid");
-        mVideoListeners.put(pid, callback);
+        mInitVideoListeners.put(pid, callback);
         String appKey = (String) dataMap.get("AppKey");
         initSDK(activity, appKey);
     }
@@ -163,7 +167,7 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
             return;
         }
         String pid = (String) dataMap.get("pid");
-        mInterstitialListeners.put(pid, callback);
+        mInitInterstitialListeners.put(pid, callback);
         String appKey = (String) dataMap.get("AppKey");
         initSDK(activity, appKey);
     }
@@ -217,45 +221,45 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
         AdTimingSingleTon.getInstance().initAdTiming(activity, appKey, new AdTimingSingleTon.AdTimingInitCallback() {
             @Override
             public void onSuccess() {
-                if (!mVideoListeners.isEmpty()) {
-                    for (Map.Entry<String, RewardedVideoCallback> rewardedVideoCallbackEntry : mVideoListeners.entrySet()) {
+                if (!mInitVideoListeners.isEmpty()) {
+                    for (Map.Entry<String, RewardedVideoCallback> rewardedVideoCallbackEntry : mInitVideoListeners.entrySet()) {
                         if (rewardedVideoCallbackEntry != null) {
                             rewardedVideoCallbackEntry.getValue().onRewardedVideoInitSuccess();
                         }
                     }
-                    mVideoListeners.clear();
+                    mInitVideoListeners.clear();
                 }
 
-                if (!mInterstitialListeners.isEmpty()) {
-                    for (Map.Entry<String, InterstitialAdCallback> interstitialAdCallbackEntry : mInterstitialListeners.entrySet()) {
+                if (!mInitInterstitialListeners.isEmpty()) {
+                    for (Map.Entry<String, InterstitialAdCallback> interstitialAdCallbackEntry : mInitInterstitialListeners.entrySet()) {
                         if (interstitialAdCallbackEntry != null) {
                             interstitialAdCallbackEntry.getValue().onInterstitialAdInitSuccess();
                         }
                     }
                 }
-                mInterstitialListeners.clear();
+                mInitInterstitialListeners.clear();
             }
 
             @Override
             public void onError(AdTimingError adTimingError) {
-                if (!mVideoListeners.isEmpty()) {
-                    for (Map.Entry<String, RewardedVideoCallback> rewardedVideoCallbackEntry : mVideoListeners.entrySet()) {
+                if (!mInitVideoListeners.isEmpty()) {
+                    for (Map.Entry<String, RewardedVideoCallback> rewardedVideoCallbackEntry : mInitVideoListeners.entrySet()) {
                         if (rewardedVideoCallbackEntry != null) {
                             rewardedVideoCallbackEntry.getValue().onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
                                     AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, adTimingError.getCode(), adTimingError.getMessage()));
                         }
                     }
-                    mVideoListeners.clear();
+                    mInitVideoListeners.clear();
                 }
 
-                if (!mInterstitialListeners.isEmpty()) {
-                    for (Map.Entry<String, InterstitialAdCallback> interstitialAdCallbackEntry : mInterstitialListeners.entrySet()) {
+                if (!mInitInterstitialListeners.isEmpty()) {
+                    for (Map.Entry<String, InterstitialAdCallback> interstitialAdCallbackEntry : mInitInterstitialListeners.entrySet()) {
                         if (interstitialAdCallbackEntry != null) {
                             interstitialAdCallbackEntry.getValue().onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
                                     AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, adTimingError.getCode(), adTimingError.getMessage()));
                         }
                     }
-                    mInterstitialListeners.clear();
+                    mInitInterstitialListeners.clear();
                 }
             }
         });

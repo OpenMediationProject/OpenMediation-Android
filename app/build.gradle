@@ -55,8 +55,6 @@ dependencies {
     implementation rootProject.ext.dependencies.play_service_ads_identifier
     //unity
     implementation rootProject.ext.dependencies.unity
-    //ironsource
-    implementation rootProject.ext.dependencies.ironsource
 
     // AdTiming
     implementation rootProject.ext.dependencies.adtiming
@@ -133,6 +131,9 @@ dependencies {
     implementation 'com.mintegral.msdk.china:mtgbid:' + rootProject.ext.dependencies.mtg_china_version
     implementation project(path: ':adapter_cn:mintegral_cn')
 
+    // Sigmob
+    implementation(name: 'windAd-2.24.0', ext: 'aar')
+    implementation project(path: ':adapter_cn:sigmob_cn')
 
     implementation project(path: ':crosspromotion-sdk')
     implementation project(path: ':adapter:crosspromotion')

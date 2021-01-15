@@ -20,6 +20,7 @@ import com.openmediation.sdk.promotion.PromotionAdRect;
 import com.openmediation.sdk.utils.AdLog;
 import com.openmediation.sdk.utils.AdsUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
+import com.openmediation.sdk.utils.JsonUtil;
 import com.openmediation.sdk.utils.PlacementUtils;
 import com.openmediation.sdk.utils.Preconditions;
 import com.openmediation.sdk.utils.SceneUtil;
@@ -34,6 +35,8 @@ import com.openmediation.sdk.utils.model.Configurations;
 import com.openmediation.sdk.utils.model.Placement;
 import com.openmediation.sdk.utils.model.Scene;
 import com.openmediation.sdk.video.RewardedVideoListener;
+
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -276,11 +279,11 @@ public final class OmManager implements InitCallback {
         IapHelper.setIap(iapCount, currency);
     }
 
-    public void setCustomDeviceId(String customDeviceId){
+    public void setCustomDeviceId(String customDeviceId) {
         mCustomDeviceId = customDeviceId;
     }
 
-    public String getCustomDeviceId(){
+    public String getCustomDeviceId() {
         return mCustomDeviceId;
     }
 
@@ -661,7 +664,7 @@ public final class OmManager implements InitCallback {
     private void addPromotionAdListener(String placementId, PromotionAdListener listener, boolean reAdd) {
         CpManager manager = getCpManager(placementId);
         if (manager != null) {
-            manager.setPromotionAdListener(listener);
+            manager.addPromotionAdListener(listener);
         } else {
             if (reAdd) {
                 return;
@@ -674,6 +677,23 @@ public final class OmManager implements InitCallback {
                 listeners = new HashSet<>();
             }
             listeners.add(listener);
+            mCpListeners.put(placementId, listeners);
+        }
+    }
+
+    public void removePromotionAdListener(String placementId, PromotionAdListener listener) {
+        CpManager manager = getCpManager(placementId);
+        if (manager != null) {
+            manager.removePromotionAdListener(listener);
+        } else {
+            if (mCpListeners == null || mCpListeners.isEmpty()) {
+                return;
+            }
+            Set<PromotionAdListener> listeners = mCpListeners.get(placementId);
+            if (listeners == null || listeners.isEmpty()) {
+                return;
+            }
+            listeners.remove(listener);
             mCpListeners.put(placementId, listeners);
         }
     }
@@ -976,7 +996,7 @@ public final class OmManager implements InitCallback {
      */
     private void anotherInitCalledAfterInitSuccess(List<AD_TYPE> adTypes) {
         DeveloperLog.LogD("anotherInitCalledAfterInitSuccess");
-        if (adTypes == null||adTypes.isEmpty()) {
+        if (adTypes == null || adTypes.isEmpty()) {
             return;
         }
         Configurations config = DataCache.getInstance().getFromMem(KeyConstants.KEY_CONFIGURATION, Configurations.class);
