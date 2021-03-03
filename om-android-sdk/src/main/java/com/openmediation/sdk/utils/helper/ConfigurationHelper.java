@@ -112,6 +112,7 @@ public class ConfigurationHelper {
             JSONObject configJson = new JSONObject(json);
             configurations.setD(configJson.optInt("d"));
             configurations.setCoa(configJson.optInt("coa"));
+            configurations.setIcs(configJson.optInt("ics"));
             configurations.setApi(parseApiConfiguration(configJson.optJSONObject("api")));
             //Events
             JSONObject events = configJson.optJSONObject("events");
@@ -162,6 +163,7 @@ public class ConfigurationHelper {
             Placement placement = new Placement();
             placement.setOriData(placementObject.toString());
             placement.setId(placementId);
+            placement.setName(placementObject.optString("n"));
             placement.setT(adType);
             placement.setFrequencyCap(placementObject.optInt("fc"));
             placement.setFrequencyUnit(placementObject.optInt("fu") * 60 * 60 * 1000);
@@ -228,6 +230,7 @@ public class ConfigurationHelper {
             String key = insObject.optString("k");
             instance.setKey(key);
             instance.setId(instancesId);
+            instance.setName(insObject.optString("n"));
             instance.setPlacementId(placementId);
             instance.setMediationId(mediationId);
             instance.setFrequencyCap(insObject.optInt("fc"));
@@ -278,6 +281,7 @@ public class ConfigurationHelper {
             mediation.setK(key);
             mediation.setId(id);
             mediation.setN(name);
+            mediation.setNn(mediationObject.optString("nn"));
             mediationSparseArray.put(id, mediation);
         }
         return mediationSparseArray;

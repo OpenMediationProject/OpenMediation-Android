@@ -13,6 +13,8 @@ import java.util.Map;
 public class Placement extends Frequency {
     //id
     private String id;
+    // Placement Name
+    private String name;
     //type
     private int t;
 
@@ -41,6 +43,14 @@ public class Placement extends Frequency {
     private boolean hasHb;
     private int hbAbt;
     private int wfAbt;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public void setHbAbt(int hbAbt) {
         this.hbAbt = hbAbt;
@@ -170,14 +180,11 @@ public class Placement extends Frequency {
         return hasHb;
     }
 
-    public void buildReportData() {
-
-    }
-
     @Override
     public String toString() {
         return "Placement{" +
-                "id=" + id +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
                 ", t=" + t +
                 '}';
     }

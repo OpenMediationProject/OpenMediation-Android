@@ -19,10 +19,9 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
-import com.google.android.gms.ads.formats.NativeAdOptions;
-import com.google.android.gms.ads.formats.UnifiedNativeAd;
-import com.google.android.gms.ads.formats.UnifiedNativeAdView;
+import com.google.android.gms.ads.nativead.NativeAdOptions;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
+import com.google.android.gms.ads.nativead.NativeAd;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomNativeEvent;
 import com.openmediation.sdk.mediation.MediationInfo;
@@ -35,8 +34,8 @@ import java.util.Map;
 public class AdMobNative extends CustomNativeEvent {
 
     private AdLoader mAdLoader;
-    private UnifiedNativeAd mUnifiedNativeAd;
-    private UnifiedNativeAdView mUnifiedNativeAdView;
+    private NativeAd mAdMobNativeAd;
+    private com.google.android.gms.ads.nativead.NativeAdView mUnifiedNativeAdView;
     private MediaView mMediaView;
     private AdIconView mAdIconView;
 
@@ -84,20 +83,19 @@ public class AdMobNative extends CustomNativeEvent {
             return;
         }
         AdLoader.Builder builder = new AdLoader.Builder(activity.getApplicationContext(), mInstancesKey);
-        builder.forUnifiedNativeAd(new UnifiedNativeAd.OnUnifiedNativeAdLoadedListener() {
+        builder.forNativeAd(new NativeAd.OnNativeAdLoadedListener() {
             @Override
-            public void onUnifiedNativeAdLoaded(UnifiedNativeAd unifiedNativeAd) {
+            public void onNativeAdLoaded(NativeAd nativeAd) {
                 if (!isDestroyed) {
-                    mUnifiedNativeAd = unifiedNativeAd;
+                    mAdMobNativeAd = nativeAd;
                     mAdInfo.setType(getMediation());
-                    mAdInfo.setTitle(unifiedNativeAd.getHeadline());
-                    mAdInfo.setDesc(unifiedNativeAd.getBody());
-                    mAdInfo.setCallToActionText(unifiedNativeAd.getCallToAction());
+                    mAdInfo.setTitle(nativeAd.getHeadline());
+                    mAdInfo.setDesc(nativeAd.getBody());
+                    mAdInfo.setCallToActionText(nativeAd.getCallToAction());
                     onInsReady(mAdInfo);
                 }
             }
         });
-        //
         NativeAdOptions.Builder nativeAdOptionsBuilder = new NativeAdOptions.Builder();
         //single image
         nativeAdOptionsBuilder.setRequestMultipleImages(false);
@@ -130,7 +128,7 @@ public class AdMobNative extends CustomNativeEvent {
         }
 
         RelativeLayout relativeLayout = new RelativeLayout(adView.getContext());
-        if (mUnifiedNativeAd == null) {
+        if (mAdMobNativeAd == null) {
             return;
         }
 
@@ -143,7 +141,7 @@ public class AdMobNative extends CustomNativeEvent {
             mAdIconView = adView.getAdIconView();
             adView.setAdIconView(mAdIconView);
         }
-        mUnifiedNativeAdView = new UnifiedNativeAdView(adView.getContext());
+        mUnifiedNativeAdView = new com.google.android.gms.ads.nativead.NativeAdView(adView.getContext());
         if (adView.getTitleView() != null) {
             mUnifiedNativeAdView.setHeadlineView(adView.getTitleView());
         }
@@ -158,21 +156,21 @@ public class AdMobNative extends CustomNativeEvent {
 
         if (mMediaView != null) {
             mMediaView.removeAllViews();
-            com.google.android.gms.ads.formats.MediaView admobMediaView = new
-                    com.google.android.gms.ads.formats.MediaView(adView.getContext());
-            mMediaView.addView(admobMediaView);
+            com.google.android.gms.ads.nativead.MediaView adMobMediaView = new
+                    com.google.android.gms.ads.nativead.MediaView(adView.getContext());
+            mMediaView.addView(adMobMediaView);
             RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,
                     RelativeLayout.LayoutParams.WRAP_CONTENT);
             layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
-            admobMediaView.setLayoutParams(layoutParams);
-            mUnifiedNativeAdView.setMediaView(admobMediaView);
+            adMobMediaView.setLayoutParams(layoutParams);
+            mUnifiedNativeAdView.setMediaView(adMobMediaView);
         }
 
-        if (mAdIconView != null && mUnifiedNativeAd.getIcon() != null && mUnifiedNativeAd.getIcon().getDrawable() != null) {
+        if (mAdIconView != null && mAdMobNativeAd.getIcon() != null && mAdMobNativeAd.getIcon().getDrawable() != null) {
             mAdIconView.removeAllViews();
             ImageView iconImageView = new ImageView(adView.getContext());
             mAdIconView.addView(iconImageView);
-            iconImageView.setImageDrawable(mUnifiedNativeAd.getIcon().getDrawable());
+            iconImageView.setImageDrawable(mAdMobNativeAd.getIcon().getDrawable());
             iconImageView.getLayoutParams().width = RelativeLayout.LayoutParams.MATCH_PARENT;
             iconImageView.getLayoutParams().height = RelativeLayout.LayoutParams.MATCH_PARENT;
             mUnifiedNativeAdView.setIconView(mAdIconView);
@@ -193,13 +191,13 @@ public class AdMobNative extends CustomNativeEvent {
         int count = adView.getChildCount();
         for (int a = 0; a < count; a++) {
             View v = adView.getChildAt(a);
-            if (v == null || v instanceof UnifiedNativeAdView) {
+            if (v == null || v instanceof com.google.android.gms.ads.nativead.NativeAdView) {
                 continue;
             }
             adView.removeView(v);
             relativeLayout.addView(v);
         }
-        mUnifiedNativeAdView.setNativeAd(mUnifiedNativeAd);
+        mUnifiedNativeAdView.setNativeAd(mAdMobNativeAd);
 
         textView.bringToFront();
         if (mUnifiedNativeAdView.getAdChoicesView() != null) {
@@ -220,9 +218,9 @@ public class AdMobNative extends CustomNativeEvent {
         if (mAdLoader != null) {
             mAdLoader = null;
         }
-        if (mUnifiedNativeAd != null) {
-            mUnifiedNativeAd.destroy();
-            mUnifiedNativeAd = null;
+        if (mAdMobNativeAd != null) {
+            mAdMobNativeAd.destroy();
+            mAdMobNativeAd = null;
         }
         if (mUnifiedNativeAdView != null) {
             mUnifiedNativeAdView.removeAllViews();

@@ -48,6 +48,12 @@ public class ActLifecycle implements Application.ActivityLifecycleCallbacks {
             new String(Base64.decode("Y29tLmNoYXJ0Ym9vc3RfaGVsaXVtLnNkaw==", Base64.NO_WRAP),
                     Charset.forName(CommonConstants.CHARTSET_UTF8)),
             new String(Base64.decode("Y29tLnFxLmUuYWRz", Base64.NO_WRAP),
+                    Charset.forName(CommonConstants.CHARTSET_UTF8)),
+            new String(Base64.decode("Y29tLnNpZ21vYi53aW5kYWQ=", Base64.NO_WRAP),
+                    Charset.forName(CommonConstants.CHARTSET_UTF8)),
+            new String(Base64.decode("Y29tLmt3YWQuc2RrLmFwaS5wcm94eQ==", Base64.NO_WRAP),
+                    Charset.forName(CommonConstants.CHARTSET_UTF8)),
+            new String(Base64.decode("aW8ucHJlc2FnZS5pbnRlcnN0aXRpYWwudWk=", Base64.NO_WRAP),
                     Charset.forName(CommonConstants.CHARTSET_UTF8))
     };
     private AtomicReference<Activity> mThisActivity = new AtomicReference<>(null);

@@ -6,7 +6,6 @@ package com.openmediation.sdk.mobileads;
 import android.content.Context;
 
 import com.bytedance.sdk.openadsdk.TTAdConfig;
-import com.bytedance.sdk.openadsdk.TTAdConstant;
 import com.bytedance.sdk.openadsdk.TTAdManager;
 import com.bytedance.sdk.openadsdk.TTAdSdk;
 
@@ -44,5 +43,9 @@ public class TTAdManagerHolder {
             builder.coppa(ageRestricted ? 1 : 0);
         }
         return builder.build();
+    }
+
+    public static int[] getScreenPx(Context context) {
+        return new int[] {context.getResources().getDisplayMetrics().widthPixels, context.getResources().getDisplayMetrics().heightPixels};
     }
 }

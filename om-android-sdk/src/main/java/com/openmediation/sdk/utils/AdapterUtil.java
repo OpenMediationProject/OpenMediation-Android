@@ -28,7 +28,7 @@ public class AdapterUtil {
     protected static final String MEDIATION_ADAPTER_BASE_PATH = CommonConstants.PKG_ADAPTER;
     private static final String ADAPTER = "Adapter";
     private static SparseArray<CustomAdsAdapter> mAdapters = new SparseArray<>();
-    private static SparseArray<String> mAdapterPaths;
+    private static final SparseArray<String> mAdapterPaths;
 
     static {
         mAdapterPaths = new SparseArray<>();
@@ -49,6 +49,8 @@ public class AdapterUtil {
         mAdapterPaths.put(MediationInfo.MEDIATION_ID_17, getAdapterPath(MediationInfo.MEDIATION_ID_17));
         mAdapterPaths.put(MediationInfo.MEDIATION_ID_19, getAdapterPath(MediationInfo.MEDIATION_ID_19));
         mAdapterPaths.put(MediationInfo.MEDIATION_ID_20, getAdapterPath(MediationInfo.MEDIATION_ID_20));
+        mAdapterPaths.put(MediationInfo.MEDIATION_ID_21, getAdapterPath(MediationInfo.MEDIATION_ID_21));
+        mAdapterPaths.put(MediationInfo.MEDIATION_ID_22, getAdapterPath(MediationInfo.MEDIATION_ID_22));
     }
 
     /**
@@ -196,6 +198,12 @@ public class AdapterUtil {
                 break;
             case MediationInfo.MEDIATION_ID_20:
                 path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_20));
+                break;
+            case MediationInfo.MEDIATION_ID_21:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_21));
+                break;
+            case MediationInfo.MEDIATION_ID_22:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_22));
                 break;
             case MediationInfo.MEDIATION_ID_30:
                 path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_30));

@@ -98,7 +98,7 @@ public final class BannerImp extends AbstractHybridAd implements View.OnAttachSt
         if (mBidResponses != null && mBidResponses.containsKey(instances.getId())) {
             payload = AuctionUtil.generateStringRequestData(mBidResponses.get(instances.getId()));
         }
-        Map<String, String> placementInfo = PlacementUtils.getPlacementInfo(mPlacementId, instances, payload);
+        Map<String, String> placementInfo = PlacementUtils.getPlacementInfo(mReqId, mPlacementId, instances, payload);
         if (mAdSize != null) {
             placementInfo.put("width", String.valueOf(mAdSize.getWidth()));
             placementInfo.put("height", String.valueOf(mAdSize.getHeight()));
@@ -246,6 +246,7 @@ public final class BannerImp extends AbstractHybridAd implements View.OnAttachSt
             return;
         }
         insImpReport(mCurrentIns);
+        onInsShowSuccess(mCurrentIns);
         notifyInsBidWin(mCurrentIns);
     }
 

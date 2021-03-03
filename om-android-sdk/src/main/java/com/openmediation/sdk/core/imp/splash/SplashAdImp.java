@@ -65,7 +65,7 @@ public class SplashAdImp extends AbstractHybridAd {
         if (mBidResponses != null && mBidResponses.containsKey(instances.getId())) {
             payload = AuctionUtil.generateStringRequestData(mBidResponses.get(instances.getId()));
         }
-        Map<String, String> placementInfo = PlacementUtils.getPlacementInfo(mPlacementId, instances, payload);
+        Map<String, String> placementInfo = PlacementUtils.getPlacementInfo(mReqId, mPlacementId, instances, payload);
         placementInfo.put("Timeout", String.valueOf(mLoadTimeout));
         placementInfo.put("Width", String.valueOf(mWidth));
         placementInfo.put("Height", String.valueOf(mHeight));
@@ -137,7 +137,7 @@ public class SplashAdImp extends AbstractHybridAd {
         if (mAdListener != null) {
             EventUploadManager.getInstance().uploadEvent(EventId.CALLBACK_LOAD_ERROR,
                     PlacementUtils.placementEventParams(mPlacementId));
-            mAdListener.onSplashAdFailed(error);
+            mAdListener.onSplashAdFailed(mPlacementId, error);
         }
     }
 
@@ -146,7 +146,7 @@ public class SplashAdImp extends AbstractHybridAd {
         if (mAdListener != null) {
             EventUploadManager.getInstance().uploadEvent(EventId.CALLBACK_LOAD_SUCCESS,
                     PlacementUtils.placementEventParams(mPlacementId));
-            mAdListener.onSplashAdLoad();
+            mAdListener.onSplashAdLoad(mPlacementId);
         }
     }
 
@@ -155,7 +155,7 @@ public class SplashAdImp extends AbstractHybridAd {
         if (mAdListener != null) {
             EventUploadManager.getInstance().uploadEvent(EventId.CALLBACK_CLICK,
                     PlacementUtils.placementEventParams(mPlacementId));
-            mAdListener.onSplashAdClicked();
+            mAdListener.onSplashAdClicked(mPlacementId);
         }
     }
 
@@ -164,7 +164,7 @@ public class SplashAdImp extends AbstractHybridAd {
         if (mAdListener != null) {
             EventUploadManager.getInstance().uploadEvent(EventId.CALLBACK_PRESENT_SCREEN,
                     PlacementUtils.placementEventParams(mPlacementId));
-            mAdListener.onSplashAdShowed();
+            mAdListener.onSplashAdShowed(mPlacementId);
         }
     }
 
@@ -173,7 +173,7 @@ public class SplashAdImp extends AbstractHybridAd {
         if (mAdListener != null) {
             EventUploadManager.getInstance().uploadEvent(EventId.CALLBACK_SHOW_FAILED,
                     PlacementUtils.placementEventParams(mPlacementId));
-            mAdListener.onSplashAdShowFailed(error);
+            mAdListener.onSplashAdShowFailed(mPlacementId, error);
         }
     }
 
@@ -182,7 +182,7 @@ public class SplashAdImp extends AbstractHybridAd {
         if (mAdListener != null) {
             EventUploadManager.getInstance().uploadEvent(EventId.CALLBACK_DISMISS_SCREEN,
                     PlacementUtils.placementEventParams(mPlacementId));
-            mAdListener.onSplashAdDismissed();
+            mAdListener.onSplashAdDismissed(mPlacementId);
         }
     }
 
@@ -200,7 +200,7 @@ public class SplashAdImp extends AbstractHybridAd {
     protected void onInsTick(String instanceKey, String instanceId, long millisUntilFinished) {
         super.onInsTick(instanceKey, instanceId, millisUntilFinished);
         if (mAdListener != null) {
-            mAdListener.onSplashAdTick(millisUntilFinished);
+            mAdListener.onSplashAdTick(mPlacementId, millisUntilFinished);
         }
     }
 

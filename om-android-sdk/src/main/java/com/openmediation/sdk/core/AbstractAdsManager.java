@@ -40,6 +40,7 @@ import com.openmediation.sdk.utils.helper.LrReportHelper;
 import com.openmediation.sdk.utils.helper.WaterFallHelper;
 import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.Instance;
+import com.openmediation.sdk.utils.model.MediationRule;
 import com.openmediation.sdk.utils.model.Placement;
 import com.openmediation.sdk.utils.model.Scene;
 import com.openmediation.sdk.utils.request.network.Request;
@@ -71,6 +72,15 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
      * The M activity.
      */
 //    protected Activity mActivity;
+
+    /**
+     * AuctionId
+     */
+    protected String mReqId;
+    /**
+     * RuleId
+     */
+    protected int mRuleId = -1;
     /**
      * The M placement.
      */
@@ -156,11 +166,11 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
                 bidResponse = mBidResponses.get(instance.getId());
             }
             instance.setBidResponse(bidResponse);
-            insLoad(instance, PlacementUtils.getLoadExtrasMap(instance, bidResponse));
+            insLoad(instance, PlacementUtils.getLoadExtrasMap(mReqId, instance, bidResponse));
         } else {
             instance.reportInsLoad(EventId.INSTANCE_LOAD);
             LrReportHelper.report(instance, mLoadType.getValue(), mPlacement.getWfAbt(), CommonConstants.INSTANCE_LOAD, 0);
-            insLoad(instance, PlacementUtils.getLoadExtrasMap(instance, null));
+            insLoad(instance, PlacementUtils.getLoadExtrasMap(mReqId, instance, null));
         }
     }
 
@@ -367,7 +377,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
         if (shouldNotifyAvailableChanged(true)) {
             if (!isAReadyReported.get()) {
                 isAReadyReported.set(true);
-                LrReportHelper.report(instance.getPlacementId(), mLoadType.getValue(), mPlacement.getWfAbt(),
+                LrReportHelper.report(mReqId, mRuleId, instance.getPlacementId(), mLoadType.getValue(), mPlacement.getWfAbt(),
                         CommonConstants.WATERFALL_READY, 0);
             }
             onAvailabilityChanged(true, null);
@@ -472,7 +482,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
                 c2sResponses.addAll(bidResponses);
             }
             WaterFallHelper.wfRequest(getPlacementInfo(), mLoadType, c2sResponses, s2sResponses,
-                    InsUtil.getInstanceLoadStatuses(mTotalIns), AbstractAdsManager.this);
+                    InsUtil.getInstanceLoadStatuses(mTotalIns), mReqId, AbstractAdsManager.this);
         } catch (Exception e) {
             Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
                     , ErrorCode.MSG_LOAD_INVALID_REQUEST, ErrorCode.CODE_LOAD_UNKNOWN_INTERNAL_ERROR);
@@ -493,19 +503,22 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
                 callbackLoadError(error);
                 return;
             }
-
+            JSONObject clInfo = new JSONObject(response.body().string());
+            MediationRule mediationRule = WaterFallHelper.getMediationRule(clInfo);
+            if (mediationRule != null) {
+                mRuleId = mediationRule.getId();
+            }
             //when not trigged by init, checks cache before aReady reporting
             if (mLoadType != OmManager.LOAD_TYPE.INIT) {
                 int availableCount = InsUtil.instanceCount(mTotalIns, Instance.MEDIATION_STATE.AVAILABLE);
                 if (availableCount > 0) {
                     isAReadyReported.set(true);
-                    LrReportHelper.report(mPlacement.getId(), mLoadType.getValue(), mPlacement.getWfAbt(),
+                    LrReportHelper.report(mReqId, mRuleId, mPlacement.getId(), mLoadType.getValue(), mPlacement.getWfAbt(),
                             CommonConstants.WATERFALL_READY, 0);
                 }
             }
 
             List<Instance> lastAvailableIns = InsUtil.getInsWithStatus(mTotalIns, Instance.MEDIATION_STATE.AVAILABLE);
-            JSONObject clInfo = new JSONObject(response.body().string());
             int code = clInfo.optInt("code");
             if (code != 0) {
                 if (lastAvailableIns == null || lastAvailableIns.isEmpty()) {
@@ -518,7 +531,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
                 return;
             }
             mPlacement.setWfAbt(clInfo.optInt("abt"));
-            List<Instance> tmp = WaterFallHelper.getListInsResult(clInfo, mPlacement);
+            List<Instance> tmp = WaterFallHelper.getListInsResult(mReqId, clInfo, mPlacement);
             internalLoad(lastAvailableIns, clInfo, tmp);
         } catch (Exception e) {
             Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_SERVER_ERROR
@@ -624,6 +637,8 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
     private void delayLoad(final OmManager.LOAD_TYPE type) {
         try {
             AdLog.getSingleton().LogD("Ad load placementId: " + getPlacementId());
+            // reset reqId
+            mReqId = DeviceUtil.createReqId();
             mLoadType = type;
             isAReadyReported.set(false);
             removeBidResponseWhenLoad();
@@ -631,12 +646,11 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
                 internalLoad(null, null, InsUtil.getInstanceList(mPlacement));
                 return;
             }
-
             WorkExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        AdTimingAuctionManager.getInstance().bid(mActivityReference.get(), mPlacement.getId(), mPlacement.getT(),
+                        AdTimingAuctionManager.getInstance().bid(mActivityReference.get(), mPlacement.getId(), mReqId, mPlacement.getT(),
                                 AbstractAdsManager.this);
                     } catch (Exception e) {
                         Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
@@ -679,14 +693,14 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
             return error;
         }
 
-        //network available?
-        if (!NetworkChecker.isAvailable(mActivityReference.get())) {
-            Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_NETWORK_ERROR
-                    , ErrorCode.MSG_LOAD_NETWORK_ERROR, -1);
-            DeveloperLog.LogE("load ad network not available");
-            callbackLoadError(error);
-            return error;
-        }
+//        //network available?
+//        if (!NetworkChecker.isAvailable(mActivityReference.get())) {
+//            Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_NETWORK_ERROR
+//                    , ErrorCode.MSG_LOAD_NETWORK_ERROR, -1);
+//            DeveloperLog.LogE("load ad network not available");
+//            callbackLoadError(error);
+//            return error;
+//        }
 
         if (!Preconditions.checkNotNull(mPlacement)) {
             Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
@@ -738,7 +752,8 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
                     state == Instance.MEDIATION_STATE.LOAD_PENDING) {
                 ++canLoadCount;
             } else if (state == Instance.MEDIATION_STATE.NOT_INITIATED) {
-                //inits first if not
+                instance.setReqId(mReqId);
+                //init first if not
                 CustomAdsAdapter adsAdapter = AdapterUtil.getCustomAdsAdapter(instance.getMediationId());
                 if (adsAdapter == null) {
                     instance.setMediationState(Instance.MEDIATION_STATE.INIT_FAILED);
@@ -750,6 +765,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
             } else if (state == Instance.MEDIATION_STATE.INITIATED
                     || state == Instance.MEDIATION_STATE.NOT_AVAILABLE) {
                 ++canLoadCount;
+                instance.setReqId(mReqId);
                 this.loadInsAndSendEvent(instance);
             }
 

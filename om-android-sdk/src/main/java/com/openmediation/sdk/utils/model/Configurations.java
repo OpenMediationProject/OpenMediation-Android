@@ -10,6 +10,8 @@ import java.util.Map;
 public class Configurations {
     private int d;
     private int coa;
+    // Impression Callback Switch, 0-off, 1-on
+    private int ics;
     private ApiConfigurations api;
     private Events events;
     private SparseArray<Mediation> ms;
@@ -21,6 +23,14 @@ public class Configurations {
 
     public void setD(int d) {
         this.d = d;
+    }
+
+    public void setIcs(int ics) {
+        this.ics = ics;
+    }
+
+    public boolean auctionEnabled() {
+        return ics == 1;
     }
 
     public int getCoa() {

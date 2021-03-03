@@ -26,7 +26,7 @@ public class TikTokBanner extends CustomBannerEvent implements TTAdNative.Native
     private Activity mActivity;
 
     @Override
-    public void loadAd(Activity activity, Map<String, String> config) throws Throwable {
+    public void loadAd(final Activity activity, final Map<String, String> config) throws Throwable {
         super.loadAd(activity, config);
         if (activity == null || activity.isFinishing()) {
             return;
@@ -35,10 +35,14 @@ public class TikTokBanner extends CustomBannerEvent implements TTAdNative.Native
             return;
         }
         this.mActivity = activity;
-        initTTSDKConfig(activity, config);
-        int[] size = getAdSize(activity, config);
-        int width = size[0], height = size[1];
-        loadBannerAd(mInstancesKey, width, height);
+        initTTSDKConfig(activity, config, new TTAdManagerHolder.InitCallback() {
+            @Override
+            public void onSuccess() {
+                int[] size = getAdSize(activity, config);
+                int width = size[0], height = size[1];
+                loadBannerAd(activity, mInstancesKey, width, height);
+            }
+        });
     }
 
     @Override
@@ -54,21 +58,26 @@ public class TikTokBanner extends CustomBannerEvent implements TTAdNative.Native
         }
     }
 
-    private void loadBannerAd(String codeId, int width, int height) {
-        AdSlot adSlot = new AdSlot.Builder()
-                .setCodeId(codeId)
-                .setSupportDeepLink(true)
-                .setAdCount(1)
-                .setExpressViewAcceptedSize(width, height)
-                .build();
-        mTTAdNative.loadBannerExpressAd(adSlot, this);
+    private void loadBannerAd(Activity activity, String codeId, int width, int height) {
+        try {
+            if (mTTAdNative == null) {
+                mTTAdNative = TTAdManagerHolder.get().createAdNative(activity);
+            }
+            AdSlot adSlot = new AdSlot.Builder()
+                    .setCodeId(codeId)
+                    .setSupportDeepLink(true)
+                    .setAdCount(1)
+                    .setExpressViewAcceptedSize(width, height)
+                    .build();
+            mTTAdNative.loadBannerExpressAd(adSlot, this);
+        } catch (Exception e) {
+            onInsError(AdapterErrorBuilder.buildLoadError(
+                    AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, "Unknown Error"));
+        }
     }
 
-    private void initTTSDKConfig(Activity activity, Map<String, String> config) {
-        TTAdManagerHolder.init(activity.getApplication(), config.get("AppKey"));
-        if (mTTAdNative == null) {
-            mTTAdNative = TTAdManagerHolder.get().createAdNative(activity);
-        }
+    private void initTTSDKConfig(Activity activity, Map<String, String> config, TTAdManagerHolder.InitCallback callback) {
+        TTAdManagerHolder.init(activity.getApplication(), config.get("AppKey"), callback);
     }
 
     @Override
@@ -140,6 +149,7 @@ public class TikTokBanner extends CustomBannerEvent implements TTAdNative.Native
             banner.mBannerView = view;
             banner.onInsReady(view);
         }
+
     }
 
     private void bindDislike(Activity activity, TTNativeExpressAd ad) {
@@ -178,7 +188,7 @@ public class TikTokBanner extends CustomBannerEvent implements TTAdNative.Native
             widthDp = 728;
             heightDp = 90;
         }
-        return new int[] {widthDp, heightDp};
+        return new int[]{widthDp, heightDp};
     }
 
 }

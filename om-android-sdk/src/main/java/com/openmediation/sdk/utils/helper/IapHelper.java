@@ -7,6 +7,7 @@ import android.text.TextUtils;
 
 import com.openmediation.sdk.utils.AdtUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
+import com.openmediation.sdk.utils.WorkExecutor;
 import com.openmediation.sdk.utils.cache.DataCache;
 import com.openmediation.sdk.utils.constant.KeyConstants;
 import com.openmediation.sdk.utils.crash.CrashUtil;
@@ -95,50 +96,53 @@ public class IapHelper {
         }
     }
 
-    private static void iapReport(String iapCount, String currency, String iapt, Request.OnRequestCallback callback) {
-        try {
+    private static void iapReport(final String iapCount, final String currency, final String iapt, final Request.OnRequestCallback callback) {
+        WorkExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Configurations config = DataCache.getInstance().getFromMem(KeyConstants.KEY_CONFIGURATION, Configurations.class);
+                    if (config == null || config.getApi() == null || TextUtils.isEmpty(config.getApi().getIap())) {
+                        callback.onRequestFailed("empty Url");
+                        return;
+                    }
 
-            Configurations config = DataCache.getInstance().getFromMem(KeyConstants.KEY_CONFIGURATION, Configurations.class);
-            if (config == null || config.getApi() == null || TextUtils.isEmpty(config.getApi().getIap())) {
-                callback.onRequestFailed("empty Url");
-                return;
-            }
+                    String url = RequestBuilder.buildIapUrl(config.getApi().getIap());
 
-            String url = RequestBuilder.buildIapUrl(config.getApi().getIap());
+                    DeveloperLog.LogD(String.format("iap url : %s", url));
 
-            DeveloperLog.LogD(String.format("iap url : %s", url));
+                    Headers headers = HeaderUtils.getBaseHeaders();
 
-            Headers headers = HeaderUtils.getBaseHeaders();
+                    byte[] bytes = RequestBuilder.buildIapRequestBody(
+                            currency,
+                            iapCount,
+                            iapt);
 
-            byte[] bytes = RequestBuilder.buildIapRequestBody(
-                    currency,
-                    iapCount,
-                    iapt);
+                    if (bytes == null) {
+                        if (callback != null) {
+                            callback.onRequestFailed("Iap param is null");
+                        }
+                        return;
+                    }
 
-            if (bytes == null) {
-                if (callback != null) {
-                    callback.onRequestFailed("Iap param is null");
+                    ByteRequestBody requestBody = new ByteRequestBody(bytes);
+                    AdRequest.post()
+                            .url(url)
+                            .body(requestBody)
+                            .headers(headers)
+                            .connectTimeout(30000)
+                            .readTimeout(60000)
+                            .callback(callback)
+                            .performRequest(AdtUtil.getApplication());
+
+                } catch (Exception e) {
+                    DeveloperLog.LogE("HttpIAP error ", e);
+                    CrashUtil.getSingleton().saveException(e);
+                    if (callback != null) {
+                        callback.onRequestFailed("httpIAP error");
+                    }
                 }
-                return;
             }
-
-            ByteRequestBody requestBody = new ByteRequestBody(bytes);
-            AdRequest.post()
-                    .url(url)
-                    .body(requestBody)
-                    .headers(headers)
-                    .connectTimeout(30000)
-                    .readTimeout(60000)
-                    .callback(callback)
-                    .performRequest(AdtUtil.getApplication());
-
-        } catch (Exception e) {
-            DeveloperLog.LogE("HttpIAP error ", e);
-            CrashUtil.getSingleton().saveException(e);
-
-            if (callback != null) {
-                callback.onRequestFailed("httpIAP error");
-            }
-        }
+        });
     }
 }

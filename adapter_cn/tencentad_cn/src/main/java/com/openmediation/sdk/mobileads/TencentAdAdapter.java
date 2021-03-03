@@ -27,12 +27,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class TencentAdAdapter extends CustomAdsAdapter {
-    private static String TAG = "OM-TencentAd: ";
-    private ConcurrentMap<String, RewardVideoAD> mRvAds;
-    private ConcurrentMap<String, UnifiedInterstitialAD> mIsAds;
+    private static final String TAG = "OM-TencentAd: ";
+    private final ConcurrentMap<String, RewardVideoAD> mRvAds;
+    private final ConcurrentMap<String, UnifiedInterstitialAD> mIsAds;
 
-    private ConcurrentMap<String, RewardedVideoCallback> mRvCallbacks;
-    private ConcurrentMap<String, InterstitialAdCallback> mIsCallbacks;
+    private final ConcurrentMap<String, RewardedVideoCallback> mRvCallbacks;
+    private final ConcurrentMap<String, InterstitialAdCallback> mIsCallbacks;
 
     public TencentAdAdapter() {
         mRvAds = new ConcurrentHashMap<>();
@@ -236,7 +236,7 @@ public class TencentAdAdapter extends CustomAdsAdapter {
 
     private class InnerIsAdListener implements UnifiedInterstitialADListener {
 
-        private String mAdUnitId;
+        private final String mAdUnitId;
         private UnifiedInterstitialAD mAd;
 
         void setAdView(UnifiedInterstitialAD ad) {
@@ -311,7 +311,7 @@ public class TencentAdAdapter extends CustomAdsAdapter {
 
     private class InnerRvAdListener implements RewardVideoADListener {
 
-        private String mAdUnitId;
+        private final String mAdUnitId;
         private RewardVideoAD mRewardVideoAD;
 
         private InnerRvAdListener(String adUnitId) {
@@ -355,7 +355,7 @@ public class TencentAdAdapter extends CustomAdsAdapter {
         }
 
         @Override
-        public void onReward() {
+        public void onReward(Map<String, Object> map) {
             AdLog.getSingleton().LogD(TAG + "RewardVideoAd onReward : " + mAdUnitId);
             RewardedVideoCallback callback = mRvCallbacks.get(mAdUnitId);
             if (callback != null) {

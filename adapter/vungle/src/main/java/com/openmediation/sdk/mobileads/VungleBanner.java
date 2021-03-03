@@ -7,7 +7,6 @@ import android.text.TextUtils;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomBannerEvent;
 import com.openmediation.sdk.mediation.MediationInfo;
-import com.openmediation.sdk.utils.AdLog;
 import com.vungle.warren.AdConfig;
 import com.vungle.warren.Banners;
 import com.vungle.warren.InitCallback;

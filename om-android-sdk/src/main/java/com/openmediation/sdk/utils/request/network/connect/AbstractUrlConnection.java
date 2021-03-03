@@ -3,19 +3,16 @@
 
 package com.openmediation.sdk.utils.request.network.connect;
 
-import com.openmediation.sdk.utils.request.network.Headers;
-import com.openmediation.sdk.utils.request.network.ResponseBody;
-import com.openmediation.sdk.utils.request.network.util.NetworkChecker;
-import com.openmediation.sdk.utils.error.ErrorCode;
+import com.openmediation.sdk.utils.IOUtil;
 import com.openmediation.sdk.utils.crash.CrashUtil;
+import com.openmediation.sdk.utils.request.network.Headers;
 import com.openmediation.sdk.utils.request.network.Request;
 import com.openmediation.sdk.utils.request.network.RequestBody;
 import com.openmediation.sdk.utils.request.network.Response;
+import com.openmediation.sdk.utils.request.network.ResponseBody;
 import com.openmediation.sdk.utils.request.network.StreamBody;
-import com.openmediation.sdk.utils.request.network.exception.ConnectException;
 import com.openmediation.sdk.utils.request.network.exception.ReadException;
 import com.openmediation.sdk.utils.request.network.exception.WriteException;
-import com.openmediation.sdk.utils.IOUtil;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -70,9 +67,9 @@ public abstract class AbstractUrlConnection {
      * @throws Exception the exception
      */
     public Response intercept(Request request) throws Exception {
-        if (!NetworkChecker.isAvailable(request.getContext())) {
-            throw new ConnectException(ErrorCode.ERROR_NETWORK_NOT_AVAILABLE);
-        }
+//        if (!NetworkChecker.isAvailable(request.getContext())) {
+//            throw new ConnectException(ErrorCode.ERROR_NETWORK_NOT_AVAILABLE);
+//        }
 
         Request.Method method = request.getRequestMethod();
         if (isAllowBody(method)) {

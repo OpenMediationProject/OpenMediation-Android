@@ -12,18 +12,22 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
+
 import com.google.android.gms.ads.AdError;
-import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.InterstitialAd;
+import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.OnUserEarnedRewardListener;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.initialization.InitializationStatus;
 import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
+import com.google.android.gms.ads.rewarded.RewardItem;
 import com.google.android.gms.ads.rewarded.RewardedAd;
-import com.google.android.gms.ads.rewarded.RewardedAdCallback;
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
@@ -32,25 +36,21 @@ import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.openmediation.sdk.utils.AdLog;
 
-import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class AdMobAdapter extends CustomAdsAdapter {
 
-    private ConcurrentMap<String, RewardedAd> mRewardedAds;
-    private ConcurrentMap<String, InterstitialAd> mInterstitialAds;
-    private ConcurrentHashMap<String, Boolean> mAdUnitReadyStatus;
-    private ConcurrentMap<String, RewardedVideoCallback> mRvInitCallbacks;
-    private ConcurrentMap<String, InterstitialAdCallback> mIsInitCallbacks;
+    private final ConcurrentMap<String, RewardedAd> mRewardedAds;
+    private final ConcurrentMap<String, InterstitialAd> mInterstitialAds;
+    private final ConcurrentMap<String, RewardedVideoCallback> mRvInitCallbacks;
+    private final ConcurrentMap<String, InterstitialAdCallback> mIsInitCallbacks;
     private volatile InitState mInitState = InitState.NOT_INIT;
-    private WeakReference<Activity> mRefAct;
 
     public AdMobAdapter() {
         mRewardedAds = new ConcurrentHashMap<>();
         mInterstitialAds = new ConcurrentHashMap<>();
-        mAdUnitReadyStatus = new ConcurrentHashMap<>();
         mRvInitCallbacks = new ConcurrentHashMap<>();
         mIsInitCallbacks = new ConcurrentHashMap<>();
     }
@@ -212,13 +212,11 @@ public class AdMobAdapter extends CustomAdsAdapter {
                         }
                         return;
                     }
-                    RewardedAd rewardedAd = getRewardedAd(activity, adUnitId);
-                    if (!rewardedAd.isLoaded()) {
-                        rewardedAd.loadAd(createAdRequest(), createRvLoadListener(adUnitId, callback));
-                    } else {
-                        mAdUnitReadyStatus.put(adUnitId, true);
+                    if (isRewardedVideoAvailable(adUnitId)) {
                         callback.onRewardedVideoLoadSuccess();
+                        return;
                     }
+                    RewardedAd.load(activity.getApplicationContext(), adUnitId, createAdRequest(), createRvLoadListener(adUnitId, callback));
                 } catch (Exception e) {
                     if (callback != null) {
                         callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
@@ -236,25 +234,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
             @Override
             public void run() {
                 try {
-                    String error = check(activity, adUnitId);
-                    if (!TextUtils.isEmpty(error)) {
-                        if (callback != null) {
-                            callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
-                        }
-                        return;
-                    }
-                    RewardedAd rewardedAd = mRewardedAds.get(adUnitId);
-                    if (rewardedAd != null && rewardedAd.isLoaded()) {
-                        mAdUnitReadyStatus.remove(adUnitId);
-                        mRefAct = new WeakReference<>(activity);
-                        rewardedAd.show(mRefAct.get(), createRvCallback(adUnitId, callback));
-                    } else {
-                        if (callback != null) {
-                            callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Not Ready"));
-                        }
-                    }
+                    showAdMobVideo(activity, adUnitId, callback);
                 } catch (Exception e) {
                     if (callback != null) {
                         callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
@@ -265,62 +245,79 @@ public class AdMobAdapter extends CustomAdsAdapter {
         });
     }
 
+    private void showAdMobVideo(Activity activity, String adUnitId, final RewardedVideoCallback callback) {
+        String error = check(activity, adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
+            }
+            return;
+        }
+        if (!isRewardedVideoAvailable(adUnitId)) {
+            if (callback != null) {
+                callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Ad Not Ready"));
+            }
+            return;
+        }
+        RewardedAd rewardedAd = mRewardedAds.get(adUnitId);
+        if (rewardedAd == null) {
+            if (callback != null) {
+                callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Ad Not Ready"));
+            }
+            return;
+        }
+        rewardedAd.setFullScreenContentCallback(createRvCallback(callback));
+        rewardedAd.show(activity, new OnUserEarnedRewardListener() {
+            @Override
+            public void onUserEarnedReward(@NonNull RewardItem rewardItem) {
+                AdLog.getSingleton().LogE("AdMobAdapter", "----onUserEarnedReward");
+                if (callback != null) {
+                    callback.onRewardedVideoAdRewarded();
+                }
+            }
+        });
+        mRewardedAds.remove(adUnitId);
+    }
+
     @Override
     public boolean isRewardedVideoAvailable(String adUnitId) {
         if (TextUtils.isEmpty(adUnitId)) {
             return false;
         }
-        return mAdUnitReadyStatus.containsKey(adUnitId);
-    }
-
-    /**
-     * Creates a new one everytime for it can't be re-used.
-     */
-    private RewardedAd getRewardedAd(Activity activity, String adUnitId) {
-        mRefAct = new WeakReference<>(activity);
-        RewardedAd rewardedAd = new RewardedAd(mRefAct.get(), adUnitId);
-        mRewardedAds.put(adUnitId, rewardedAd);
-        return rewardedAd;
+        return mRewardedAds.containsKey(adUnitId);
     }
 
     private RewardedAdLoadCallback createRvLoadListener(final String adUnitId, final RewardedVideoCallback callback) {
         return new RewardedAdLoadCallback() {
-            @Override
-            public void onRewardedAdLoaded() {
-                super.onRewardedAdLoaded();
-                mAdUnitReadyStatus.put(adUnitId, true);
+            public void onAdLoaded(@NonNull RewardedAd ad) {
+                super.onAdLoaded(ad);
+                mRewardedAds.put(adUnitId, ad);
                 if (callback != null) {
                     callback.onRewardedVideoLoadSuccess();
                 }
             }
 
-            @Override
-            public void onRewardedAdFailedToLoad(LoadAdError loadAdError) {
-                super.onRewardedAdFailedToLoad(loadAdError);
+            public void onAdFailedToLoad(@NonNull LoadAdError error) {
+                super.onAdFailedToLoad(error);
                 mRewardedAds.remove(adUnitId);
-                mRefAct.clear();
                 if (callback != null) {
                     callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
-                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, loadAdError.getCode(), loadAdError.getMessage()));
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error.getCode(), error.getMessage()));
                 }
             }
         };
     }
 
-    private RewardedAdCallback createRvCallback(final String adUnitId, final RewardedVideoCallback callback) {
-        return new RewardedAdCallback() {
-            @Override
-            public void onRewardedAdOpened() {
-                super.onRewardedAdOpened();
-                if (callback != null) {
-                    callback.onRewardedVideoAdShowSuccess();
-                    callback.onRewardedVideoAdStarted();
-                }
-            }
+    private FullScreenContentCallback createRvCallback(final RewardedVideoCallback callback) {
+        return new FullScreenContentCallback() {
 
             @Override
-            public void onRewardedAdFailedToShow(AdError adError) {
-                super.onRewardedAdFailedToShow(adError);
+            public void onAdFailedToShowFullScreenContent(AdError adError) {
+                super.onAdFailedToShowFullScreenContent(adError);
+                AdLog.getSingleton().LogE("AdMobAdapter", "----RewardedAd onAdFailedToShowFullScreenContent");
                 if (callback != null) {
                     callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
                             AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, adError.getCode(), adError.getMessage()));
@@ -328,24 +325,25 @@ public class AdMobAdapter extends CustomAdsAdapter {
             }
 
             @Override
-            public void onUserEarnedReward(com.google.android.gms.ads.rewarded.RewardItem rewardItem) {
+            public void onAdShowedFullScreenContent() {
+                super.onAdShowedFullScreenContent();
+                AdLog.getSingleton().LogE("AdMobAdapter", "----RewardedAd onAdShowedFullScreenContent");
                 if (callback != null) {
-                    callback.onRewardedVideoAdRewarded();
+                    callback.onRewardedVideoAdShowSuccess();
+                    callback.onRewardedVideoAdStarted();
                 }
             }
 
             @Override
-            public void onRewardedAdClosed() {
-                super.onRewardedAdClosed();
-                mRewardedAds.remove(adUnitId);
-                mRefAct.clear();
+            public void onAdDismissedFullScreenContent() {
+                super.onAdDismissedFullScreenContent();
+                AdLog.getSingleton().LogE("AdMobAdapter", "----RewardedAd onAdDismissedFullScreenContent");
                 if (callback != null) {
                     callback.onRewardedVideoAdEnded();
                     callback.onRewardedVideoAdClosed();
                 }
             }
         };
-
     }
 
     /*********************************Interstitial***********************************/
@@ -409,16 +407,13 @@ public class AdMobAdapter extends CustomAdsAdapter {
                         }
                         return;
                     }
-                    InterstitialAd interstitialAd = getInterstitialAd(activity, adUnitId);
-                    if (interstitialAd.isLoaded()) {
-                        mAdUnitReadyStatus.put(adUnitId, true);
+                    if (isInterstitialAdAvailable(adUnitId)) {
                         if (callback != null) {
                             callback.onInterstitialAdLoadSuccess();
                         }
-                    } else {
-                        interstitialAd.setAdListener(createInterstitialListener(adUnitId, callback));
-                        interstitialAd.loadAd(createAdRequest());
+                        return;
                     }
+                    InterstitialAd.load(activity.getApplicationContext(), adUnitId, createAdRequest(), createInterstitialListener(adUnitId, callback));
                 } catch (Exception e) {
                     if (callback != null) {
                         callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
@@ -436,31 +431,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
             @Override
             public void run() {
                 try {
-                    String error = check(activity, adUnitId);
-                    if (!TextUtils.isEmpty(error)) {
-                        if (callback != null) {
-                            callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
-                        }
-                        return;
-                    }
-                    if (!isInterstitialAdAvailable(adUnitId)) {
-                        if (callback != null) {
-                            callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "ad not ready"));
-                        }
-                        return;
-                    }
-                    mAdUnitReadyStatus.remove(adUnitId);
-                    InterstitialAd ad = mInterstitialAds.get(adUnitId);
-                    if (ad != null) {
-                        ad.show();
-                    } else {
-                        if (callback != null) {
-                            callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "ad not ready"));
-                        }
-                    }
+                    showAdMobInterstitial(activity, adUnitId, callback);
                 } catch (Exception e) {
                     if (callback != null) {
                         callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
@@ -471,71 +442,95 @@ public class AdMobAdapter extends CustomAdsAdapter {
         });
     }
 
+    private void showAdMobInterstitial(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+        String error = check(activity, adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
+            }
+            return;
+        }
+        if (!isInterstitialAdAvailable(adUnitId)) {
+            if (callback != null) {
+                callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Ad Not Ready"));
+            }
+            return;
+        }
+        InterstitialAd ad = mInterstitialAds.get(adUnitId);
+        if (ad != null) {
+            ad.setFullScreenContentCallback(createIsCallback(callback));
+            ad.show(activity);
+        }
+        mInterstitialAds.remove(adUnitId);
+    }
+
     @Override
     public boolean isInterstitialAdAvailable(String adUnitId) {
         if (TextUtils.isEmpty(adUnitId)) {
             return false;
         }
-        return mAdUnitReadyStatus.containsKey(adUnitId);
+        return mInterstitialAds.containsKey(adUnitId);
     }
 
-    private InterstitialAd getInterstitialAd(Activity activity, String adUnitId) {
-        mRefAct = new WeakReference<>(activity);
-        InterstitialAd interstitialAd = new InterstitialAd(mRefAct.get());
-        interstitialAd.setAdUnitId(adUnitId);
-        mInterstitialAds.put(adUnitId, interstitialAd);
-        return interstitialAd;
-    }
-
-    private AdListener createInterstitialListener(final String adUnitId, final InterstitialAdCallback callback) {
-        return new AdListener() {
+    private InterstitialAdLoadCallback createInterstitialListener(final String adUnitId, final InterstitialAdCallback callback) {
+        return new InterstitialAdLoadCallback() {
             @Override
-            public void onAdLoaded() {
-                super.onAdLoaded();
-                mAdUnitReadyStatus.put(adUnitId, true);
+            public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
+                super.onAdLoaded(interstitialAd);
+                mInterstitialAds.put(adUnitId, interstitialAd);
                 if (callback != null) {
                     callback.onInterstitialAdLoadSuccess();
                 }
             }
 
             @Override
-            public void onAdFailedToLoad(LoadAdError loadAdError) {
+            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                 super.onAdFailedToLoad(loadAdError);
                 mInterstitialAds.remove(adUnitId);
-                mRefAct.clear();
                 if (callback != null) {
                     callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
                             AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, loadAdError.getCode(), loadAdError.getMessage()));
                 }
             }
+        };
+    }
+
+    private FullScreenContentCallback createIsCallback(final InterstitialAdCallback callback) {
+        return new FullScreenContentCallback() {
 
             @Override
-            public void onAdLeftApplication() {
-                super.onAdLeftApplication();
+            public void onAdFailedToShowFullScreenContent(AdError adError) {
+                super.onAdFailedToShowFullScreenContent(adError);
+                AdLog.getSingleton().LogE("AdMobAdapter", "----InterstitialAd onAdFailedToShowFullScreenContent");
                 if (callback != null) {
-                    callback.onInterstitialAdClick();
+                    callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, adError.getCode(), adError.getMessage()));
                 }
             }
 
             @Override
-            public void onAdOpened() {
-                super.onAdOpened();
+            public void onAdShowedFullScreenContent() {
+                super.onAdShowedFullScreenContent();
+                AdLog.getSingleton().LogE("AdMobAdapter", "----InterstitialAd onAdShowedFullScreenContent");
                 if (callback != null) {
                     callback.onInterstitialAdShowSuccess();
                 }
             }
 
             @Override
-            public void onAdClosed() {
-                super.onAdClosed();
-                mInterstitialAds.remove(adUnitId);
-                mRefAct.clear();
+            public void onAdDismissedFullScreenContent() {
+                super.onAdDismissedFullScreenContent();
+                AdLog.getSingleton().LogE("AdMobAdapter", "----InterstitialAd onAdDismissedFullScreenContent");
                 if (callback != null) {
                     callback.onInterstitialAdClosed();
                 }
             }
         };
+
     }
+
 
     private enum InitState {
         /**

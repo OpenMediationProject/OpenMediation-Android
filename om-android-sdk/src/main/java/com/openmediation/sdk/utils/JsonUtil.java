@@ -60,7 +60,7 @@ public class JsonUtil {
                 } else if (isArray(value)) {
                     object.put(key, convertArray(value));
                 } else {
-                    put(object, key, value.toString());
+                    object.put(key, value);
                 }
             }
             return object;

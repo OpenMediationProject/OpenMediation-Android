@@ -23,9 +23,7 @@ import com.openmediation.sdk.utils.InsUtil;
 import com.openmediation.sdk.utils.PlacementUtils;
 import com.openmediation.sdk.utils.Preconditions;
 import com.openmediation.sdk.utils.WorkExecutor;
-import com.openmediation.sdk.utils.cache.DataCache;
 import com.openmediation.sdk.utils.constant.CommonConstants;
-import com.openmediation.sdk.utils.constant.KeyConstants;
 import com.openmediation.sdk.utils.crash.CrashUtil;
 import com.openmediation.sdk.utils.device.DeviceUtil;
 import com.openmediation.sdk.utils.error.Error;
@@ -34,11 +32,11 @@ import com.openmediation.sdk.utils.error.ErrorCode;
 import com.openmediation.sdk.utils.helper.LrReportHelper;
 import com.openmediation.sdk.utils.helper.WaterFallHelper;
 import com.openmediation.sdk.utils.model.BaseInstance;
+import com.openmediation.sdk.utils.model.MediationRule;
 import com.openmediation.sdk.utils.model.Placement;
 import com.openmediation.sdk.utils.model.PlacementInfo;
 import com.openmediation.sdk.utils.request.network.Request;
 import com.openmediation.sdk.utils.request.network.Response;
-import com.openmediation.sdk.utils.request.network.util.NetworkChecker;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -58,6 +56,14 @@ import javax.net.ssl.HttpsURLConnection;
 public abstract class AbstractAd extends Callback implements Request.OnRequestCallback,
         InitCallback, AuctionCallback {
 
+    /**
+     * AuctionId
+     */
+    protected String mReqId;
+    /**
+     * RuleId
+     */
+    protected int mRuleId = -1;
     /**
      * The M placement.
      */
@@ -235,7 +241,7 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
     public void onBidComplete(List<AdTimingBidResponse> c2sResponses, List<AdTimingBidResponse> s2sResponses) {
         try {
             WaterFallHelper.wfRequest(getPlacementInfo(), mLoadType, c2sResponses, s2sResponses,
-                    InsUtil.getInstanceLoadStatuses(mLastInstances), this);
+                    InsUtil.getInstanceLoadStatuses(mLastInstances), mReqId, this);
             if (mBidResponses == null) {
                 mBidResponses = new HashMap<>();
             }
@@ -268,7 +274,11 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
 
             mPlacement.setWfAbt(clInfo.optInt("abt"));
             clearLoadFailedInstances();
-            BaseInstance[] tmp = WaterFallHelper.getArrayInstances(clInfo, mPlacement, mBs);
+            MediationRule mediationRule = WaterFallHelper.getMediationRule(clInfo);
+            if (mediationRule != null) {
+                mRuleId = mediationRule.getId();
+            }
+            BaseInstance[] tmp = WaterFallHelper.getArrayInstances(mReqId, mediationRule, clInfo, mPlacement, mBs);
             if (tmp == null || tmp.length == 0) {
                 DeveloperLog.LogD("Ad", "request cl success, but ins[] is empty" + mPlacement);
                 callbackAdErrorOnUiThread(ErrorCode.ERROR_NO_FILL);
@@ -430,10 +440,10 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
             return;
         }
         if (isManualTriggered) {
-            LrReportHelper.report(mPlacementId, OmManager.LOAD_TYPE.MANUAL.getValue(), mPlacement.getWfAbt(),
+            LrReportHelper.report(mReqId, mRuleId, mPlacementId, OmManager.LOAD_TYPE.MANUAL.getValue(), mPlacement.getWfAbt(),
                     CommonConstants.WATERFALL_READY, 0);
         } else {
-            LrReportHelper.report(mPlacementId, OmManager.LOAD_TYPE.INTERVAL.getValue(), mPlacement.getWfAbt(),
+            LrReportHelper.report(mReqId, mRuleId, mPlacementId, OmManager.LOAD_TYPE.INTERVAL.getValue(), mPlacement.getWfAbt(),
                     CommonConstants.WATERFALL_READY, 0);
         }
     }
@@ -441,17 +451,17 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
     /**
      * Instance-level load reporting
      *
-     * @param instances the instances
+     * @param instance the instance
      */
-    protected void iLoadReport(BaseInstance instances) {
+    protected void iLoadReport(BaseInstance instance) {
         if (isDestroyed) {
             return;
         }
         if (isManualTriggered) {
-            LrReportHelper.report(instances, OmManager.LOAD_TYPE.MANUAL.getValue(), mPlacement.getWfAbt(),
+            LrReportHelper.report(instance, OmManager.LOAD_TYPE.MANUAL.getValue(), mPlacement.getWfAbt(),
                     CommonConstants.INSTANCE_LOAD, 0);
         } else {
-            LrReportHelper.report(instances, OmManager.LOAD_TYPE.INTERVAL.getValue(), mPlacement.getWfAbt(),
+            LrReportHelper.report(instance, OmManager.LOAD_TYPE.INTERVAL.getValue(), mPlacement.getWfAbt(),
                     CommonConstants.INSTANCE_LOAD, 0);
         }
     }
@@ -459,41 +469,50 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
     /**
      * Instance-level ready reporting
      *
-     * @param instances the instances
+     * @param instance the instance
      */
-    void iReadyReport(BaseInstance instances) {
-        if (isDestroyed || instances.getHb() == 1) {
+    void iReadyReport(BaseInstance instance) {
+        if (isDestroyed || instance.getHb() == 1) {
             return;
         }
         if (isManualTriggered) {
-            LrReportHelper.report(instances, OmManager.LOAD_TYPE.MANUAL.getValue(), mPlacement.getWfAbt(),
+            LrReportHelper.report(instance, OmManager.LOAD_TYPE.MANUAL.getValue(), mPlacement.getWfAbt(),
                     CommonConstants.INSTANCE_READY, 0);
         } else {
-            LrReportHelper.report(instances, OmManager.LOAD_TYPE.INTERVAL.getValue(), mPlacement.getWfAbt(),
+            LrReportHelper.report(instance, OmManager.LOAD_TYPE.INTERVAL.getValue(), mPlacement.getWfAbt(),
                     CommonConstants.INSTANCE_READY, 0);
         }
     }
 
     /**
+     * Instance-level show success
+     *
+     * @param instance the instance
+     */
+    protected void onInsShowSuccess(BaseInstance instance) {
+        instance.onInsShowSuccess(null);
+    }
+
+    /**
      * Instance-level impression reporting
      *
-     * @param instances the instances
+     * @param instance the instance
      */
-    protected void insImpReport(BaseInstance instances) {
+    protected void insImpReport(BaseInstance instance) {
         try {
             if (isDestroyed) {
                 return;
             }
-            instances.onInsShow(null);
+            instance.onInsShow(null);
             int bid = 0;
-            if (instances.getHb() == 1) {
+            if (instance.getHb() == 1) {
                 bid = 1;
             }
             if (isManualTriggered) {
-                LrReportHelper.report(instances, OmManager.LOAD_TYPE.MANUAL.getValue(), mPlacement.getWfAbt(),
+                LrReportHelper.report(instance, OmManager.LOAD_TYPE.MANUAL.getValue(), mPlacement.getWfAbt(),
                         CommonConstants.INSTANCE_IMPR, bid);
             } else {
-                LrReportHelper.report(instances, OmManager.LOAD_TYPE.INTERVAL.getValue(), mPlacement.getWfAbt(),
+                LrReportHelper.report(instance, OmManager.LOAD_TYPE.INTERVAL.getValue(), mPlacement.getWfAbt(),
                         CommonConstants.INSTANCE_IMPR, bid);
             }
         } catch (Exception e) {
@@ -504,22 +523,22 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
     /**
      * Instance-level click reporting
      *
-     * @param instances the instances
+     * @param instance the instance
      */
-    void insClickReport(BaseInstance instances) {
+    void insClickReport(BaseInstance instance) {
         if (isDestroyed) {
             return;
         }
-        instances.onInsClick(null);
+        instance.onInsClick(null);
         int bid = 0;
-        if (instances.getHb() == 1) {
+        if (instance.getHb() == 1) {
             bid = 1;
         }
         if (isManualTriggered) {
-            LrReportHelper.report(instances, OmManager.LOAD_TYPE.MANUAL.getValue(), mPlacement.getWfAbt(),
+            LrReportHelper.report(instance, OmManager.LOAD_TYPE.MANUAL.getValue(), mPlacement.getWfAbt(),
                     CommonConstants.INSTANCE_CLICK, bid);
         } else {
-            LrReportHelper.report(instances, OmManager.LOAD_TYPE.INTERVAL.getValue(), mPlacement.getWfAbt(),
+            LrReportHelper.report(instance, OmManager.LOAD_TYPE.INTERVAL.getValue(), mPlacement.getWfAbt(),
                     CommonConstants.INSTANCE_CLICK, bid);
         }
     }
@@ -574,6 +593,8 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
                 return;
             }
             AdLog.getSingleton().LogD("Ad load placementId: " + mPlacementId);
+            // reset reqId
+            mReqId = DeviceUtil.createReqId();
             //load start timestamp
             mLoadTs = System.currentTimeMillis();
             mLoadType = type;
@@ -590,7 +611,7 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
                 @Override
                 public void run() {
                     try {
-                        AdTimingAuctionManager.getInstance().bid(mActRef.get(), mPlacement.getId(), mPlacement.getT(),
+                        AdTimingAuctionManager.getInstance().bid(mActRef.get(), mPlacement.getId(), mReqId, mPlacement.getT(),
                                 mAdSize, AbstractAd.this);
                     } catch (Exception e) {
                         DeveloperLog.LogD("load ad error", e);
@@ -621,12 +642,12 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
                     , ErrorCode.MSG_LOAD_INVALID_REQUEST, ErrorCode.CODE_INTERNAL_REQUEST_ACTIVITY);
         }
 
-        //network available?
-        if (!NetworkChecker.isAvailable(mActRef.get())) {
-            callbackAdErrorOnUiThread(ErrorCode.ERROR_NETWORK_NOT_AVAILABLE);
-            return ErrorBuilder.build(ErrorCode.CODE_LOAD_NETWORK_ERROR
-                    , ErrorCode.MSG_LOAD_INVALID_REQUEST, ErrorCode.CODE_INTERNAL_UNKNOWN_OTHER);
-        }
+//        //network available?
+//        if (!NetworkChecker.isAvailable(mActRef.get())) {
+//            callbackAdErrorOnUiThread(ErrorCode.ERROR_NETWORK_NOT_AVAILABLE);
+//            return ErrorBuilder.build(ErrorCode.CODE_LOAD_NETWORK_ERROR
+//                    , ErrorCode.MSG_LOAD_INVALID_REQUEST, ErrorCode.CODE_INTERNAL_UNKNOWN_OTHER);
+//        }
 
         if (isDestroyed) {
             callbackAdErrorOnUiThread(ErrorCode.ERROR_LOAD_AD_BUT_DESTROYED);

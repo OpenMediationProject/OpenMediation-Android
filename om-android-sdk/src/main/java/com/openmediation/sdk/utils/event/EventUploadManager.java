@@ -148,7 +148,7 @@ public class EventUploadManager implements Request.OnRequestCallback {
         if (mEventDataBase != null) {
             mEventDataBase.addEvent(event);
         }
-        if (mEvents.size() >= mMaxReportEventsCount.get() && NetworkChecker.isAvailable(AdtUtil.getApplication())) {
+        if (mEvents.size() >= mMaxReportEventsCount.get()/* && NetworkChecker.isAvailable(AdtUtil.getApplication())*/) {
             DeveloperLog.LogD("update events by reached max events count");
             uploadEvents();
         }
@@ -179,12 +179,17 @@ public class EventUploadManager implements Request.OnRequestCallback {
     }
 
     private void uploadEventDelay() {
-        if (mDelayEvents != null && !mDelayEvents.isEmpty()) {
-            for (Event event : mDelayEvents) {
-                uploadEvent(event);
+        EventExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                if (mDelayEvents != null && !mDelayEvents.isEmpty()) {
+                    for (Event event : mDelayEvents) {
+                        uploadEvent(event);
+                    }
+                    mDelayEvents.clear();
+                }
             }
-            mDelayEvents.clear();
-        }
+        });
     }
 
     private Event buildEvent(int eventId, JSONObject object) {
@@ -260,7 +265,7 @@ public class EventUploadManager implements Request.OnRequestCallback {
     @Override
     public void onRequestSuccess(Response response) {
         isReporting.set(false);
-        if (mEvents.size() >= mMaxReportEventsCount.get() && NetworkChecker.isAvailable(AdtUtil.getApplication())) {
+        if (mEvents.size() >= mMaxReportEventsCount.get() /*&& NetworkChecker.isAvailable(AdtUtil.getApplication())*/) {
             DeveloperLog.LogD("update events after upload success");
             uploadEvents();
         }

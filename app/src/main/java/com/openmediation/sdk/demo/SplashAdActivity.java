@@ -8,7 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.ViewGroup;
 
-import com.openmediation.sdk.demo.R;
+import com.openmediation.sdk.demo.utils.NewApiUtils;
 import com.openmediation.sdk.splash.SplashAd;
 import com.openmediation.sdk.splash.SplashAdListener;
 
@@ -21,56 +21,56 @@ public class SplashAdActivity extends Activity implements SplashAdListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ad_splash);
         mSplashContainer = findViewById(R.id.splash_container);
-        SplashAd.setSplashAdListener(this);
+        SplashAd.setSplashAdListener(NewApiUtils.P_SPLASH, this);
         mSplashContainer.post(() -> {
             int width = mSplashContainer.getWidth();
             int height = mSplashContainer.getHeight();
-            SplashAd.setSize(width, height);
-            SplashAd.setLoadTimeout(3000);
-            SplashAd.loadAd();
+            SplashAd.setSize(NewApiUtils.P_SPLASH, width, height);
+            SplashAd.setLoadTimeout(NewApiUtils.P_SPLASH, 3000);
+            SplashAd.loadAd(NewApiUtils.P_SPLASH);
         });
     }
 
     @Override
-    public void onSplashAdLoad() {
+    public void onSplashAdLoad(String placementId) {
         Log.e("SplashAdActivity", "----------- onSplashAdLoad ----------");
-        SplashAd.showAd(SplashAdActivity.this, mSplashContainer);
+        SplashAd.showAd(SplashAdActivity.this, NewApiUtils.P_SPLASH, mSplashContainer);
     }
 
     @Override
-    public void onSplashAdFailed(String error) {
+    public void onSplashAdFailed(String placementId, String error) {
         Log.e("SplashAdActivity", "----------- onSplashAdFailed ----------" + error);
     }
 
     @Override
-    public void onSplashAdClicked() {
+    public void onSplashAdClicked(String placementId) {
         Log.e("SplashAdActivity", "----------- onSplashAdClicked ----------");
     }
 
     @Override
-    public void onSplashAdShowed() {
+    public void onSplashAdShowed(String placementId) {
         Log.e("SplashAdActivity", "----------- onSplashAdShowed ----------");
     }
 
     @Override
-    public void onSplashAdShowFailed(String error) {
+    public void onSplashAdShowFailed(String placementId, String error) {
         Log.e("SplashAdActivity", "----------- onSplashAdShowFailed ----------" + error);
     }
 
     @Override
-    public void onSplashAdTick(long millisUntilFinished) {
+    public void onSplashAdTick(String placementId, long millisUntilFinished) {
         Log.e("SplashAdActivity", "----------- onSplashAdTick ----------" + millisUntilFinished);
     }
 
     @Override
-    public void onSplashAdDismissed() {
+    public void onSplashAdDismissed(String placementId) {
         Log.e("SplashAdActivity", "----------- onSplashAdDismissed ----------");
         finish();
     }
 
     @Override
     protected void onDestroy() {
-        SplashAd.setSplashAdListener(null);
+        SplashAd.setSplashAdListener(NewApiUtils.P_SPLASH, null);
         super.onDestroy();
     }
 }

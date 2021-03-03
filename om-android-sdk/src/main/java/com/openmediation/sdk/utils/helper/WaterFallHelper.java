@@ -13,14 +13,17 @@ import com.openmediation.sdk.utils.AdtUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.JsonUtil;
 import com.openmediation.sdk.utils.PlacementUtils;
-import com.openmediation.sdk.utils.model.Instance;
+import com.openmediation.sdk.utils.WorkExecutor;
 import com.openmediation.sdk.utils.cache.DataCache;
 import com.openmediation.sdk.utils.constant.KeyConstants;
+import com.openmediation.sdk.utils.crash.CrashUtil;
 import com.openmediation.sdk.utils.event.EventId;
 import com.openmediation.sdk.utils.event.EventUploadManager;
 import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.Configurations;
+import com.openmediation.sdk.utils.model.Instance;
 import com.openmediation.sdk.utils.model.InstanceLoadStatus;
+import com.openmediation.sdk.utils.model.MediationRule;
 import com.openmediation.sdk.utils.model.Placement;
 import com.openmediation.sdk.utils.model.PlacementInfo;
 import com.openmediation.sdk.utils.request.HeaderUtils;
@@ -69,33 +72,57 @@ public class WaterFallHelper {
         return testInstanceMap;
     }
 
-    public static void wfRequest(PlacementInfo info, OmManager.LOAD_TYPE type,
-                                 List<AdTimingBidResponse> c2sResult,
-                                 List<AdTimingBidResponse> s2sResult,
-                                 List<InstanceLoadStatus> statusList,
-                                 Request.OnRequestCallback callback) throws Exception {
-        Configurations config = DataCache.getInstance().getFromMem(KeyConstants.KEY_CONFIGURATION, Configurations.class);
-        if (config == null || config.getApi() == null || TextUtils.isEmpty(config.getApi().getWf())) {
-            callback.onRequestFailed("empty Url");
-            return;
-        }
-        String url = RequestBuilder.buildWfUrl(config.getApi().getWf());
 
-        byte[] bytes = RequestBuilder.buildWfRequestBody(info, c2sResult, s2sResult, statusList,
-                IapHelper.getIap(),
-                String.valueOf(PlacementUtils.getPlacementImprCount(info.getId())),
-                String.valueOf(type.getValue())
-        );
+    /**
+     * Wf request.
+     *
+     * @param type      the type
+     * @param s2sResult the response list
+     * @param callback  the callback
+     * @param reqId     the reqId
+     * @throws Exception the exception
+     */
+    public static void wfRequest(final PlacementInfo info, final OmManager.LOAD_TYPE type,
+                                 final List<AdTimingBidResponse> c2sResult,
+                                 final List<AdTimingBidResponse> s2sResult,
+                                 final List<InstanceLoadStatus> statusList,
+                                 final String reqId,
+                                 final Request.OnRequestCallback callback) throws Exception {
 
-        if (bytes == null) {
-            callback.onRequestFailed("build request data error");
-            return;
-        }
-        AdsUtil.realLoadReport(info.getId());
-        ByteRequestBody requestBody = new ByteRequestBody(bytes);
-        Headers headers = HeaderUtils.getBaseHeaders();
-        AdRequest.post().url(url).body(requestBody).headers(headers).connectTimeout(30000).readTimeout(60000)
-                .callback(callback).performRequest(AdtUtil.getApplication());
+        WorkExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Configurations config = DataCache.getInstance().getFromMem(KeyConstants.KEY_CONFIGURATION, Configurations.class);
+                    if (config == null || config.getApi() == null || TextUtils.isEmpty(config.getApi().getWf())) {
+                        callback.onRequestFailed("empty Url");
+                        return;
+                    }
+                    String url = RequestBuilder.buildWfUrl(config.getApi().getWf());
+
+                    byte[] bytes = RequestBuilder.buildWfRequestBody(info, c2sResult, s2sResult, statusList,
+                            reqId,
+                            IapHelper.getIap(),
+                            String.valueOf(PlacementUtils.getPlacementImprCount(info.getId())),
+                            String.valueOf(type.getValue())
+                    );
+
+                    if (bytes == null) {
+                        callback.onRequestFailed("build request data error");
+                        return;
+                    }
+                    AdsUtil.realLoadReport(info.getId());
+                    ByteRequestBody requestBody = new ByteRequestBody(bytes);
+                    Headers headers = HeaderUtils.getBaseHeaders();
+                    AdRequest.post().url(url).body(requestBody).headers(headers).connectTimeout(30000).readTimeout(60000)
+                            .callback(callback).performRequest(AdtUtil.getApplication());
+                } catch (Exception e) {
+                    DeveloperLog.LogE("WaterFall Error: " + e.getMessage());
+                    CrashUtil.getSingleton().saveException(e);
+                    callback.onRequestFailed("Load failed: unknown exception occurred");
+                }
+            }
+        });
     }
 
     public static Map<Integer, AdTimingBidResponse> getS2sBidResponse(JSONObject clInfo) {
@@ -149,7 +176,7 @@ public class WaterFallHelper {
      * @param placement the placement
      * @return the list ins result
      */
-    public static List<Instance> getListInsResult(JSONObject clInfo, Placement placement) {
+    public static List<Instance> getListInsResult(String reqId, JSONObject clInfo, Placement placement) {
 
         Instance[] test = (Instance[]) getTestInstanceMap().get(placement.getId());
         //for testing
@@ -168,18 +195,15 @@ public class WaterFallHelper {
             return Collections.emptyList();
         }
 
+        MediationRule mediationRule = getMediationRule(clInfo);
         int abt = clInfo.optInt("abt");
         List<Instance> instancesList = new ArrayList<>();
         for (int i = 0; i < insArray.length(); i++) {
-            Instance ins = (Instance) insMap.get(insArray.optInt(i));
-            if (ins != null) {
-                ins.setWfAbt(abt);
-                ins.setIndex(i);
-                instancesList.add(ins);
-            } else {
-                JSONObject jsonObject = PlacementUtils.placementEventParams(placement.getId());
-                JsonUtil.put(jsonObject, "iid", insArray.optInt(i));
-                EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_NOT_FOUND, jsonObject);
+            JSONObject insObject = insArray.optJSONObject(i);
+            Instance instance = getInstance(reqId, placement, insObject, insMap, mediationRule, abt);
+            if (instance != null) {
+                instance.setIndex(i);
+                instancesList.add(instance);
             }
         }
         if (instancesList.size() == 0) {
@@ -196,7 +220,7 @@ public class WaterFallHelper {
      * @param bs        the bs
      * @return the base instance [ ]
      */
-    public static BaseInstance[] getArrayInstances(JSONObject clInfo, Placement placement, int bs) {
+    public static BaseInstance[] getArrayInstances(String reqId, MediationRule mediationRule, JSONObject clInfo, Placement placement, int bs) {
         if (bs == 0 || placement == null) {
             return new Instance[0];
         }
@@ -220,15 +244,11 @@ public class WaterFallHelper {
         int abt = clInfo.optInt("abt");
         List<Instance> instancesList = new ArrayList<>();
         for (int i = 0; i < insArray.length(); i++) {
-            BaseInstance ins = insMap.get(insArray.optInt(i));
-            if (ins != null) {
-                ins.setWfAbt(abt);
-                ins.setBidResponse(null);
-                instancesList.add((Instance) ins);
-            } else {
-                JSONObject jsonObject = PlacementUtils.placementEventParams(placement.getId());
-                JsonUtil.put(jsonObject, "iid", insArray.optInt(i));
-                EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_NOT_FOUND, jsonObject);
+            JSONObject insObject = insArray.optJSONObject(i);
+            Instance instance = getInstance(reqId, placement, insObject, insMap, mediationRule, abt);
+            if (instance != null) {
+                instance.setBidResponse(null);
+                instancesList.add(instance);
             }
         }
         //
@@ -237,6 +257,42 @@ public class WaterFallHelper {
         }
 
         return splitInsByBs(instancesList.toArray(new Instance[instancesList.size()]), bs);
+    }
+
+    private static Instance getInstance(String reqId, Placement placement, JSONObject insObject, SparseArray<BaseInstance> insMap, MediationRule mediationRule, int abt) {
+        if (insObject != null) {
+            int insId = insObject.optInt("id");
+            Instance ins = (Instance) insMap.get(insId);
+            if (ins != null) {
+                ins.setWfAbt(abt);
+                if (ins.getMediationState() != Instance.MEDIATION_STATE.AVAILABLE) {
+                    ins.setPriority(insObject.optInt("i", -1));
+                    ins.setRevenue(insObject.optDouble("r", 0d));
+                    ins.setRevenuePrecision(insObject.optInt("rp", -1));
+                    ins.setMediationRule(mediationRule);
+                    ins.setReqId(reqId);
+                }
+            } else {
+                JSONObject jsonObject = PlacementUtils.placementEventParams(placement.getId());
+                JsonUtil.put(jsonObject, "iid", insId);
+                JsonUtil.put(jsonObject, "reqId", reqId);
+                if (mediationRule != null) {
+                    JsonUtil.put(jsonObject, "ruleId", mediationRule.getId());
+                }
+                EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_NOT_FOUND, jsonObject);
+            }
+            return ins;
+        }
+        return null;
+    }
+
+    public static MediationRule getMediationRule(JSONObject clInfo) {
+        JSONObject ruleObject = clInfo.optJSONObject("rule");
+        MediationRule rule = null;
+        if (ruleObject != null) {
+            rule = MediationRule.create(ruleObject);
+        }
+        return rule;
     }
 
     private static Instance[] splitAbsIns(Instance[] origin) {

@@ -10,33 +10,34 @@ public class SplashAd {
 
     /**
      * load timeout
+     *
      * @param timeout ms
      */
-    public static void setLoadTimeout(long timeout) {
-        SplashAdManager.getInstance().setLoadTimeout(timeout);
+    public static void setLoadTimeout(String placementId, long timeout) {
+        SplashAdManager.getInstance().setLoadTimeout(placementId, timeout);
     }
 
-    public static void loadAd() {
-        SplashAdManager.getInstance().load();
+    public static void loadAd(String placementId) {
+        SplashAdManager.getInstance().load(placementId);
     }
 
-    public static void setSize(int width, int height) {
-        SplashAdManager.getInstance().setSize(width, height);
+    public static void setSize(String placementId, int width, int height) {
+        SplashAdManager.getInstance().setSize(placementId, width, height);
     }
 
-    public static void setSplashAdListener(SplashAdListener listener) {
-        SplashAdManager.getInstance().setSplashAdListener(listener);
+    public static void setSplashAdListener(String placementId, SplashAdListener listener) {
+        SplashAdManager.getInstance().setSplashAdListener(placementId, listener);
     }
 
-    public static boolean isReady() {
-        return SplashAdManager.getInstance().isReady();
+    public static boolean isReady(String placementId) {
+        return SplashAdManager.getInstance().isReady(placementId);
     }
 
-    public static void showAd(Activity activity, ViewGroup container) {
-        SplashAdManager.getInstance().show(activity, container);
+    public static void showAd(Activity activity, String placementId, ViewGroup container) {
+        SplashAdManager.getInstance().show(activity, placementId, container);
     }
 
-    public static void showAd(Activity activity) {
-        SplashAdManager.getInstance().show(activity);
+    public static void showAd(Activity activity, String placementId) {
+        SplashAdManager.getInstance().show(activity, placementId);
     }
 }

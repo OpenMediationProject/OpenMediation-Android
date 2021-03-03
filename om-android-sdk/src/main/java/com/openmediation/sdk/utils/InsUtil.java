@@ -6,9 +6,13 @@ package com.openmediation.sdk.utils;
 import android.text.TextUtils;
 import android.util.SparseArray;
 
+import com.openmediation.sdk.utils.cache.DataCache;
+import com.openmediation.sdk.utils.constant.KeyConstants;
 import com.openmediation.sdk.utils.model.BaseInstance;
+import com.openmediation.sdk.utils.model.Configurations;
 import com.openmediation.sdk.utils.model.Instance;
 import com.openmediation.sdk.utils.model.InstanceLoadStatus;
+import com.openmediation.sdk.utils.model.Mediation;
 import com.openmediation.sdk.utils.model.Placement;
 
 import java.util.ArrayList;
@@ -187,5 +191,56 @@ public class InsUtil {
             }
         }
         return list;
+    }
+
+    /**
+     * @param instance instance
+     * @return NetworkName
+     */
+    public static String getNetworkName(BaseInstance instance) {
+        if (instance == null) {
+            return null;
+        }
+        Configurations config = DataCache.getInstance().getFromMem(KeyConstants.KEY_CONFIGURATION, Configurations.class);
+        if (config == null) {
+            return null;
+        }
+        SparseArray<Mediation> configMs = config.getMs();
+        if (configMs == null || configMs.size() == 0 || configMs.get(instance.getMediationId()) == null) {
+            return null;
+        }
+        Mediation mediation = configMs.get(instance.getMediationId());
+        return mediation.getNetworkName();
+    }
+
+    /**
+     * Gets ins by id.
+     *
+     * @param placement the placement
+     * @param instanceId  the instance id
+     * @return BaseInstance
+     */
+    public static BaseInstance getInsById(Placement placement, String instanceId) {
+        if (TextUtils.isEmpty(instanceId)) {
+            return null;
+        }
+
+        if (placement == null) {
+            return null;
+        }
+
+        CopyOnWriteArrayList<Instance> instanceList = getInstanceList(placement);
+        if (instanceList == null || instanceList.isEmpty()) {
+            return null;
+        }
+        for (BaseInstance ins : instanceList) {
+            if (ins == null) {
+                continue;
+            }
+            if (TextUtils.equals(instanceId, String.valueOf(ins.getId()))) {
+                return ins;
+            }
+        }
+        return null;
     }
 }

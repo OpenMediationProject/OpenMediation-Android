@@ -10,8 +10,6 @@ android {
         targetSdkVersion 29
         versionCode 1
         versionName rootProject.ext.adapterVersion.mintegral
-
-        consumerProguardFiles 'consumer-rules.pro'
     }
 
     buildTypes {

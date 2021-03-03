@@ -29,6 +29,4 @@
 -keep public class * extends androidx.** { *; }
 -dontwarn com.mintegral.**
 -keep class **.R$* { public static final int mintegral*; }
--keep class com.alphab.** {*; }
--keep interface com.alphab.** {*; }
 

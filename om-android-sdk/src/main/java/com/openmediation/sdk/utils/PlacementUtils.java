@@ -39,12 +39,13 @@ public class PlacementUtils {
     /**
      * Gets placement info.
      *
+     * @param reqId the auction id
      * @param placementId the placement id
      * @param instances   the instances
      * @param payload     the payload
      * @return the placement info
      */
-    public static Map<String, String> getPlacementInfo(String placementId, BaseInstance instances, String payload) {
+    public static Map<String, String> getPlacementInfo(String reqId, String placementId, BaseInstance instances, String payload) {
         Configurations config = DataCache.getInstance().getFromMem(KeyConstants.KEY_CONFIGURATION, Configurations.class);
         Map<String, String> maps = new HashMap<>();
         maps.put("AppKey", config.getMs().get(instances.getMediationId()).getK());
@@ -54,10 +55,11 @@ public class PlacementUtils {
         if (!TextUtils.isEmpty(payload)) {
             maps.put("pay_load", payload);
         }
+        maps.put("AuctionId", reqId);
         return maps;
     }
 
-    public static Map<String, Object> getLoadExtrasMap(BaseInstance instance, AdTimingBidResponse bidResponse) {
+    public static Map<String, Object> getLoadExtrasMap(String reqId, BaseInstance instance, AdTimingBidResponse bidResponse) {
         Map<String, Object> extras = new HashMap<>();
         if (bidResponse != null && !TextUtils.isEmpty(bidResponse.getPayLoad())) {
             extras.put("pay_load", bidResponse.getPayLoad());
@@ -65,6 +67,7 @@ public class PlacementUtils {
         if (instance != null) {
             extras.put("InstanceId", String.valueOf(instance.getId()));
         }
+        extras.put("AuctionId", reqId);
         return extras;
     }
 

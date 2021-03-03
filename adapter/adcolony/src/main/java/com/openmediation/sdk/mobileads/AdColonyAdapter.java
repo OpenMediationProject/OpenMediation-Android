@@ -16,6 +16,7 @@ import com.adcolony.sdk.AdColonyRewardListener;
 import com.adcolony.sdk.AdColonyZone;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
+import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.openmediation.sdk.mobileads.adcolony.BuildConfig;
@@ -27,13 +28,17 @@ import java.util.concurrent.ConcurrentMap;
 
 public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardListener {
     private boolean mDidInited = false;
-    private ConcurrentMap<String, RewardedVideoCallback> mRvCallback;
-    private ConcurrentHashMap<String, AdColonyInterstitial> mAdColonyAds;
-    private AdColonyAppOptions mAdColonyOptions;
+    private final ConcurrentMap<String, RewardedVideoCallback> mRvCallback;
+    private final ConcurrentHashMap<String, AdColonyInterstitial> mAdColonyAds;
+    private final ConcurrentMap<String, InterstitialAdCallback> mIsCallback;
+    private final ConcurrentHashMap<String, AdColonyInterstitial> mIsAdColonyAds;
+    private final AdColonyAppOptions mAdColonyOptions;
 
     public AdColonyAdapter() {
         mRvCallback = new ConcurrentHashMap<>();
         mAdColonyAds = new ConcurrentHashMap<>();
+        mIsCallback = new ConcurrentHashMap<>();
+        mIsAdColonyAds = new ConcurrentHashMap<>();
         mAdColonyOptions = new AdColonyAppOptions();
     }
 
@@ -114,9 +119,9 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
     public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
         if (isRewardedVideoAvailable(adUnitId)) {
-            AdColonyInterstitial interstitial = mAdColonyAds.get(adUnitId);
-            if (interstitial != null) {
-                interstitial.show();
+            AdColonyInterstitial ad = mAdColonyAds.get(adUnitId);
+            if (ad != null) {
+                ad.show();
             } else {
                 if (callback != null) {
                     callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
@@ -137,9 +142,8 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
             if (TextUtils.isEmpty(adUnitId)) {
                 return false;
             }
-
-            AdColonyInterstitial interstitial = mAdColonyAds.get(adUnitId);
-            return interstitial != null && !interstitial.isExpired();
+            AdColonyInterstitial ad = mAdColonyAds.get(adUnitId);
+            return ad != null && !ad.isExpired();
         } catch (Exception ex) {
             return false;
         }
@@ -170,11 +174,75 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
         }
     }
 
+    @Override
+    public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
+        super.initInterstitialAd(activity, dataMap, callback);
+        String error = check(activity);
+        if (TextUtils.isEmpty(error)) {
+            initAdColony(activity, dataMap);
+            if (callback != null) {
+                callback.onInterstitialAdInitSuccess();
+            }
+        } else {
+            if (callback != null) {
+                callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
+            }
+        }
+    }
+
+    @Override
+    public void loadInterstitialAd(Activity activity, String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback) {
+        super.loadInterstitialAd(activity, adUnitId, extras, callback);
+        String error = check(activity, adUnitId);
+        if (TextUtils.isEmpty(error)) {
+            mIsCallback.put(adUnitId, callback);
+            if (isInterstitialAdAvailable(adUnitId)) {
+                callback.onInterstitialAdLoadSuccess();
+            } else {
+                AdColony.requestInterstitial(adUnitId, new AdIsColonyAdListener());
+            }
+        } else {
+            callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
+        }
+    }
+
+    @Override
+    public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+        super.showInterstitialAd(activity, adUnitId, callback);
+        if (isInterstitialAdAvailable(adUnitId)) {
+            AdColonyInterstitial ad = mIsAdColonyAds.get(adUnitId);
+            if (ad != null) {
+                ad.show();
+            } else {
+                if (callback != null) {
+                    callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, AdColonyAdapter.this.mAdapterName, "AdColony ad not ready"));
+                }
+            }
+        } else {
+            if (callback != null) {
+                callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, AdColonyAdapter.this.mAdapterName, "AdColony ad not ready"));
+            }
+        }
+    }
+
+    @Override
+    public boolean isInterstitialAdAvailable(String adUnitId) {
+        if (TextUtils.isEmpty(adUnitId)) {
+            return false;
+        }
+        AdColonyInterstitial ad = mIsAdColonyAds.get(adUnitId);
+        return ad != null && !ad.isExpired();
+    }
+
     private class AdColonyAdListener extends AdColonyInterstitialListener {
         @Override
-        public void onRequestFilled(AdColonyInterstitial var1) {
-            mAdColonyAds.put(var1.getZoneID(), var1);
-            RewardedVideoCallback callback = mRvCallback.get(var1.getZoneID());
+        public void onRequestFilled(AdColonyInterstitial ad) {
+            mAdColonyAds.put(ad.getZoneID(), ad);
+            RewardedVideoCallback callback = mRvCallback.get(ad.getZoneID());
             if (callback != null) {
                 callback.onRewardedVideoLoadSuccess();
             }
@@ -218,6 +286,55 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
             RewardedVideoCallback callback = mRvCallback.get(ad.getZoneID());
             if (callback != null) {
                 callback.onRewardedVideoAdClicked();
+            }
+        }
+    }
+
+    private class AdIsColonyAdListener extends AdColonyInterstitialListener {
+        @Override
+        public void onRequestFilled(AdColonyInterstitial ad) {
+            mIsAdColonyAds.put(ad.getZoneID(), ad);
+            InterstitialAdCallback callback = mIsCallback.get(ad.getZoneID());
+            if (callback != null) {
+                callback.onInterstitialAdLoadSuccess();
+            }
+        }
+
+        @Override
+        public void onRequestNotFilled(AdColonyZone zone) {
+            InterstitialAdCallback callback = mIsCallback.get(zone.getZoneID());
+            if (callback != null) {
+                callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Request Not Filled"));
+            }
+        }
+
+        @Override
+        public void onOpened(AdColonyInterstitial ad) {
+            InterstitialAdCallback callback = mIsCallback.get(ad.getZoneID());
+            if (callback != null) {
+                callback.onInterstitialAdShowSuccess();
+            }
+        }
+
+        @Override
+        public void onClosed(AdColonyInterstitial ad) {
+            InterstitialAdCallback callback = mIsCallback.get(ad.getZoneID());
+            if (callback != null) {
+                callback.onInterstitialAdClosed();
+            }
+        }
+
+        @Override
+        public void onExpiring(AdColonyInterstitial ad) {
+            AdColony.requestInterstitial(ad.getZoneID(), this);
+        }
+
+        @Override
+        public void onClicked(AdColonyInterstitial ad) {
+            InterstitialAdCallback callback = mIsCallback.get(ad.getZoneID());
+            if (callback != null) {
+                callback.onInterstitialAdClick();
             }
         }
     }

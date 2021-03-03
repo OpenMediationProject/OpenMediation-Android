@@ -352,7 +352,8 @@ public final class InitImp {
         public void onRequestFailed(String error) {
             Error result = new Error(ErrorCode.CODE_INIT_SERVER_ERROR
                     , ErrorCode.MSG_INIT_SERVER_ERROR, ErrorCode.CODE_INTERNAL_SERVER_FAILED);
-            DeveloperLog.LogD("request config failed : " + result + ", error:" + error);
+            DeveloperLog.LogE("request config failed : " + result + ", error:" + error);
+            AdLog.getSingleton().LogE("Init Failed: " + error);
             callbackInitErrorOnUIThread(result);
         }
     }

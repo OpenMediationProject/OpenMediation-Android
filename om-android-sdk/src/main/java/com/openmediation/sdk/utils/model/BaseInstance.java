@@ -5,6 +5,7 @@ package com.openmediation.sdk.utils.model;
 
 import android.text.TextUtils;
 
+import com.openmediation.sdk.ImpressionManager;
 import com.openmediation.sdk.bid.AdTimingBidResponse;
 import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
@@ -20,9 +21,15 @@ import com.openmediation.sdk.utils.event.EventUploadManager;
 
 import org.json.JSONObject;
 
+import java.math.BigDecimal;
+
 public class BaseInstance extends Frequency {
+    // AuctionID
+    private String reqId;
     //Instances Id
     protected int id;
+    //Instances Name
+    private String name;
 
     //Mediation Id
     protected int mediationId;
@@ -57,11 +64,28 @@ public class BaseInstance extends Frequency {
 
     protected String mPlacementId;
 
+    // Priority In Rule
+    private int priority = -1;
+    // Revenue, bidPrice or eCPM
+    private double revenue = -1;
+    // Revenue Precision, 0:undisclosed, 1:exact, 2:estimated, 3:defined
+    private int revenuePrecision = -1;
+
+    private MediationRule mMediationRule;
+
     protected CustomAdsAdapter mAdapter;
 
     protected InstanceLoadStatus mLastLoadStatus;
 
     public BaseInstance() {
+    }
+
+    public String getReqId() {
+        return reqId;
+    }
+
+    public void setReqId(String reqId) {
+        this.reqId = reqId;
     }
 
     public int getId() {
@@ -70,6 +94,14 @@ public class BaseInstance extends Frequency {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getKey() {
@@ -168,6 +200,51 @@ public class BaseInstance extends Frequency {
         return hbt;
     }
 
+    public int getPriority() {
+        return priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
+    }
+
+    public double getRevenue() {
+        return Double.isNaN(revenue) || revenue <= 0 ? 0d : revenue;
+    }
+
+    public double getShowRevenue() {
+        if (Double.isNaN(revenue) || revenue <= 0) {
+            return 0d;
+        }
+        try {
+            BigDecimal bigDecimal = new BigDecimal(revenue).divide(new BigDecimal(1000d));
+            return bigDecimal.setScale(8, BigDecimal.ROUND_HALF_UP).doubleValue();
+        } catch (Exception e) {
+            DeveloperLog.LogE("Instance getRevenue Error: " + e.getMessage());
+        }
+        return 0d;
+    }
+
+    public void setRevenue(double revenue) {
+        this.revenue = revenue;
+    }
+
+    public int getRevenuePrecision() {
+        return revenuePrecision;
+    }
+
+    public void setRevenuePrecision(int revenuePrecision) {
+        this.revenuePrecision = revenuePrecision;
+    }
+
+    public void setMediationRule(MediationRule rule) {
+        this.mMediationRule = rule;
+    }
+
+    public MediationRule getMediationRule() {
+        return mMediationRule;
+    }
+
     public void setBidState(BID_STATE bidState) {
         this.bidState = bidState;
     }
@@ -207,6 +284,7 @@ public class BaseInstance extends Frequency {
                 ", index=" + index +
                 ", pid=" + mPlacementId +
                 ", mId=" + mediationId +
+                ", name=" + name +
                 '}';
     }
 
@@ -252,6 +330,10 @@ public class BaseInstance extends Frequency {
                 JsonUtil.put(jsonObject, "bid", 1);
                 JsonUtil.put(jsonObject, "price", bidResponse.getPrice());
                 JsonUtil.put(jsonObject, "cur", bidResponse.getCur());
+            }
+            JsonUtil.put(jsonObject, "reqId", reqId);
+            if (mMediationRule != null) {
+                JsonUtil.put(jsonObject, "ruleId", mMediationRule.getId());
             }
             return jsonObject;
         } catch (Exception e) {
@@ -363,6 +445,8 @@ public class BaseInstance extends Frequency {
 
     public void onInsShowSuccess(Scene scene) {
         EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_SHOW_SUCCESS, buildReportDataWithScene(scene));
+
+        ImpressionManager.onInsShowSuccess(this, scene);
     }
 
     public void onInsShowFailed(AdapterError error, Scene scene) {

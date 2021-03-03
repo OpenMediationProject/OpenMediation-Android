@@ -4,7 +4,6 @@
 package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
-import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
@@ -33,7 +32,7 @@ public class TikTokSplash extends CustomSplashEvent implements TTAdNative.Splash
     private TTSplashAd mSplashAd;
 
     @Override
-    public void loadAd(Activity activity, Map<String, String> config) throws Throwable {
+    public void loadAd(final Activity activity, final Map<String, String> config) throws Throwable {
         super.loadAd(activity, config);
         if (!check(activity, config)) {
             return;
@@ -43,15 +42,21 @@ public class TikTokSplash extends CustomSplashEvent implements TTAdNative.Splash
                     AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, "Activity is null"));
             return;
         }
-        initTTSDKConfig(activity, config);
-        loadSplashAd(activity, mInstancesKey, config);
+        initTTSDKConfig(activity, config, new TTAdManagerHolder.InitCallback() {
+            @Override
+            public void onSuccess() {
+                try {
+                    loadSplashAd(activity, mInstancesKey, config);
+                } catch (Exception e) {
+                    onInsError(AdapterErrorBuilder.buildLoadError(
+                            AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, "Unknown Error"));
+                }
+            }
+        });
     }
 
-    private void initTTSDKConfig(Activity activity, Map<String, String> config) {
-        TTAdManagerHolder.init(activity.getApplication(), config.get("AppKey"));
-        if (mTTAdNative == null) {
-            mTTAdNative = TTAdManagerHolder.get().createAdNative(activity);
-        }
+    private void initTTSDKConfig(Activity activity, Map<String, String> config, TTAdManagerHolder.InitCallback callback) {
+        TTAdManagerHolder.init(activity.getApplication(), config.get("AppKey"), callback);
     }
 
     @Override
@@ -74,7 +79,7 @@ public class TikTokSplash extends CustomSplashEvent implements TTAdNative.Splash
         } catch (Exception ignored) {
         }
         if (width <= 0) {
-            width = getScreenWidth(activity);
+            width = TTAdManagerHolder.getScreenWidth(activity);
         }
         int height = 0;
         try {
@@ -82,26 +87,21 @@ public class TikTokSplash extends CustomSplashEvent implements TTAdNative.Splash
         } catch (Exception ignored) {
         }
         if (height <= 0) {
-            height = getScreenHeight(activity);
+            height = TTAdManagerHolder.getScreenHeight(activity);
         }
         AdSlot adSlot = new AdSlot.Builder()
                 .setCodeId(codeId)
                 .setSupportDeepLink(true)
                 .setImageAcceptedSize(width, height)
                 .build();
+        if (mTTAdNative == null) {
+            mTTAdNative = TTAdManagerHolder.get().createAdNative(activity);
+        }
         if (fetchDelay <= 0) {
             mTTAdNative.loadSplashAd(adSlot, this);
         } else {
             mTTAdNative.loadSplashAd(adSlot, this, fetchDelay);
         }
-    }
-
-    private static int getScreenWidth(Context context) {
-        return context.getResources().getDisplayMetrics().widthPixels;
-    }
-
-    private static int getScreenHeight(Context context) {
-        return context.getResources().getDisplayMetrics().heightPixels;
     }
 
     @Override

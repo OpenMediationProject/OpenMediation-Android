@@ -96,8 +96,8 @@
                 android:background="@drawable/btn_background"
                 android:onClick="loadAndShowNative"
                 android:text="Load And Show Native Ad"
-                android:textSize="20sp"
-                android:textAllCaps="false" />
+                android:textAllCaps="false"
+                android:textSize="20sp" />
 
             <Button
                 android:id="@+id/btn_promotion"

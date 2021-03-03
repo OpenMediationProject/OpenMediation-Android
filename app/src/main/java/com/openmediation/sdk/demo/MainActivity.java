@@ -19,6 +19,8 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.openmediation.sdk.ImpressionData;
+import com.openmediation.sdk.ImpressionDataListener;
 import com.openmediation.sdk.InitCallback;
 import com.openmediation.sdk.InitConfiguration;
 import com.openmediation.sdk.OmAds;
@@ -57,6 +59,8 @@ public class MainActivity extends Activity {
 
     private BannerAd bannerAd;
     private NativeAd nativeAd;
+
+    private ImpressionDataListener mDataListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,6 +110,13 @@ public class MainActivity extends Activity {
                 NewApiUtils.printLog("init failed " + result.toString());
             }
         });
+        mDataListener = new ImpressionDataListener() {
+            @Override
+            public void onImpression(Error error, ImpressionData impressionData) {
+                Log.d("MainActivity", "-----onImpression-----error: " + error + ", impressionData: " + impressionData);
+            }
+        };
+        OmAds.addImpressionDataListener(mDataListener);
     }
 
     private void setVideoListener() {
@@ -396,6 +407,9 @@ public class MainActivity extends Activity {
         }
         if (nativeAd != null) {
             nativeAd.destroy();
+        }
+        if (mDataListener != null) {
+            OmAds.removeImpressionDataListener(mDataListener);
         }
     }
 }

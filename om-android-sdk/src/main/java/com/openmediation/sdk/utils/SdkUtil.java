@@ -61,13 +61,13 @@ public class SdkUtil {
             DeveloperLog.LogE(error.toString());
             return error;
         }
-        if (!NetworkChecker.isAvailable(activity)) {
-            error = new Error(ErrorCode.CODE_INIT_NETWORK_ERROR
-                    , ErrorCode.MSG_INIT_NETWORK_ERROR, -1);
-            //init error network is not available
-            DeveloperLog.LogE(error.toString());
-            return error;
-        }
+//        if (!NetworkChecker.isAvailable(activity)) {
+//            error = new Error(ErrorCode.CODE_INIT_NETWORK_ERROR
+//                    , ErrorCode.MSG_INIT_NETWORK_ERROR, -1);
+//            //init error network is not available
+//            DeveloperLog.LogE(error.toString());
+//            return error;
+//        }
         return null;
     }
 

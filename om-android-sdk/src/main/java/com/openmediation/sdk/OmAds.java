@@ -90,6 +90,18 @@ public abstract class OmAds {
     }
 
     /**
+<<<<<<< HEAD
+=======
+     * App defined user tags
+     *
+     * @param map Support basic data types and array types
+     */
+    public static void setCustomTags(Map<String, Object> map) {
+        OmManager.getInstance().setCustomTags(map);
+    }
+
+    /**
+>>>>>>> Release version v2.1.0
      * Report AppsFlyer conversion data
      *
      * @param conversionData
@@ -202,7 +214,26 @@ public abstract class OmAds {
     }
 
     /**
-     * SDK supported preloadable Ad types
+     * Call this method to start listening for impression level revenue data events.
+     *
+     * @param listener - {@link ImpressionDataListener} interface implementation
+     */
+    public static void addImpressionDataListener(ImpressionDataListener listener) {
+        ImpressionManager.addListener(listener);
+    }
+
+    /**
+     * Call this method to unsubscribe from impression level revenue data events.
+     *
+     * @param listener - previously submitted to addListener() {@link ImpressionDataListener}
+     */
+    public static void removeImpressionDataListener(final ImpressionDataListener listener) {
+        ImpressionManager.removeListener(listener);
+    }
+
+
+    /**
+     * SDK supported pre loadable Ad types
      */
     public enum AD_TYPE {
         /**

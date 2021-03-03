@@ -71,7 +71,7 @@ public final class NativeImp extends AbstractHybridAd implements View.OnAttachSt
         if (mBidResponses != null && mBidResponses.containsKey(instances.getId())) {
             payload = AuctionUtil.generateStringRequestData(mBidResponses.get(instances.getId()));
         }
-        Map<String, String> placementInfo = PlacementUtils.getPlacementInfo(mPlacementId, instances, payload);
+        Map<String, String> placementInfo = PlacementUtils.getPlacementInfo(mReqId, mPlacementId, instances, payload);
         instances.setStart(System.currentTimeMillis());
         nativeEvent.loadAd(mActRef.get(), placementInfo);
     }
@@ -175,6 +175,7 @@ public final class NativeImp extends AbstractHybridAd implements View.OnAttachSt
 
         isImpressed = true;
         insImpReport(mCurrentIns);
+        onInsShowSuccess(mCurrentIns);
         notifyInsBidWin(mCurrentIns);
     }
 

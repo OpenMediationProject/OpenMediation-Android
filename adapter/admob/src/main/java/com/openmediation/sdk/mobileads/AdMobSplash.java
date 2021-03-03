@@ -13,6 +13,8 @@ import android.os.SystemClock;
 import android.text.TextUtils;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
+
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.FullScreenContentCallback;
@@ -107,7 +109,8 @@ public class AdMobSplash extends CustomSplashEvent {
              * @param ad the loaded app open ad.
              */
             @Override
-            public void onAppOpenAdLoaded(AppOpenAd ad) {
+            public void onAdLoaded(@NonNull AppOpenAd ad) {
+                super.onAdLoaded(ad);
                 if (isDestroyed) {
                     return;
                 }
@@ -124,7 +127,7 @@ public class AdMobSplash extends CustomSplashEvent {
              * @param loadAdError the error.
              */
             @Override
-            public void onAppOpenAdFailedToLoad(LoadAdError loadAdError) {
+            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                 // Handle the error.
                 if (isDestroyed) {
                     return;
@@ -205,7 +208,8 @@ public class AdMobSplash extends CustomSplashEvent {
                         onInsShowSuccess();
                     }
                 };
-        mAppOpenAd.show(activity, fullScreenContentCallback);
+        mAppOpenAd.setFullScreenContentCallback(fullScreenContentCallback);
+        mAppOpenAd.show(activity);
         mAppOpenAd = null;
         mAdLoadTime = 0L;
     }

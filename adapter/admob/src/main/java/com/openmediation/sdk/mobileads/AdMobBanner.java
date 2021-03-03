@@ -82,8 +82,8 @@ public class AdMobBanner extends CustomBannerEvent {
             }
 
             @Override
-            public void onAdLeftApplication() {
-                super.onAdLeftApplication();
+            public void onAdOpened() {
+                super.onAdOpened();
                 if (!isDestroyed) {
                     onInsClicked();
                 }

@@ -13,6 +13,7 @@ public class NewApiUtils {
 
     public static final String P_BANNER = "4900";
     public static final String P_NATIVE = "4902";
+    public static final String P_SPLASH = "8144";
 
     public static void printLog(String msg) {
         if (ENABLE_LOG) {

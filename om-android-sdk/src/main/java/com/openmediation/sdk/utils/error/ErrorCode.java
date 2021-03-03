@@ -136,6 +136,10 @@ public interface ErrorCode {
      */
     int CODE_SHOW_SCENE_NOT_FOUND = 352;
     String MSG_SHOW_SCENE_NOT_FOUND = "Scene not found";
+
+    int CODE_SHOW_IMPRESSION_NOT_ENABLED = 401;
+    String MSG_SHOW_IMPRESSION_NOT_ENABLED = "Ad revenue measurement is not enabled";
+
     /**
      * internal codes 
      **/

@@ -107,11 +107,14 @@ public class AdTimingAuctionManager {
         }
     }
 
-    public void bid(Context context, String placementId, int adType, AuctionCallback callback) {
-        bid(context, placementId, adType, null, callback);
+    public void bid(Context context, String placementId, String reqId, int adType, AuctionCallback callback) {
+        bid(context, placementId, reqId, adType, null, callback);
     }
 
-    public void bid(Context context, String placementId, int adType, AdSize adSize, AuctionCallback callback) {
+    /**
+     * merge c2s / s2s
+     */
+    public void bid(Context context, String placementId, String reqId, int adType, AdSize adSize, AuctionCallback callback) {
         resetBidResponse(placementId);
         if (!mBidInstances.containsKey(placementId)) {
             if (callback != null) {
@@ -144,6 +147,7 @@ public class AdTimingAuctionManager {
                 continue;
             }
             biding++;
+            bidInstance.setReqId(reqId);
             bidInstance.setBidState(BaseInstance.BID_STATE.BID_PENDING);
             AdTimingBidResponse response = getBidInstanceToken(context, bidInstance);
             if (response != null) {
@@ -354,6 +358,7 @@ public class AdTimingAuctionManager {
             if (cacheAdsType && isInstanceAvailable(instance)) {
                 continue;
             }
+            instance.setReqId(null);
             instance.setBidState(BaseInstance.BID_STATE.NOT_BIDDING);
         }
     }

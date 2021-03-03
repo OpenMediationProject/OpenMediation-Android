@@ -111,6 +111,7 @@ public abstract class AbstractHybridAd extends AbstractAd {
                     if (mBidResponses != null && mBidResponses.containsKey(i.getId())) {
                         i.setBidResponse(mBidResponses.get(i.getId()));
                     }
+                    i.setReqId(mReqId);
                     loadInsOnUIThread(i);
                 } catch (Throwable e) {
                     onInsError(i, e.getMessage());
@@ -308,6 +309,7 @@ public abstract class AbstractHybridAd extends AbstractAd {
             return;
         }
         insImpReport(instance);
+        onInsShowSuccess(instance);
         callbackAdShowedOnUiThread();
     }
 

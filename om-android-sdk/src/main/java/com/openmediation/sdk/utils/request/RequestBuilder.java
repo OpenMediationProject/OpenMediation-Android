@@ -21,7 +21,9 @@ import com.openmediation.sdk.utils.constant.CommonConstants;
 import com.openmediation.sdk.utils.constant.KeyConstants;
 import com.openmediation.sdk.utils.device.DeviceUtil;
 import com.openmediation.sdk.utils.event.Event;
+import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.InstanceLoadStatus;
+import com.openmediation.sdk.utils.model.MediationRule;
 import com.openmediation.sdk.utils.model.PlacementInfo;
 import com.openmediation.sdk.utils.request.network.util.NetworkChecker;
 
@@ -209,7 +211,7 @@ public class RequestBuilder {
      */
     public static String buildWfUrl(String url) {
         return url.concat("?").concat(new RequestBuilder()
-                .p(KeyConstants.Request.KEY_API_VERSION, CommonConstants.API_VERSION)
+                .p(KeyConstants.Request.KEY_API_VERSION, CommonConstants.API_VERSION_V2)
                 .p(KeyConstants.Request.KEY_PLATFORM, CommonConstants.PLAT_FORM_ANDROID)
                 .p(KeyConstants.Request.KEY_SDK_VERSION, CommonConstants.SDK_VERSION_NAME)
                 .format());
@@ -279,8 +281,21 @@ public class RequestBuilder {
      * @return the byte [ ]
      * @throws Exception the exception
      */
-    public static byte[] buildLrRequestBody(int... extras) throws Exception {
+    public static byte[] buildLrRequestBody(String reqId, int ruleId, BaseInstance instance, int... extras) throws Exception {
         JSONObject jsonObject = getRequestBodyBaseJson();
+        if (instance != null) {
+            JsonUtil.put(jsonObject, KeyConstants.RequestBody.KEY_REQ_ID, instance.getReqId());
+            JsonUtil.put(jsonObject, KeyConstants.RequestBody.KEY_INSTANCE_REVENUE, instance.getRevenue());
+            JsonUtil.put(jsonObject, KeyConstants.RequestBody.KEY_INSTANCE_PRECISION, instance.getRevenuePrecision());
+            JsonUtil.put(jsonObject, KeyConstants.RequestBody.KEY_INSTANCE_PRIORITY, instance.getPriority());
+            MediationRule rule = instance.getMediationRule();
+            if (rule != null) {
+                JsonUtil.put(jsonObject, KeyConstants.RequestBody.KEY_RULE_ID, rule.getId());
+            }
+        } else {
+            JsonUtil.put(jsonObject, KeyConstants.RequestBody.KEY_REQ_ID, reqId);
+            JsonUtil.put(jsonObject, KeyConstants.RequestBody.KEY_RULE_ID, ruleId);
+        }
         JsonUtil.put(jsonObject, KeyConstants.RequestBody.KEY_PID, extras[0]);
         JsonUtil.put(jsonObject, KeyConstants.RequestBody.KEY_SCENE, extras[1]);
         JsonUtil.put(jsonObject, KeyConstants.RequestBody.KEY_ACT, extras[2]);
@@ -381,6 +396,7 @@ public class RequestBuilder {
         String channel = DataCache.getInstance().getFromMem(KeyConstants.KEY_APP_CHANNEL, String.class);
         body.put(KeyConstants.RequestBody.KEY_CHANNEL, channel);
         body.put(KeyConstants.RequestBody.KEY_CDID, OmManager.getInstance().getCustomDeviceId());
+        body.put(KeyConstants.RequestBody.KEY_TAGS, OmManager.getInstance().getTagsObject());
         appendRegsObject(body, OmManager.getInstance().getMetaData());
         return body;
     }
@@ -416,9 +432,10 @@ public class RequestBuilder {
     }
 
     public static byte[] buildWfRequestBody(PlacementInfo info, List<AdTimingBidResponse> c2sResult, List<AdTimingBidResponse> s2sResult,
-                                            List<InstanceLoadStatus> statusList,
+                                            List<InstanceLoadStatus> statusList, String reqId,
                                             String... extras) throws Exception {
         JSONObject body = getRequestBodyBaseJson();
+        body.put(KeyConstants.RequestBody.KEY_REQ_ID, reqId);
         if (info.getWidth() != 0) {
             body.put(KeyConstants.RequestBody.KEY_W, info.getWidth());
         }

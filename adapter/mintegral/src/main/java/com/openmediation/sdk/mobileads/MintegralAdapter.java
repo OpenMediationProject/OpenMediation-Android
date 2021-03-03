@@ -441,7 +441,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
         public void onShowFail(String s) {
             if (mCallback != null) {
                 mCallback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, "MintegralAdapter", s));
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, "MintegralAdapter", s));
             }
         }
 

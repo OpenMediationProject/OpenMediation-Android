@@ -29,6 +29,10 @@ public interface KeyConstants {
 
     String KEY_DISPLAY_SCENE = "display_sceneName";
     String KEY_DISPLAY_ABT = "display_abt";
+    /**
+     * The accumulated value of the user ad revenue
+     */
+    String KEY_REVENUE = "revenue";
 
     /**
      * The interface Request.
@@ -323,6 +327,21 @@ public interface KeyConstants {
 
         /*TAGS*/
         String KEY_TAGS = "tags";
+
+        /*AuctionID*/
+        String KEY_REQ_ID = "reqId";
+
+        /*Mediation Rule ID*/
+        String KEY_RULE_ID = "ruleId";
+
+        /*Instance Impression Revenue*/
+        String KEY_INSTANCE_REVENUE = "revenue";
+
+        /*Instance Revenue Precision*/
+        String KEY_INSTANCE_PRECISION = "rp";
+
+        /*Instance Priority*/
+        String KEY_INSTANCE_PRIORITY = "ii";
     }
 
     /**

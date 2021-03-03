@@ -155,8 +155,8 @@ public class RvInstance extends Instance implements RewardedVideoCallback, LoadT
 
     @Override
     public void onLoadTimeout() {
-        DeveloperLog.LogD("rvInstance onLoadTimeout : " + toString());
-        onInsLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
-                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapter == null ? "" : mAdapter.getClass().getSimpleName(), ErrorCode.ERROR_TIMEOUT));
+        AdapterError errorResult = AdapterErrorBuilder.buildLoadCheckError(
+                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapter == null ? "" : mAdapter.getClass().getSimpleName(), ErrorCode.ERROR_TIMEOUT);
+        onRewardedVideoLoadFailed(errorResult);
     }
 }

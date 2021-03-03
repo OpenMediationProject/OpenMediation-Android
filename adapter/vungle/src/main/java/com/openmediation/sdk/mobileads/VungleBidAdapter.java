@@ -35,6 +35,6 @@ public class VungleBidAdapter extends BidAdapter {
         if (!Vungle.isInitialized()) {
             VungleSingleTon.getInstance().init(mContext, mAppKey, null);
         }
-        return Vungle.getAvailableBidTokens(LIMITATION);
+        return Vungle.getAvailableBidTokens(context, LIMITATION);
     }
 }

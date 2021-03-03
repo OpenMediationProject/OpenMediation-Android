@@ -37,8 +37,6 @@ import java.net.SocketException;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
@@ -501,5 +499,9 @@ public class DeviceUtil {
         } catch (Exception e) {
         }
         return false;
+    }
+
+    public static String createReqId() {
+        return UUID.randomUUID().toString();
     }
 }

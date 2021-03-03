@@ -35,6 +35,9 @@ public class Event implements Parcelable {
     private String cur;
     private int abt = -1;
 
+    private String reqId; // AuctionID
+    private int ruleId; // Mediation Rule ID
+
     Event() throws Exception {
         this((String) null);
     }
@@ -69,6 +72,8 @@ public class Event implements Parcelable {
         bid = in.readInt();
         price = in.readDouble();
         cur = in.readString();
+        reqId = in.readString();
+        ruleId = in.readInt();
     }
 
     public static final Creator<Event> CREATOR = new Creator<Event>() {
@@ -107,6 +112,8 @@ public class Event implements Parcelable {
             bid = jsonObject.optInt("bid", -1);
             price = jsonObject.optDouble("price", -1);
             cur = jsonObject.optString("cur");
+            reqId = jsonObject.optString("reqId");
+            ruleId = jsonObject.optInt("ruleId", -1);
         } catch (Exception e) {
             DeveloperLog.LogD("parse Event from json ", e);
         }
@@ -133,6 +140,8 @@ public class Event implements Parcelable {
             JsonUtil.put(jsonObject, "bid", bid);
             JsonUtil.put(jsonObject, "price", price);
             JsonUtil.put(jsonObject, "cur", cur);
+            JsonUtil.put(jsonObject, "reqId", reqId);
+            JsonUtil.put(jsonObject, "ruleId", ruleId);
         } catch (Exception e) {
             DeveloperLog.LogD("Event to json ", e);
         }
@@ -168,6 +177,8 @@ public class Event implements Parcelable {
         dest.writeInt(bid);
         dest.writeDouble(price);
         dest.writeString(cur);
+        dest.writeString(reqId);
+        dest.writeInt(ruleId);
     }
 
     @Override

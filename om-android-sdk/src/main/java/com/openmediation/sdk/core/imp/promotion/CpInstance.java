@@ -14,8 +14,6 @@ import com.openmediation.sdk.utils.AdLog;
 import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.error.Error;
 import com.openmediation.sdk.utils.error.ErrorCode;
-import com.openmediation.sdk.utils.event.EventId;
-import com.openmediation.sdk.utils.event.EventUploadManager;
 import com.openmediation.sdk.utils.model.Instance;
 import com.openmediation.sdk.utils.model.Scene;
 
@@ -119,7 +117,6 @@ public class CpInstance extends Instance implements PromotionAdCallback, LoadTim
 
     @Override
     public void onPromotionAdVisible() {
-        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_VISIBLE, buildReportDataWithScene(mScene));
         mListener.onPromotionAdVisible(this);
     }
 

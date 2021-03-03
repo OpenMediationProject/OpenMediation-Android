@@ -26,14 +26,19 @@ public class AdRateUtil {
      * @param placementId  the placement id
      * @param instancesKey the instances key
      */
-    public static void onInstancesShowed(String placementId, String instancesKey) {
-        AdRateUtil.saveShowTime(placementId);
-        AdRateUtil.addCAP(placementId);
+    public static void onInstancesShowed(final String placementId, final String instancesKey) {
+        WorkExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                AdRateUtil.saveShowTime(placementId);
+                AdRateUtil.addCAP(placementId);
 
-        AdRateUtil.saveShowTime(placementId + instancesKey);
-        AdRateUtil.addCAP(placementId + instancesKey);
-        //
-        PlacementUtils.savePlacementImprCount(placementId);
+                AdRateUtil.saveShowTime(placementId + instancesKey);
+                AdRateUtil.addCAP(placementId + instancesKey);
+                //
+                PlacementUtils.savePlacementImprCount(placementId);
+            }
+        });
     }
 
     /**
@@ -42,10 +47,15 @@ public class AdRateUtil {
      * @param placementId the placement id
      * @param scene       the scene
      */
-    public static void onSceneShowed(String placementId, Scene scene) {
+    public static void onSceneShowed(final String placementId, final Scene scene) {
         if (scene != null) {
-            AdRateUtil.saveShowTime(placementId + scene.getN());
-            AdRateUtil.addCAP(placementId + scene.getN());
+            WorkExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    AdRateUtil.saveShowTime(placementId + scene.getN());
+                    AdRateUtil.addCAP(placementId + scene.getN());
+                }
+            });
         }
     }
 

@@ -134,7 +134,8 @@ public class IsInstance extends Instance implements InterstitialAdCallback, Load
 
     @Override
     public void onLoadTimeout() {
-        onInsLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
-                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapter == null ? "" : mAdapter.getClass().getSimpleName(), ErrorCode.ERROR_TIMEOUT));
+        AdapterError errorResult = AdapterErrorBuilder.buildLoadCheckError(
+                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapter == null ? "" : mAdapter.getClass().getSimpleName(), ErrorCode.ERROR_TIMEOUT);
+        onInterstitialAdLoadFailed(errorResult);
     }
 }

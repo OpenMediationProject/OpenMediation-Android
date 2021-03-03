@@ -27,6 +27,7 @@
 -keep class com.openmediation.sdk.core.**{*;}
 -keep class com.openmediation.sdk.interstitial.**{*;}
 -keep class com.openmediation.sdk.mediation.**{*;}
+-keep class com.openmediation.sdk.mobileads.**{*;}
 -keep class com.openmediation.sdk.nativead.**{*;}
 -keep class com.openmediation.sdk.splash.**{*;}
 -keep class com.openmediation.sdk.promotion.**{*;}
@@ -37,6 +38,23 @@
 -keep class com.openmediation.sdk.InitCallback{*;}
 -keep class com.openmediation.sdk.InitConfiguration{*;}
 -keep class com.openmediation.sdk.InitConfiguration$*{*;}
+-keep class com.openmediation.sdk.ImpressionManager{*;}
+-keep class com.openmediation.sdk.ImpressionDataListener{*;}
+-keep class com.openmediation.sdk.ImpressionData{*;}
 
 -keepattributes *Annotation*
 -keepparameternames
+
+# CrossPromotion-SDK
+# -keep class com.crosspromotion.sdk.banner.**{*;}
+# -keep class com.crosspromotion.sdk.bid.**{*;}
+# -keep class com.crosspromotion.sdk.interstitial.**{*;}
+# -keep class com.crosspromotion.sdk.nativead.**{*;}
+# -keep class com.crosspromotion.sdk.video.**{*;}
+# -keep class com.crosspromotion.sdk.promotion.**{*;}
+# -keep class com.crosspromotion.sdk.utils.error.**{*;}
+# -keep class com.crosspromotion.sdk.CrossPromotionAds{*;}
+-keep class com.crosspromotion.sdk.utils.webview.JsBridge{*;}
+-keep class * extends android.app.Activity
+
+-repackageclasses 'com.openmediation.sdk.a'

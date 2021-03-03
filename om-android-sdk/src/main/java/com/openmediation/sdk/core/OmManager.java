@@ -75,6 +75,7 @@ public final class OmManager implements InitCallback {
     private AtomicBoolean mDidCpInit = new AtomicBoolean(false);
     private boolean mIsInForeground = true;
     private String mCustomDeviceId = "";
+    private JSONObject mTagsObject;
     private static ConcurrentLinkedQueue<InitCallback> mInitCallbacks = new ConcurrentLinkedQueue<>();
 
     private static final class OmHolder {
@@ -285,6 +286,14 @@ public final class OmManager implements InitCallback {
 
     public String getCustomDeviceId() {
         return mCustomDeviceId;
+    }
+
+    public void setCustomTags(Map<String, Object> map) {
+        mTagsObject = JsonUtil.convert(map);
+    }
+
+    public JSONObject getTagsObject() {
+        return mTagsObject;
     }
 
     /**

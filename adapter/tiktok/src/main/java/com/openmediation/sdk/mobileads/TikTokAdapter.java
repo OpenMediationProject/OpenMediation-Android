@@ -72,7 +72,14 @@ public class TikTokAdapter extends CustomAdsAdapter {
     public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras,
                                   RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
-        loadRvAd(activity, adUnitId, callback);
+        try {
+            loadRvAd(activity, adUnitId, callback);
+        } catch (Exception e) {
+            if (callback != null) {
+                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error"));
+            }
+        }
     }
 
     private void loadRvAd(Activity activity, String adUnitId, RewardedVideoCallback callback) {
@@ -159,7 +166,14 @@ public class TikTokAdapter extends CustomAdsAdapter {
     public void loadInterstitialAd(Activity activity, String adUnitId, Map<String, Object> extras,
                                    InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, extras, callback);
-        loadInterstitial(activity, adUnitId, callback);
+        try {
+            loadInterstitial(activity, adUnitId, callback);
+        } catch (Exception e) {
+            if (callback != null) {
+                callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error"));
+            }
+        }
     }
 
     private void loadInterstitial(Activity activity, String adUnitId, InterstitialAdCallback callback) {
@@ -328,10 +342,11 @@ public class TikTokAdapter extends CustomAdsAdapter {
         if (activity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
             orientation = TTAdConstant.VERTICAL;
         }
+        int[] screenPx = TTAdManagerHolder.getScreenPx(activity);
         return new AdSlot.Builder()
                 .setCodeId(adUnitId)
                 .setSupportDeepLink(true)
-                .setImageAcceptedSize(1080, 1920)
+                .setImageAcceptedSize(screenPx[0], screenPx[1])
                 .setOrientation(orientation)
                 .build();
     }

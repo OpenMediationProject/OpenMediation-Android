@@ -139,7 +139,7 @@ public class CrashUtil implements Thread.UncaughtExceptionHandler {
      * @param config the config
      * @param appKey the app key
      */
-    public void uploadException(Configurations config, String appKey) {
+    public void uploadException(final Configurations config, final String appKey) {
         if (mCrashSp == null || config == null || config.getApi() == null) {
             return;
         }
@@ -149,43 +149,49 @@ public class CrashUtil implements Thread.UncaughtExceptionHandler {
         if (TextUtils.isEmpty(appKey)) {
             return;
         }
-        Map<String, ?> errorMap = mCrashSp.getAll();
+        final Map<String, ?> errorMap = mCrashSp.getAll();
         if (errorMap.size() == 0) {
             return;
         }
-        try {
-            //clears SP after successful uploads
-            mCrashSp.edit().clear().apply();
-            String xrUrl = config.getApi().getEr().concat("?").concat(new RequestBuilder()
-                    .p(KeyConstants.Request.KEY_API_VERSION, CommonConstants.API_VERSION)
-                    .p(KeyConstants.Request.KEY_PLATFORM, CommonConstants.PLAT_FORM_ANDROID)
-                    .p(KeyConstants.Request.KEY_SDK_VERSION, CommonConstants.SDK_VERSION_NAME)
-                    .p(KeyConstants.Request.KEY_APP_KEY, appKey)
-                    .format());
-            for (Map.Entry<String, ?> nv : errorMap.entrySet()) {
-                String errorInfo = (String) nv.getValue();
-                if (TextUtils.isEmpty(errorInfo) || !errorInfo.contains(CommonConstants.PKG_SDK)) {
-                    continue;
-                }
 
-                String errorType = getErrorType(errorInfo);
-                if (TextUtils.isEmpty(errorType)) {
-                    errorType = "UnknownError";
+        WorkExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    //clears SP after successful uploads
+                    mCrashSp.edit().clear().apply();
+                    String xrUrl = config.getApi().getEr().concat("?").concat(new RequestBuilder()
+                            .p(KeyConstants.Request.KEY_API_VERSION, CommonConstants.API_VERSION)
+                            .p(KeyConstants.Request.KEY_PLATFORM, CommonConstants.PLAT_FORM_ANDROID)
+                            .p(KeyConstants.Request.KEY_SDK_VERSION, CommonConstants.SDK_VERSION_NAME)
+                            .p(KeyConstants.Request.KEY_APP_KEY, appKey)
+                            .format());
+                    for (Map.Entry<String, ?> nv : errorMap.entrySet()) {
+                        String errorInfo = (String) nv.getValue();
+                        if (TextUtils.isEmpty(errorInfo) || !errorInfo.contains(CommonConstants.PKG_SDK)) {
+                            continue;
+                        }
+
+                        String errorType = getErrorType(errorInfo);
+                        if (TextUtils.isEmpty(errorType)) {
+                            errorType = "UnknownError";
+                        }
+                        errorInfo = errorInfo.replaceAll("\u0001", " ");
+                        byte[] body = RequestBuilder.buildErrorRequestBody(errorType, errorInfo);
+                        Headers headers = HeaderUtils.getBaseHeaders();
+                        AdRequest.post()
+                                .body(new ByteRequestBody(body))
+                                .headers(headers)
+                                .url(xrUrl)
+                                .connectTimeout(30000)
+                                .readTimeout(60000)
+                                .performRequest(AdtUtil.getApplication());
+                    }
+                } catch (Throwable e) {
+                    DeveloperLog.LogD("CrashUtil", e);
                 }
-                errorInfo = errorInfo.replaceAll("\u0001", " ");
-                byte[] body = RequestBuilder.buildErrorRequestBody(errorType, errorInfo);
-                Headers headers = HeaderUtils.getBaseHeaders();
-                AdRequest.post()
-                        .body(new ByteRequestBody(body))
-                        .headers(headers)
-                        .url(xrUrl)
-                        .connectTimeout(30000)
-                        .readTimeout(60000)
-                        .performRequest(AdtUtil.getApplication());
             }
-        } catch (Throwable e) {
-            DeveloperLog.LogD("CrashUtil", e);
-        }
+        });
     }
 
 

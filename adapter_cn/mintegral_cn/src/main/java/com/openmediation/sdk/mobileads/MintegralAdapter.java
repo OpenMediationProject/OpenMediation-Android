@@ -75,7 +75,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
                 public void onInitFail() {
                     if (callback != null) {
                         callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
-                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Mintegral Init Failed"));
                     }
                 }
             });
@@ -192,7 +192,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
             if (rewardVideoHandler == null || !rewardVideoHandler.isBidReady()) {
                 if (callback != null) {
                     callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "MTGRewardedVideo ad not ready"));
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "MTGRewardedVideo Ad Not Ready"));
                 }
                 return;
             }
@@ -202,7 +202,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
             if (rewardVideoHandler == null || !rewardVideoHandler.isReady()) {
                 if (callback != null) {
                     callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "MTGRewardedVideo ad not ready"));
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "MTGRewardedVideo Ad Not Ready"));
                 }
                 return;
             }
