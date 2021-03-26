@@ -32,7 +32,7 @@ dependencies {
   // AdColony-Adapter
   implementation 'com.openmediation.adapters:adcolony:2.1.0'
   // AppLovin-Adapter
-  implementation 'com.openmediation.adapters:applovin:2.1.0'
+  implementation 'com.openmediation.adapters:applovin:2.1.1'
   // MoPub-Adapter
   implementation 'com.openmediation.adapters:mopub:2.1.0'
   // Tapjoy-Adapter
