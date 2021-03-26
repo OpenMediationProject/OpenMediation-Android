@@ -17,7 +17,7 @@ android {
 }
 
 dependencies {
-  implementation 'com.adtiming.om:om-android-sdk:2.1.1'
+  implementation 'com.openmediation:om-android-sdk:2.1.1'
 
   // AdTiming-Adapter
   implementation 'com.openmediation.adapters:adtiming:2.0.1'
@@ -46,7 +46,7 @@ dependencies {
   //IronSource-Adapter
   implementation 'com.openmediation.adapters:ironsource:2.1.0'
   //Fyber-Adapter
-  implementation 'com.adtiming.adapters.om:fyber:2.0.0'
+  implementation 'com.openmediation.adapters:fyber:2.0.0'
   //Helium-Adapter
   implementation 'com.openmediation.adapters:helium:2.1.1'
   // PubNative-Adapter
