@@ -7,7 +7,7 @@ import android.content.Context;
 import android.os.Build;
 import android.text.TextUtils;
 
-import com.openmediation.sdk.bid.AdTimingBidResponse;
+import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.core.MetaData;
 import com.openmediation.sdk.core.OmManager;
 import com.openmediation.sdk.utils.AdtUtil;
@@ -316,14 +316,14 @@ public class RequestBuilder {
      * @param extras the extras
      * @return the byte [ ]
      */
-    public static byte[] buildIcRequestBody(Object... extras) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("pid", extras[0]);
-        params.put("mid", extras[1]);
-        params.put("iid", extras[2]);
-        params.put("scene", extras[3]);
-        params.put("content", extras[4]);
-        return Gzip.inGZip(new JSONObject(params).toString().getBytes(Charset.forName(CommonConstants.CHARTSET_UTF8)));
+    public static byte[] buildIcRequestBody(Object... extras) throws Exception {
+        JSONObject body = getRequestBodyBaseJson();
+        body.put("pid", extras[0]);
+        body.put("mid", extras[1]);
+        body.put("iid", extras[2]);
+        body.put("scene", extras[3]);
+        body.put("content", extras[4]);
+        return Gzip.inGZip(body.toString().getBytes(Charset.forName(CommonConstants.CHARTSET_UTF8)));
     }
 
     /**
@@ -395,7 +395,7 @@ public class RequestBuilder {
         }
         String channel = DataCache.getInstance().getFromMem(KeyConstants.KEY_APP_CHANNEL, String.class);
         body.put(KeyConstants.RequestBody.KEY_CHANNEL, channel);
-        body.put(KeyConstants.RequestBody.KEY_CDID, OmManager.getInstance().getCustomDeviceId());
+        body.put(KeyConstants.RequestBody.KEY_CDID, OmManager.getInstance().getUserId());
         body.put(KeyConstants.RequestBody.KEY_TAGS, OmManager.getInstance().getTagsObject());
         appendRegsObject(body, OmManager.getInstance().getMetaData());
         return body;
@@ -431,7 +431,15 @@ public class RequestBuilder {
         body.put(KeyConstants.RequestBody.KEY_REGS, regs);
     }
 
-    public static byte[] buildWfRequestBody(PlacementInfo info, List<AdTimingBidResponse> c2sResult, List<AdTimingBidResponse> s2sResult,
+    /**
+     * Build wf request body byte [ ].
+     *
+     * @param c2sResult the responses
+     * @param extras    the extras
+     * @return the byte [ ]
+     * @throws Exception the exception
+     */
+    public static byte[] buildWfRequestBody(PlacementInfo info, List<BidResponse> c2sResult, List<BidResponse> s2sResult,
                                             List<InstanceLoadStatus> statusList, String reqId,
                                             String... extras) throws Exception {
         JSONObject body = getRequestBodyBaseJson();
@@ -448,7 +456,7 @@ public class RequestBuilder {
         body.put("act", extras[2]);
         if (c2sResult != null && !c2sResult.isEmpty()) {
             JSONArray array = new JSONArray();
-            for (AdTimingBidResponse response : c2sResult) {
+            for (BidResponse response : c2sResult) {
                 if (response == null) {
                     continue;
                 }
@@ -463,7 +471,7 @@ public class RequestBuilder {
 
         if (s2sResult != null && !s2sResult.isEmpty()) {
             JSONArray array = new JSONArray();
-            for (AdTimingBidResponse response : s2sResult) {
+            for (BidResponse response : s2sResult) {
                 if (response == null) {
                     continue;
                 }

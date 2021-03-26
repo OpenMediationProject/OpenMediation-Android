@@ -16,34 +16,36 @@ public class AuctionUtil {
 
     private static final String AUCTION_LOSE = "${AUCTION_LOSS}";
 
-    public static void notifyWin(BaseInstance instance, AdTimingBidResponse bidResponse) {
+    public static void notifyWin(BaseInstance instance, BidResponse bidResponse) {
         if (bidResponse == null) {
             return;
         }
         String nurl = bidResponse.getNurl();
+        bidResponse.setNotified(true);
         if (TextUtils.isEmpty(nurl)) {
-            AdTimingAuctionManager.getInstance().notifyWin(instance);
+            BidAuctionManager.getInstance().notifyWin(instance);
         } else {
-            AdTimingAuctionManager.getInstance().notifyWin(nurl, instance);
+            BidAuctionManager.getInstance().notifyWin(nurl, instance);
         }
     }
 
-    public static void notifyLose(BaseInstance instance, AdTimingBidResponse bidResponse, int code) {
+    public static void notifyLose(BaseInstance instance, BidResponse bidResponse, int code) {
         if (bidResponse == null) {
             return;
         }
         String lurl = bidResponse.getLurl();
+        bidResponse.setNotified(true);
         if (TextUtils.isEmpty(lurl)) {
-            AdTimingAuctionManager.getInstance().notifyLose(instance, code);
+            BidAuctionManager.getInstance().notifyLose(instance, code);
         } else {
             if (lurl.contains(AUCTION_LOSE)) {
                 lurl = lurl.replace(AUCTION_LOSE, String.valueOf(code));
             }
-            AdTimingAuctionManager.getInstance().notifyLose(lurl, instance);
+            BidAuctionManager.getInstance().notifyLose(lurl, instance);
         }
     }
 
-    public static void notifyLose(Map<BaseInstance, AdTimingBidResponse> bidResponses, int code) {
+    public static void notifyLose(Map<BaseInstance, BidResponse> bidResponses, int code) {
         if (bidResponses == null || bidResponses.isEmpty()) {
             return;
         }
@@ -52,28 +54,29 @@ public class AuctionUtil {
             if (instance == null) {
                 continue;
             }
-            AdTimingBidResponse bidResponse = bidResponses.get(instance);
+            BidResponse bidResponse = bidResponses.get(instance);
             if (bidResponse == null) {
                 continue;
             }
             String lurl = bidResponse.getLurl();
+            bidResponse.setNotified(true);
             if (TextUtils.isEmpty(lurl)) {
-                AdTimingAuctionManager.getInstance().notifyLose(instance, code);
+                BidAuctionManager.getInstance().notifyLose(instance, code);
             } else {
                 if (lurl.contains(AUCTION_LOSE)) {
                     lurl = lurl.replace(AUCTION_LOSE, String.valueOf(code));
                 }
-                AdTimingAuctionManager.getInstance().notifyLose(lurl, instance);
+                BidAuctionManager.getInstance().notifyLose(lurl, instance);
             }
         }
     }
 
-    public static void removeBidResponse(List<AdTimingBidResponse> bidResponses, BaseInstance instance) {
+    public static void removeBidResponse(List<BidResponse> bidResponses, BaseInstance instance) {
         if (bidResponses == null || bidResponses.isEmpty()) {
             return;
         }
-        List<AdTimingBidResponse> removeBidResponse = new ArrayList<>();
-        for (AdTimingBidResponse bidResponse : bidResponses) {
+        List<BidResponse> removeBidResponse = new ArrayList<>();
+        for (BidResponse bidResponse : bidResponses) {
             if (bidResponse.getIid() == instance.getId()) {
                 removeBidResponse.add(bidResponse);
             }
@@ -84,7 +87,7 @@ public class AuctionUtil {
         }
     }
 
-    public static Map<String, Object> generateMapRequestData(AdTimingBidResponse bidResponses) {
+    public static Map<String, Object> generateMapRequestData(BidResponse bidResponses) {
         if (bidResponses == null) {
             return null;
         }
@@ -93,7 +96,7 @@ public class AuctionUtil {
         return extras;
     }
 
-    public static String generateStringRequestData(AdTimingBidResponse bidResponses) {
+    public static String generateStringRequestData(BidResponse bidResponses) {
         if (bidResponses == null) {
             return null;
         }

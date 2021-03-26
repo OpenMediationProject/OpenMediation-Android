@@ -4,7 +4,7 @@
 package com.openmediation.sdk.bid;
 
 public interface BidCallback {
-    void bidSuccess(AdTimingBidResponse response);
+    void bidSuccess(BidResponse response);
 
     void bidFailed(String error);
 }

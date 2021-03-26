@@ -19,7 +19,6 @@ import com.mintegral.msdk.out.MTGBidRewardVideoHandler;
 import com.mintegral.msdk.out.MTGConfiguration;
 import com.mintegral.msdk.out.MTGRewardVideoHandler;
 import com.mintegral.msdk.out.RewardVideoListener;
-import com.mintegral.msdk.out.SDKInitStatusListener;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
@@ -83,9 +82,9 @@ public class MintegralAdapter extends CustomAdsAdapter {
         super.initRewardedVideo(activity, dataMap, callback);
         final String error = check(activity);
         if (TextUtils.isEmpty(error)) {
-            initSDK(activity.getApplicationContext(), new SDKInitStatusListener() {
+            initSDK(activity.getApplicationContext(), new MintegralSingleTon.InitCallback() {
                 @Override
-                public void onInitSuccess() {
+                public void onSuccess() {
                     if (callback != null) {
                         callback.onRewardedVideoInitSuccess();
                     }
@@ -93,10 +92,10 @@ public class MintegralAdapter extends CustomAdsAdapter {
                 }
 
                 @Override
-                public void onInitFail() {
+                public void onFailed(String msg) {
                     if (callback != null) {
                         callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
-                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Mintegral Init Failed"));
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, msg));
                     }
                 }
             });
@@ -235,9 +234,9 @@ public class MintegralAdapter extends CustomAdsAdapter {
         super.initInterstitialAd(activity, dataMap, callback);
         String error = check(activity);
         if (TextUtils.isEmpty(error)) {
-            initSDK(activity.getApplicationContext(), new SDKInitStatusListener() {
+            initSDK(activity.getApplicationContext(), new MintegralSingleTon.InitCallback() {
                 @Override
-                public void onInitSuccess() {
+                public void onSuccess() {
                     if (callback != null) {
                         callback.onInterstitialAdInitSuccess();
                     }
@@ -245,10 +244,10 @@ public class MintegralAdapter extends CustomAdsAdapter {
                 }
 
                 @Override
-                public void onInitFail() {
+                public void onFailed(String msg) {
                     if (callback != null) {
                         callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
-                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Mintegral Init Failed"));
+                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, msg));
                     }
                 }
             });
@@ -382,7 +381,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
         }
     }
 
-    private void initSDK(Context context, SDKInitStatusListener listener) {
+    private void initSDK(Context context, MintegralSingleTon.InitCallback listener) {
         MintegralSingleTon.getInstance().initSDK(context, mAppKey, listener);
     }
 

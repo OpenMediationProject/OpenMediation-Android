@@ -47,7 +47,8 @@ public class ActionActivity extends Activity {
             if (getIntent().getExtras() != null) {
                 getIntent().getExtras().setClassLoader(AdBean.class.getClassLoader());
             }
-            AdBean adBean = getIntent().getParcelableExtra("ad");
+            String adBeanString = getIntent().getStringExtra("adBean");
+            AdBean adBean = AdBean.toAdBean(adBeanString);
             initAndLoad(placementId, adBean);
         } catch (Throwable e) {
             DeveloperLog.LogD("ActionActivity", e);
@@ -79,7 +80,7 @@ public class ActionActivity extends Activity {
         mAdView.getLayoutParams().width = RelativeLayout.LayoutParams.MATCH_PARENT;
         mAdView.getLayoutParams().height = RelativeLayout.LayoutParams.MATCH_PARENT;
 
-        if (adBean.isWebview()) {
+        if (adBean.isWebView()) {
             mAdView.setVisibility(View.VISIBLE);
             //Exit button
             DrawCrossMarkView drawCrossMarkView = new DrawCrossMarkView(this, Color.GRAY);

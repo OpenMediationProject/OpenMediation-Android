@@ -8,8 +8,8 @@ import android.text.TextUtils;
 
 import com.openmediation.sdk.InitCallback;
 import com.openmediation.sdk.banner.AdSize;
-import com.openmediation.sdk.bid.AdTimingAuctionManager;
-import com.openmediation.sdk.bid.AdTimingBidResponse;
+import com.openmediation.sdk.bid.BidAuctionManager;
+import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.bid.AuctionCallback;
 import com.openmediation.sdk.mediation.Callback;
 import com.openmediation.sdk.utils.ActLifecycle;
@@ -87,7 +87,7 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
     /**
      * The M bid responses.
      */
-    protected Map<Integer, AdTimingBidResponse> mBidResponses;
+    protected Map<Integer, BidResponse> mBidResponses;
 
     /**
      * The Is manual triggered.
@@ -238,7 +238,7 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
     }
 
     @Override
-    public void onBidComplete(List<AdTimingBidResponse> c2sResponses, List<AdTimingBidResponse> s2sResponses) {
+    public void onBidComplete(List<BidResponse> c2sResponses, List<BidResponse> s2sResponses) {
         try {
             WaterFallHelper.wfRequest(getPlacementInfo(), mLoadType, c2sResponses, s2sResponses,
                     InsUtil.getInstanceLoadStatuses(mLastInstances), mReqId, this);
@@ -284,7 +284,7 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
                 callbackAdErrorOnUiThread(ErrorCode.ERROR_NO_FILL);
             } else {
                 mTotalIns = tmp;
-                Map<Integer, AdTimingBidResponse> bidResponseMap = WaterFallHelper.getS2sBidResponse(clInfo);
+                Map<Integer, BidResponse> bidResponseMap = WaterFallHelper.getS2sBidResponse(clInfo);
                 if (bidResponseMap != null && !bidResponseMap.isEmpty()) {
                     if (mBidResponses == null) {
                         mBidResponses = new HashMap<>();
@@ -611,7 +611,7 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
                 @Override
                 public void run() {
                     try {
-                        AdTimingAuctionManager.getInstance().bid(mActRef.get(), mPlacement.getId(), mReqId, mPlacement.getT(),
+                        BidAuctionManager.getInstance().bid(mActRef.get(), mPlacement.getId(), mReqId, mPlacement.getT(),
                                 mAdSize, AbstractAd.this);
                     } catch (Exception e) {
                         DeveloperLog.LogD("load ad error", e);
@@ -688,8 +688,8 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
         isDestroyed = false;
     }
 
-    private void storeC2sResult(List<AdTimingBidResponse> c2sResult) {
-        for (AdTimingBidResponse bidResponse : c2sResult) {
+    private void storeC2sResult(List<BidResponse> c2sResult) {
+        for (BidResponse bidResponse : c2sResult) {
             if (bidResponse == null) {
                 continue;
             }

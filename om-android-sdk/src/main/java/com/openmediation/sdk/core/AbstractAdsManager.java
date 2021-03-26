@@ -6,8 +6,8 @@ package com.openmediation.sdk.core;
 import android.app.Activity;
 
 import com.openmediation.sdk.InitCallback;
-import com.openmediation.sdk.bid.AdTimingAuctionManager;
-import com.openmediation.sdk.bid.AdTimingBidResponse;
+import com.openmediation.sdk.bid.BidAuctionManager;
+import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.bid.AuctionCallback;
 import com.openmediation.sdk.bid.AuctionUtil;
 import com.openmediation.sdk.bid.BidLoseReason;
@@ -45,7 +45,6 @@ import com.openmediation.sdk.utils.model.Placement;
 import com.openmediation.sdk.utils.model.Scene;
 import com.openmediation.sdk.utils.request.network.Request;
 import com.openmediation.sdk.utils.request.network.Response;
-import com.openmediation.sdk.utils.request.network.util.NetworkChecker;
 
 import org.json.JSONObject;
 
@@ -97,7 +96,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
      * The M scene.
      */
     protected Scene mScene;
-    private Map<Integer, AdTimingBidResponse> mBidResponses;
+    private Map<Integer, BidResponse> mBidResponses;
 
     private OmManager.LOAD_TYPE mLoadType;
     //Adapters to be loaded
@@ -161,7 +160,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
 
         if (instance.getHb() == 1) {
             instance.reportInsLoad(EventId.INSTANCE_PAYLOAD_REQUEST);
-            AdTimingBidResponse bidResponse = null;
+            BidResponse bidResponse = null;
             if (mBidResponses != null) {
                 bidResponse = mBidResponses.get(instance.getId());
             }
@@ -466,7 +465,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
     }
 
     @Override
-    public void onBidComplete(List<AdTimingBidResponse> c2sResponses, List<AdTimingBidResponse> s2sResponses) {
+    public void onBidComplete(List<BidResponse> c2sResponses, List<BidResponse> s2sResponses) {
         try {
             if (mBidResponses == null) {
                 mBidResponses = new ConcurrentHashMap<>();
@@ -474,7 +473,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
             if (c2sResponses != null && !c2sResponses.isEmpty()) {
                 storeC2sResult(c2sResponses);
             }
-            List<AdTimingBidResponse> bidResponses = appendLastBidResult();
+            List<BidResponse> bidResponses = appendLastBidResult();
             if (bidResponses != null && !bidResponses.isEmpty()) {
                 if (c2sResponses == null) {
                     c2sResponses = new ArrayList<>();
@@ -573,7 +572,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
                 isInLoadingProgress = false;
             } else {
                 if (mPlacement != null) {
-                    Map<Integer, AdTimingBidResponse> bidResponseMap = WaterFallHelper.getS2sBidResponse(clInfo);
+                    Map<Integer, BidResponse> bidResponseMap = WaterFallHelper.getS2sBidResponse(clInfo);
                     if (bidResponseMap != null && !bidResponseMap.isEmpty()) {
                         if (mBidResponses == null) {
                             mBidResponses = new ConcurrentHashMap<>();
@@ -650,7 +649,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
                 @Override
                 public void run() {
                     try {
-                        AdTimingAuctionManager.getInstance().bid(mActivityReference.get(), mPlacement.getId(), mReqId, mPlacement.getT(),
+                        BidAuctionManager.getInstance().bid(mActivityReference.get(), mPlacement.getId(), mReqId, mPlacement.getT(),
                                 AbstractAdsManager.this);
                     } catch (Exception e) {
                         Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
@@ -914,7 +913,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
         Set<Integer> ids = mBidResponses.keySet();
         for (Integer id : ids) {
             if (availableIns.contains(id)) {
-                AdTimingBidResponse bidResponse = mBidResponses.get(id);
+                BidResponse bidResponse = mBidResponses.get(id);
                 if (bidResponse != null && bidResponse.isExpired()) {
                     resetMediationStateAndNotifyLose(InsUtil.getInsById(mTotalIns, id));
                 }
@@ -924,13 +923,13 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
         }
     }
 
-    private List<AdTimingBidResponse> appendLastBidResult() {
-        List<AdTimingBidResponse> responses = null;
+    private List<BidResponse> appendLastBidResult() {
+        List<BidResponse> responses = null;
         if (hasAvailableCache()) {
             responses = new ArrayList<>();
             List<Integer> ids = InsUtil.getInsIdWithStatus(mTotalIns, Instance.MEDIATION_STATE.AVAILABLE);
             for (Integer id : ids) {
-                AdTimingBidResponse bidResponse = mBidResponses.get(id);
+                BidResponse bidResponse = mBidResponses.get(id);
                 if (bidResponse != null) {
                     responses.add(bidResponse);
                 }
@@ -946,13 +945,13 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
         if (!mBidResponses.containsKey(instance.getId())) {
             return;
         }
-        AdTimingBidResponse bidResponse = mBidResponses.get(instance.getId());
+        BidResponse bidResponse = mBidResponses.get(instance.getId());
         mBidResponses.remove(instance.getId());
-        instance.setBidResponse(null);
         if (bidResponse == null) {
             return;
         }
         AuctionUtil.notifyWin(instance, bidResponse);
+//        instance.setBidResponse(null);
     }
 
     private void notifyUnShowedBidLose(BaseInstance instance) {
@@ -962,13 +961,13 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
         if (!mBidResponses.containsKey(instance.getId())) {
             return;
         }
-        AdTimingBidResponse bidResponse = mBidResponses.get(instance.getId());
+        BidResponse bidResponse = mBidResponses.get(instance.getId());
         mBidResponses.remove(instance.getId());
-        instance.setBidResponse(null);
         if (bidResponse == null) {
             return;
         }
         AuctionUtil.notifyLose(instance, bidResponse, BidLoseReason.INVENTORY_DID_NOT_MATERIALISE.getValue());
+        instance.setBidResponse(null);
     }
 
     private void notifyLoadFailedInsBidLose(BaseInstance instance) {
@@ -978,20 +977,20 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
         if (!mBidResponses.containsKey(instance.getId())) {
             return;
         }
-        AdTimingBidResponse bidResponse = mBidResponses.get(instance.getId());
+        BidResponse bidResponse = mBidResponses.get(instance.getId());
         mBidResponses.remove(instance.getId());
-        instance.setBidResponse(null);
         if (bidResponse == null) {
             return;
         }
         AuctionUtil.notifyLose(instance, bidResponse, BidLoseReason.INTERNAL.getValue());
+        instance.setBidResponse(null);
     }
 
     private void notifyUnLoadInsBidLose() {
         if (mTotalIns == null || mBidResponses == null) {
             return;
         }
-        Map<BaseInstance, AdTimingBidResponse> unLoadInsBidResponses = new HashMap<>();
+        Map<BaseInstance, BidResponse> unLoadInsBidResponses = new HashMap<>();
         for (Instance in : mTotalIns) {
             if (in == null) {
                 continue;
@@ -1022,8 +1021,8 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
                 PlacementUtils.placementEventParams(mPlacement != null ? mPlacement.getId() : "")));
     }
 
-    private void storeC2sResult(List<AdTimingBidResponse> c2sResult) {
-        for (AdTimingBidResponse bidResponse : c2sResult) {
+    private void storeC2sResult(List<BidResponse> c2sResult) {
+        for (BidResponse bidResponse : c2sResult) {
             if (bidResponse == null) {
                 continue;
             }

@@ -33,20 +33,20 @@ ext {
 //support 包相关包的引用
     dependencies = [
             // http://helpcenter.adtiming.com/
-            "adtiming"                   : 'com.adtiming:adnetwork:6.8.1@aar',
+            "adtiming"                   : 'com.adtiming:adnetwork:6.8.2@aar',
             //fb https://developers.facebook.com/docs/audience-network/changelog-android/
-            "facebook"                   : 'com.facebook.android:audience-network-sdk:6.2.1',
+            "facebook"                   : 'com.facebook.android:audience-network-sdk:6.3.0',
             //admob https://developers.google.com/admob/android/rel-notes
-            "admob"                      : 'com.google.android.gms:play-services-ads:19.7.0',
+            "admob"                      : 'com.google.android.gms:play-services-ads:19.8.0',
             //vungle https://github.com/Vungle/Android-SDK/blob/master/CHANGELOG.md
             "vungle"                     : 'com.vungle:publisher-sdk-android:6.9.1',
             //AdColony https://github.com/AdColony/AdColony-Android-SDK/blob/master/CHANGELOG.md
             "adcolony"                   : 'com.adcolony:sdk:4.4.1',
             //AppLovin https://dash.applovin.com/documentation/mediation/android/changelog
-            "applovin"                   : 'com.applovin:applovin-sdk:9.15.1',
+            "applovin"                   : 'com.applovin:applovin-sdk:10.0.0',
             //MoPub https://developers.mopub.com/publishers/android/changelog/
-            "mopub"                      : 'com.mopub:mopub-sdk:5.15.0@aar',
-            //TapJoy https://dev.tapjoy.com/en/android-sdk/Quickstart
+            "mopub"                      : 'com.mopub:mopub-sdk:5.16.0@aar',
+            //TapJoy https://dev.tapjoy.com/en/android-sdk/Changelog
             "tapjoy"                     : 'com.tapjoy:tapjoy-android-sdk:12.7.1@aar',
             //chartboost https://answers.chartboost.com/en-us/child_article/android-amazon
             "chartboost"                 : 'com.chartboost:chartboost-sdk:8.2.0',
@@ -59,42 +59,45 @@ ext {
             //Mintegral http://cdn-adn.rayjump.com/cdn-adn/v2/markdown_v2/index.html?file=sdk-m_sdk-android&lang=en
             "mtg_version"                : '15.4.31',
             "mtg_china_version"          : '15.4.32',
-            // IronSource https://developers.ironsrc.com/ironsource-mobile/android/android-sdk
-            "ironsource"                 : 'com.ironsource.sdk:mediationsdk:7.1.0.2',
+            // IronSource https://developers.ironsrc.com/ironsource-mobile/android/sdk-change-log/
+            "ironsource"                 : 'com.ironsource.sdk:mediationsdk:7.1.2',
             // https://developer.fyber.com/hc/en-us/articles/360010822437-Integrating-the-Android-SDK
-            "fyber"                      : '7.8.0',
+            "fyber"                      : '7.8.1',
             // https://www.pangleglobal.com/
             "pangle"                     : 'com.bytedance.sdk:pangle-sdk:3.4.1.1',
             // https://helium.chartboost.com/
             "helium"                     : 'com.chartboost:helium:2.2.1',
             "eventbus"                   : 'org.greenrobot:eventbus:3.2.0',
             // https://developers.adnet.qq.com/doc/android/access_doc
-            "tencentad"                  : 'com.qq.e.union:union:4.332.1202',
+            "tencentad"                  : 'com.qq.e.union:union:4.333.1203',
             // https://ogury-ltd.gitbook.io/android/
-            "ogury"                      : 'co.ogury:ogury-sdk:5.0.5'
+            "ogury"                      : 'co.ogury:ogury-sdk:5.0.6',
+            // https://github.com/pubnative/pubnative-hybid-android-sdk/wiki/HyBid-Configuration
+            "pubnative"                  : 'net.pubnative:hybid.sdk:2.4.0'
     ]
 
     adapterVersion = [
             'adtiming'       : '2.0.1',
             'admob'          : '2.1.0',
-            'facebook'       : '2.0.0',
+            'facebook'       : '2.1.0',
             'unity'          : '2.0.1',
-            'vungle'         : '2.1.0',
+            'vungle'         : '2.1.1',
             'adcolony'       : '2.1.0',
             'applovin'       : '2.1.0',
-            'mopub'          : '2.0.0',
+            'mopub'          : '2.1.0',
             'tapjoy'         : '2.0.0',
-            'chartboost'     : '2.0.0',
-            'helium'         : '2.0.0',
+            'chartboost'     : '2.1.0',
+            'helium'         : '2.1.1',
             'tiktok'         : '2.1.0',
-            'mintegral'      : '2.1.0',
-            'ironsource'     : '2.0.0',
+            'mintegral'      : '2.1.2',
+            'ironsource'     : '2.1.0',
             'fyber'          : '2.0.0',
             'ogury'          : '1.0.0',
-            'tiktok_cn'      : '2.1.0',
+            'pubnative'      : '1.0.0',
+            'tiktok_cn'      : '2.1.1',
             'tencentad_cn'   : '2.1.0',
-            'mintegral_cn'   : '2.1.0',
-            'sigmob_cn'      : '1.0.0',
+            'mintegral_cn'   : '2.1.2',
+            'sigmob_cn'      : '1.1.0',
             'ksad_cn'        : '1.0.0',
     ]
 }
@@ -131,6 +134,9 @@ allprojects {
         }
         maven {
             url 'https://maven.ogury.co'
+        }
+        maven {
+            url 'https://dl.bintray.com/pubnative/maven'
         }
     }
 }

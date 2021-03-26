@@ -6,5 +6,5 @@ package com.openmediation.sdk.bid;
 import java.util.List;
 
 public interface AuctionCallback {
-    void onBidComplete(List<AdTimingBidResponse> c2sResponses, List<AdTimingBidResponse> s2sResponses);
+    void onBidComplete(List<BidResponse> c2sResponses, List<BidResponse> s2sResponses);
 }

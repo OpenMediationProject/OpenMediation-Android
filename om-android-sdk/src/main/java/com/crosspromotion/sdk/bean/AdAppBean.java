@@ -1,14 +1,13 @@
 package com.crosspromotion.sdk.bean;
 
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.text.TextUtils;
 
+import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.JsonUtil;
 
 import org.json.JSONObject;
 
-public class AdAppBean implements Parcelable {
+public class AdAppBean {
 
     private String id;
     private String name;
@@ -27,6 +26,7 @@ public class AdAppBean implements Parcelable {
         this.name = object.optString("name");
         this.icon = object.optString("icon");
         this.rating = object.optDouble("rating", 0);
+        this.replaceIcon = object.optString("replaceIcon");
     }
 
     public String getId() {
@@ -53,37 +53,22 @@ public class AdAppBean implements Parcelable {
         return object;
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(this.id);
-        dest.writeString(this.name);
-        dest.writeString(this.icon);
-        dest.writeDouble(this.rating);
-        dest.writeString(this.mOriData);
-    }
-
-    protected AdAppBean(Parcel in) {
-        this.id = in.readString();
-        this.name = in.readString();
-        this.icon = in.readString();
-        this.rating = in.readDouble();
-        this.mOriData = in.readString();
-    }
-
-    public static final Creator<AdAppBean> CREATOR = new Creator<AdAppBean>() {
-        @Override
-        public AdAppBean createFromParcel(Parcel source) {
-            return new AdAppBean(source);
+    public static JSONObject toJSONObject(AdAppBean bean) {
+        if (bean == null) {
+            return null;
         }
-
-        @Override
-        public AdAppBean[] newArray(int size) {
-            return new AdAppBean[size];
+        try {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("id", bean.id);
+            jsonObject.put("name", bean.name);
+            jsonObject.put("icon", bean.icon);
+            jsonObject.put("rating", bean.rating);
+            jsonObject.put("replaceIcon", bean.replaceIcon);
+            jsonObject.put("mOriData", bean.mOriData);
+            return jsonObject;
+        } catch (Exception e) {
+            DeveloperLog.LogE("AdAppBean convert JSONObject error: " + e.getMessage());
         }
-    };
+        return null;
+    }
 }

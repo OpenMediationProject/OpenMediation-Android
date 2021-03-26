@@ -6,7 +6,7 @@ package com.openmediation.sdk.utils.helper;
 import android.text.TextUtils;
 import android.util.SparseArray;
 
-import com.openmediation.sdk.bid.AdTimingBidResponse;
+import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.core.OmManager;
 import com.openmediation.sdk.utils.AdsUtil;
 import com.openmediation.sdk.utils.AdtUtil;
@@ -83,8 +83,8 @@ public class WaterFallHelper {
      * @throws Exception the exception
      */
     public static void wfRequest(final PlacementInfo info, final OmManager.LOAD_TYPE type,
-                                 final List<AdTimingBidResponse> c2sResult,
-                                 final List<AdTimingBidResponse> s2sResult,
+                                 final List<BidResponse> c2sResult,
+                                 final List<BidResponse> s2sResult,
                                  final List<InstanceLoadStatus> statusList,
                                  final String reqId,
                                  final Request.OnRequestCallback callback) throws Exception {
@@ -125,7 +125,7 @@ public class WaterFallHelper {
         });
     }
 
-    public static Map<Integer, AdTimingBidResponse> getS2sBidResponse(JSONObject clInfo) {
+    public static Map<Integer, BidResponse> getS2sBidResponse(JSONObject clInfo) {
         if (clInfo == null) {
             return null;
         }
@@ -133,7 +133,7 @@ public class WaterFallHelper {
         if (bidresp == null || bidresp.length() == 0) {
             return null;
         }
-        Map<Integer, AdTimingBidResponse> bidResponses = new HashMap<>();
+        Map<Integer, BidResponse> bidResponses = new HashMap<>();
         int len = bidresp.length();
         for (int i = 0; i < len; i++) {
             JSONObject object = bidresp.optJSONObject(i);
@@ -148,7 +148,7 @@ public class WaterFallHelper {
                 DeveloperLog.LogD("Ins : " + iid + " bid failed cause" + " nbr : " + nbr + " err : " + err);
                 continue;
             }
-            AdTimingBidResponse response = new AdTimingBidResponse();
+            BidResponse response = new BidResponse();
             response.setIid(iid);
             response.setPayLoad(adm);
             double price = object.optDouble("price", 0);

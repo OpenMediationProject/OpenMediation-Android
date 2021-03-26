@@ -6,7 +6,7 @@ package com.openmediation.sdk.core;
 import android.app.Activity;
 import android.os.Looper;
 
-import com.openmediation.sdk.bid.AdTimingBidResponse;
+import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.bid.AuctionUtil;
 import com.openmediation.sdk.bid.BidLoseReason;
 import com.openmediation.sdk.mediation.AdapterError;
@@ -419,11 +419,13 @@ public abstract class AbstractHybridAd extends AbstractAd {
         if (!mBidResponses.containsKey(instance.getId())) {
             return;
         }
-        AdTimingBidResponse bidResponse = mBidResponses.get(instance.getId());
-        if (bidResponse == null) {
+        BidResponse bidResponse = mBidResponses.get(instance.getId());
+        if (bidResponse == null || bidResponse.isNotified()) {
             return;
         }
+//        mBidResponses.remove(instance.getId());
         AuctionUtil.notifyWin(instance, bidResponse);
+//        instance.setBidResponse(null);
     }
 
     private void notifyLoadFailedInsBidLose(BaseInstance instance) {
@@ -433,11 +435,13 @@ public abstract class AbstractHybridAd extends AbstractAd {
         if (!mBidResponses.containsKey(instance.getId())) {
             return;
         }
-        AdTimingBidResponse bidResponse = mBidResponses.get(instance.getId());
+        BidResponse bidResponse = mBidResponses.get(instance.getId());
+        mBidResponses.remove(instance.getId());
         if (bidResponse == null) {
             return;
         }
         AuctionUtil.notifyLose(instance, bidResponse, BidLoseReason.INTERNAL.getValue());
+        instance.setBidResponse(null);
     }
 
     private void notifyUnLoadInsBidLose() {
@@ -448,7 +452,7 @@ public abstract class AbstractHybridAd extends AbstractAd {
         if (mLoadedInsIndex == mTotalIns.length) {
             return;
         }
-        Map<BaseInstance, AdTimingBidResponse> unLoadInsBidResponses = new HashMap<>();
+        Map<BaseInstance, BidResponse> unLoadInsBidResponses = new HashMap<>();
         int len = mTotalIns.length;
         for (int i = mLoadedInsIndex; i < len; i++) {
             BaseInstance instance = mTotalIns[i];
@@ -460,6 +464,8 @@ public abstract class AbstractHybridAd extends AbstractAd {
                 continue;
             }
             unLoadInsBidResponses.put(instance, mBidResponses.get(instance.getId()));
+            mBidResponses.remove(instance.getId());
+            instance.setBidResponse(null);
         }
         if (!unLoadInsBidResponses.isEmpty()) {
             AuctionUtil.notifyLose(unLoadInsBidResponses, BidLoseReason.LOST_TO_HIGHER_BIDDER.getValue());

@@ -5,7 +5,7 @@ package com.openmediation.sdk.mobileads;
 
 import android.content.Context;
 
-import com.openmediation.sdk.bid.AdTimingBidResponse;
+import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.bid.BidAdapter;
 import com.openmediation.sdk.bid.BidCallback;
 import com.openmediation.sdk.bid.BidConstance;
@@ -87,7 +87,7 @@ public class HeliumBidAdapter extends BidAdapter implements HeliumBidCallback {
             return;
         }
         String price = map.get("price");
-        AdTimingBidResponse bidResponse = new AdTimingBidResponse();
+        BidResponse bidResponse = new BidResponse();
         bidResponse.setOriginal(map.toString());
         bidResponse.setPrice(Double.parseDouble(price));
         callback.bidSuccess(bidResponse);

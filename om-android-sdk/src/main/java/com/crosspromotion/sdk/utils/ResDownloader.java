@@ -20,7 +20,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 
-class ResDownloader {
+public class ResDownloader {
 
     static boolean downloadFile(List<String> urls, List<String> necessaryRes) throws Exception {
         int failSize = 0;
@@ -35,7 +35,7 @@ class ResDownloader {
         return failSize == 0;
     }
 
-    static File downloadFile(String url) throws Exception {
+    public static File downloadFile(String url) throws Exception {
         if (TextUtils.isEmpty(url)) {
             return null;
         }

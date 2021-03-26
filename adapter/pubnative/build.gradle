@@ -1,0 +1,31 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion rootProject.ext.version.compileSdkVersion
+
+
+    defaultConfig {
+        minSdkVersion rootProject.ext.version.minSdkVersion
+        targetSdkVersion rootProject.ext.version.targetSdkVersion
+        versionCode rootProject.ext.version.versionCode
+        versionName rootProject.ext.adapterVersion.pubnative
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt')
+            consumerProguardFiles 'proguard-rules.pro'
+        }
+    }
+
+}
+android.libraryVariants.all { variant ->
+    variant.outputs.all {
+        outputFileName = project.name +'.aar'
+    }
+}
+dependencies {
+    implementation rootProject.ext.dependencies.pubnative
+    implementation project(':om-android-sdk')
+}

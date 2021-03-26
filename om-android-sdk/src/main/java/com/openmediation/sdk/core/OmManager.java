@@ -5,6 +5,7 @@ package com.openmediation.sdk.core;
 
 import android.app.Activity;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.openmediation.sdk.InitCallback;
 import com.openmediation.sdk.InitConfiguration;
@@ -55,9 +56,9 @@ import static com.openmediation.sdk.OmAds.AD_TYPE;
  * The type Om manager.
  */
 public final class OmManager implements InitCallback {
-    private Map<String, IsManager> mIsManagers;
-    private Map<String, RvManager> mRvManagers;
-    private Map<String, CpManager> mCpManagers;
+    private final Map<String, IsManager> mIsManagers;
+    private final Map<String, RvManager> mRvManagers;
+    private final Map<String, CpManager> mCpManagers;
     private ConcurrentMap<String, Set<InterstitialAdListener>> mIsListeners;
     private ConcurrentMap<String, Set<RewardedVideoListener>> mRvListeners;
     private ConcurrentMap<String, Set<PromotionAdListener>> mCpListeners;
@@ -69,14 +70,15 @@ public final class OmManager implements InitCallback {
     private ConcurrentLinkedQueue<String> mDelayLoadRv;
     private ConcurrentLinkedQueue<String> mDelayLoadCp;
 
-    private List<AD_TYPE> mPreloadAdTypes;
-    private AtomicBoolean mDidRvInit = new AtomicBoolean(false);
-    private AtomicBoolean mDidIsInit = new AtomicBoolean(false);
-    private AtomicBoolean mDidCpInit = new AtomicBoolean(false);
+    private final List<AD_TYPE> mPreloadAdTypes;
+    private final AtomicBoolean mDidRvInit = new AtomicBoolean(false);
+    private final AtomicBoolean mDidIsInit = new AtomicBoolean(false);
+    private final AtomicBoolean mDidCpInit = new AtomicBoolean(false);
     private boolean mIsInForeground = true;
-    private String mCustomDeviceId = "";
-    private JSONObject mTagsObject;
-    private static ConcurrentLinkedQueue<InitCallback> mInitCallbacks = new ConcurrentLinkedQueue<>();
+    private String mUserId = null;
+    private static final ConcurrentLinkedQueue<InitCallback> mInitCallbacks = new ConcurrentLinkedQueue<>();
+
+    private Map<String, Object> mTagsMap;
 
     private static final class OmHolder {
         private static final OmManager INSTANCE = new OmManager();
@@ -107,7 +109,7 @@ public final class OmManager implements InitCallback {
          */
         MANUAL(4);
 
-        private int mValue;
+        private final int mValue;
 
         LOAD_TYPE(int value) {
             this.mValue = value;
@@ -179,7 +181,7 @@ public final class OmManager implements InitCallback {
      * @param callback the callback
      */
     void pendingInit(InitCallback callback) {
-        if (mInitCallbacks != null && callback != null) {
+        if (callback != null) {
             mInitCallbacks.add(callback);
         }
     }
@@ -280,20 +282,135 @@ public final class OmManager implements InitCallback {
         IapHelper.setIap(iapCount, currency);
     }
 
-    public void setCustomDeviceId(String customDeviceId) {
-        mCustomDeviceId = customDeviceId;
+    public void setUserId(String userId) {
+        mUserId = userId;
     }
 
-    public String getCustomDeviceId() {
-        return mCustomDeviceId;
+    public String getUserId() {
+        return mUserId;
     }
 
     public void setCustomTags(Map<String, Object> map) {
-        mTagsObject = JsonUtil.convert(map);
+        if (!checkValidMap(map)) {
+            return;
+        }
+        if (mTagsMap == null) {
+            mTagsMap = new ConcurrentHashMap<>();
+        }
+        if (mTagsMap.size() + map.size() > 10) {
+            Log.w("OmAds", "The number of tags should not be more than 10!");
+            return;
+        }
+        mTagsMap.putAll(map);
+    }
+
+    public Map<String, Object> getCustomTags() {
+        return mTagsMap;
     }
 
     public JSONObject getTagsObject() {
-        return mTagsObject;
+        return JsonUtil.convert(mTagsMap);
+    }
+
+    private boolean checkValidMap(Map<String, Object> map) {
+        if (map == null) {
+            Log.w("OmAds", "The map of tags is empty!");
+            return false;
+        }
+        if (map.size() >= 10) {
+            Log.w("OmAds", "The number of tags should not be more than 10!");
+            return false;
+        }
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            if (TextUtils.isEmpty(key)) {
+                Log.w("OmAds", "The key of tag should not be empty!");
+                return false;
+            }
+            if (checkInvalidTagValue(value)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void setCustomTagObject(String key, Object value) {
+        if (TextUtils.isEmpty(key)) {
+            Log.w("OmAds", "The key of tag should not be empty!");
+            return;
+        }
+        if (value == null) {
+            Log.w("OmAds", "The value of tag should not be empty!");
+            return;
+        }
+        if (checkInvalidTagValue(value)) {
+            return;
+        }
+        if (mTagsMap == null) {
+            mTagsMap = new ConcurrentHashMap<>();
+        }
+        if (mTagsMap.size() >= 10) {
+            Log.w("OmAds", "The number of tags should not be more than 10!");
+            return;
+        }
+        mTagsMap.put(key, value);
+    }
+
+    public void setCustomTagObjects(String key, Object[] values) {
+        if (TextUtils.isEmpty(key)) {
+            Log.w("OmAds", "The key of tag should not be empty!");
+            return;
+        }
+        if (values == null || values.length == 0) {
+            Log.w("OmAds", "The value of tag should not be empty!");
+            return;
+        }
+        for (Object value : values) {
+            if (checkInvalidTagValue(value)) {
+                return;
+            }
+        }
+        if (mTagsMap == null) {
+            mTagsMap = new ConcurrentHashMap<>();
+        }
+        if (mTagsMap.size() >= 10) {
+            Log.w("OmAds", "The number of tags should not be more than 10!");
+            return;
+        }
+        mTagsMap.put(key, values);
+    }
+
+    private boolean checkInvalidTagValue(Object value) {
+        if (value == null) {
+            Log.w("OmAds", "The value of tag should not be empty!");
+            return true;
+        }
+        if (value instanceof String) {
+            String stringValue = (String) value;
+            if (stringValue.length() == 0) {
+                Log.w("OmAds", "The value of tag should not be empty!");
+                return true;
+            }
+            if (stringValue.length() > 48) {
+                Log.w("OmAds", "The length of tag value should not be more than 48!");
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void removeCustomTag(String key) {
+        if (mTagsMap != null) {
+            mTagsMap.remove(key);
+        }
+    }
+
+    public void clearCustomTags() {
+        if (mTagsMap != null) {
+            mTagsMap.clear();
+        }
+        mTagsMap = null;
     }
 
     /**

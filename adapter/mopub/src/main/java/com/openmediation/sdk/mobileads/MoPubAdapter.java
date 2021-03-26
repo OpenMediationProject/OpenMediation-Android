@@ -14,9 +14,9 @@ import com.mopub.common.SdkInitializationListener;
 import com.mopub.common.privacy.PersonalInfoManager;
 import com.mopub.mobileads.MoPubErrorCode;
 import com.mopub.mobileads.MoPubInterstitial;
-import com.mopub.mobileads.MoPubRewardedVideoListener;
-import com.mopub.mobileads.MoPubRewardedVideoManager;
-import com.mopub.mobileads.MoPubRewardedVideos;
+import com.mopub.mobileads.MoPubRewardedAdListener;
+import com.mopub.mobileads.MoPubRewardedAdManager;
+import com.mopub.mobileads.MoPubRewardedAds;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
@@ -28,18 +28,18 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideoListener
+public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedAdListener
         , MoPubInterstitial.InterstitialAdListener {
     private static final String TAG = "OM-MoPub";
     private static final String TP_PARAM = "imext";
 
     private volatile InitState mInitState = InitState.NOT_INIT;
-    private ConcurrentMap<String, RewardedVideoCallback> mRvCallback;
-    private ConcurrentMap<String, MoPubInterstitial> mInterstitialAds;
-    private ConcurrentMap<MoPubInterstitial, InterstitialAdCallback> mIsCallback;
+    private final ConcurrentMap<String, RewardedVideoCallback> mRvCallback;
+    private final ConcurrentMap<String, MoPubInterstitial> mInterstitialAds;
+    private final ConcurrentMap<MoPubInterstitial, InterstitialAdCallback> mIsCallback;
 
 
-    private MoPubRewardedVideoManager.RequestParameters mRequestParameters;
+    private final MoPubRewardedAdManager.RequestParameters mRequestParameters;
     private String mShowingId;
 
 
@@ -48,7 +48,7 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
         mInterstitialAds = new ConcurrentHashMap<>();
         mIsCallback = new ConcurrentHashMap<>();
         // adjustment requested by MoPub to be able to report on this incremental supply
-        mRequestParameters = new MoPubRewardedVideoManager.RequestParameters(TP_PARAM);
+        mRequestParameters = new MoPubRewardedAdManager.RequestParameters(TP_PARAM);
     }
 
     @Override
@@ -103,7 +103,7 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
         MoPub.initializeSdk(activity, sdkConfiguration, new SdkInitializationListener() {
             @Override
             public void onInitializationFinished() {
-                MoPubRewardedVideos.setRewardedVideoListener(MoPubAdapter.this);
+                MoPubRewardedAds.setRewardedAdListener(MoPubAdapter.this);
                 for (Map.Entry<String, RewardedVideoCallback> videoCallbackEntry : mRvCallback.entrySet()) {
                     if (videoCallbackEntry != null) {
                         videoCallbackEntry.getValue().onRewardedVideoInitSuccess();
@@ -167,12 +167,12 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
             if (!mRvCallback.containsKey(adUnitId)) {
                 mRvCallback.put(adUnitId, callback);
             }
-            if (MoPubRewardedVideos.hasRewardedVideo(adUnitId)) {
+            if (MoPubRewardedAds.hasRewardedAd(adUnitId)) {
                 if (callback != null) {
                     callback.onRewardedVideoLoadSuccess();
                 }
             } else {
-                MoPubRewardedVideos.loadRewardedVideo(adUnitId, mRequestParameters);
+                MoPubRewardedAds.loadRewardedAd(adUnitId, mRequestParameters);
             }
         } else {
             if (callback != null) {
@@ -197,7 +197,7 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
             if (!mRvCallback.containsKey(adUnitId)) {
                 mRvCallback.put(adUnitId, callback);
             }
-            MoPubRewardedVideos.showRewardedVideo(adUnitId);
+            MoPubRewardedAds.showRewardedAd(adUnitId);
         } else {
             if (callback != null) {
                 callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
@@ -211,11 +211,11 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
         if (TextUtils.isEmpty(adUnitId)) {
             return false;
         }
-        return MoPubRewardedVideos.hasRewardedVideo(adUnitId);
+        return MoPubRewardedAds.hasRewardedAd(adUnitId);
     }
 
     @Override
-    public void onRewardedVideoLoadSuccess(String adUnitId) {
+    public void onRewardedAdLoadSuccess(String adUnitId) {
         RewardedVideoCallback callback = mRvCallback.get(adUnitId);
         if (callback != null) {
             callback.onRewardedVideoLoadSuccess();
@@ -223,7 +223,7 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
     }
 
     @Override
-    public void onRewardedVideoLoadFailure(String adUnitId, MoPubErrorCode errorCode) {
+    public void onRewardedAdLoadFailure(String adUnitId, MoPubErrorCode errorCode) {
         RewardedVideoCallback callback = mRvCallback.get(adUnitId);
         if (callback != null) {
             callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
@@ -232,7 +232,7 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
     }
 
     @Override
-    public void onRewardedVideoStarted(String adUnitId) {
+    public void onRewardedAdStarted(String adUnitId) {
         mShowingId = adUnitId;
         RewardedVideoCallback callback = mRvCallback.get(adUnitId);
         if (callback != null) {
@@ -242,7 +242,7 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
     }
 
     @Override
-    public void onRewardedVideoPlaybackError(String adUnitId, MoPubErrorCode errorCode) {
+    public void onRewardedAdShowError(String adUnitId, MoPubErrorCode errorCode) {
         RewardedVideoCallback callback = mRvCallback.get(adUnitId);
         if (callback != null) {
             callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
@@ -251,7 +251,7 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
     }
 
     @Override
-    public void onRewardedVideoClicked(String adUnitId) {
+    public void onRewardedAdClicked(String adUnitId) {
         RewardedVideoCallback callback = mRvCallback.get(adUnitId);
         if (callback != null) {
             callback.onRewardedVideoAdClicked();
@@ -259,7 +259,7 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
     }
 
     @Override
-    public void onRewardedVideoClosed(String adUnitId) {
+    public void onRewardedAdClosed(String adUnitId) {
         RewardedVideoCallback callback = mRvCallback.get(adUnitId);
         if (callback != null) {
             callback.onRewardedVideoAdClosed();
@@ -267,7 +267,7 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedVideo
     }
 
     @Override
-    public void onRewardedVideoCompleted(Set<String> adUnitIds, MoPubReward reward) {
+    public void onRewardedAdCompleted(Set<String> adUnitIds, MoPubReward reward) {
         if (!TextUtils.isEmpty(mShowingId)) {
             RewardedVideoCallback callback = mRvCallback.get(mShowingId);
             if (callback != null) {

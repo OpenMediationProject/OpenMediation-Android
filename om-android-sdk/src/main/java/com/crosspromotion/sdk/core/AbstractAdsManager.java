@@ -2,7 +2,6 @@ package com.crosspromotion.sdk.core;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 import android.os.Looper;
 import android.text.TextUtils;
 
@@ -141,7 +140,7 @@ public abstract class AbstractAdsManager implements Request.OnRequestCallback {
     /**
      * @param clazz Interactive Interstitial Video
      */
-    public void show(Class clazz) {
+    public void show(Class<?> clazz) {
         if (!isReady()) {
             onAdsShowFailed(ErrorBuilder.build(ErrorCode.CODE_SHOW_FAIL_NOT_READY));
             return;
@@ -149,9 +148,7 @@ public abstract class AbstractAdsManager implements Request.OnRequestCallback {
 
         try {
             Intent intent = new Intent(mContext, clazz);
-            Bundle bundle = new Bundle();
-            bundle.putParcelable("ad", mAdBean);
-            intent.putExtra("bundle", bundle);
+            intent.putExtra("adBean", AdBean.toJsonString(mAdBean));
             intent.putExtra("placementId", mPlacementId);
             intent.putExtra("adType", getAdType());
             intent.putExtra("sceneName",
@@ -175,14 +172,13 @@ public abstract class AbstractAdsManager implements Request.OnRequestCallback {
                 return;
             }
             JSONObject jsonObject = new JSONObject(response.body().string());
-//            int code = jsonObject.optInt("code");
             JSONArray campaigns = jsonObject.optJSONArray("campaigns");
             if (campaigns == null || campaigns.length() <= 0) {
                 Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_NO_FILL);
                 onAdsLoadFailed(error);
                 return;
             }
-            List<AdBean> adBeanList = ResponseUtil.transformResponse(mPlacementId, mLoadParams, campaigns);
+            List<AdBean> adBeanList = ResponseUtil.transformResponse(campaigns);
             if (adBeanList == null || adBeanList.isEmpty()) {
                 onAdsLoadFailed(ErrorBuilder.build(ErrorCode.CODE_LOAD_PARSE_FAILED));
             } else {

@@ -55,8 +55,8 @@ public class RvInstance extends Instance implements RewardedVideoCallback, LoadT
         if (mAdapter != null) {
             DeveloperLog.LogD("load RewardedVideoAd : " + getMediationId() + " key : " + getKey());
             startInsLoadTimer(this);
-            mAdapter.loadRewardedVideo(activity, getKey(), extras, this);
             mLoadStart = System.currentTimeMillis();
+            mAdapter.loadRewardedVideo(activity, getKey(), extras, this);
         }
     }
 

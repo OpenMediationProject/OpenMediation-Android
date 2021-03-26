@@ -7,12 +7,14 @@ import android.content.Context;
 import android.widget.FrameLayout;
 
 import com.crosspromotion.sdk.core.imp.banner.BannerImp;
+import com.crosspromotion.sdk.utils.Visibility;
 
 import java.util.Map;
 
 public class BannerAd extends FrameLayout {
 
     private BannerImp mBannerImp;
+    private int mScreenVisibility = -1;
 
     public BannerAd(Context context, String placementId) {
         super(context);
@@ -33,5 +35,13 @@ public class BannerAd extends FrameLayout {
 
     public void destroy() {
         mBannerImp.destroy();
+    }
+
+    @Override
+    protected void onWindowVisibilityChanged(final int visibility) {
+        if (Visibility.hasScreenVisibilityChanged(mScreenVisibility, visibility)) {
+            mScreenVisibility = visibility;
+            mBannerImp.setAdVisibility(visibility);
+        }
     }
 }

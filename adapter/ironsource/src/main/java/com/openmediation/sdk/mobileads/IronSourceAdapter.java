@@ -120,7 +120,7 @@ public class IronSourceAdapter extends CustomAdsAdapter {
             if (callback != null) {
                 mRvCallbacks.put(adUnitId, callback);
             }
-            IronSourceManager.getInstance().loadRewardedVideo(adUnitId, new WeakReference<>(IronSourceAdapter.this));
+            IronSourceManager.getInstance().loadRewardedVideo(activity, adUnitId, new WeakReference<>(IronSourceAdapter.this));
         } else {
             if (callback != null) {
                 callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
@@ -182,7 +182,7 @@ public class IronSourceAdapter extends CustomAdsAdapter {
             if (callback != null) {
                 mIsCallbacks.put(adUnitId, callback);
             }
-            IronSourceManager.getInstance().loadInterstitial(adUnitId, new WeakReference<>(IronSourceAdapter.this));
+            IronSourceManager.getInstance().loadInterstitial(activity, adUnitId, new WeakReference<>(IronSourceAdapter.this));
         } else {
             if (callback != null) {
                 callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(

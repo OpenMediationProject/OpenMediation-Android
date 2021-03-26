@@ -46,15 +46,17 @@
 -keepparameternames
 
 # CrossPromotion-SDK
-# -keep class com.crosspromotion.sdk.banner.**{*;}
-# -keep class com.crosspromotion.sdk.bid.**{*;}
-# -keep class com.crosspromotion.sdk.interstitial.**{*;}
-# -keep class com.crosspromotion.sdk.nativead.**{*;}
-# -keep class com.crosspromotion.sdk.video.**{*;}
-# -keep class com.crosspromotion.sdk.promotion.**{*;}
-# -keep class com.crosspromotion.sdk.utils.error.**{*;}
-# -keep class com.crosspromotion.sdk.CrossPromotionAds{*;}
+-keep class com.crosspromotion.sdk.banner.**{*;}
+-keep class com.crosspromotion.sdk.bean.**{*;}
+-keep class com.crosspromotion.sdk.bid.**{*;}
+-keep class com.crosspromotion.sdk.interstitial.**{*;}
+-keep class com.crosspromotion.sdk.nativead.**{*;}
+-keep class com.crosspromotion.sdk.video.**{*;}
+-keep class com.crosspromotion.sdk.promotion.**{*;}
+-keep class com.crosspromotion.sdk.utils.error.**{*;}
+-keep class com.crosspromotion.sdk.CrossPromotionAds{*;}
 -keep class com.crosspromotion.sdk.utils.webview.JsBridge{*;}
 -keep class * extends android.app.Activity
+-keep class com.crosspromotion.sdk.utils.**{*;}
 
 -repackageclasses 'com.openmediation.sdk.a'

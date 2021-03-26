@@ -64,12 +64,12 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
             if (IronSourceSetting.isMediationMode()) {
                 IronSource.init(activity, appKey, adUnits.toArray(new IronSource.AD_UNIT[adUnits.size()]));
             } else {
-                IronSource.initISDemandOnly(activity, appKey, adUnits.toArray(new IronSource.AD_UNIT[adUnits.size()]));
+                IronSource.initISDemandOnly(activity.getApplicationContext(), appKey, adUnits.toArray(new IronSource.AD_UNIT[adUnits.size()]));
             }
         }
     }
 
-    void loadInterstitial(String instanceId, WeakReference<IronSourceAdapter> weakAdapter) {
+    void loadInterstitial(Activity activity, String instanceId, WeakReference<IronSourceAdapter> weakAdapter) {
         if (TextUtils.isEmpty(instanceId) || weakAdapter == null) {
             log("loadInterstitial- instanceId / weakAdapter is null");
             return;
@@ -91,14 +91,14 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
         if (canLoadInstance(instanceId)) {
             changeInstanceState(instanceId, IronSourceAdapter.INSTANCE_STATE.LOCKED);
             registerAdapter(instanceId, weakAdapter);
-            IronSource.loadISDemandOnlyInterstitial(instanceId);
+            IronSource.loadISDemandOnlyInterstitial(activity, instanceId);
         } else {
             ironSourceAdapter.onInterstitialAdLoadFailed(instanceId, new IronSourceError(IronSourceError.ERROR_CODE_GENERIC,
                     "interstitial instance already exists, couldn't load another one at the same time!"));
         }
     }
 
-    void loadRewardedVideo(String instanceId, WeakReference<IronSourceAdapter> weakAdapter) {
+    void loadRewardedVideo(Activity activity, String instanceId, WeakReference<IronSourceAdapter> weakAdapter) {
 
         if (instanceId == null || weakAdapter == null) {
             log("loadRewardedVideo - instanceId / weakAdapter is null");
@@ -120,7 +120,7 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
         if (canLoadInstance(instanceId)) {
             changeInstanceState(instanceId, IronSourceAdapter.INSTANCE_STATE.LOCKED);
             registerAdapter(instanceId, weakAdapter);
-            IronSource.loadISDemandOnlyRewardedVideo(instanceId);
+            IronSource.loadISDemandOnlyRewardedVideo(activity, instanceId);
         } else {
             ironSourceMediationAdapter.onRewardedVideoAdLoadFailed(instanceId, new IronSourceError(IronSourceError.ERROR_CODE_GENERIC,
                     "instance already exists, couldn't load another one in the same time!"));

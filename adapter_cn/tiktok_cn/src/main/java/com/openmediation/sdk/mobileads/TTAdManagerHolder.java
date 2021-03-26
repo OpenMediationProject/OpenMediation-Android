@@ -38,16 +38,26 @@ public class TTAdManagerHolder {
             }
             return;
         }
+        final TTAdSdk.InitCallback initCallback = new TTAdSdk.InitCallback() {
+
+            @Override
+            public void success() {
+                onInitFinish(callback);
+            }
+
+            @Override
+            public void fail(int code, String msg) {
+                onInitFailed(callback, code, msg);
+            }
+        };
         if (Looper.getMainLooper() == Looper.myLooper()) {
-            TTAdSdk.init(context, buildConfig(context, appId));
-            onInitFinish(callback);
+            TTAdSdk.init(context, buildConfig(context, appId), initCallback);
             return;
         }
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                TTAdSdk.init(context, buildConfig(context, appId));
-                onInitFinish(callback);
+                TTAdSdk.init(context, buildConfig(context, appId), initCallback);
             }
         });
     }
@@ -65,9 +75,16 @@ public class TTAdManagerHolder {
             callback.onSuccess();
         }
     }
+    private static void onInitFailed(InitCallback callback, int code, String msg) {
+        sInit.set(false);
+        if (callback != null) {
+            callback.onFailed(code, msg);
+        }
+    }
 
     public interface InitCallback {
         void onSuccess();
+        void onFailed(int code, String msg);
     }
 
     public static int[] getScreenPx(Context context) {

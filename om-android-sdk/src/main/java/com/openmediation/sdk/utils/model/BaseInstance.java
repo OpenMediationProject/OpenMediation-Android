@@ -6,7 +6,7 @@ package com.openmediation.sdk.utils.model;
 import android.text.TextUtils;
 
 import com.openmediation.sdk.ImpressionManager;
-import com.openmediation.sdk.bid.AdTimingBidResponse;
+import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.utils.AdRateUtil;
@@ -56,7 +56,7 @@ public class BaseInstance extends Frequency {
     private int hbt;
     private BID_STATE bidState = BID_STATE.NOT_BIDDING;
     private int wfAbt;
-    private AdTimingBidResponse bidResponse;
+    private BidResponse bidResponse;
 
     protected long mInitStart;
     protected long mLoadStart;
@@ -269,7 +269,7 @@ public class BaseInstance extends Frequency {
         return wfAbt;
     }
 
-    public void setBidResponse(AdTimingBidResponse bidResponse) {
+    public void setBidResponse(BidResponse bidResponse) {
         this.bidResponse = bidResponse;
     }
 

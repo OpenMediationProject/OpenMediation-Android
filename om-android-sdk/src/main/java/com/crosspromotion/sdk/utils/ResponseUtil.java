@@ -29,20 +29,20 @@ import java.util.Map;
  */
 public final class ResponseUtil {
 
-    public static List<AdBean> transformResponse(String placementId, Map extras, JSONArray array) {
+    public static List<AdBean> transformResponse(JSONArray array) {
         if (array == null || array.length() == 0) {
             return null;
         }
         LinkedList<AdBean> adBeans = new LinkedList<>();
         int len = array.length();
         for (int i = 0; i < len; i++) {
-            JSONObject adbean = array.optJSONObject(i);
-            adBeans.add(jsonToAd(placementId, extras, adbean));
+            JSONObject adBean = array.optJSONObject(i);
+            adBeans.add(jsonToAd(adBean));
         }
         return adBeans;
     }
 
-    private static AdBean jsonToAd(String placementId, Map extras, JSONObject jsonObject) {
+    private static AdBean jsonToAd(JSONObject jsonObject) {
         if (jsonObject == null) {
             return null;
         }
@@ -68,7 +68,7 @@ public final class ResponseUtil {
             adBean.setVideoBean(videoBean);
         }
         adBean.setLink(jsonObject.optString("link"));
-        adBean.setWebview(jsonObject.optInt("iswv") == 1);
+        adBean.setWebView(jsonObject.optInt("iswv") == 1);
         JSONArray clktrackerArray = jsonObject.optJSONArray("clktks");
         if (clktrackerArray != null && clktrackerArray.length() > 0) {
             List<String> clktrackers = new ArrayList<>();
@@ -116,7 +116,7 @@ public final class ResponseUtil {
             AdMark mk = new AdMark(mkObject);
             adBean.setMk(mk);
         }
-        adBean.setExpire(jsonObject.optInt("expire"));
+        adBean.setExpire(jsonObject.optLong("expire"));
 
         adBean.setRevenue(jsonObject.optDouble("r", 0d));
         adBean.setRevenuePrecision(jsonObject.optInt("rp", -1));

@@ -240,13 +240,15 @@ public class MainActivity extends Activity {
     }
 
     public void showPromotion(View view) {
-        PromotionAdRect adRect = new PromotionAdRect();
-        adRect.setWidth(132);
-        adRect.setScaleY(0.07f);
-        adRect.setAngle(10);
-        PromotionAd.showAd(this, adRect);
-        isShowPromotion = true;
-        setPromotionButtonStat(false);
+        if (PromotionAd.isReady()) {
+            PromotionAdRect adRect = new PromotionAdRect();
+            adRect.setWidth(132);
+            adRect.setScaleY(0.07f);
+            adRect.setAngle(10);
+            PromotionAd.showAd(this, adRect);
+            isShowPromotion = true;
+            setPromotionButtonStat(false);
+        }
     }
 
     public void showSplash(View view) {

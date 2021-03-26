@@ -184,6 +184,9 @@ public final class NativeImp extends AbstractHybridAd implements View.OnAttachSt
         isImpressed = false;
         v.removeOnAttachStateChangeListener(this);
         if (mCurrentIns != null) {
+            if (mBidResponses != null) {
+                mBidResponses.remove(mCurrentIns.getId());
+            }
             mCurrentIns.onInsClosed(null);
         }
     }

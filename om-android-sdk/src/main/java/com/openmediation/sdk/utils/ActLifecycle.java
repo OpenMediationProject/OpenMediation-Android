@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ActLifecycle implements Application.ActivityLifecycleCallbacks {
 
     private static String[] ADS_ACT = new String[]{
-            new String(Base64.decode("Y29tLmFkdGltaW5nLm1lZGlhdGlvbnNkaw==", Base64.NO_WRAP),
+            new String(Base64.decode("Y29tLmFkdGJpZC5zZGs=", Base64.NO_WRAP),
                     Charset.forName(CommonConstants.CHARTSET_UTF8)),
             new String(Base64.decode("Y29tLmdvb2dsZS5hbmRyb2lkLmdtcy5hZHM=", Base64.NO_WRAP),
                     Charset.forName(CommonConstants.CHARTSET_UTF8)),
@@ -54,6 +54,8 @@ public class ActLifecycle implements Application.ActivityLifecycleCallbacks {
             new String(Base64.decode("Y29tLmt3YWQuc2RrLmFwaS5wcm94eQ==", Base64.NO_WRAP),
                     Charset.forName(CommonConstants.CHARTSET_UTF8)),
             new String(Base64.decode("aW8ucHJlc2FnZS5pbnRlcnN0aXRpYWwudWk=", Base64.NO_WRAP),
+                    Charset.forName(CommonConstants.CHARTSET_UTF8)),
+            new String(Base64.decode("bmV0LnB1Ym5hdGl2ZS5saXRlLnNkaw==", Base64.NO_WRAP),
                     Charset.forName(CommonConstants.CHARTSET_UTF8))
     };
     private AtomicReference<Activity> mThisActivity = new AtomicReference<>(null);

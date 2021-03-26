@@ -6,7 +6,7 @@ package com.openmediation.sdk.utils;
 import android.net.Uri;
 import android.text.TextUtils;
 
-import com.openmediation.sdk.bid.AdTimingBidResponse;
+import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.utils.cache.DataCache;
 import com.openmediation.sdk.utils.constant.CommonConstants;
 import com.openmediation.sdk.utils.constant.KeyConstants;
@@ -59,7 +59,7 @@ public class PlacementUtils {
         return maps;
     }
 
-    public static Map<String, Object> getLoadExtrasMap(String reqId, BaseInstance instance, AdTimingBidResponse bidResponse) {
+    public static Map<String, Object> getLoadExtrasMap(String reqId, BaseInstance instance, BidResponse bidResponse) {
         Map<String, Object> extras = new HashMap<>();
         if (bidResponse != null && !TextUtils.isEmpty(bidResponse.getPayLoad())) {
             extras.put("pay_load", bidResponse.getPayLoad());

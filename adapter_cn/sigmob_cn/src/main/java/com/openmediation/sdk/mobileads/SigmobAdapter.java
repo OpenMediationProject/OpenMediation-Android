@@ -18,9 +18,9 @@ import com.sigmob.windad.WindAdOptions;
 import com.sigmob.windad.WindAds;
 import com.sigmob.windad.WindAgeRestictedUserStatus;
 import com.sigmob.windad.WindConsentStatus;
-import com.sigmob.windad.fullscreenvideo.WindFullScreenAdRequest;
-import com.sigmob.windad.fullscreenvideo.WindFullScreenVideoAd;
-import com.sigmob.windad.fullscreenvideo.WindFullScreenVideoAdListener;
+import com.sigmob.windad.interstitial.WindInterstitialAd;
+import com.sigmob.windad.interstitial.WindInterstitialAdListener;
+import com.sigmob.windad.interstitial.WindInterstitialAdRequest;
 import com.sigmob.windad.rewardedVideo.WindRewardAdRequest;
 import com.sigmob.windad.rewardedVideo.WindRewardInfo;
 import com.sigmob.windad.rewardedVideo.WindRewardedVideoAd;
@@ -30,9 +30,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public class SigmobAdapter extends CustomAdsAdapter implements WindRewardedVideoAdListener, WindFullScreenVideoAdListener {
+public class SigmobAdapter extends CustomAdsAdapter implements WindRewardedVideoAdListener, WindInterstitialAdListener {
     private final ConcurrentMap<String, WindRewardAdRequest> mRvAds;
-    private final ConcurrentMap<String, WindFullScreenAdRequest> mFvAds;
+    private final ConcurrentMap<String, WindInterstitialAdRequest> mFvAds;
     private final ConcurrentMap<String, RewardedVideoCallback> mRvCallbacks;
     private final ConcurrentMap<String, InterstitialAdCallback> mFvCallbacks;
 
@@ -220,7 +220,7 @@ public class SigmobAdapter extends CustomAdsAdapter implements WindRewardedVideo
                 if (callback != null) {
                     mFvCallbacks.put(adUnitId, callback);
                 }
-                WindFullScreenVideoAd.sharedInstance().show(activity, mFvAds.get(adUnitId));
+                WindInterstitialAd.sharedInstance().show(activity, mFvAds.get(adUnitId));
                 mFvAds.remove(adUnitId);
             } catch (Exception e) {
                 if (callback != null) {
@@ -241,13 +241,13 @@ public class SigmobAdapter extends CustomAdsAdapter implements WindRewardedVideo
         if (TextUtils.isEmpty(adUnitId)) {
             return false;
         }
-        return mFvAds.get(adUnitId) != null && WindFullScreenVideoAd.sharedInstance().isReady(adUnitId);
+        return mFvAds.get(adUnitId) != null && WindInterstitialAd.sharedInstance().isReady(adUnitId);
     }
 
     private void initSdk(final Activity activity) {
         String[] tmp = mAppKey.split("#");
         WindAds ads = WindAds.sharedAds();
-        ads.startWithOptions(activity, new WindAdOptions(tmp[0], tmp[1]));
+        ads.startWithOptions(activity, new WindAdOptions(tmp[0], tmp[1], false));
     }
 
     private void realLoadRvAd(final Activity activity, final String placementId, final RewardedVideoCallback rvCallback) {
@@ -260,12 +260,12 @@ public class SigmobAdapter extends CustomAdsAdapter implements WindRewardedVideo
     }
 
     private void realLoadFullScreenVideoAd(final Activity activity, final String placementId, final InterstitialAdCallback rvCallback) {
-        WindFullScreenVideoAd windFullScreenVideoAd = WindFullScreenVideoAd.sharedInstance();
-        windFullScreenVideoAd.setWindFullScreenVideoAdListener(this);
-        WindFullScreenAdRequest request = new WindFullScreenAdRequest(placementId, "", null);
+        WindInterstitialAd windInterstitialAd = WindInterstitialAd.sharedInstance();
+        windInterstitialAd.setWindInterstitialAdListener(this);
+        WindInterstitialAdRequest request = new WindInterstitialAdRequest(placementId, "", null);
         mFvAds.put(placementId, request);
         mFvCallbacks.put(placementId, rvCallback);
-        windFullScreenVideoAd.loadAd(activity, request);
+        windInterstitialAd.loadAd(activity, request);
     }
 
     @Override
@@ -330,7 +330,7 @@ public class SigmobAdapter extends CustomAdsAdapter implements WindRewardedVideo
         RewardedVideoCallback callback = mRvCallbacks.get(placementId);
         if (callback != null) {
             callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
-                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "RewardedVideo load failed"));
+                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, windAdError.getErrorCode(), windAdError.getMessage()));
         }
     }
 
@@ -344,11 +344,11 @@ public class SigmobAdapter extends CustomAdsAdapter implements WindRewardedVideo
     }
 
     @Override
-    public void onFullScreenVideoAdPreLoadSuccess(String placementId) {
+    public void onInterstitialAdPreLoadSuccess(String placementId) {
     }
 
     @Override
-    public void onFullScreenVideoAdPreLoadFail(String placementId) {
+    public void onInterstitialAdPreLoadFail(String placementId) {
         InterstitialAdCallback callback = mFvCallbacks.get(placementId);
         if (callback != null) {
             callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
@@ -357,7 +357,7 @@ public class SigmobAdapter extends CustomAdsAdapter implements WindRewardedVideo
     }
 
     @Override
-    public void onFullScreenVideoAdLoadSuccess(String placementId) {
+    public void onInterstitialAdLoadSuccess(String placementId) {
         InterstitialAdCallback callback = mFvCallbacks.get(placementId);
         if (callback != null) {
             callback.onInterstitialAdLoadSuccess();
@@ -365,7 +365,7 @@ public class SigmobAdapter extends CustomAdsAdapter implements WindRewardedVideo
     }
 
     @Override
-    public void onFullScreenVideoAdPlayStart(String placementId) {
+    public void onInterstitialAdPlayStart(String placementId) {
         InterstitialAdCallback callback = mFvCallbacks.get(placementId);
         if (callback != null) {
             callback.onInterstitialAdShowSuccess();
@@ -373,11 +373,11 @@ public class SigmobAdapter extends CustomAdsAdapter implements WindRewardedVideo
     }
 
     @Override
-    public void onFullScreenVideoAdPlayEnd(String placementId) {
+    public void onInterstitialAdPlayEnd(String placementId) {
     }
 
     @Override
-    public void onFullScreenVideoAdClicked(String placementId) {
+    public void onInterstitialAdClicked(String placementId) {
         InterstitialAdCallback callback = mFvCallbacks.get(placementId);
         if (callback != null) {
             callback.onInterstitialAdClick();
@@ -385,7 +385,7 @@ public class SigmobAdapter extends CustomAdsAdapter implements WindRewardedVideo
     }
 
     @Override
-    public void onFullScreenVideoAdClosed(String placementId) {
+    public void onInterstitialAdClosed(String placementId) {
         InterstitialAdCallback callback = mFvCallbacks.get(placementId);
         if (callback != null) {
             callback.onInterstitialAdClosed();
@@ -393,7 +393,7 @@ public class SigmobAdapter extends CustomAdsAdapter implements WindRewardedVideo
     }
 
     @Override
-    public void onFullScreenVideoAdLoadError(WindAdError windAdError, String placementId) {
+    public void onInterstitialAdLoadError(WindAdError windAdError, String placementId) {
         InterstitialAdCallback callback = mFvCallbacks.get(placementId);
         if (callback != null) {
             AdapterError adapterError = AdapterErrorBuilder.buildLoadError(
@@ -403,7 +403,7 @@ public class SigmobAdapter extends CustomAdsAdapter implements WindRewardedVideo
     }
 
     @Override
-    public void onFullScreenVideoAdPlayError(WindAdError windAdError, String placementId) {
+    public void onInterstitialAdPlayError(WindAdError windAdError, String placementId) {
         InterstitialAdCallback callback = mFvCallbacks.get(placementId);
         if (callback != null) {
             AdapterError adapterError = AdapterErrorBuilder.buildShowError(

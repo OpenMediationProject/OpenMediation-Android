@@ -166,6 +166,9 @@ public class SplashAdImp extends AbstractHybridAd {
                     PlacementUtils.placementEventParams(mPlacementId));
             mAdListener.onSplashAdShowed(mPlacementId);
         }
+        if (mCurrentIns != null) {
+            notifyInsBidWin(mCurrentIns);
+        }
     }
 
     @Override
@@ -174,6 +177,9 @@ public class SplashAdImp extends AbstractHybridAd {
             EventUploadManager.getInstance().uploadEvent(EventId.CALLBACK_SHOW_FAILED,
                     PlacementUtils.placementEventParams(mPlacementId));
             mAdListener.onSplashAdShowFailed(mPlacementId, error);
+        }
+        if (mCurrentIns != null && mBidResponses != null) {
+            mBidResponses.remove(mCurrentIns.getId());
         }
     }
 
@@ -192,6 +198,9 @@ public class SplashAdImp extends AbstractHybridAd {
         if (mCurrentIns != null) {
             destroyAdEvent(mCurrentIns);
             AdManager.getInstance().removeInsAdEvent(mCurrentIns);
+            if (mBidResponses != null) {
+                mBidResponses.remove(mCurrentIns.getId());
+            }
         }
         cleanAfterCloseOrFailed();
     }

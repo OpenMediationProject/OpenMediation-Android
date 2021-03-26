@@ -1,14 +1,13 @@
 package com.crosspromotion.sdk.bean;
 
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.text.TextUtils;
 
+import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.JsonUtil;
 
 import org.json.JSONObject;
 
-public class AdVideoBean implements Parcelable {
+public class AdVideoBean {
     private String url;
     private String replaceUrl;
     private int dur;
@@ -21,6 +20,7 @@ public class AdVideoBean implements Parcelable {
         mOriData = object.toString();
         this.url = object.optString("url");
         this.dur = object.optInt("dur");
+        this.replaceUrl = object.optString("replaceUrl");
     }
 
     public String getUrl() {
@@ -43,31 +43,20 @@ public class AdVideoBean implements Parcelable {
         return object;
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(this.url);
-        dest.writeInt(this.dur);
-    }
-
-    protected AdVideoBean(Parcel in) {
-        this.url = in.readString();
-        this.dur = in.readInt();
-    }
-
-    public static final Creator<AdVideoBean> CREATOR = new Creator<AdVideoBean>() {
-        @Override
-        public AdVideoBean createFromParcel(Parcel source) {
-            return new AdVideoBean(source);
+    public static JSONObject toJSONObject(AdVideoBean bean) {
+        if (bean == null) {
+            return null;
         }
-
-        @Override
-        public AdVideoBean[] newArray(int size) {
-            return new AdVideoBean[size];
+        try {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("url", bean.url);
+            jsonObject.put("replaceUrl", bean.replaceUrl);
+            jsonObject.put("dur", bean.dur);
+            jsonObject.put("mOriData", bean.mOriData);
+            return jsonObject;
+        } catch (Exception e) {
+            DeveloperLog.LogE("AdVideoBean convert JSONObject error: " + e.getMessage());
         }
-    };
+        return null;
+    }
 }

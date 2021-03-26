@@ -42,6 +42,12 @@ public class TikTokBanner extends CustomBannerEvent implements TTAdNative.Native
                 int width = size[0], height = size[1];
                 loadBannerAd(activity, mInstancesKey, width, height);
             }
+
+            @Override
+            public void onFailed(int code, String msg) {
+                onInsError(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, code, msg));
+            }
         });
     }
 
@@ -105,7 +111,7 @@ public class TikTokBanner extends CustomBannerEvent implements TTAdNative.Native
 
     private static class InnerAdInteractionListener implements TTNativeExpressAd.ExpressAdInteractionListener {
 
-        private WeakReference<TikTokBanner> mReference;
+        private final WeakReference<TikTokBanner> mReference;
 
         private InnerAdInteractionListener(TikTokBanner banner) {
             mReference = new WeakReference<>(banner);
@@ -157,6 +163,11 @@ public class TikTokBanner extends CustomBannerEvent implements TTAdNative.Native
             return;
         }
         ad.setDislikeCallback(activity, new TTAdDislike.DislikeInteractionCallback() {
+            @Override
+            public void onShow() {
+
+            }
+
             @Override
             public void onSelected(int position, String value) {
                 if (mBannerView != null && mBannerView.getParent() instanceof ViewGroup) {

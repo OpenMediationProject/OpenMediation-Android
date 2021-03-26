@@ -85,13 +85,19 @@ public abstract class OmAds {
         AdLog.getSingleton().isDebug(debug);
     }
 
-    public static void setCustomDeviceId(String customDeviceId){
-        OmManager.getInstance().setCustomDeviceId(customDeviceId);
+    /**
+     * setUserId
+     * @param userId userId
+     */
+    public static void setUserId(String userId) {
+        OmManager.getInstance().setUserId(userId);
+    }
+
+    public static String getUserId() {
+        return OmManager.getInstance().getUserId();
     }
 
     /**
-<<<<<<< HEAD
-=======
      * App defined user tags
      *
      * @param map Support basic data types and array types
@@ -101,7 +107,56 @@ public abstract class OmAds {
     }
 
     /**
->>>>>>> Release version v2.1.0
+     * Returns the tags set by the user
+     * Returns null if not set
+     */
+    public static Map<String, Object> getCustomTags() {
+        return OmManager.getInstance().getCustomTags();
+    }
+
+    /**
+     * App defined user tag
+     */
+    public static void setCustomTag(String key, String value) {
+        OmManager.getInstance().setCustomTagObject(key, value);
+    }
+
+    /**
+     * App defined user tag
+     */
+    public static void setCustomTag(String key, String... values) {
+        OmManager.getInstance().setCustomTagObjects(key, values);
+    }
+
+    /**
+     * App defined user tag
+     */
+    public static void setCustomTag(String key, Number value) {
+        OmManager.getInstance().setCustomTagObject(key, value);
+    }
+
+    /**
+     * App defined user tag
+     */
+    public static void setCustomTag(String key, Number... values) {
+        OmManager.getInstance().setCustomTagObjects(key, values);
+    }
+
+    /**
+     * Remove app defined user tag
+     */
+    public static void removeCustomTag(String key) {
+        OmManager.getInstance().removeCustomTag(key);
+    }
+
+    /**
+     * Remove app defined user tag
+     */
+    public static void clearCustomTags() {
+        OmManager.getInstance().clearCustomTags();
+    }
+
+    /**
      * Report AppsFlyer conversion data
      *
      * @param conversionData

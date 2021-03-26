@@ -8,7 +8,6 @@ import android.os.Looper;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 
@@ -20,6 +19,7 @@ import com.crosspromotion.sdk.report.AdReport;
 import com.crosspromotion.sdk.utils.Cache;
 import com.crosspromotion.sdk.utils.GpUtil;
 import com.crosspromotion.sdk.utils.PUtils;
+import com.crosspromotion.sdk.utils.Visibility;
 import com.crosspromotion.sdk.utils.error.Error;
 import com.crosspromotion.sdk.utils.error.ErrorBuilder;
 import com.crosspromotion.sdk.utils.error.ErrorCode;
@@ -56,11 +56,15 @@ public final class BannerImp extends AbstractAdsManager implements JsBridge.Mess
     private RefreshTask mRefreshTask;
     private AdSize mAdSize;
 //    private VolumeReceiver mReceiver;
+    private boolean mCurrentAutoRefreshStatus = false;
 
     public BannerImp(String placementId, FrameLayout lytBanner) {
         super(placementId);
 
         mLytBanner = lytBanner;
+        FrameLayout.LayoutParams lytParams = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+        mLytBanner.setLayoutParams(lytParams);
         mHandler = new HandlerUtil.HandlerHolder(null, Looper.getMainLooper());
     }
 
@@ -217,24 +221,12 @@ public final class BannerImp extends AbstractAdsManager implements JsBridge.Mess
                 try {
                     if (mBannerView == null) {
                         mBannerView = new BaseWebView(mContext);
-                    } else {
-                        ViewGroup viewGroup = (ViewGroup) mBannerView.getParent();
-                        viewGroup.removeView(mBannerView);
+                        int[] size = getSize(mContext);
+                        FrameLayout.LayoutParams bannerViewParams = new FrameLayout.LayoutParams(
+                                DensityUtil.dip2px(mContext, size[0]), DensityUtil.dip2px(mContext, size[1]));
+                        bannerViewParams.gravity = Gravity.CENTER;
+                        mLytBanner.addView(mBannerView, bannerViewParams);
                     }
-                    if (mLytBanner.getParent() != null) {
-                        ViewGroup parent = (ViewGroup) mLytBanner.getParent();
-                        parent.removeView(mLytBanner);
-                    }
-                    FrameLayout.LayoutParams lytParams = new FrameLayout.LayoutParams(
-                            FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-                    mLytBanner.setLayoutParams(lytParams);
-                    int[] size = getSize(mContext);
-                    FrameLayout.LayoutParams bannerViewParams = new FrameLayout.LayoutParams(
-                            DensityUtil.dip2px(mContext, size[0]), DensityUtil.dip2px(mContext, size[1]));
-                    bannerViewParams.gravity = Gravity.CENTER;
-
-                    mLytBanner.addView(mBannerView, bannerViewParams);
-
                     setUpJsInterface();
                     setUpWebClient();
 //                    registerMuteReceiver();
@@ -244,7 +236,6 @@ public final class BannerImp extends AbstractAdsManager implements JsBridge.Mess
 
                     callbackAdsReady();
                 } catch (Exception e) {
-                    e.printStackTrace();
                     onAdsLoadFailed(ErrorBuilder.build(ErrorCode.CODE_LOAD_BANNER_UNKNOWN_EXCEPTION));
                     DeveloperLog.LogE("BannerImp drawBanner error : " + e.getMessage());
                 }
@@ -338,6 +329,13 @@ public final class BannerImp extends AbstractAdsManager implements JsBridge.Mess
         @Override
         public void run() {
             try {
+                // not in foreground, stop load AD
+                if (!mCurrentAutoRefreshStatus) {
+                    return;
+                }
+                if (mLytBanner.getVisibility() != View.VISIBLE) {
+                    return;
+                }
                 updateRefreshStatus(true);
                 loadAds(mLoadParams);
             } catch (Exception e) {
@@ -380,5 +378,29 @@ public final class BannerImp extends AbstractAdsManager implements JsBridge.Mess
             }
             return true;
         }
+    }
+
+    public void setAdVisibility(final int visibility) {
+        if (Visibility.isScreenVisible(visibility)) {
+            resumeRefresh();
+        } else {
+            pauseRefresh();
+        }
+    }
+
+    private void resumeRefresh() {
+        mCurrentAutoRefreshStatus = true;
+        try {
+            setUpJsInterface();
+            setUpWebClient();
+            loadBannerUrl();
+        } catch (Exception e) {
+            DeveloperLog.LogE("Banner load url exception: ", e);
+            CrashUtil.getSingleton().saveException(e);
+        }
+    }
+
+    private void pauseRefresh() {
+        mCurrentAutoRefreshStatus = false;
     }
 }

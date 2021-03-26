@@ -185,8 +185,11 @@ public final class BannerImp extends AbstractHybridAd implements View.OnAttachSt
                         ViewGroup parent = (ViewGroup) banner.getParent();
                         parent.removeView(banner);
                     }
+                    if (mLytBanner == null) {
+                        mLytBanner = createBannerParent(mActivity);
+                    }
                     banner.addOnAttachStateChangeListener(this);
-                    mLytBanner = createBannerParent(mActivity);
+                    mLytBanner.removeAllViews();
                     mLytBanner.addView(banner);
                     releaseAdEvent();
                     //
@@ -254,6 +257,9 @@ public final class BannerImp extends AbstractHybridAd implements View.OnAttachSt
     public void onViewDetachedFromWindow(View v) {
         v.removeOnAttachStateChangeListener(this);
         if (mCurrentIns != null) {
+            if (mBidResponses != null) {
+                mBidResponses.remove(mCurrentIns.getId());
+            }
             mCurrentIns.onInsClosed(null);
         }
     }

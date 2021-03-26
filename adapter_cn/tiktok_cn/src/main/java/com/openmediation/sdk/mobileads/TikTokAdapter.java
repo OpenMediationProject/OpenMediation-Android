@@ -64,6 +64,14 @@ public class TikTokAdapter extends CustomAdsAdapter {
                         callback.onRewardedVideoInitSuccess();
                     }
                 }
+
+                @Override
+                public void onFailed(int code, String msg) {
+                    if (callback != null) {
+                        callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, code, msg));
+                    }
+                }
             });
         } else {
             if (callback != null) {
@@ -160,6 +168,14 @@ public class TikTokAdapter extends CustomAdsAdapter {
                 public void onSuccess() {
                     if (callback != null) {
                         callback.onInterstitialAdInitSuccess();
+                    }
+                }
+
+                @Override
+                public void onFailed(int code, String msg) {
+                    if (callback != null) {
+                        callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
+                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, code, msg));
                     }
                 }
             });

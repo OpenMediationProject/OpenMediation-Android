@@ -8,7 +8,7 @@ import android.text.TextUtils;
 
 import com.openmediation.sdk.InitCallback;
 import com.openmediation.sdk.InitConfiguration;
-import com.openmediation.sdk.bid.AdTimingAuctionManager;
+import com.openmediation.sdk.bid.BidAuctionManager;
 import com.openmediation.sdk.utils.AFManager;
 import com.openmediation.sdk.utils.ActLifecycle;
 import com.openmediation.sdk.utils.AdLog;
@@ -324,7 +324,7 @@ public final class InitImp {
                     DeveloperLog.LogD("Om init request config success");
                     DataCache.getInstance().setMEM(KeyConstants.KEY_CONFIGURATION, config);
                     try {
-                        AdTimingAuctionManager.getInstance().initBid(mActivity, config);
+                        BidAuctionManager.getInstance().initBid(mActivity, config);
                     } catch (Exception e) {
                         DeveloperLog.LogD("initBid  exception : ", e);
                         CrashUtil.getSingleton().saveException(e);

@@ -43,6 +43,7 @@ public class CpInstance extends Instance implements PromotionAdCallback, LoadTim
         if (mAdapter != null) {
             DeveloperLog.LogD("load PromotionAd : " + getMediationId() + " key : " + getKey());
             startInsLoadTimer(this);
+            mLoadStart = System.currentTimeMillis();
             mAdapter.loadPromotionAd(activity, getKey(), extras, this);
         }
     }

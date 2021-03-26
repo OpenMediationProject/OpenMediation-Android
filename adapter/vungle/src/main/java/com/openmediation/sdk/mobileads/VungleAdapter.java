@@ -237,7 +237,7 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
                 mIsCallback.put(adUnitId, callback);
             }
             if (Vungle.isInitialized()) {
-                if (isRewardedVideoAvailable(adUnitId)) {
+                if (isInterstitialAdAvailable(adUnitId)) {
                     callback.onInterstitialAdLoadSuccess();
                 } else {
                     Vungle.loadAd(adUnitId, new LoadCallback());

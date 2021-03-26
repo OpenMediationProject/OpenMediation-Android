@@ -5,6 +5,8 @@ package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 
 import com.chartboost.sdk.Chartboost;
@@ -50,28 +52,35 @@ public class ChartboostAdapter extends CustomAdsAdapter {
     }
 
     private void initSDK(final Activity activity) {
-        AdLog.getSingleton().LogD("init chartboost sdk");
-        if (!hasInit.get()) {
+        if (mCbDelegate == null) {
             mCbDelegate = new CbCallback();
-            activity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        hasInit.set(true);
-                        String[] tmp = mAppKey.split("#");
-                        String appId = tmp[0];
-                        String signature = tmp[1];
-                        Chartboost.startWithAppId(activity.getApplication(), appId, signature);
-                        Chartboost.setDelegate(mCbDelegate);
-                        Chartboost.setMediation(Chartboost.CBMediation.CBMediationOther, getAdapterVersion(), "");
-                        Chartboost.setShouldRequestInterstitialsInFirstSession(false);
-                        Chartboost.setShouldPrefetchVideoContent(false);
-                        Chartboost.setAutoCacheAds(true);
-                    } catch (Exception e) {
-                        AdLog.getSingleton().LogE("OM-Chartboost", e.getMessage());
-                    }
+        }
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                if (hasInit.get()) {
+                    return;
                 }
-            });
+                try {
+                    String[] tmp = mAppKey.split("#");
+                    String appId = tmp[0];
+                    String signature = tmp[1];
+                    Chartboost.startWithAppId(activity.getApplication(), appId, signature);
+                    Chartboost.setDelegate(mCbDelegate);
+                    Chartboost.setMediation(Chartboost.CBMediation.CBMediationOther, getAdapterVersion(), "");
+                    Chartboost.setShouldRequestInterstitialsInFirstSession(false);
+                    Chartboost.setShouldPrefetchVideoContent(false);
+                    Chartboost.setAutoCacheAds(true);
+                    hasInit.set(true);
+                } catch (Throwable e) {
+                    AdLog.getSingleton().LogE("OM-Chartboost", e.getMessage());
+                }
+            }
+        };
+        if (Looper.getMainLooper() == Looper.myLooper()) {
+            runnable.run();
+        } else {
+            new Handler(Looper.getMainLooper()).post(runnable);
         }
     }
 
@@ -117,8 +126,10 @@ public class ChartboostAdapter extends CustomAdsAdapter {
     public void setUSPrivacyLimit(Context context, boolean value) {
         super.setUSPrivacyLimit(context, value);
         if (context != null) {
-            DataUseConsent dataUseConsent = new CCPA(CCPA.CCPA_CONSENT.OPT_OUT_SALE);
-            if (!value) {
+            DataUseConsent dataUseConsent;
+            if (value) {
+                dataUseConsent = new CCPA(CCPA.CCPA_CONSENT.OPT_OUT_SALE);
+            } else {
                 dataUseConsent = new CCPA(CCPA.CCPA_CONSENT.OPT_IN_SALE);
             }
             Chartboost.addDataUseConsent(context, dataUseConsent);

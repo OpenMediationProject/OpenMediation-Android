@@ -16,7 +16,6 @@ import com.applovin.sdk.AppLovinAdLoadListener;
 import com.applovin.sdk.AppLovinAdSize;
 import com.applovin.sdk.AppLovinPrivacySettings;
 import com.applovin.sdk.AppLovinSdk;
-import com.applovin.sdk.AppLovinSdkSettings;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomBannerEvent;
 import com.openmediation.sdk.mediation.MediationInfo;
@@ -25,9 +24,7 @@ import com.openmediation.sdk.utils.AdLog;
 import java.util.Map;
 
 public class AppLovinBanner extends CustomBannerEvent implements AppLovinAdLoadListener, AppLovinAdClickListener, AppLovinAdDisplayListener {
-    private boolean mDidInited = false;
     private AppLovinAdView mAppLovinAdView;
-    private AppLovinSdk mAppLovinSdk;
     private static final String TAG = "OM-AppLovin";
 
     @Override
@@ -61,19 +58,32 @@ public class AppLovinBanner extends CustomBannerEvent implements AppLovinAdLoadL
     }
 
     @Override
-    public void loadAd(Activity activity, Map<String, String> config) throws Throwable {
+    public void loadAd(final Activity activity, final Map<String, String> config) throws Throwable {
         super.loadAd(activity, config);
 
         if (!check(activity, config)) {
             return;
         }
-        if (!mDidInited) {
-            AppLovinSdkSettings settings = new AppLovinSdkSettings(activity.getApplicationContext());
-            mAppLovinSdk = AppLovinSdk.getInstance(config.get("AppKey"), settings,
-                    activity.getApplicationContext());
-            mAppLovinSdk.initializeSdk();
-            mDidInited = true;
+        try {
+            AppLovinSingleTon.getInstance().init(activity, config.get("AppKey"), new AppLovinSingleTon.InitCallback() {
+                @Override
+                public void onSuccess() {
+                    loadBanner(activity, config);
+                }
+
+                @Override
+                public void onFailed(String msg) {
+                    onInsError(AdapterErrorBuilder.buildLoadError(
+                            AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, msg));
+                }
+            });
+        } catch (Exception e) {
+            onInsError(AdapterErrorBuilder.buildLoadError(
+                    AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, e.getMessage()));
         }
+    }
+
+    private void loadBanner(Activity activity, Map<String, String> config) {
         if (mAppLovinAdView != null) {
             mAppLovinAdView.loadNextAd();
             return;
@@ -84,8 +94,8 @@ public class AppLovinBanner extends CustomBannerEvent implements AppLovinAdLoadL
                     AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, "unsupported banner size"));
             return;
         }
-
-        mAppLovinAdView = new AppLovinAdView(mAppLovinSdk, adSize, mInstancesKey, activity);
+        AppLovinSdk sdk = AppLovinSingleTon.getInstance().getAppLovinSdk();
+        mAppLovinAdView = new AppLovinAdView(sdk, adSize, mInstancesKey, activity);
         mAppLovinAdView.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         mAppLovinAdView.setAdLoadListener(this);
         mAppLovinAdView.setAdClickListener(this);

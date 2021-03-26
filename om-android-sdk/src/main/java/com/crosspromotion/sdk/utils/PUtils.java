@@ -40,7 +40,7 @@ public final class PUtils extends PlacementUtils {
     public static void doClick(final Context context, final String placementId, final AdBean adBean) {
         try {
             saveClickPackage(adBean.getPkgName());
-            if (!adBean.isWebview()) {
+            if (!adBean.isWebView()) {
                 String landingUrl = "market://details?id=" + adBean.getPkgName();
                 GpUtil.goGp(context, landingUrl);
                 HandlerUtil.runOnUiThread(new Runnable() {
@@ -83,7 +83,7 @@ public final class PUtils extends PlacementUtils {
             } else {
                 Intent intent = new Intent(context, ActionActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                intent.putExtra("ad", adBean);
+                intent.putExtra("adBean", AdBean.toJsonString(adBean));
                 intent.putExtra("placementId", placementId);
                 context.startActivity(intent);
             }

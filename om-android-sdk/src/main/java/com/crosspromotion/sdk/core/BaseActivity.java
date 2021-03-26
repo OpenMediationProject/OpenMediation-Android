@@ -53,16 +53,8 @@ public class BaseActivity extends Activity {
             mAbt = intent.getIntExtra("abt", 0);
             mAdsManager = CallbackBridge.getListener(mPlacementId);
 
-            Bundle bundle = getIntent().getBundleExtra("bundle");
-            if (bundle == null) {
-                callbackAdShowFailedOnUIThread(ErrorBuilder.build(ErrorCode.CODE_SHOW_RESOURCE_ERROR));
-                callbackAdCloseOnUIThread();
-                finish();
-                return;
-            }
-            bundle.setClassLoader(AdBean.class.getClassLoader());
-            mAdBean = bundle.getParcelable("ad");
-            bundle.clear();
+            String adBeanString = intent.getStringExtra("adBean");
+            mAdBean = AdBean.toAdBean(adBeanString);
             if (mAdBean == null || mAdBean.getResources() == null || mAdBean.getResources().isEmpty()) {
                 callbackAdShowFailedOnUIThread(ErrorBuilder.build(ErrorCode.CODE_SHOW_RESOURCE_ERROR));
                 callbackAdCloseOnUIThread();

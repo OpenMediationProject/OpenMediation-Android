@@ -12,7 +12,6 @@ import android.widget.RelativeLayout;
 import com.mintegral.msdk.out.BannerAdListener;
 import com.mintegral.msdk.out.BannerSize;
 import com.mintegral.msdk.out.MTGBannerView;
-import com.mintegral.msdk.out.SDKInitStatusListener;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomBannerEvent;
 import com.openmediation.sdk.mediation.MediationInfo;
@@ -30,24 +29,21 @@ public class MintegralBanner extends CustomBannerEvent implements BannerAdListen
         if (!check(activity, config)) {
             return;
         }
-        if (MintegralSingleTon.getInstance().isInit()) {
-            loadBanner(activity, config);
-        } else {
-            MintegralSingleTon.getInstance().initSDK(activity, config.get("AppKey"), new SDKInitStatusListener() {
+            MintegralSingleTon.getInstance().initSDK(activity, config.get("AppKey"), new MintegralSingleTon.InitCallback() {
                 @Override
-                public void onInitSuccess() {
+                public void onSuccess() {
                     loadBanner(activity, config);
                 }
 
                 @Override
-                public void onInitFail() {
+                public void onFailed(String msg) {
                     if (!isDestroyed) {
                         onInsError(AdapterErrorBuilder.buildLoadError(
-                                AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, "Mintegral Ad Load Failed"));
+                                AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, msg));
                     }
                 }
+
             });
-        }
     }
 
     private void loadBanner(Activity activity, Map<String, String> config) {

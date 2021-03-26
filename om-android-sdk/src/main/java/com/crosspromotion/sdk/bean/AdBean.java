@@ -3,10 +3,9 @@
 
 package com.crosspromotion.sdk.bean;
 
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.text.TextUtils;
 
+import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.JsonUtil;
 
 import org.json.JSONArray;
@@ -16,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class AdBean implements Parcelable {
+public class AdBean {
 
     private String mOriData;
     private String mTitle;
@@ -28,7 +27,7 @@ public class AdBean implements Parcelable {
     // click through url
     private String mLink;
     // Open link with webview, 0:No,1:Yes
-    private boolean isWebview;
+    private boolean isWebView;
     private List<String> mImptrackers;
     private List<String> mClktrackers;
 
@@ -37,7 +36,7 @@ public class AdBean implements Parcelable {
     private String mDescription;
     private List<String> mResources;
     private AdMark mMk;
-    private int mExpire;
+    private long mExpire;
     private int mRatingCount;
 
     // The fill time stamp
@@ -51,6 +50,9 @@ public class AdBean implements Parcelable {
 
     private AtomicInteger mSuccess = new AtomicInteger(0);
     private AtomicInteger mFailed = new AtomicInteger(0);
+
+    public AdBean() {
+    }
 
     public void setOriData(String mOriData) {
         this.mOriData = mOriData;
@@ -95,12 +97,12 @@ public class AdBean implements Parcelable {
         this.mLink = mLink;
     }
 
-    public boolean isWebview() {
-        return isWebview;
+    public boolean isWebView() {
+        return isWebView;
     }
 
-    public void setWebview(boolean webview) {
-        isWebview = webview;
+    public void setWebView(boolean webView) {
+        isWebView = webView;
     }
 
     public List<String> getImptrackers() {
@@ -165,7 +167,7 @@ public class AdBean implements Parcelable {
         this.appBean = appBean;
     }
 
-    public void setExpire(int mExpire) {
+    public void setExpire(long mExpire) {
         this.mExpire = mExpire;
     }
 
@@ -250,76 +252,7 @@ public class AdBean implements Parcelable {
         return mFailed;
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(this.mOriData);
-        dest.writeString(this.mTitle);
-        dest.writeStringList(this.mMainimgUrls);
-        dest.writeStringList(this.mLocalImgUrls);
-        dest.writeParcelable(this.videoBean, flags);
-        dest.writeString(this.mLink);
-        dest.writeByte(this.isWebview ? (byte) 1 : (byte) 0);
-        dest.writeStringList(this.mImptrackers);
-        dest.writeStringList(this.mClktrackers);
-        dest.writeParcelable(this.appBean, flags);
-        dest.writeString(this.mDescription);
-        dest.writeStringList(this.mResources);
-        dest.writeParcelable(this.mMk, flags);
-        dest.writeInt(this.mExpire);
-        dest.writeInt(this.mRatingCount);
-        dest.writeLong(this.mFillTime);
-        dest.writeStringList(this.mLocalRes);
-        dest.writeSerializable(this.mSuccess);
-        dest.writeSerializable(this.mFailed);
-        dest.writeDouble(this.mRevenue);
-        dest.writeInt(this.mRevenuePrecision);
-    }
-
-    public AdBean() {
-    }
-
-    protected AdBean(Parcel in) {
-        this.mOriData = in.readString();
-        this.mTitle = in.readString();
-        this.mMainimgUrls = in.createStringArrayList();
-        this.mLocalImgUrls = in.createStringArrayList();
-        this.videoBean = in.readParcelable(AdVideoBean.class.getClassLoader());
-        this.mLink = in.readString();
-        this.isWebview = in.readByte() != 0;
-        this.mImptrackers = in.createStringArrayList();
-        this.mClktrackers = in.createStringArrayList();
-        this.appBean = in.readParcelable(AdAppBean.class.getClassLoader());
-        this.mDescription = in.readString();
-        this.mResources = in.createStringArrayList();
-        this.mMk = in.readParcelable(AdMark.class.getClassLoader());
-        this.mExpire = in.readInt();
-        this.mRatingCount = in.readInt();
-        this.mFillTime = in.readLong();
-        this.mLocalRes = in.createStringArrayList();
-        this.mSuccess = (AtomicInteger) in.readSerializable();
-        this.mFailed = (AtomicInteger) in.readSerializable();
-        this.mRevenue = in.readDouble();
-        this.mRevenuePrecision = in.readInt();
-    }
-
-    public static final Creator<AdBean> CREATOR = new Creator<AdBean>() {
-        @Override
-        public AdBean createFromParcel(Parcel source) {
-            return new AdBean(source);
-        }
-
-        @Override
-        public AdBean[] newArray(int size) {
-            return new AdBean[size];
-        }
-    };
-
-    public void replaceOnlineResToLocal(String url, String path) {
+    public synchronized void replaceOnlineResToLocal(String url, String path) {
         if (TextUtils.equals(url, getIconUrl())) {
             setIconUrl(path);
         } else if (getMainimgUrl() != null && getMainimgUrl().contains(url)) {
@@ -340,13 +273,13 @@ public class AdBean implements Parcelable {
             setVideoUrl(path);
         } else {
             List<String> resList = getResources();
-            if (resList == null) {
+            if (resList == null || resList.isEmpty()) {
                 return;
             }
             if (resList.contains(url)) {
                 List<String> localRes = getLocalResources();
                 int size = resList.size();
-                if (localRes == null) {
+                if (localRes == null || localRes.isEmpty()) {
                     localRes = new ArrayList<>(size);
                 }
                 for (int i = 0; i < size; i ++ ) {
@@ -358,5 +291,103 @@ public class AdBean implements Parcelable {
                 setLocalResources(localRes);
             }
         }
+    }
+
+    public static String toJsonString(AdBean adBean) {
+        if (adBean == null) {
+            return "";
+        }
+        try {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("mOriData", adBean.mOriData);
+            jsonObject.put("mTitle", adBean.mTitle);
+            jsonObject.put("mMainimgUrls", getArray(adBean.mMainimgUrls));
+            jsonObject.put("mLocalImgUrls", getArray(adBean.mLocalImgUrls));
+            jsonObject.put("videoBean", AdVideoBean.toJSONObject(adBean.videoBean));
+            jsonObject.put("mLink", adBean.mLink);
+            jsonObject.put("isWebView", adBean.isWebView);
+            jsonObject.put("mImptrackers", getArray(adBean.mImptrackers));
+            jsonObject.put("mClktrackers", getArray(adBean.mClktrackers));
+            jsonObject.put("appBean", AdAppBean.toJSONObject(adBean.appBean));
+            jsonObject.put("mDescription", adBean.mDescription);
+            jsonObject.put("mResources", getArray(adBean.mResources));
+            jsonObject.put("mMk", AdMark.toJSONObject(adBean.mMk));
+            jsonObject.put("mExpire", adBean.mExpire);
+            jsonObject.put("mRatingCount", adBean.mRatingCount);
+            jsonObject.put("mFillTime", adBean.mFillTime);
+            jsonObject.put("mLocalRes", getArray(adBean.mLocalRes));
+            jsonObject.put("mRevenue", adBean.mRevenue);
+            jsonObject.put("mRevenuePrecision", adBean.mRevenuePrecision);
+            return jsonObject.toString();
+        } catch (Exception e) {
+            DeveloperLog.LogE("AdBean convert JSONObject error: " + e.getMessage());
+        }
+        return "";
+    }
+
+    public static AdBean toAdBean(String jsonString) {
+        if (TextUtils.isEmpty(jsonString)) {
+            return null;
+        }
+        try {
+            AdBean adBean = new AdBean();
+            JSONObject jsonObject = new JSONObject(jsonString);
+            adBean.mOriData = jsonObject.optString("mOriData");
+            adBean.mTitle = jsonObject.optString("mTitle");
+            adBean.mMainimgUrls = getList(jsonObject.optJSONArray("mMainimgUrls"));
+            adBean.mLocalImgUrls = getList(jsonObject.optJSONArray("mLocalImgUrls"));
+            adBean.mClktrackers = getList(jsonObject.optJSONArray("mClktrackers"));
+            JSONObject videoObject = jsonObject.optJSONObject("videoBean");
+            if (videoObject != null) {
+                adBean.videoBean = new AdVideoBean(videoObject);
+            }
+            adBean.mLink = jsonObject.optString("mLink");
+            adBean.isWebView = jsonObject.optBoolean("isWebView");
+            adBean.mImptrackers = getList(jsonObject.optJSONArray("mImptrackers"));
+            adBean.mClktrackers = getList(jsonObject.optJSONArray("mClktrackers"));
+            JSONObject appObject = jsonObject.optJSONObject("appBean");
+            if (appObject != null) {
+                adBean.appBean = new AdAppBean(appObject);
+            }
+            adBean.mDescription = jsonObject.optString("mDescription");
+            adBean.mResources = getList(jsonObject.optJSONArray("mResources"));
+            JSONObject mkObject = jsonObject.optJSONObject("mMk");
+            if (mkObject != null) {
+                adBean.mMk = new AdMark(mkObject);
+            }
+            adBean.mExpire = jsonObject.optLong("mExpire");
+            adBean.mRatingCount = jsonObject.optInt("mRatingCount");
+            adBean.mFillTime = jsonObject.optLong("mFillTime");
+            adBean.mLocalRes = getList(jsonObject.optJSONArray("mLocalRes"));
+            adBean.mRevenue = jsonObject.optDouble("mRevenue");
+            adBean.mRevenuePrecision = jsonObject.optInt("mRevenuePrecision");
+            return adBean;
+        } catch (Exception e) {
+            DeveloperLog.LogE("JSONObject convert AdBean error: " + e.getMessage());
+        }
+        return null;
+    }
+
+    private static JSONArray getArray(List<String> list) {
+        if (list == null || list.isEmpty()) {
+            return null;
+        }
+        JSONArray array = new JSONArray();
+        for (String string : list) {
+            array.put(string);
+        }
+        return array;
+    }
+
+    private static List<String> getList(JSONArray array) {
+        if (array == null || array.length() == 0) {
+            return null;
+        }
+        int length = array.length();
+        List<String> list = new ArrayList<>(length);
+        for (int i = 0; i < length; i++) {
+            list.add(array.optString(i));
+        }
+        return list;
     }
 }

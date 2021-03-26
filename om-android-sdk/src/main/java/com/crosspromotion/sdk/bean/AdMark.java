@@ -3,18 +3,20 @@
 
 package com.crosspromotion.sdk.bean;
 
-import android.os.Parcel;
-import android.os.Parcelable;
+import com.openmediation.sdk.utils.DeveloperLog;
 
 import org.json.JSONObject;
 
-public class AdMark implements Parcelable {
+public class AdMark {
     // logo url, default logo if null
     private String logo;
     // link url, to open with the system browser after click; does nothing if null
     private String link;
 
     public AdMark(JSONObject object) {
+        if (object == null) {
+            return;
+        }
         this.logo = object.optString("logo");
         this.link = object.optString("link");
     }
@@ -27,31 +29,18 @@ public class AdMark implements Parcelable {
         return logo;
     }
 
-    protected AdMark(Parcel in) {
-        logo = in.readString();
-        link = in.readString();
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(logo);
-        dest.writeString(link);
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    public static final Creator<AdMark> CREATOR = new Creator<AdMark>() {
-        @Override
-        public AdMark createFromParcel(Parcel in) {
-            return new AdMark(in);
+    public static JSONObject toJSONObject(AdMark adMark) {
+        if (adMark == null) {
+            return null;
         }
-
-        @Override
-        public AdMark[] newArray(int size) {
-            return new AdMark[size];
+        try {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("logo", adMark.logo);
+            jsonObject.put("link", adMark.link);
+            return jsonObject;
+        } catch (Exception e) {
+            DeveloperLog.LogE("AdMark convert JSONObject error: " + e.getMessage());
         }
-    };
+        return null;
+    }
 }

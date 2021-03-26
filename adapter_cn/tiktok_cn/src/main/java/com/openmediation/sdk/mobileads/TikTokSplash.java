@@ -16,7 +16,6 @@ import com.bytedance.sdk.openadsdk.TTSplashAd;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomSplashEvent;
 import com.openmediation.sdk.mediation.MediationInfo;
-import com.openmediation.sdk.splash.SplashAd;
 import com.openmediation.sdk.utils.AdLog;
 
 import java.util.Map;
@@ -51,6 +50,12 @@ public class TikTokSplash extends CustomSplashEvent implements TTAdNative.Splash
                     onInsError(AdapterErrorBuilder.buildLoadError(
                             AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, "Unknown Error"));
                 }
+            }
+
+            @Override
+            public void onFailed(int code, String msg) {
+                onInsError(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, code, msg));
             }
         });
     }

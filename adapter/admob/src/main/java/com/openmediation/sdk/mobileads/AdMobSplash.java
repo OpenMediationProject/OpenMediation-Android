@@ -103,6 +103,7 @@ public class AdMobSplash extends CustomSplashEvent {
             orientation = AppOpenAd.APP_OPEN_AD_ORIENTATION_PORTRAIT;
         }
         final AppOpenAd.AppOpenAdLoadCallback loadCallback = new AppOpenAd.AppOpenAdLoadCallback() {
+
             /**
              * Called when an app open ad has loaded.
              *
