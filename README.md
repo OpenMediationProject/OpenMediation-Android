@@ -50,7 +50,7 @@ dependencies {
   //Helium-Adapter
   implementation 'com.openmediation.adapters:helium:2.1.1'
   // PubNative-Adapter
-  implementation 'com.openmediation.adapters:pubnative:1.0.0'
+  implementation 'com.openmediation.adapters:pubnative:1.1.0'
 }
 ```
 

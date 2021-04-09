@@ -93,7 +93,7 @@ ext {
             'ironsource'     : '2.1.0',
             'fyber'          : '2.0.0',
             'ogury'          : '1.0.0',
-            'pubnative'      : '1.0.0',
+            'pubnative'      : '1.1.0',
             'tiktok_cn'      : '2.1.1',
             'tencentad_cn'   : '2.1.0',
             'mintegral_cn'   : '2.1.2',
