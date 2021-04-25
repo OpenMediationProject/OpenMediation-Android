@@ -67,9 +67,9 @@ public class PubNativeBidAdapter extends BidAdapter implements PubNativeCallback
         } else if (adType == BidConstance.NATIVE) {
             PubNativeSingleTon.getInstance().loadNative((Activity) context, appKey, adUnitId);
         } else if (adType == BidConstance.INTERSTITIAL) {
-            PubNativeSingleTon.getInstance().loadInterstitial((Activity) context, adUnitId);
+            PubNativeSingleTon.getInstance().loadInterstitial((Activity) context, appKey, adUnitId);
         } else if (adType == BidConstance.VIDEO) {
-            PubNativeSingleTon.getInstance().loadRewardedVideo((Activity) context, adUnitId);
+            PubNativeSingleTon.getInstance().loadRewardedVideo((Activity) context, appKey, adUnitId);
         } else {
             mBidCallbacks.remove(adUnitId);
             if (callback != null) {
