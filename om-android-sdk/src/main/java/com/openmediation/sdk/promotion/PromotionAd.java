@@ -11,7 +11,7 @@ import com.openmediation.sdk.utils.constant.CommonConstants;
 import com.openmediation.sdk.utils.model.Scene;
 
 /**
- * AdTiming PromotionAd API
+ * OpenMediation PromotionAd API
  */
 public class PromotionAd extends BaseOmAds {
 

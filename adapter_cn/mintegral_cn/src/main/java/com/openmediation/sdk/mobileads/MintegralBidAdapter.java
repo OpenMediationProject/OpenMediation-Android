@@ -6,22 +6,22 @@ package com.openmediation.sdk.mobileads;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.mintegral.msdk.mtgbid.out.BidListennning;
-import com.mintegral.msdk.mtgbid.out.BidLossCode;
-import com.mintegral.msdk.mtgbid.out.BidManager;
-import com.mintegral.msdk.mtgbid.out.BidResponsed;
-import com.openmediation.sdk.bid.BidResponse;
+import com.mbridge.msdk.mbbid.out.BidListennning;
+import com.mbridge.msdk.mbbid.out.BidLossCode;
+import com.mbridge.msdk.mbbid.out.BidManager;
+import com.mbridge.msdk.mbbid.out.BidResponsed;
 import com.openmediation.sdk.bid.BidAdapter;
 import com.openmediation.sdk.bid.BidCallback;
 import com.openmediation.sdk.bid.BidConstance;
 import com.openmediation.sdk.bid.BidLoseReason;
+import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.utils.AdLog;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MintegralBidAdapter extends BidAdapter {
-    private static final String CLAZZ = "com.mintegral.msdk.mtgbid.out.BidManager";
+    private static final String CLAZZ = "com.mbridge.msdk.mbbid.out.BidManager";
 
     private ConcurrentHashMap<String, BidResponsed> mBidResponses;
     private Context mContext;

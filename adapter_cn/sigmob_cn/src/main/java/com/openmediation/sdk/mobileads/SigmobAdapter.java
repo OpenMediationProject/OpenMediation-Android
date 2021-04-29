@@ -16,7 +16,7 @@ import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.sigmob.windad.WindAdError;
 import com.sigmob.windad.WindAdOptions;
 import com.sigmob.windad.WindAds;
-import com.sigmob.windad.WindAgeRestictedUserStatus;
+import com.sigmob.windad.WindAgeRestrictedUserStatus;
 import com.sigmob.windad.WindConsentStatus;
 import com.sigmob.windad.interstitial.WindInterstitialAd;
 import com.sigmob.windad.interstitial.WindInterstitialAdListener;
@@ -70,7 +70,7 @@ public class SigmobAdapter extends CustomAdsAdapter implements WindRewardedVideo
         super.setAgeRestricted(context, restricted);
         WindAds ads = WindAds.sharedAds();
         ads.setIsAgeRestrictedUser(restricted ?
-                WindAgeRestictedUserStatus.WindAgeRestrictedStatusYES : WindAgeRestictedUserStatus.WindAgeRestrictedStatusNO);
+                WindAgeRestrictedUserStatus.WindAgeRestrictedStatusYES : WindAgeRestrictedUserStatus.WindAgeRestrictedStatusNO);
     }
 
     @Override

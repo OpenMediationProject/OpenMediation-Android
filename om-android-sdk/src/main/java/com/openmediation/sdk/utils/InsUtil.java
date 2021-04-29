@@ -34,7 +34,7 @@ public class InsUtil {
      */
     public static synchronized List<Instance> getInsWithStatus(List<Instance> instances, Instance.MEDIATION_STATE... states) {
         if (instances == null) {
-            return Collections.emptyList();
+            return null;
         }
 
         List<Instance> instanceList = new ArrayList<>();
@@ -111,7 +111,6 @@ public class InsUtil {
                 in.setMediationState(Instance.MEDIATION_STATE.NOT_AVAILABLE);
             } else if (state == Instance.MEDIATION_STATE.NOT_AVAILABLE) {
                 in.setObject(null);
-                in.setStart(0);
             }
         }
     }
@@ -123,7 +122,7 @@ public class InsUtil {
      * @param instanceId the instance id
      * @return the ins by id
      */
-    public static BaseInstance getInsById(BaseInstance[] instances, String instanceId) {
+    public static BaseInstance getInsById(List<Instance> instances, String instanceId) {
         if (instances == null || TextUtils.isEmpty(instanceId)) {
             return null;
         }
@@ -216,8 +215,8 @@ public class InsUtil {
     /**
      * Gets ins by id.
      *
-     * @param placement the placement
-     * @param instanceId  the instance id
+     * @param placement  the placement
+     * @param instanceId the instance id
      * @return BaseInstance
      */
     public static BaseInstance getInsById(Placement placement, String instanceId) {
@@ -243,4 +242,39 @@ public class InsUtil {
         }
         return null;
     }
+
+    public static boolean isInstanceAvailable(BaseInstance instance) {
+        return instance instanceof Instance &&
+                Instance.MEDIATION_STATE.AVAILABLE == ((Instance) instance).getMediationState();
+    }
+
+    public static List<Instance> sort(List<Instance> wfInstances, List<Instance> c2sInstances) {
+        if (c2sInstances == null || c2sInstances.isEmpty()) {
+            return wfInstances;
+        }
+        List<Instance> list = new ArrayList<>();
+        if (wfInstances == null || wfInstances.isEmpty()) {
+            list.addAll(c2sInstances);
+            Collections.sort(list);
+            return list;
+        }
+
+        list.addAll(wfInstances);
+        for (Instance instance : c2sInstances) {
+            int size = list.size();
+            boolean hasInsert = false;
+            for (int i = 0; i < size; i++) {
+                if (instance.getRevenue() > list.get(i).getRevenue()) {
+                    list.add(i, instance);
+                    hasInsert = true;
+                    break;
+                }
+            }
+            if (!hasInsert) {
+                list.add(instance);
+            }
+        }
+        return list;
+    }
+
 }

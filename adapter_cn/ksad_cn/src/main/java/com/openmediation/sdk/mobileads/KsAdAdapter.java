@@ -118,6 +118,11 @@ public class KsAdAdapter extends CustomAdsAdapter {
                 }
 
                 @Override
+                public void onRequestResult(int i) {
+
+                }
+
+                @Override
                 public void onFullScreenVideoAdLoad(List<KsFullScreenVideoAd> adList) {
                     if (adList != null && adList.size() > 0) {
                         AdLog.getSingleton().LogE(TAG + " 插屏加载成功.....");
@@ -268,6 +273,11 @@ public class KsAdAdapter extends CustomAdsAdapter {
                     if (mRewardedAds.size() > 0) {
                         mRewardedAds.remove(adUnitId);
                     }
+                }
+
+                @Override
+                public void onRequestResult(int i) {
+
                 }
 
                 @Override

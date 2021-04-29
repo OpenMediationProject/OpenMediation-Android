@@ -3,9 +3,6 @@
 
 package com.openmediation.sdk.utils.model;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.crash.CrashUtil;
 
@@ -16,7 +13,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Events implements Parcelable {
+public class Events {
 
     /**
      * for reporting
@@ -34,6 +31,11 @@ public class Events implements Parcelable {
      * EventIDs
      */
     private List<Integer> ids;
+
+    /**
+     * A list of EventID that need to be reported immediately
+     */
+    private List<Integer> fids;
 
     public Events() {
     }
@@ -58,61 +60,23 @@ public class Events implements Parcelable {
             CrashUtil.getSingleton().saveException(e);
             DeveloperLog.LogD(e.getMessage());
         }
-    }
-
-    public Events(String url, int mn, int ci, List<Integer> ids) {
-        this.url = url;
-        this.mn = mn;
-        this.ci = ci;
-        this.ids = ids;
-    }
-
-    protected Events(Parcel in) {
-        url = in.readString();
-        mn = in.readInt();
-        ci = in.readInt();
-        if (in.readByte() == (byte) 1) {
-            int[] chas = in.createIntArray();
-            ids = new ArrayList<>();
-            for (int i = 0; i < chas.length; i++) {
-                ids.add(chas[i]);
+        try {
+            JSONArray idArray = object.optJSONArray("fids");
+            if (idArray != null) {
+                if (fids == null) {
+                    fids = new ArrayList<>();
+                } else {
+                    fids.clear();
+                }
+                for (int i = 0; i < idArray.length(); i++) {
+                    fids.add(idArray.getInt(i));
+                }
             }
+        } catch (JSONException e) {
+            CrashUtil.getSingleton().saveException(e);
+            DeveloperLog.LogD(e.getMessage());
         }
     }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(url);
-        dest.writeInt(mn);
-        dest.writeInt(ci);
-        if (ids != null && ids.size() > 0) {
-            dest.writeByte((byte) 1);
-            int[] chas = new int[ids.size()];
-            for (int i = 0; i < ids.size(); i++) {
-                chas[i] = ids.get(i);
-            }
-            dest.writeIntArray(chas);
-        } else {
-            dest.writeByte((byte) 0);
-        }
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    public static final Creator<Events> CREATOR = new Creator<Events>() {
-        @Override
-        public Events createFromParcel(Parcel in) {
-            return new Events(in);
-        }
-
-        @Override
-        public Events[] newArray(int size) {
-            return new Events[size];
-        }
-    };
 
     public String getUrl() {
         return url;
@@ -146,4 +110,11 @@ public class Events implements Parcelable {
         this.ids = ids;
     }
 
+    public List<Integer> getFids() {
+        return fids;
+    }
+
+    public void setFids(List<Integer> fids) {
+        this.fids = fids;
+    }
 }

@@ -8,9 +8,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 
-import com.mintegral.msdk.MIntegralSDK;
-import com.mintegral.msdk.out.MIntegralSDKFactory;
-import com.mintegral.msdk.out.SDKInitStatusListener;
+import com.mbridge.msdk.MBridgeSDK;
+import com.mbridge.msdk.out.MBridgeSDKFactory;
+import com.mbridge.msdk.out.SDKInitStatusListener;
 import com.openmediation.sdk.utils.AdLog;
 
 import java.util.List;
@@ -72,8 +72,8 @@ public class MintegralSingleTon {
             String[] tmp = appKey.split("#");
             String appId = tmp[0];
             String key = tmp[1];
-            final MIntegralSDK sdk = MIntegralSDKFactory.getMIntegralSDK();
-            final Map<String, String> map = sdk.getMTGConfigurationMap(appId, key);
+            final MBridgeSDK sdk = MBridgeSDKFactory.getMBridgeSDK();
+            final Map<String, String> map = sdk.getMBConfigurationMap(appId, key);
             sdk.init(map, context.getApplicationContext(), new SDKInitStatusListener() {
                 @Override
                 public void onInitSuccess() {

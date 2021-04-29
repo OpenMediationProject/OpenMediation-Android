@@ -168,6 +168,11 @@ public class KsAdSplash extends CustomSplashEvent implements KsLoadManager.Splas
     }
 
     @Override
+    public void onRequestResult(int i) {
+
+    }
+
+    @Override
     public void onSplashScreenAdLoad(KsSplashScreenAd ksSplashScreenAd) {
         if (isDestroyed) {
             return;

@@ -386,6 +386,7 @@ public class PlacementUtils {
         switch (adType) {
             case CommonConstants.BANNER:
             case CommonConstants.NATIVE:
+            case CommonConstants.SPLASH:
                 return false;
             default:
                 return true;

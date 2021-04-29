@@ -16,7 +16,7 @@ public interface PromotionAdApi {
      * Third-party ad networks can be inited in this method
      *
      * @param activity must be an activity
-     * @param dataMap  some configs for third-party ad networks on AdTiming dashboard
+     * @param dataMap  some configs for third-party ad networks on OpenMediation dashboard
      * @param callback {@link PromotionAdCallback}
      */
     void initPromotionAd(Activity activity, Map<String, Object> dataMap, PromotionAdCallback callback);

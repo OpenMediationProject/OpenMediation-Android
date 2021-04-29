@@ -52,7 +52,7 @@ public class UnitySingleTon {
         try {
             mInitState = InitState.INIT_PENDING;
             MediationMetaData mediationMetaData = new MediationMetaData(context);
-            mediationMetaData.setName("AdTiming");
+            mediationMetaData.setName("OpenMediation");
             mediationMetaData.setVersion(com.openmediation.sdk.mobileads.unity.BuildConfig.VERSION_NAME);
             mediationMetaData.commit();
 

@@ -4,29 +4,74 @@
 package com.openmediation.sdk.mobileads;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.bytedance.sdk.openadsdk.TTAdConfig;
 import com.bytedance.sdk.openadsdk.TTAdManager;
 import com.bytedance.sdk.openadsdk.TTAdSdk;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class TTAdManagerHolder {
 
-    private static boolean sInit;
+    private static final AtomicBoolean sInit = new AtomicBoolean(false);
 
-    public static TTAdManager get() {
-        if (!sInit) {
-            return null;
-        }
+    static TTAdManager get() {
         return TTAdSdk.getAdManager();
     }
 
-    public static void init(Context context, String appId, Boolean consent, Boolean ageRestricted) {
+    public static void init(Context context, String appId, Boolean consent, Boolean ageRestricted, InitCallback callback) {
         if (context == null) {
             return;
         }
-        if (!sInit) {
-            TTAdSdk.init(context, buildConfig(context, appId, consent, ageRestricted));
-            sInit = true;
+        doInit(context, appId, consent, ageRestricted, callback);
+    }
+
+    private static void doInit(final Context context, final String appId, final Boolean consent, final Boolean ageRestricted, final InitCallback callback) {
+        if (sInit.get()) {
+            if (callback != null) {
+                callback.onSuccess();
+            }
+            return;
+        }
+
+        final TTAdSdk.InitCallback initCallback = new TTAdSdk.InitCallback() {
+
+            @Override
+            public void success() {
+                onInitFinish(callback);
+            }
+
+            @Override
+            public void fail(int code, String msg) {
+                onInitFailed(callback, code, msg);
+            }
+        };
+
+        if (Looper.getMainLooper() == Looper.myLooper()) {
+            TTAdSdk.init(context, buildConfig(context, appId, consent, ageRestricted), initCallback);
+            return;
+        }
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                TTAdSdk.init(context, buildConfig(context, appId, consent, ageRestricted), initCallback);
+            }
+        });
+    }
+
+    private static void onInitFinish(InitCallback callback) {
+        sInit.set(true);
+        if (callback != null) {
+            callback.onSuccess();
+        }
+    }
+
+    private static void onInitFailed(InitCallback callback, int code, String msg) {
+        sInit.set(false);
+        if (callback != null) {
+            callback.onFailed(code, msg);
         }
     }
 
@@ -47,5 +92,10 @@ public class TTAdManagerHolder {
 
     public static int[] getScreenPx(Context context) {
         return new int[] {context.getResources().getDisplayMetrics().widthPixels, context.getResources().getDisplayMetrics().heightPixels};
+    }
+
+    public interface InitCallback {
+        void onSuccess();
+        void onFailed(int code, String msg);
     }
 }

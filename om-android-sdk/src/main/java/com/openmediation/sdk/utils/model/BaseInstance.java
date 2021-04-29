@@ -23,7 +23,7 @@ import org.json.JSONObject;
 
 import java.math.BigDecimal;
 
-public class BaseInstance extends Frequency {
+public class BaseInstance extends Frequency implements Comparable<BaseInstance> {
     // AuctionID
     private String reqId;
     //Instances Id
@@ -46,8 +46,6 @@ public class BaseInstance extends Frequency {
 
     //data for instance storage
     private Object object;
-
-    private long start;
 
     private String appKey;
 
@@ -158,14 +156,6 @@ public class BaseInstance extends Frequency {
 
     public Object getObject() {
         return object;
-    }
-
-    public void setStart(long start) {
-        this.start = start;
-    }
-
-    public long getStart() {
-        return start;
     }
 
     public void setAppKey(String appKey) {
@@ -282,7 +272,9 @@ public class BaseInstance extends Frequency {
         return "Ins{" +
                 "id=" + id +
                 ", index=" + index +
+                ", grpIndex=" + grpIndex +
                 ", pid=" + mPlacementId +
+                ", revenue=" + revenue +
                 ", mId=" + mediationId +
                 ", name=" + name +
                 '}';
@@ -468,6 +460,17 @@ public class BaseInstance extends Frequency {
         if (bidResponse != null) {
             setBidResponse(null);
         }
+    }
+
+    @Override
+    public int compareTo(BaseInstance instance) {
+        if (instance != null) {
+            double diff = instance.revenue - this.revenue;
+            if (diff > 0) return 1;
+            if (diff < 0) return -1;
+            return 0;
+        }
+        return 0;
     }
 
     public enum BID_STATE {

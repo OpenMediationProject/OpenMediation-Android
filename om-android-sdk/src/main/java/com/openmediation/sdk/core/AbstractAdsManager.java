@@ -6,11 +6,11 @@ package com.openmediation.sdk.core;
 import android.app.Activity;
 
 import com.openmediation.sdk.InitCallback;
-import com.openmediation.sdk.bid.BidAuctionManager;
-import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.bid.AuctionCallback;
 import com.openmediation.sdk.bid.AuctionUtil;
+import com.openmediation.sdk.bid.BidAuctionManager;
 import com.openmediation.sdk.bid.BidLoseReason;
+import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.core.runnable.AdsScheduleTask;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.utils.ActLifecycle;
@@ -96,11 +96,11 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
      * The M scene.
      */
     protected Scene mScene;
-    private Map<Integer, BidResponse> mBidResponses;
+    private final Map<Integer, BidResponse> mBidResponses;
 
     private OmManager.LOAD_TYPE mLoadType;
     //Adapters to be loaded
-    private CopyOnWriteArrayList<Instance> mTotalIns;
+    private final CopyOnWriteArrayList<Instance> mTotalIns;
     //
     private int mCacheSize;
     //
@@ -108,11 +108,13 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
     //
     private boolean isManualTriggered;
 
-    private AtomicInteger mAllLoadFailedCount = new AtomicInteger(0);
+    private final AtomicInteger mAllLoadFailedCount = new AtomicInteger(0);
     //last callback's status
-    private AtomicBoolean mLastAvailability = new AtomicBoolean(false);
-    private AtomicBoolean mDidScheduleTaskStarted = new AtomicBoolean(false);
-    private AtomicBoolean isAReadyReported = new AtomicBoolean(false);
+    private final AtomicBoolean mLastAvailability = new AtomicBoolean(false);
+    private final AtomicBoolean mDidScheduleTaskStarted = new AtomicBoolean(false);
+    private final AtomicBoolean isAReadyReported = new AtomicBoolean(false);
+
+    private JSONObject mWFJsonInfo;
 
     /**
      * Instantiates a new Abstract ads manager.
@@ -120,6 +122,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
     public AbstractAdsManager() {
         mTotalIns = new CopyOnWriteArrayList<>();
         mListenerWrapper = new ListenerWrapper();
+        mBidResponses = new ConcurrentHashMap<>();
     }
 
     private String getPlacementId() {
@@ -160,10 +163,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
 
         if (instance.getHb() == 1) {
             instance.reportInsLoad(EventId.INSTANCE_PAYLOAD_REQUEST);
-            BidResponse bidResponse = null;
-            if (mBidResponses != null) {
-                bidResponse = mBidResponses.get(instance.getId());
-            }
+            BidResponse bidResponse = mBidResponses.get(instance.getId());
             instance.setBidResponse(bidResponse);
             insLoad(instance, PlacementUtils.getLoadExtrasMap(mReqId, instance, bidResponse));
         } else {
@@ -243,13 +243,6 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
             }
         }
 
-        //returns if load can't start
-        Error error = checkLoadAvailable();
-        if (error != null) {
-            AdsUtil.loadBlockedReport(Preconditions.checkNotNull(mPlacement) ? mPlacement.getId() : "", error);
-            return;
-        }
-
         //When manually triggered, first checks available ads in cache
         if (isManualTriggered) {
             if (hasAvailableCache() && shouldNotifyAvailableChanged(true)) {
@@ -259,11 +252,17 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
 
         //to replenish?
         if (availableCount < mCacheSize) {
+            //returns if load can't start
+            Error error = checkLoadAvailable();
+            if (error != null) {
+                AdsUtil.loadBlockedReport(Preconditions.checkNotNull(mPlacement) ? mPlacement.getId() : "", error);
+                return;
+            }
             delayLoad(type);
         } else {
             isInLoadingProgress = false;
             DeveloperLog.LogD("cache is full, cancel this request");
-            error = ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
+            Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
                     , "cache is full, cancel this request", ErrorCode.CODE_INTERNAL_UNKNOWN_OTHER);
             AdsUtil.loadBlockedReport(Preconditions.checkNotNull(mPlacement) ? mPlacement.getId() : "", error);
         }
@@ -321,7 +320,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
     }
 
     /**
-     * Notifies availability change when manually trigged, or cache availability changed
+     * Notifies availability change when manually trigger, or cache availability changed
      */
     @Override
     protected boolean shouldNotifyAvailableChanged(boolean available) {
@@ -454,7 +453,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
 
     @Override
     public void onSuccess() {
-        //only trigged by manual 
+        //only trigger by manual
         loadAdWithAction(OmManager.LOAD_TYPE.MANUAL);
     }
 
@@ -465,29 +464,28 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
     }
 
     @Override
-    public void onBidComplete(List<BidResponse> c2sResponses, List<BidResponse> s2sResponses) {
+    public void onBidS2SComplete(List<BidResponse> s2sResponses) {
+        List<BidResponse> bidResponses = appendLastBidResult();
+        WaterFallHelper.wfRequest(getPlacementInfo(), mLoadType, bidResponses, s2sResponses,
+                InsUtil.getInstanceLoadStatuses(mTotalIns), mReqId, AbstractAdsManager.this);
+    }
+
+    @Override
+    public void onBidC2SComplete(List<Instance> c2sInstances, List<BidResponse> c2sResponses) {
         try {
-            if (mBidResponses == null) {
-                mBidResponses = new ConcurrentHashMap<>();
-            }
+            DeveloperLog.LogD("AbstractAdsManager onBidC2SComplete c2sInstances : " + c2sInstances);
             if (c2sResponses != null && !c2sResponses.isEmpty()) {
                 storeC2sResult(c2sResponses);
             }
-            List<BidResponse> bidResponses = appendLastBidResult();
-            if (bidResponses != null && !bidResponses.isEmpty()) {
-                if (c2sResponses == null) {
-                    c2sResponses = new ArrayList<>();
-                }
-                c2sResponses.addAll(bidResponses);
-            }
-            WaterFallHelper.wfRequest(getPlacementInfo(), mLoadType, c2sResponses, s2sResponses,
-                    InsUtil.getInstanceLoadStatuses(mTotalIns), mReqId, AbstractAdsManager.this);
+            startLoadAd(mWFJsonInfo, c2sInstances);
         } catch (Exception e) {
-            Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
-                    , ErrorCode.MSG_LOAD_INVALID_REQUEST, ErrorCode.CODE_LOAD_UNKNOWN_INTERNAL_ERROR);
-            callbackLoadError(error);
-            DeveloperLog.LogD("load ad error", e);
+            e.printStackTrace();
+            Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_SERVER_ERROR
+                    , ErrorCode.MSG_LOAD_SERVER_ERROR, ErrorCode.CODE_INTERNAL_UNKNOWN_OTHER);
+            DeveloperLog.LogE(error.toString() + ", request cl success, but failed when parse response" +
+                    ", Placement:" + mPlacement, e);
             CrashUtil.getSingleton().saveException(e);
+            callbackLoadError(error);
         }
     }
 
@@ -507,7 +505,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
             if (mediationRule != null) {
                 mRuleId = mediationRule.getId();
             }
-            //when not trigged by init, checks cache before aReady reporting
+            //when not trigger by init, checks cache before aReady reporting
             if (mLoadType != OmManager.LOAD_TYPE.INIT) {
                 int availableCount = InsUtil.instanceCount(mTotalIns, Instance.MEDIATION_STATE.AVAILABLE);
                 if (availableCount > 0) {
@@ -517,9 +515,9 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
                 }
             }
 
-            List<Instance> lastAvailableIns = InsUtil.getInsWithStatus(mTotalIns, Instance.MEDIATION_STATE.AVAILABLE);
             int code = clInfo.optInt("code");
             if (code != 0) {
+                List<Instance> lastAvailableIns = InsUtil.getInsWithStatus(mTotalIns, Instance.MEDIATION_STATE.AVAILABLE);
                 if (lastAvailableIns == null || lastAvailableIns.isEmpty()) {
                     String msg = clInfo.optString("msg");
                     Error error = new Error(ErrorCode.CODE_LOAD_NO_AVAILABLE_AD
@@ -530,8 +528,15 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
                 return;
             }
             mPlacement.setWfAbt(clInfo.optInt("abt"));
-            List<Instance> tmp = WaterFallHelper.getListInsResult(mReqId, clInfo, mPlacement);
-            internalLoad(lastAvailableIns, clInfo, tmp);
+
+            mWFJsonInfo = clInfo;
+            List<Instance> c2SInstances = WaterFallHelper.getC2SInstances(mReqId, clInfo, mPlacement);
+            if (c2SInstances == null || c2SInstances.isEmpty()) {
+                startLoadAd(clInfo, null);
+            } else {
+                BidAuctionManager.getInstance().c2sBid(mActivityReference.get(), c2SInstances, mPlacement.getId(), mReqId, mPlacement.getT(),
+                        AbstractAdsManager.this);
+            }
         } catch (Exception e) {
             Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_SERVER_ERROR
                     , ErrorCode.MSG_LOAD_SERVER_ERROR, ErrorCode.CODE_INTERNAL_UNKNOWN_OTHER);
@@ -544,44 +549,50 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
         }
     }
 
-    private void internalLoad(List<Instance> lastAvailableIns, JSONObject clInfo, List<Instance> tmp) {
-        if (tmp == null || tmp.isEmpty()) {
+    private void startLoadAd(JSONObject clInfo, List<Instance> c2sInstances) {
+        List<Instance> wfInstances = WaterFallHelper.getListInsResult(mReqId, clInfo, mPlacement);
+        DeveloperLog.LogD("AbstractAdsManager startLoadAd wfInstances : " + wfInstances);
+        List<Instance> totalIns = InsUtil.sort(wfInstances, c2sInstances);
+        DeveloperLog.LogD("AbstractAdsManager after instances sort: " + totalIns);
+        internalLoad(clInfo, totalIns);
+    }
+
+    private void internalLoad(JSONObject clInfo, List<Instance> totalIns) {
+        List<Instance> lastAvailableIns = InsUtil.getInsWithStatus(mTotalIns, Instance.MEDIATION_STATE.AVAILABLE);
+        if (totalIns == null || totalIns.isEmpty()) {
             if (lastAvailableIns == null || lastAvailableIns.isEmpty()) {
                 Error error = new Error(ErrorCode.CODE_LOAD_NO_AVAILABLE_AD
                         , ErrorCode.MSG_LOAD_NO_AVAILABLE_AD, ErrorCode.CODE_INTERNAL_SERVER_ERROR);
-                DeveloperLog.LogE(error.toString() + ", tmp:" + tmp + ", last:" + lastAvailableIns);
+                DeveloperLog.LogE(error.toString() + ", tmp:" + totalIns + ", last:" + lastAvailableIns);
                 callbackLoadError(error);
             } else {
                 DeveloperLog.LogD("request cl success, but ins[] is empty, but has history");
                 isInLoadingProgress = false;
             }
+            return;
+        }
+        if (lastAvailableIns != null && !lastAvailableIns.isEmpty()) {
+            InsUtil.reOrderIns(lastAvailableIns, totalIns);
+        }
+        mTotalIns.clear();
+        mTotalIns.addAll(totalIns);
+        InsUtil.resetInsStateOnClResponse(mTotalIns);
+        DeveloperLog.LogD("TotalIns is : " + mTotalIns.toString());
+        int availableCount = InsUtil.instanceCount(mTotalIns, Instance.MEDIATION_STATE.AVAILABLE);
+        reSizeCacheSize();
+        DeveloperLog.LogD("after cl, cache size is : " + mCacheSize);
+        //if availableCount == mCacheSize, do not load any new instance
+        if (availableCount == mCacheSize) {
+            DeveloperLog.LogD("no new ins should be loaded, current load progress finishes");
+            isInLoadingProgress = false;
         } else {
-            if (lastAvailableIns != null && !lastAvailableIns.isEmpty()) {
-                InsUtil.reOrderIns(lastAvailableIns, tmp);
-            }
-            mTotalIns.clear();
-            mTotalIns.addAll(tmp);
-            InsUtil.resetInsStateOnClResponse(mTotalIns);
-            DeveloperLog.LogD("TotalIns is : " + mTotalIns.toString());
-            int availableCount = InsUtil.instanceCount(mTotalIns, Instance.MEDIATION_STATE.AVAILABLE);
-            reSizeCacheSize();
-            DeveloperLog.LogD("after cl, cache size is : " + mCacheSize);
-            //if availableCount == mCacheSize, do not load any new instance
-            if (availableCount == mCacheSize) {
-                DeveloperLog.LogD("no new ins should be loaded, current load progress finishes");
-                isInLoadingProgress = false;
-            } else {
-                if (mPlacement != null) {
-                    Map<Integer, BidResponse> bidResponseMap = WaterFallHelper.getS2sBidResponse(clInfo);
-                    if (bidResponseMap != null && !bidResponseMap.isEmpty()) {
-                        if (mBidResponses == null) {
-                            mBidResponses = new ConcurrentHashMap<>();
-                        }
-                        mBidResponses.putAll(bidResponseMap);
-                    }
+            if (mPlacement != null) {
+                Map<Integer, BidResponse> bidResponseMap = WaterFallHelper.getS2sBidResponse(clInfo);
+                if (bidResponseMap != null && !bidResponseMap.isEmpty()) {
+                    mBidResponses.putAll(bidResponseMap);
                 }
-                doLoadOnUiThread();
             }
+            doLoadOnUiThread();
         }
     }
 
@@ -589,7 +600,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
     public void onRequestFailed(String error) {
         Error errorResult = ErrorBuilder.build(ErrorCode.CODE_LOAD_SERVER_ERROR
                 , ErrorCode.MSG_LOAD_SERVER_ERROR, ErrorCode.CODE_INTERNAL_SERVER_FAILED);
-        DeveloperLog.LogD(errorResult.toString() + ", request cl failed : " + errorResult + ", error" + error);
+        DeveloperLog.LogE(errorResult.toString() + ", request cl failed : " + errorResult + ", error" + error);
         callbackLoadError(errorResult);
     }
 
@@ -642,24 +653,11 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
             isAReadyReported.set(false);
             removeBidResponseWhenLoad();
             if (mPlacement != null && mPlacement.getT() == CommonConstants.PROMOTION) {
-                internalLoad(null, null, InsUtil.getInstanceList(mPlacement));
+                internalLoad(null, InsUtil.getInstanceList(mPlacement));
                 return;
             }
-            WorkExecutor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        BidAuctionManager.getInstance().bid(mActivityReference.get(), mPlacement.getId(), mReqId, mPlacement.getT(),
-                                AbstractAdsManager.this);
-                    } catch (Exception e) {
-                        Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
-                                , ErrorCode.MSG_LOAD_INVALID_REQUEST, ErrorCode.CODE_LOAD_UNKNOWN_INTERNAL_ERROR);
-                        callbackLoadError(error);
-                        DeveloperLog.LogD("load ad error", e);
-                        CrashUtil.getSingleton().saveException(e);
-                    }
-                }
-            });
+            BidAuctionManager.getInstance().s2sBid(mActivityReference.get(), mPlacement.getId(), mReqId, mPlacement.getT(),
+                    AbstractAdsManager.this);
         } catch (Exception e) {
             Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
                     , ErrorCode.MSG_LOAD_INVALID_REQUEST, ErrorCode.CODE_LOAD_UNKNOWN_INTERNAL_ERROR);

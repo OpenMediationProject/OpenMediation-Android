@@ -38,19 +38,30 @@ public class HeliumBidAdapter extends BidAdapter implements HeliumBidCallback {
     }
 
     @Override
-    public void executeBid(Context context, Map<String, Object> dataMap, BidCallback callback) {
+    public void executeBid(Context context, final Map<String, Object> dataMap, final BidCallback callback) {
         super.executeBid(context, dataMap, callback);
-        HeliumSingleTon.InitState initState = HeliumSingleTon.getInstance().getInitState();
-        if (initState == HeliumSingleTon.InitState.NOT_INIT || initState == HeliumSingleTon.InitState.INIT_PENDING) {
-            if (callback != null) {
-                callback.bidFailed("Helium SDK not initialized");
-            }
-            return;
+        String appKey = "";
+        if (dataMap.get(BidConstance.BID_APP_KEY) != null) {
+            appKey = String.valueOf(dataMap.get(BidConstance.BID_APP_KEY));
         }
+        HeliumSingleTon.getInstance().init(context, appKey, new HeliumInitCallback() {
+            @Override
+            public void initSuccess() {
+                executeBid(dataMap, callback);
+            }
 
+            @Override
+            public void initFailed(String error) {
+                if (callback != null) {
+                    callback.bidFailed("Helium SDK init error: " + error);
+                }
+            }
+        });
+    }
+
+    private void executeBid (Map<String, Object> dataMap, BidCallback callback) {
         int adType = (int) dataMap.get(BidConstance.BID_AD_TYPE);
         String adUnitId = (String) dataMap.get(BidConstance.BID_PLACEMENT_ID);
-
         HeliumSingleTon.getInstance().addBidCallback(adUnitId, this);
         mBidCallbacks.put(adUnitId, callback);
         if (adType == BidConstance.INTERSTITIAL) {

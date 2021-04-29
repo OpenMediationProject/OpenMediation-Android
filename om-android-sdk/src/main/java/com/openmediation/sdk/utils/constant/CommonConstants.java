@@ -9,9 +9,9 @@ public interface CommonConstants {
     String CHARTSET_UTF8 = "UTF-8";
     int PLAT_FORM_ANDROID = 1;
     int API_VERSION = 1;
-    int API_VERSION_V2 = 2;
+    int API_VERSION_V3 = 3;
 
-    String SDK_VERSION_NAME = "2.1.1";
+    String SDK_VERSION_NAME = "2.2.0";
 
     String ADTYPE_BANNER = "Banner";
     String ADTYPE_NATIVE = "Native";

@@ -37,8 +37,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +47,7 @@ import java.util.Map;
 public class WaterFallHelper {
     private static final String AUCTION_PRICE = "${AUCTION_PRICE}";
     //testing instance
-    private static Map<String, BaseInstance[]> testInstanceMap = new HashMap<>();
+    private static final Map<String, List<Instance>> testInstanceMap = new HashMap<>();
 
     /**
      * Sets test instance.
@@ -57,7 +55,7 @@ public class WaterFallHelper {
      * @param placementId   the placement id
      * @param testInstances the test instances
      */
-    public static void setTestInstance(String placementId, BaseInstance[] testInstances) {
+    public static void setTestInstance(String placementId, List<Instance> testInstances) {
         testInstanceMap.put(placementId, testInstances);
     }
 
@@ -68,7 +66,7 @@ public class WaterFallHelper {
         testInstanceMap.clear();
     }
 
-    private static Map<String, BaseInstance[]> getTestInstanceMap() {
+    private static Map<String, List<Instance>> getTestInstanceMap() {
         return testInstanceMap;
     }
 
@@ -80,14 +78,13 @@ public class WaterFallHelper {
      * @param s2sResult the response list
      * @param callback  the callback
      * @param reqId     the reqId
-     * @throws Exception the exception
      */
     public static void wfRequest(final PlacementInfo info, final OmManager.LOAD_TYPE type,
                                  final List<BidResponse> c2sResult,
                                  final List<BidResponse> s2sResult,
                                  final List<InstanceLoadStatus> statusList,
                                  final String reqId,
-                                 final Request.OnRequestCallback callback) throws Exception {
+                                 final Request.OnRequestCallback callback) {
 
         WorkExecutor.execute(new Runnable() {
             @Override
@@ -169,6 +166,10 @@ public class WaterFallHelper {
         return bidResponses;
     }
 
+    public static List<Instance> getListInsResult(String reqId, JSONObject clInfo, Placement placement) {
+        return getListInsResult(reqId, clInfo, placement, 0);
+    }
+
     /**
      * Gets list ins result.
      *
@@ -176,38 +177,43 @@ public class WaterFallHelper {
      * @param placement the placement
      * @return the list ins result
      */
-    public static List<Instance> getListInsResult(String reqId, JSONObject clInfo, Placement placement) {
+    public static List<Instance> getListInsResult(String reqId, JSONObject clInfo, Placement placement, int bs) {
 
-        Instance[] test = (Instance[]) getTestInstanceMap().get(placement.getId());
+        List<Instance> test = getTestInstanceMap().get(placement.getId());
         //for testing
-        if (test != null && test.length > 0) {
-            Instance[] tmp = splitAbsIns((test));
-            return new ArrayList<>(Arrays.asList(tmp));
+        if (test != null && test.size() > 0) {
+            if (bs > 0) {
+                return splitInsByBs(test, bs);
+            }
+            return splitAbsIns(test);
         }
 
         JSONArray insArray = clInfo.optJSONArray("ins");
         if (insArray == null || insArray.length() <= 0) {
-            return Collections.emptyList();
+            return null;
         }
 
         SparseArray<BaseInstance> insMap = placement.getInsMap();
         if (insMap == null || insMap.size() <= 0) {
-            return Collections.emptyList();
+            return null;
         }
 
         MediationRule mediationRule = getMediationRule(clInfo);
         int abt = clInfo.optInt("abt");
+
+        boolean cacheAds = PlacementUtils.isCacheAdsType(placement.getT());
         List<Instance> instancesList = new ArrayList<>();
         for (int i = 0; i < insArray.length(); i++) {
             JSONObject insObject = insArray.optJSONObject(i);
             Instance instance = getInstance(reqId, placement, insObject, insMap, mediationRule, abt);
             if (instance != null) {
-                instance.setIndex(i);
+                // TODO
+//                instance.setIndex(i);
+                if (!cacheAds) {
+                    instance.setBidResponse(null);
+                }
                 instancesList.add(instance);
             }
-        }
-        if (instancesList.size() == 0) {
-            return Collections.emptyList();
         }
         return instancesList;
     }
@@ -220,27 +226,29 @@ public class WaterFallHelper {
      * @param bs        the bs
      * @return the base instance [ ]
      */
-    public static BaseInstance[] getArrayInstances(String reqId, MediationRule mediationRule, JSONObject clInfo, Placement placement, int bs) {
+    public static List<Instance> getArrayInstances(String reqId, JSONObject clInfo, Placement placement, int bs) {
         if (bs == 0 || placement == null) {
-            return new Instance[0];
+            return null;
         }
 
-        BaseInstance[] test = getTestInstanceMap().get(placement.getId());
+        // TODO
+        List<Instance> test = getTestInstanceMap().get(placement.getId());
         //for testing
-        if (test != null && test.length > 0) {
+        if (test != null && test.size() > 0) {
             return splitInsByBs(test, bs);
         }
 
         JSONArray insArray = clInfo.optJSONArray("ins");
         if (insArray == null || insArray.length() <= 0) {
-            return new Instance[0];
+            return null;
         }
 
         SparseArray<BaseInstance> insMap = placement.getInsMap();
         if (insMap == null || insMap.size() <= 0) {
-            return new Instance[0];
+            return null;
         }
 
+        MediationRule mediationRule = getMediationRule(clInfo);
         int abt = clInfo.optInt("abt");
         List<Instance> instancesList = new ArrayList<>();
         for (int i = 0; i < insArray.length(); i++) {
@@ -251,37 +259,26 @@ public class WaterFallHelper {
                 instancesList.add(instance);
             }
         }
-        //
-        if (instancesList.size() == 0) {
-            return new Instance[0];
-        }
-
-        return splitInsByBs(instancesList.toArray(new Instance[instancesList.size()]), bs);
+        return instancesList;
     }
 
     private static Instance getInstance(String reqId, Placement placement, JSONObject insObject, SparseArray<BaseInstance> insMap, MediationRule mediationRule, int abt) {
         if (insObject != null) {
             int insId = insObject.optInt("id");
-            Instance ins = (Instance) insMap.get(insId);
-            if (ins != null) {
-                ins.setWfAbt(abt);
-                if (ins.getMediationState() != Instance.MEDIATION_STATE.AVAILABLE) {
-                    ins.setPriority(insObject.optInt("i", -1));
-                    ins.setRevenue(insObject.optDouble("r", 0d));
-                    ins.setRevenuePrecision(insObject.optInt("rp", -1));
-                    ins.setMediationRule(mediationRule);
-                    ins.setReqId(reqId);
+            BaseInstance ins = insMap.get(insId);
+            if (ins instanceof Instance) {
+                Instance instance = (Instance) ins;
+                if (instance.getMediationState() != Instance.MEDIATION_STATE.AVAILABLE) {
+                    instance.setWfAbt(abt);
+                    instance.setMediationRule(mediationRule);
+                    instance.setReqId(reqId);
+                    instance.setRevenue(insObject.optDouble("r", 0d));
+                    instance.setPriority(insObject.optInt("i", -1));
+                    instance.setRevenuePrecision(insObject.optInt("rp", -1));
                 }
-            } else {
-                JSONObject jsonObject = PlacementUtils.placementEventParams(placement.getId());
-                JsonUtil.put(jsonObject, "iid", insId);
-                JsonUtil.put(jsonObject, "reqId", reqId);
-                if (mediationRule != null) {
-                    JsonUtil.put(jsonObject, "ruleId", mediationRule.getId());
-                }
-                EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_NOT_FOUND, jsonObject);
+                return instance;
             }
-            return ins;
+            reportNoInstance(reqId, placement, mediationRule, insId);
         }
         return null;
     }
@@ -295,12 +292,11 @@ public class WaterFallHelper {
         return rule;
     }
 
-    private static Instance[] splitAbsIns(Instance[] origin) {
+    private static List<Instance> splitAbsIns(List<Instance> origin) {
         //shallow copy!!!
-        Instance[] result = Arrays.copyOf(origin, origin.length);
-        int len = origin.length;
+        int len = origin.size();
         for (int a = 0; a < len; a++) {
-            Instance i = result[a];
+            Instance i = origin.get(a);
 
             //resets instance's state if init failed or load failed
             Instance.MEDIATION_STATE state = i.getMediationState();
@@ -309,22 +305,22 @@ public class WaterFallHelper {
             } else if (state == Instance.MEDIATION_STATE.LOAD_FAILED) {
                 i.setMediationState(Instance.MEDIATION_STATE.NOT_AVAILABLE);
             }
-            DeveloperLog.LogD("ins state : " + i.getMediationState().toString());
+            DeveloperLog.LogD("ins state : " + i.getMediationState());
             if (state != Instance.MEDIATION_STATE.AVAILABLE) {
                 i.setObject(null);
-                i.setStart(0);
             }
         }
-        return result;
+        return origin;
     }
 
-    private static BaseInstance[] splitInsByBs(BaseInstance[] origin, int bs) {
-        BaseInstance[] result = Arrays.copyOf(origin, origin.length);
-        int len = origin.length;
+    public static List<Instance> splitInsByBs(List<Instance> origin, int bs) {
+        if (origin == null) {
+            return null;
+        }
+        int len = origin.size();
         int grpIndex = 0;
         for (int a = 0; a < len; a++) {
-            BaseInstance i = result[a];
-
+            Instance i = origin.get(a);
             i.setIndex(a);
 
             //when index of instance >= group index, increase group index
@@ -340,8 +336,57 @@ public class WaterFallHelper {
                 }
             }
             i.setObject(null);
-            i.setStart(0);
         }
-        return result;
+        return origin;
+    }
+
+    /**
+     * Gets list ins result.
+     *
+     * @param clInfo    the cl info
+     * @param placement the placement
+     * @return the list ins result
+     */
+    public static List<Instance> getC2SInstances(String reqId, JSONObject clInfo, Placement placement) {
+
+        JSONArray insArray = clInfo.optJSONArray("c2s");
+        if (insArray == null || insArray.length() <= 0) {
+            return null;
+        }
+
+        SparseArray<BaseInstance> insMap = placement.getInsMap();
+        if (insMap == null || insMap.size() <= 0) {
+            return null;
+        }
+
+        MediationRule mediationRule = getMediationRule(clInfo);
+        int abt = clInfo.optInt("abt");
+        List<Instance> instancesList = new ArrayList<>();
+        for (int i = 0; i < insArray.length(); i++) {
+            int insId = insArray.optInt(i);
+            BaseInstance instance = insMap.get(insId);
+            if (instance instanceof Instance) {
+                instance.setWfAbt(abt);
+                instance.setMediationRule(mediationRule);
+                instance.setReqId(reqId);
+                instance.setRevenue(0);
+                instance.setPriority(0);
+                instance.setRevenuePrecision(1);
+                instancesList.add((Instance) instance);
+            } else {
+                reportNoInstance(reqId, placement, mediationRule, insId);
+            }
+        }
+        return instancesList;
+    }
+
+    private static void reportNoInstance(String reqId, Placement placement, MediationRule mediationRule, int insId) {
+        JSONObject jsonObject = PlacementUtils.placementEventParams(placement.getId());
+        JsonUtil.put(jsonObject, "iid", insId);
+        JsonUtil.put(jsonObject, "reqId", reqId);
+        if (mediationRule != null) {
+            JsonUtil.put(jsonObject, "ruleId", mediationRule.getId());
+        }
+        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_NOT_FOUND, jsonObject);
     }
 }

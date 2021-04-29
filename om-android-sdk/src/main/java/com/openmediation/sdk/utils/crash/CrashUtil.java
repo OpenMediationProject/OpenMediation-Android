@@ -33,7 +33,7 @@ import static java.util.regex.Pattern.*;
  * The type Crash util.
  */
 public class CrashUtil implements Thread.UncaughtExceptionHandler {
-    private static final String SP_NAME = "AdTimingCrashSP";
+    private static final String SP_NAME = "OMCrashSP";
     private SharedPreferences mCrashSp;
     private Thread.UncaughtExceptionHandler mDefaultEh;
     private boolean isNe = true;

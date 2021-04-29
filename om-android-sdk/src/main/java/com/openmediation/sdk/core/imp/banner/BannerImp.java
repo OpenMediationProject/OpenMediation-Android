@@ -93,7 +93,6 @@ public final class BannerImp extends AbstractHybridAd implements View.OnAttachSt
             return;
         }
 
-        instances.setStart(System.currentTimeMillis());
         String payload = "";
         if (mBidResponses != null && mBidResponses.containsKey(instances.getId())) {
             payload = AuctionUtil.generateStringRequestData(mBidResponses.get(instances.getId()));

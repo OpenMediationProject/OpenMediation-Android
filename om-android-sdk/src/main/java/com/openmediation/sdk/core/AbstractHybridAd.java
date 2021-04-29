@@ -6,9 +6,9 @@ package com.openmediation.sdk.core;
 import android.app.Activity;
 import android.os.Looper;
 
-import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.bid.AuctionUtil;
 import com.openmediation.sdk.bid.BidLoseReason;
+import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CallbackManager;
@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class AbstractHybridAd extends AbstractAd {
     private volatile int mCanCallbackIndex;//index of current callback
     protected AtomicBoolean isRefreshTriggered = new AtomicBoolean(false);
-    private HandlerUtil.HandlerHolder mHandler;
+    private final HandlerUtil.HandlerHolder mHandler;
     private int mLoadedInsIndex = 0;
 
     protected abstract void loadInsOnUIThread(BaseInstance instances) throws Throwable;
@@ -84,15 +84,16 @@ public abstract class AbstractHybridAd extends AbstractAd {
         }
 
         try {
-            if (mBs <= 0 || mTotalIns.length <= instanceIndex) {
+            int size = mTotalIns.size();
+            if (mBs <= 0 || size <= instanceIndex) {
                 callbackAdErrorOnUiThread(ErrorCode.ERROR_NO_FILL);
                 return;
             }
 
             //# of instances to load
             int pendingLoadInstanceCount = mBs;
-            while (!hasCallbackToUser() && mTotalIns.length > instanceIndex && pendingLoadInstanceCount > 0) {
-                final BaseInstance i = mTotalIns[instanceIndex];
+            while (!hasCallbackToUser() && size > instanceIndex && pendingLoadInstanceCount > 0) {
+                final BaseInstance i = mTotalIns.get(instanceIndex);
                 instanceIndex++;
                 pendingLoadInstanceCount--;
                 mLoadedInsIndex++;
@@ -244,7 +245,7 @@ public abstract class AbstractHybridAd extends AbstractAd {
         }
         DeveloperLog.LogD("load ins : " + instance.toString() + " error : " + error);
 
-        int len = mTotalIns.length;
+        int len = mTotalIns.size();
         //groupIndex of current failed instance
         int groupIndex = instance.getGrpIndex();
         //allInstanceGroup failed?
@@ -253,12 +254,12 @@ public abstract class AbstractHybridAd extends AbstractAd {
         boolean allInstanceIsNullAtGroupIndex = true;
         //traverses to set all failed members to null
         for (int a = 0; a < len; a++) {
-            BaseInstance i = mTotalIns[a];
+            BaseInstance i = mTotalIns.get(a);
             if (i == instance) {
-                mTotalIns[a] = null;
+                mTotalIns.set(a, null);
             }
 
-            if (mTotalIns[a] != null) {
+            if (mTotalIns.get(a) != null) {
                 allInstanceGroupIsNull = false;
                 if (i.getGrpIndex() != groupIndex) {
                     continue;
@@ -448,14 +449,13 @@ public abstract class AbstractHybridAd extends AbstractAd {
         if (mTotalIns == null || mBidResponses == null) {
             return;
         }
-
-        if (mLoadedInsIndex == mTotalIns.length) {
+        int len = mTotalIns.size();
+        if (mLoadedInsIndex == len) {
             return;
         }
         Map<BaseInstance, BidResponse> unLoadInsBidResponses = new HashMap<>();
-        int len = mTotalIns.length;
         for (int i = mLoadedInsIndex; i < len; i++) {
-            BaseInstance instance = mTotalIns[i];
+            BaseInstance instance = mTotalIns.get(i);
             if (instance == null) {
                 continue;
             }
@@ -485,7 +485,7 @@ public abstract class AbstractHybridAd extends AbstractAd {
 
     private class TimeoutRunnable implements Runnable {
 
-        private int insIndex;
+        private final int insIndex;
 
         TimeoutRunnable(int insIndex) {
             this.insIndex = insIndex;

@@ -9,12 +9,12 @@ import android.text.TextUtils;
 import android.util.TypedValue;
 import android.widget.RelativeLayout;
 
-import com.mintegral.msdk.MIntegralConstans;
-import com.mintegral.msdk.MIntegralSDK;
-import com.mintegral.msdk.out.BannerAdListener;
-import com.mintegral.msdk.out.BannerSize;
-import com.mintegral.msdk.out.MIntegralSDKFactory;
-import com.mintegral.msdk.out.MTGBannerView;
+import com.mbridge.msdk.MBridgeConstans;
+import com.mbridge.msdk.MBridgeSDK;
+import com.mbridge.msdk.out.BannerAdListener;
+import com.mbridge.msdk.out.BannerSize;
+import com.mbridge.msdk.out.MBBannerView;
+import com.mbridge.msdk.out.MBridgeSDKFactory;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomBannerEvent;
 import com.openmediation.sdk.mediation.MediationInfo;
@@ -24,14 +24,14 @@ import java.util.Map;
 public class MintegralBanner extends CustomBannerEvent implements BannerAdListener {
 
     private static final String PAY_LOAD = "pay_load";
-    private MTGBannerView mBannerView;
+    private MBBannerView mBannerView;
 
     @Override
     public void setGDPRConsent(final Context context, final boolean consent) {
         super.setGDPRConsent(context, consent);
         if (context != null) {
-            MIntegralSDK sdk = MIntegralSDKFactory.getMIntegralSDK();
-            int consentStatus = consent ? MIntegralConstans.IS_SWITCH_ON : MIntegralConstans.IS_SWITCH_OFF;
+            MBridgeSDK sdk = MBridgeSDKFactory.getMBridgeSDK();
+            int consentStatus = consent ? MBridgeConstans.IS_SWITCH_ON : MBridgeConstans.IS_SWITCH_OFF;
             sdk.setConsentStatus(context, consentStatus);
         }
     }
@@ -39,7 +39,7 @@ public class MintegralBanner extends CustomBannerEvent implements BannerAdListen
     @Override
     public void setUSPrivacyLimit(Context context, boolean value) {
         super.setUSPrivacyLimit(context, value);
-        MIntegralSDK sdk = MIntegralSDKFactory.getMIntegralSDK();
+        MBridgeSDK sdk = MBridgeSDKFactory.getMBridgeSDK();
         sdk.setDoNotTrackStatus(value);
     }
 
@@ -85,7 +85,7 @@ public class MintegralBanner extends CustomBannerEvent implements BannerAdListen
             }
             return;
         }
-        mBannerView = new MTGBannerView(activity.getApplicationContext());
+        mBannerView = new MBBannerView(activity.getApplicationContext());
         BannerSize adSize = getAdSize(activity, config);
         mBannerView.init(adSize, "", mInstancesKey);
         mBannerView.setLayoutParams(new RelativeLayout.LayoutParams(dip2px(activity, adSize.getWidth()), dip2px(activity, adSize.getHeight())));

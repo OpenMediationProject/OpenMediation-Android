@@ -211,7 +211,7 @@ public class RequestBuilder {
      */
     public static String buildWfUrl(String url) {
         return url.concat("?").concat(new RequestBuilder()
-                .p(KeyConstants.Request.KEY_API_VERSION, CommonConstants.API_VERSION_V2)
+                .p(KeyConstants.Request.KEY_API_VERSION, CommonConstants.API_VERSION_V3)
                 .p(KeyConstants.Request.KEY_PLATFORM, CommonConstants.PLAT_FORM_ANDROID)
                 .p(KeyConstants.Request.KEY_SDK_VERSION, CommonConstants.SDK_VERSION_NAME)
                 .format());
@@ -538,6 +538,15 @@ public class RequestBuilder {
         body.put("events", jsonEvents);
         DeveloperLog.LogD("event report params : " + body.toString());
         return Gzip.inGZip(body.toString().getBytes(Charset.forName(CommonConstants.CHARTSET_UTF8)));
+    }
+
+    public static byte[] buildEventRequestBody(Event event) throws Exception {
+        JSONObject body = getRequestBodyBaseJson();
+        JSONArray jsonEvents = new JSONArray();
+        jsonEvents.put(event.toJSONObject());
+        body.put("events", jsonEvents);
+        DeveloperLog.LogD("event report params : " + body.toString());
+        return Gzip.inGZip(body.toString().getBytes(Charset.forName("UTF-8")));
     }
 
     /**

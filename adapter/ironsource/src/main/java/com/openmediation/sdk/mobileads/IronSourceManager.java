@@ -27,7 +27,7 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
     /**
      * Constant used for IronSource internal reporting.
      */
-    private static final String MEDIATION_NAME = "AdTiming";
+    private static final String MEDIATION_NAME = "OpenMediation";
 
     private static final IronSourceManager instance = new IronSourceManager();
 
@@ -59,7 +59,7 @@ class IronSourceManager implements ISDemandOnlyRewardedVideoListener, ISDemandOn
     }
 
     void initIronSourceSDK(Activity activity, String appKey, List<IronSource.AD_UNIT> adUnits) {
-        IronSource.setMediationType(MEDIATION_NAME + BuildConfig.VERSION_NAME);
+        IronSource.setMediationType(MEDIATION_NAME);
         if (adUnits.size() > 0) {
             if (IronSourceSetting.isMediationMode()) {
                 IronSource.init(activity, appKey, adUnits.toArray(new IronSource.AD_UNIT[adUnits.size()]));

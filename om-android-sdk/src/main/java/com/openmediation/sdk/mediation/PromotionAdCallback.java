@@ -4,7 +4,7 @@
 package com.openmediation.sdk.mediation;
 
 /**
- * This interface is used to notify adapter's lifecycle to AdTiming's SDK
+ * This interface is used to notify adapter's lifecycle to OpenMediation's SDK
  */
 public interface PromotionAdCallback {
     /**

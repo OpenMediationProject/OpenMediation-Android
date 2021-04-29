@@ -76,6 +76,7 @@ public final class RvManager extends AbstractAdsManager implements RvManagerList
 
     @Override
     protected void initInsAndSendEvent(Instance instance) {
+        super.initInsAndSendEvent(instance);
         if (!(instance instanceof RvInstance)) {
             instance.setMediationState(Instance.MEDIATION_STATE.INIT_FAILED);
             onInsInitFailed(instance, new Error(ErrorCode.CODE_LOAD_UNKNOWN_INTERNAL_ERROR,

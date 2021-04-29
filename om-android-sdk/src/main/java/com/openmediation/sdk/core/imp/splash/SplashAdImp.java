@@ -60,7 +60,6 @@ public class SplashAdImp extends AbstractHybridAd {
             onInsError(instances, ErrorCode.ERROR_CREATE_MEDATION_ADAPTER);
             return;
         }
-        instances.setStart(System.currentTimeMillis());
         String payload = "";
         if (mBidResponses != null && mBidResponses.containsKey(instances.getId())) {
             payload = AuctionUtil.generateStringRequestData(mBidResponses.get(instances.getId()));

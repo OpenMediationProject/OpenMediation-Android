@@ -3,9 +3,6 @@
 
 package com.openmediation.sdk.utils.event;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.JsonUtil;
 
@@ -14,7 +11,7 @@ import org.json.JSONObject;
 /**
  * Event reporting
  */
-public class Event implements Parcelable {
+public class Event {
 
     private long ts;//app timestamp in mills;  1567479919643; required
     private int eid = -1;//EventId;  100   ; required
@@ -52,41 +49,6 @@ public class Event implements Parcelable {
         }
         parseFromJson(jsonObject);
     }
-
-    private Event(Parcel in) {
-        ts = in.readLong();
-        eid = in.readInt();
-        msg = in.readString();
-        pid = in.readInt();
-        mid = in.readInt();
-        iid = in.readInt();
-        adapterv = in.readString();
-        msdkv = in.readString();
-        scene = in.readInt();
-        ot = in.readInt();
-        duration = in.readInt();
-        priority = in.readInt();
-        cs = in.readInt();
-        abt = in.readInt();
-        code = in.readString();
-        bid = in.readInt();
-        price = in.readDouble();
-        cur = in.readString();
-        reqId = in.readString();
-        ruleId = in.readInt();
-    }
-
-    public static final Creator<Event> CREATOR = new Creator<Event>() {
-        @Override
-        public Event createFromParcel(Parcel in) {
-            return new Event(in);
-        }
-
-        @Override
-        public Event[] newArray(int size) {
-            return new Event[size];
-        }
-    };
 
     private void parseFromJson(JSONObject jsonObject) {
         try {
@@ -150,35 +112,6 @@ public class Event implements Parcelable {
 
     String toJson() {
         return toJSONObject().toString();
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeLong(ts);
-        dest.writeInt(eid);
-        dest.writeString(msg);
-        dest.writeInt(pid);
-        dest.writeInt(mid);
-        dest.writeInt(iid);
-        dest.writeString(adapterv);
-        dest.writeString(msdkv);
-        dest.writeInt(scene);
-        dest.writeInt(ot);
-        dest.writeInt(duration);
-        dest.writeInt(priority);
-        dest.writeInt(cs);
-        dest.writeInt(abt);
-        dest.writeString(code);
-        dest.writeInt(bid);
-        dest.writeDouble(price);
-        dest.writeString(cur);
-        dest.writeString(reqId);
-        dest.writeInt(ruleId);
     }
 
     @Override

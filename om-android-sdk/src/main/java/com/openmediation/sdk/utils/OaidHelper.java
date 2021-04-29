@@ -18,6 +18,7 @@ public class OaidHelper {
     }
 
     public static void getOaid(Context context, final oaidListener listener) {
+        isCallback.set(false);
         try {
             Class.forName("com.bun.miitmdid.core.MdidSdkHelper");
         } catch (ClassNotFoundException e) {

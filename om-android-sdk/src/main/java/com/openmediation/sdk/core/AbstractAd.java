@@ -8,9 +8,9 @@ import android.text.TextUtils;
 
 import com.openmediation.sdk.InitCallback;
 import com.openmediation.sdk.banner.AdSize;
+import com.openmediation.sdk.bid.AuctionCallback;
 import com.openmediation.sdk.bid.BidAuctionManager;
 import com.openmediation.sdk.bid.BidResponse;
-import com.openmediation.sdk.bid.AuctionCallback;
 import com.openmediation.sdk.mediation.Callback;
 import com.openmediation.sdk.utils.ActLifecycle;
 import com.openmediation.sdk.utils.AdLog;
@@ -22,7 +22,6 @@ import com.openmediation.sdk.utils.IOUtil;
 import com.openmediation.sdk.utils.InsUtil;
 import com.openmediation.sdk.utils.PlacementUtils;
 import com.openmediation.sdk.utils.Preconditions;
-import com.openmediation.sdk.utils.WorkExecutor;
 import com.openmediation.sdk.utils.constant.CommonConstants;
 import com.openmediation.sdk.utils.crash.CrashUtil;
 import com.openmediation.sdk.utils.device.DeviceUtil;
@@ -32,20 +31,19 @@ import com.openmediation.sdk.utils.error.ErrorCode;
 import com.openmediation.sdk.utils.helper.LrReportHelper;
 import com.openmediation.sdk.utils.helper.WaterFallHelper;
 import com.openmediation.sdk.utils.model.BaseInstance;
+import com.openmediation.sdk.utils.model.Instance;
 import com.openmediation.sdk.utils.model.MediationRule;
 import com.openmediation.sdk.utils.model.Placement;
 import com.openmediation.sdk.utils.model.PlacementInfo;
 import com.openmediation.sdk.utils.request.network.Request;
 import com.openmediation.sdk.utils.request.network.Response;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -98,7 +96,7 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
     /**
      * The M total ins.
      */
-    BaseInstance[] mTotalIns;
+    protected List<Instance> mTotalIns;
     private List<BaseInstance> mLastInstances;
     /**
      * The M bs.
@@ -123,6 +121,8 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
     protected long mCallbackTs;
 
     protected AdSize mAdSize;
+
+    private JSONObject mWFJsonInfo;
 
     /**
      * Gets ad type.
@@ -190,6 +190,8 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
         isDestroyed = false;
         mActRef = new WeakReference<>(activity);
         mPlacementId = placementId;
+        mBidResponses = new ConcurrentHashMap<>();
+        mTotalIns = new CopyOnWriteArrayList<>();
     }
 
     /**
@@ -238,19 +240,23 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
     }
 
     @Override
-    public void onBidComplete(List<BidResponse> c2sResponses, List<BidResponse> s2sResponses) {
+    public void onBidS2SComplete(List<BidResponse> s2sResponses) {
+        WaterFallHelper.wfRequest(getPlacementInfo(), mLoadType, null, s2sResponses,
+                InsUtil.getInstanceLoadStatuses(mLastInstances), mReqId, this);
+    }
+
+    @Override
+    public void onBidC2SComplete(List<Instance> c2sInstances, List<BidResponse> c2sResponses) {
         try {
-            WaterFallHelper.wfRequest(getPlacementInfo(), mLoadType, c2sResponses, s2sResponses,
-                    InsUtil.getInstanceLoadStatuses(mLastInstances), mReqId, this);
-            if (mBidResponses == null) {
-                mBidResponses = new HashMap<>();
-            }
+            DeveloperLog.LogD("AbstractAd onBidC2SComplete c2sInstances : " + c2sInstances);
             if (c2sResponses != null && !c2sResponses.isEmpty()) {
                 storeC2sResult(c2sResponses);
             }
+            startLoadAd(mWFJsonInfo, c2sInstances);
         } catch (Exception e) {
-            callbackAdErrorOnUiThread(e.getMessage());
+            DeveloperLog.LogE("AbstractAd onBidC2SComplete, Placement:" + mPlacement, e);
             CrashUtil.getSingleton().saveException(e);
+            callbackAdErrorOnUiThread(ErrorCode.ERROR_NO_FILL);
         }
     }
 
@@ -272,28 +278,24 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
                 return;
             }
 
-            mPlacement.setWfAbt(clInfo.optInt("abt"));
             clearLoadFailedInstances();
             MediationRule mediationRule = WaterFallHelper.getMediationRule(clInfo);
             if (mediationRule != null) {
                 mRuleId = mediationRule.getId();
             }
-            BaseInstance[] tmp = WaterFallHelper.getArrayInstances(mReqId, mediationRule, clInfo, mPlacement, mBs);
-            if (tmp == null || tmp.length == 0) {
-                DeveloperLog.LogD("Ad", "request cl success, but ins[] is empty" + mPlacement);
-                callbackAdErrorOnUiThread(ErrorCode.ERROR_NO_FILL);
+            mPlacement.setWfAbt(clInfo.optInt("abt"));
+
+            mWFJsonInfo = clInfo;
+            final List<Instance> c2SInstances = WaterFallHelper.getC2SInstances(mReqId, clInfo, mPlacement);
+            if (c2SInstances == null || c2SInstances.isEmpty()) {
+                startLoadAd(clInfo, null);
             } else {
-                mTotalIns = tmp;
-                Map<Integer, BidResponse> bidResponseMap = WaterFallHelper.getS2sBidResponse(clInfo);
-                if (bidResponseMap != null && !bidResponseMap.isEmpty()) {
-                    if (mBidResponses == null) {
-                        mBidResponses = new HashMap<>();
-                    }
-                    mBidResponses.putAll(bidResponseMap);
-                }
-                doLoadOnUiThread();
+                BidAuctionManager.getInstance().c2sBid(mActRef.get(), c2SInstances, mPlacement.getId(), mReqId, mPlacement.getT(),
+                        mAdSize, AbstractAd.this);
             }
-        } catch (IOException | JSONException e) {
+        } catch (Exception e) {
+            DeveloperLog.LogE("request cl success, but failed when parse response" +
+                    ", Placement:" + mPlacement, e);
             CrashUtil.getSingleton().saveException(e);
             callbackAdErrorOnUiThread(ErrorCode.ERROR_NO_FILL);
         } finally {
@@ -304,6 +306,27 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
     @Override
     public void onRequestFailed(String error) {//if failed to request cl, calls ad error callback
         callbackAdErrorOnUiThread(ErrorCode.ERROR_NO_FILL);
+    }
+
+    private void startLoadAd(JSONObject clInfo, List<Instance> c2sInstances) {
+        List<Instance> wfInstances = WaterFallHelper.getListInsResult(mReqId, clInfo, mPlacement, mBs);
+        DeveloperLog.LogD("AbstractAd startLoadAd wfInstances : " + wfInstances);
+        List<Instance> totalIns = InsUtil.sort(wfInstances, c2sInstances);
+        DeveloperLog.LogD("AbstractAd after instances sort: " + totalIns);
+        List<Instance> finalTotalIns = WaterFallHelper.splitInsByBs(totalIns, mBs);
+        DeveloperLog.LogD("AbstractAd after splitInsByBs ins: " + finalTotalIns);
+        if (finalTotalIns == null || finalTotalIns.isEmpty()) {
+            DeveloperLog.LogD("Ad", "request cl success, but ins[] is empty" + mPlacement);
+            callbackAdErrorOnUiThread(ErrorCode.ERROR_NO_FILL);
+        } else {
+            mTotalIns.clear();
+            mTotalIns.addAll(finalTotalIns);
+            Map<Integer, BidResponse> bidResponseMap = WaterFallHelper.getS2sBidResponse(clInfo);
+            if (bidResponseMap != null && !bidResponseMap.isEmpty()) {
+                mBidResponses.putAll(bidResponseMap);
+            }
+            doLoadOnUiThread();
+        }
     }
 
     /**
@@ -319,13 +342,12 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
      * Clean after close or failed.
      */
     protected void cleanAfterCloseOrFailed() {
-        mTotalIns = null;
+        mTotalIns.clear();
         mBs = 0;
         mPt = 0;
         isFo = false;
         if (mCurrentIns != null) {
             mCurrentIns.setObject(null);
-            mCurrentIns.setStart(0);
             mCurrentIns = null;
         }
     }
@@ -544,7 +566,7 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
     }
 
     /**
-     * Checks if callback has been trigged
+     * Checks if callback has been triggered
      *
      * @return the boolean
      */
@@ -607,18 +629,8 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
             if (mBidResponses != null) {
                 mBidResponses.clear();
             }
-            WorkExecutor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        BidAuctionManager.getInstance().bid(mActRef.get(), mPlacement.getId(), mReqId, mPlacement.getT(),
-                                mAdSize, AbstractAd.this);
-                    } catch (Exception e) {
-                        DeveloperLog.LogD("load ad error", e);
-                        CrashUtil.getSingleton().saveException(e);
-                    }
-                }
-            });
+            BidAuctionManager.getInstance().s2sBid(mActRef.get(), mPlacement.getId(), mReqId, mPlacement.getT(),
+                    AbstractAd.this);
         } catch (Exception e) {
             callbackAdErrorOnUiThread(e.getMessage());
             CrashUtil.getSingleton().saveException(e);

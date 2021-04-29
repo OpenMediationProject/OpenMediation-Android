@@ -72,7 +72,6 @@ public final class NativeImp extends AbstractHybridAd implements View.OnAttachSt
             payload = AuctionUtil.generateStringRequestData(mBidResponses.get(instances.getId()));
         }
         Map<String, String> placementInfo = PlacementUtils.getPlacementInfo(mReqId, mPlacementId, instances, payload);
-        instances.setStart(System.currentTimeMillis());
         nativeEvent.loadAd(mActRef.get(), placementInfo);
     }
 

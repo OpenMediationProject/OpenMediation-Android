@@ -6,18 +6,17 @@ package com.openmediation.sdk.utils.event;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.openmediation.sdk.utils.constant.CommonConstants;
-import com.openmediation.sdk.utils.model.Configurations;
-import com.openmediation.sdk.utils.request.network.Headers;
-import com.openmediation.sdk.utils.request.network.util.NetworkChecker;
 import com.openmediation.sdk.utils.AdtUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
+import com.openmediation.sdk.utils.constant.CommonConstants;
+import com.openmediation.sdk.utils.crash.CrashUtil;
+import com.openmediation.sdk.utils.model.Configurations;
+import com.openmediation.sdk.utils.model.Events;
 import com.openmediation.sdk.utils.request.HeaderUtils;
 import com.openmediation.sdk.utils.request.RequestBuilder;
-import com.openmediation.sdk.utils.crash.CrashUtil;
-import com.openmediation.sdk.utils.model.Events;
 import com.openmediation.sdk.utils.request.network.AdRequest;
 import com.openmediation.sdk.utils.request.network.ByteRequestBody;
+import com.openmediation.sdk.utils.request.network.Headers;
 import com.openmediation.sdk.utils.request.network.Request;
 import com.openmediation.sdk.utils.request.network.Response;
 
@@ -124,6 +123,15 @@ public class EventUploadManager implements Request.OnRequestCallback {
      * @param event to report
      */
     private void uploadEvent(final Event event) {
+        if (event == null) {
+            return;
+        }
+        if (mEventsSettings != null && mEventsSettings.getFids() != null
+                && mEventsSettings.getFids().contains(event.getEid())) {
+            flushEvents(event);
+            return;
+        }
+
         //
         if (mAllowedEvents == null) {//not yet got allowed list from server
             mDelayEvents.add(event);
@@ -152,6 +160,19 @@ public class EventUploadManager implements Request.OnRequestCallback {
             DeveloperLog.LogD("update events by reached max events count");
             uploadEvents();
         }
+    }
+
+    private void flushEvents(Event event) {
+        if (mEvents == null) {
+            mEvents = new ConcurrentLinkedQueue<>();
+        }
+        DeveloperLog.LogD("save event " + event.toString());
+        mEvents.add(event);
+        if (mEventDataBase != null) {
+            mEventDataBase.addEvent(event);
+        }
+        DeveloperLog.LogD("update events by reached max events count");
+        uploadEvents();
     }
 
     /**
@@ -201,12 +222,26 @@ public class EventUploadManager implements Request.OnRequestCallback {
         return event;
     }
 
+    private void internalUpload(byte[] body) {
+        String url = RequestBuilder.buildEventUrl(mEventsSettings.getUrl());
+        if (TextUtils.isEmpty(url)) {
+            return;
+        }
+        ByteRequestBody requestBody = new ByteRequestBody(body);
+        Headers headers = HeaderUtils.getBaseHeaders();
+        AdRequest.post().url(url).body(requestBody).headers(headers).connectTimeout(50000)
+                .readTimeout(100000)
+                .callback(this)
+                .performRequest(AdtUtil.getApplication());
+    }
+
     /**
      *
      */
     private void uploadEvents() {
         try {
-            if (mEventsSettings == null || mEvents == null || mEvents.isEmpty() || isReporting.get()) {
+            if (mEventsSettings == null || TextUtils.isEmpty(mEventsSettings.getUrl())
+                    || mEvents == null || mEvents.isEmpty() || isReporting.get()) {
                 return;
             }
             isReporting.set(true);
@@ -221,22 +256,13 @@ public class EventUploadManager implements Request.OnRequestCallback {
             if (mReportEvents.isEmpty()) {
                 return;
             }
-            String url = RequestBuilder.buildEventUrl(mEventsSettings.getUrl());
-            if (TextUtils.isEmpty(url)) {
-                return;
-            }
             byte[] body = RequestBuilder.buildEventRequestBody(mReportEvents);
             if (body == null) {
                 DeveloperLog.LogD("build events request data error");
                 return;
             }
 
-            ByteRequestBody requestBody = new ByteRequestBody(body);
-            Headers headers = HeaderUtils.getBaseHeaders();
-            AdRequest.post().url(url).body(requestBody).headers(headers).connectTimeout(50000)
-                    .readTimeout(100000)
-                    .callback(this)
-                    .performRequest(AdtUtil.getApplication());
+            internalUpload(body);
             clearEvents();
         } catch (Exception e) {
             isReporting.set(false);

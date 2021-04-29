@@ -9,9 +9,9 @@ import android.text.TextUtils;
 import android.util.TypedValue;
 import android.widget.RelativeLayout;
 
-import com.mintegral.msdk.out.BannerAdListener;
-import com.mintegral.msdk.out.BannerSize;
-import com.mintegral.msdk.out.MTGBannerView;
+import com.mbridge.msdk.out.BannerAdListener;
+import com.mbridge.msdk.out.BannerSize;
+import com.mbridge.msdk.out.MBBannerView;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomBannerEvent;
 import com.openmediation.sdk.mediation.MediationInfo;
@@ -21,7 +21,7 @@ import java.util.Map;
 public class MintegralBanner extends CustomBannerEvent implements BannerAdListener {
 
     private static final String PAY_LOAD = "pay_load";
-    private MTGBannerView mBannerView;
+    private MBBannerView mBannerView;
 
     @Override
     public void loadAd(final Activity activity, final Map<String, String> config) throws Throwable {
@@ -29,21 +29,21 @@ public class MintegralBanner extends CustomBannerEvent implements BannerAdListen
         if (!check(activity, config)) {
             return;
         }
-            MintegralSingleTon.getInstance().initSDK(activity, config.get("AppKey"), new MintegralSingleTon.InitCallback() {
-                @Override
-                public void onSuccess() {
-                    loadBanner(activity, config);
-                }
+        MintegralSingleTon.getInstance().initSDK(activity, config.get("AppKey"), new MintegralSingleTon.InitCallback() {
+            @Override
+            public void onSuccess() {
+                loadBanner(activity, config);
+            }
 
-                @Override
-                public void onFailed(String msg) {
-                    if (!isDestroyed) {
-                        onInsError(AdapterErrorBuilder.buildLoadError(
-                                AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, msg));
-                    }
+            @Override
+            public void onFailed(String msg) {
+                if (!isDestroyed) {
+                    onInsError(AdapterErrorBuilder.buildLoadError(
+                            AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, msg));
                 }
+            }
 
-            });
+        });
     }
 
     private void loadBanner(Activity activity, Map<String, String> config) {
@@ -59,7 +59,7 @@ public class MintegralBanner extends CustomBannerEvent implements BannerAdListen
             }
             return;
         }
-        mBannerView = new MTGBannerView(activity.getApplicationContext());
+        mBannerView = new MBBannerView(activity.getApplicationContext());
         BannerSize adSize = getAdSize(activity, config);
         mBannerView.init(adSize, "", mInstancesKey);
         mBannerView.setLayoutParams(new RelativeLayout.LayoutParams(dip2px(activity, adSize.getWidth()), dip2px(activity, adSize.getHeight())));

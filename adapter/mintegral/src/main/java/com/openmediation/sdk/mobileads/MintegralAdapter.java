@@ -9,16 +9,16 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 
-import com.mintegral.msdk.MIntegralConstans;
-import com.mintegral.msdk.MIntegralSDK;
-import com.mintegral.msdk.interstitialvideo.out.InterstitialVideoListener;
-import com.mintegral.msdk.interstitialvideo.out.MTGBidInterstitialVideoHandler;
-import com.mintegral.msdk.interstitialvideo.out.MTGInterstitialVideoHandler;
-import com.mintegral.msdk.out.MIntegralSDKFactory;
-import com.mintegral.msdk.out.MTGBidRewardVideoHandler;
-import com.mintegral.msdk.out.MTGConfiguration;
-import com.mintegral.msdk.out.MTGRewardVideoHandler;
-import com.mintegral.msdk.out.RewardVideoListener;
+import com.mbridge.msdk.MBridgeConstans;
+import com.mbridge.msdk.MBridgeSDK;
+import com.mbridge.msdk.interstitialvideo.out.InterstitialVideoListener;
+import com.mbridge.msdk.interstitialvideo.out.MBBidInterstitialVideoHandler;
+import com.mbridge.msdk.interstitialvideo.out.MBInterstitialVideoHandler;
+import com.mbridge.msdk.out.MBBidRewardVideoHandler;
+import com.mbridge.msdk.out.MBConfiguration;
+import com.mbridge.msdk.out.MBRewardVideoHandler;
+import com.mbridge.msdk.out.MBridgeSDKFactory;
+import com.mbridge.msdk.out.RewardVideoListener;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
@@ -31,10 +31,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class MintegralAdapter extends CustomAdsAdapter {
     private static final String PAY_LOAD = "pay_load";
-    private ConcurrentHashMap<String, MTGInterstitialVideoHandler> mInterstitialAds;
-    private ConcurrentHashMap<String, MTGRewardVideoHandler> mRvAds;
-    private ConcurrentHashMap<String, MTGBidInterstitialVideoHandler> mInterstitialBidAds;
-    private ConcurrentHashMap<String, MTGBidRewardVideoHandler> mRvBidAds;
+    private ConcurrentHashMap<String, MBInterstitialVideoHandler> mInterstitialAds;
+    private ConcurrentHashMap<String, MBRewardVideoHandler> mRvAds;
+    private ConcurrentHashMap<String, MBBidInterstitialVideoHandler> mInterstitialBidAds;
+    private ConcurrentHashMap<String, MBBidRewardVideoHandler> mRvBidAds;
     private ConcurrentHashMap<String, Boolean> mBidAdUnits;
 
     public MintegralAdapter() {
@@ -47,7 +47,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
 
     @Override
     public String getMediationVersion() {
-        return MTGConfiguration.SDK_VERSION;
+        return MBConfiguration.SDK_VERSION;
     }
 
     @Override
@@ -64,8 +64,8 @@ public class MintegralAdapter extends CustomAdsAdapter {
     public void setGDPRConsent(final Context context, final boolean consent) {
         super.setGDPRConsent(context, consent);
         if (context != null) {
-            MIntegralSDK sdk = MIntegralSDKFactory.getMIntegralSDK();
-            int consentStatus = consent ? MIntegralConstans.IS_SWITCH_ON : MIntegralConstans.IS_SWITCH_OFF;
+            MBridgeSDK sdk = MBridgeSDKFactory.getMBridgeSDK();
+            int consentStatus = consent ? MBridgeConstans.IS_SWITCH_ON : MBridgeConstans.IS_SWITCH_OFF;
             sdk.setConsentStatus(context, consentStatus);
         }
     }
@@ -73,7 +73,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
     @Override
     public void setUSPrivacyLimit(Context context, boolean value) {
         super.setUSPrivacyLimit(context, value);
-        MIntegralSDK sdk = MIntegralSDKFactory.getMIntegralSDK();
+        MBridgeSDK sdk = MBridgeSDKFactory.getMBridgeSDK();
         sdk.setDoNotTrackStatus(value);
     }
 
@@ -147,9 +147,9 @@ public class MintegralAdapter extends CustomAdsAdapter {
     }
 
     private void loadRvAd(Activity activity, String adUnitId, RewardedVideoCallback callback) {
-        MTGRewardVideoHandler rewardVideoHandler = mRvAds.get(adUnitId);
+        MBRewardVideoHandler rewardVideoHandler = mRvAds.get(adUnitId);
         if (rewardVideoHandler == null) {
-            rewardVideoHandler = new MTGRewardVideoHandler(activity, "", adUnitId);
+            rewardVideoHandler = new MBRewardVideoHandler(activity, "", adUnitId);
             mRvAds.put(adUnitId, rewardVideoHandler);
             rewardVideoHandler.setRewardVideoListener(new MtgRvAdListener(callback));
         }
@@ -163,9 +163,9 @@ public class MintegralAdapter extends CustomAdsAdapter {
     }
 
     private void loadRvAdWithBid(Activity activity, String adUnitId, String payload, RewardedVideoCallback callback) {
-        MTGBidRewardVideoHandler rewardVideoHandler = mRvBidAds.get(adUnitId);
+        MBBidRewardVideoHandler rewardVideoHandler = mRvBidAds.get(adUnitId);
         if (rewardVideoHandler == null) {
-            rewardVideoHandler = new MTGBidRewardVideoHandler(activity, "", adUnitId);
+            rewardVideoHandler = new MBBidRewardVideoHandler(activity, "", adUnitId);
             mRvBidAds.put(adUnitId, rewardVideoHandler);
             rewardVideoHandler.setRewardVideoListener(new MtgRvAdListener(callback));
         }
@@ -184,10 +184,10 @@ public class MintegralAdapter extends CustomAdsAdapter {
             return false;
         }
         if (mBidAdUnits.containsKey(adUnitId)) {
-            MTGBidRewardVideoHandler videoHandler = mRvBidAds.get(adUnitId);
+            MBBidRewardVideoHandler videoHandler = mRvBidAds.get(adUnitId);
             return videoHandler != null && videoHandler.isBidReady();
         }
-        MTGRewardVideoHandler rewardVideoHandler = mRvAds.get(adUnitId);
+        MBRewardVideoHandler rewardVideoHandler = mRvAds.get(adUnitId);
         return rewardVideoHandler != null && rewardVideoHandler.isReady();
     }
 
@@ -207,7 +207,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
 
     private void showRvAd(String adUnitId, RewardedVideoCallback callback) {
         if (mBidAdUnits.containsKey(adUnitId)) {
-            MTGBidRewardVideoHandler rewardVideoHandler = mRvBidAds.get(adUnitId);
+            MBBidRewardVideoHandler rewardVideoHandler = mRvBidAds.get(adUnitId);
             if (rewardVideoHandler == null || !rewardVideoHandler.isBidReady()) {
                 if (callback != null) {
                     callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
@@ -217,7 +217,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
             }
             rewardVideoHandler.showFromBid("1");
         } else {
-            MTGRewardVideoHandler rewardVideoHandler = mRvAds.get(adUnitId);
+            MBRewardVideoHandler rewardVideoHandler = mRvAds.get(adUnitId);
             if (rewardVideoHandler == null || !rewardVideoHandler.isReady()) {
                 if (callback != null) {
                     callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
@@ -299,9 +299,9 @@ public class MintegralAdapter extends CustomAdsAdapter {
     }
 
     private void loadIsAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
-        MTGInterstitialVideoHandler mtgInterstitialVideoHandler = mInterstitialAds.get(adUnitId);
+        MBInterstitialVideoHandler mtgInterstitialVideoHandler = mInterstitialAds.get(adUnitId);
         if (mtgInterstitialVideoHandler == null) {
-            mtgInterstitialVideoHandler = new MTGInterstitialVideoHandler(activity, "", adUnitId);
+            mtgInterstitialVideoHandler = new MBInterstitialVideoHandler(activity, "", adUnitId);
             mInterstitialAds.put(adUnitId, mtgInterstitialVideoHandler);
             mtgInterstitialVideoHandler.setInterstitialVideoListener(new MtgInterstitialAdListener(callback));
         }
@@ -315,9 +315,9 @@ public class MintegralAdapter extends CustomAdsAdapter {
     }
 
     private void loadIsAdWithBid(Activity activity, String adUnitId, String payload, InterstitialAdCallback callback) {
-        MTGBidInterstitialVideoHandler mtgInterstitialVideoHandler = mInterstitialBidAds.get(adUnitId);
+        MBBidInterstitialVideoHandler mtgInterstitialVideoHandler = mInterstitialBidAds.get(adUnitId);
         if (mtgInterstitialVideoHandler == null) {
-            mtgInterstitialVideoHandler = new MTGBidInterstitialVideoHandler(activity, "", adUnitId);
+            mtgInterstitialVideoHandler = new MBBidInterstitialVideoHandler(activity, "", adUnitId);
             mInterstitialBidAds.put(adUnitId, mtgInterstitialVideoHandler);
             mtgInterstitialVideoHandler.setInterstitialVideoListener(new MtgInterstitialAdListener(callback));
         }
@@ -336,10 +336,10 @@ public class MintegralAdapter extends CustomAdsAdapter {
             return false;
         }
         if (mBidAdUnits.containsKey(adUnitId)) {
-            MTGBidInterstitialVideoHandler bidInterstitialVideoHandler = mInterstitialBidAds.get(adUnitId);
+            MBBidInterstitialVideoHandler bidInterstitialVideoHandler = mInterstitialBidAds.get(adUnitId);
             return bidInterstitialVideoHandler != null && bidInterstitialVideoHandler.isBidReady();
         }
-        MTGInterstitialVideoHandler mtgInterstitialVideoHandler = mInterstitialAds.get(adUnitId);
+        MBInterstitialVideoHandler mtgInterstitialVideoHandler = mInterstitialAds.get(adUnitId);
         return mtgInterstitialVideoHandler != null && mtgInterstitialVideoHandler.isReady();
     }
 
@@ -359,7 +359,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
 
     private void showIsAd(String adUnitId, InterstitialAdCallback callback) {
         if (mBidAdUnits.containsKey(adUnitId)) {
-            MTGBidInterstitialVideoHandler mtgInterstitialVideoHandler = mInterstitialBidAds.get(adUnitId);
+            MBBidInterstitialVideoHandler mtgInterstitialVideoHandler = mInterstitialBidAds.get(adUnitId);
             if (mtgInterstitialVideoHandler == null || !mtgInterstitialVideoHandler.isBidReady()) {
                 if (callback != null) {
                     callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
@@ -369,7 +369,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
             }
             mtgInterstitialVideoHandler.showFromBid();
         } else {
-            MTGInterstitialVideoHandler mtgInterstitialVideoHandler = mInterstitialAds.get(adUnitId);
+            MBInterstitialVideoHandler mtgInterstitialVideoHandler = mInterstitialAds.get(adUnitId);
             if (mtgInterstitialVideoHandler == null || !mtgInterstitialVideoHandler.isReady()) {
                 if (callback != null) {
                     callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
