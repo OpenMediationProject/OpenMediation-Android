@@ -17,7 +17,7 @@ android {
 }
 
 dependencies {
-  implementation 'com.openmediation:om-android-sdk:2.1.1'
+  implementation 'com.openmediation:om-android-sdk:2.2.1'
 
   // AdTiming-Adapter
   implementation 'com.openmediation.adapters:adtiming:2.0.1'
@@ -26,7 +26,7 @@ dependencies {
   // Facebook-Adapter
   implementation 'com.openmediation.adapters:facebook:2.1.0'
   // Unity-Adapter
-  implementation 'com.openmediation.adapters:unity:2.0.1'
+  implementation 'com.openmediation.adapters:unity:2.1.0'
   // Vungle-Adapter
   implementation 'com.openmediation.adapters:vungle:2.1.1'
   // AdColony-Adapter
@@ -40,17 +40,19 @@ dependencies {
   // Chartboost-Adapter
   implementation 'com.openmediation.adapters:chartboost:2.1.0'
   // Mintegral-Adapter
-  implementation 'com.openmediation.adapters:mintegral:2.1.2'
+  implementation 'com.openmediation.adapters:mintegral:2.2.0'
   //TikTok-Adapter
-  implementation 'com.openmediation.adapters:tiktok:2.1.0'
+  implementation 'com.openmediation.adapters:tiktok:2.1.1'
   //IronSource-Adapter
-  implementation 'com.openmediation.adapters:ironsource:2.1.0'
+  implementation 'com.openmediation.adapters:ironsource:2.1.1'
   //Fyber-Adapter
   implementation 'com.openmediation.adapters:fyber:2.0.0'
   //Helium-Adapter
-  implementation 'com.openmediation.adapters:helium:2.1.1'
+  implementation 'com.openmediation.adapters:helium:2.2.0'
   // PubNative-Adapter
-  implementation 'com.openmediation.adapters:pubnative:1.1.0'
+  implementation 'com.openmediation.adapters:pubnative:1.3.0'
+  // for Ogury
+  implementation 'com.openmediation.adapters:ogury:1.0.0'
 }
 ```
 
