@@ -3,6 +3,9 @@
 
 package com.openmediation.sdk.core.imp.interstitialad;
 
+import android.app.Activity;
+
+import com.openmediation.sdk.bid.BidAuctionManager;
 import com.openmediation.sdk.utils.model.Instance;
 import com.openmediation.sdk.core.OmManager;
 import com.openmediation.sdk.interstitial.InterstitialAdListener;
@@ -70,7 +73,10 @@ public final class IsManager extends AbstractAdsManager implements IsManagerList
         }
         IsInstance isInstance = (IsInstance) instance;
         isInstance.setIsManagerListener(this);
-        isInstance.initIs(mActivityReference.get());
+        Activity activity = getActivity();
+        if (isActValid(activity)){
+            isInstance.initIs(activity);
+        }
     }
 
     @Override
@@ -83,13 +89,19 @@ public final class IsManager extends AbstractAdsManager implements IsManagerList
 
     @Override
     protected void insShow(final Instance instance) {
-        ((IsInstance) instance).showIs(mActivityReference.get(), mScene);
+        Activity activity = getActivity();
+        if (isActValid(activity)){
+            ((IsInstance) instance).showIs(activity, mScene);
+        }
     }
 
     @Override
     protected void insLoad(Instance instance, Map<String, Object> extras) {
         IsInstance isInstance = (IsInstance) instance;
-        isInstance.loadIs(mActivityReference.get(), extras);
+        Activity activity = getActivity();
+        if (isActValid(activity)){
+            isInstance.loadIs(activity, extras);
+        }
     }
 
     @Override

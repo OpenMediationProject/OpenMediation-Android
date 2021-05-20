@@ -95,7 +95,10 @@ public final class CpManager extends AbstractAdsManager implements CpManagerList
         }
         CpInstance cpInstance = (CpInstance) instance;
         cpInstance.setCpManagerListener(this);
-        cpInstance.initCp(mActivityReference.get());
+        Activity activity = getActivity();
+        if (isActValid(activity)){
+            cpInstance.initCp(activity);
+        }
     }
 
     @Override
@@ -110,15 +113,20 @@ public final class CpManager extends AbstractAdsManager implements CpManagerList
     protected void insShow(Instance instance) {
         if (instance instanceof CpInstance) {
             mShowingInstance = (CpInstance) instance;
-            Activity activity = mActRefs == null ? mActivityReference.get() : mActRefs.get();
-            mShowingInstance.showCp(activity, mRect, mScene);
+            Activity activity = getActivity();
+            if (isActValid(activity)){
+                mShowingInstance.showCp(activity, mRect, mScene);
+            }
         }
     }
 
     @Override
     protected void insLoad(Instance instance, Map<String, Object> extras) {
         CpInstance cpInstance = (CpInstance) instance;
-        cpInstance.loadCp(mActivityReference.get(), extras);
+        Activity activity = getActivity();
+        if (isActValid(activity)){
+            cpInstance.loadCp(activity, extras);
+        }
     }
 
     @Override

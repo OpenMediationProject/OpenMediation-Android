@@ -13,7 +13,6 @@ import com.openmediation.sdk.bid.BidLoseReason;
 import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.core.runnable.AdsScheduleTask;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
-import com.openmediation.sdk.utils.ActLifecycle;
 import com.openmediation.sdk.utils.AdLog;
 import com.openmediation.sdk.utils.AdRateUtil;
 import com.openmediation.sdk.utils.AdapterUtil;
@@ -38,6 +37,7 @@ import com.openmediation.sdk.utils.event.EventId;
 import com.openmediation.sdk.utils.event.EventUploadManager;
 import com.openmediation.sdk.utils.helper.LrReportHelper;
 import com.openmediation.sdk.utils.helper.WaterFallHelper;
+import com.openmediation.sdk.utils.lifecycle.ActLifecycle;
 import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.Instance;
 import com.openmediation.sdk.utils.model.MediationRule;
@@ -176,7 +176,6 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
     @Override
     public void onResume(Activity activity) {
         if (Preconditions.checkNotNull(activity)) {
-            mActivityReference = new WeakReference<>(activity);
             if (mTotalIns != null && !mTotalIns.isEmpty()) {
                 for (Instance in : mTotalIns) {
                     in.onResume(activity);
@@ -188,7 +187,6 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
     @Override
     public void onPause(Activity activity) {
         if (Preconditions.checkNotNull(activity)) {
-            mActivityReference = new WeakReference<>(activity);
             if (mTotalIns != null && !mTotalIns.isEmpty()) {
                 for (Instance in : mTotalIns) {
                     in.onPause(activity);
@@ -534,8 +532,11 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
             if (c2SInstances == null || c2SInstances.isEmpty()) {
                 startLoadAd(clInfo, null);
             } else {
-                BidAuctionManager.getInstance().c2sBid(mActivityReference.get(), c2SInstances, mPlacement.getId(), mReqId, mPlacement.getT(),
-                        AbstractAdsManager.this);
+                Activity activity = getActivity();
+                if (isActValid(activity)){
+                    BidAuctionManager.getInstance().c2sBid(activity, c2SInstances, mPlacement.getId(), mReqId, mPlacement.getT(),
+                            AbstractAdsManager.this);
+                }
             }
         } catch (Exception e) {
             Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_SERVER_ERROR
@@ -656,8 +657,11 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
                 internalLoad(null, InsUtil.getInstanceList(mPlacement));
                 return;
             }
-            BidAuctionManager.getInstance().s2sBid(mActivityReference.get(), mPlacement.getId(), mReqId, mPlacement.getT(),
-                    AbstractAdsManager.this);
+            Activity activity = getActivity();
+            if (isActValid(activity)) {
+                BidAuctionManager.getInstance().s2sBid(activity, mPlacement.getId(), mReqId, mPlacement.getT(),
+                        AbstractAdsManager.this);
+            }
         } catch (Exception e) {
             Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
                     , ErrorCode.MSG_LOAD_INVALID_REQUEST, ErrorCode.CODE_LOAD_UNKNOWN_INTERNAL_ERROR);
@@ -840,12 +844,9 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
      * @return activity's availability
      */
     private boolean checkActRef() {
-        if (!DeviceUtil.isActivityAvailable(mActivityReference.get())) {
-            Activity activity = ActLifecycle.getInstance().getActivity();
-            if (activity == null) {
-                return false;
-            }
-            mActivityReference = new WeakReference<>(activity);
+        Activity activity = getActivity();
+        if (!DeviceUtil.isActivityAvailable(activity)) {
+            return ActLifecycle.getInstance().getActivity() == null;
         }
         return true;
     }

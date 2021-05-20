@@ -4,21 +4,39 @@
 package com.openmediation.sdk.core;
 
 import android.app.Activity;
+import android.os.Build;
 
-import com.openmediation.sdk.utils.ActLifecycle;
+import com.openmediation.sdk.utils.lifecycle.ActLifecycle;
 import com.openmediation.sdk.utils.error.Error;
 import com.openmediation.sdk.utils.model.Instance;
 import com.openmediation.sdk.utils.model.Placement;
 import com.openmediation.sdk.utils.model.PlacementInfo;
 
-import java.lang.ref.WeakReference;
 import java.util.Map;
 
 /**
  * The type Ads api.
  */
 public abstract class AdsApi {
-    protected WeakReference<Activity> mActivityReference = new WeakReference<>(null);
+
+    /**
+     * changed By ZJJ on 21.3.18
+     * Obtaining an Activity should not use weak references as a continuously accessible object,
+     * which is easy to cause NullPointer, especially on low configuration devices
+     * The use of WeakReference is wrong.
+     * The reference from the weak reference get() is still bound to the strong reference when it is passed into the method for use.
+     */
+    protected Activity getActivity() throws NullPointerException {
+        return ActLifecycle.getInstance().getActivity();
+    }
+
+    /**
+     * changed By ZJJ on 21.3.18
+     * Check whether an activity is valid
+     */
+    protected boolean isActValid(Activity activity) {
+        return activity != null && !((Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && activity.isDestroyed()) || activity.isFinishing());
+    }
 
     /**
      * Returns placement info for the ad type
@@ -32,11 +50,7 @@ public abstract class AdsApi {
      *
      * @param instance the instance
      */
-    protected void initInsAndSendEvent(Instance instance) {
-        if (mActivityReference == null || mActivityReference.get() == null) {
-            mActivityReference = new WeakReference<Activity>(ActLifecycle.getInstance().getActivity());
-        }
-    }
+    protected void initInsAndSendEvent(Instance instance) { }
 
     /**
      * Checks if an instance is available

@@ -3,6 +3,8 @@
 
 package com.openmediation.sdk.core.imp.rewardedvideo;
 
+import android.app.Activity;
+
 import com.openmediation.sdk.utils.SceneUtil;
 import com.openmediation.sdk.utils.model.Instance;
 import com.openmediation.sdk.mediation.MediationRewardVideoListener;
@@ -85,7 +87,10 @@ public final class RvManager extends AbstractAdsManager implements RvManagerList
         }
         RvInstance rvInstance = (RvInstance) instance;
         rvInstance.setRvManagerListener(this);
-        rvInstance.initRv(mActivityReference.get());
+        Activity activity = getActivity();
+        if (isActValid(activity)){
+            rvInstance.initRv(activity);
+        }
     }
 
     @Override
@@ -98,13 +103,19 @@ public final class RvManager extends AbstractAdsManager implements RvManagerList
 
     @Override
     protected void insShow(final Instance instance) {
-        ((RvInstance) instance).showRv(mActivityReference.get(), mScene);
+        Activity activity = getActivity();
+        if (isActValid(activity)){
+            ((RvInstance) instance).showRv(activity, mScene);
+        }
     }
 
     @Override
     protected void insLoad(Instance instance, Map<String, Object> extras) {
         RvInstance rvInstance = (RvInstance) instance;
-        rvInstance.loadRv(mActivityReference.get(), extras);
+        Activity activity = getActivity();
+        if (isActValid(activity)){
+            rvInstance.loadRv(activity, extras);
+        }
     }
 
     @Override
