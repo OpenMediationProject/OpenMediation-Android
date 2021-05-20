@@ -6,11 +6,11 @@ import android.view.ViewGroup;
 
 import com.openmediation.sdk.core.OmManager;
 import com.openmediation.sdk.splash.SplashAdListener;
-import com.openmediation.sdk.utils.ActLifecycle;
 import com.openmediation.sdk.utils.AdsUtil;
 import com.openmediation.sdk.utils.PlacementUtils;
 import com.openmediation.sdk.utils.constant.CommonConstants;
 import com.openmediation.sdk.utils.event.EventId;
+import com.openmediation.sdk.utils.lifecycle.ActLifecycle;
 import com.openmediation.sdk.utils.model.Placement;
 
 import java.util.concurrent.ConcurrentHashMap;

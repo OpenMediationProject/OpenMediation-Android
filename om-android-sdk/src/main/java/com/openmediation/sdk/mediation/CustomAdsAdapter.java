@@ -7,6 +7,8 @@ import android.app.Activity;
 import android.os.Build;
 import android.text.TextUtils;
 
+import com.openmediation.sdk.utils.lifecycle.ActLifecycle;
+
 import java.util.Map;
 
 /**
@@ -18,14 +20,12 @@ import java.util.Map;
  * At runtime, the mediation SDK will find and instantiate a CustomAdsAdapter subclass as needed
  * and invoke its methods.
  */
-public abstract class CustomAdsAdapter extends CustomAdParams implements RewardedVideoApi,
-        InterstitialAdApi, BannerAdApi, PromotionAdApi {
+public abstract class CustomAdsAdapter extends CustomAdParams implements RewardedVideoApi, InterstitialAdApi, BannerAdApi, PromotionAdApi {
 
     protected String mAppKey;
 
     @Override
-    public void initRewardedVideo(Activity activity, Map<String, Object> dataMap
-            , RewardedVideoCallback callback) {
+    public void initRewardedVideo(Activity activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
         initData(activity, dataMap);
     }
 
@@ -131,13 +131,29 @@ public abstract class CustomAdsAdapter extends CustomAdParams implements Rewarde
         return false;
     }
 
+    /**
+     * changed by ZJJ on 21.3.15
+     * check whether the current Activity is valid.
+     * if it is invalid, in order to increase the arrival rate,
+     * try to obtain an available Activity from the LifecycleCallbacks of the current process.
+     *
+     * @see #check(Activity, String)
+     */
+    protected String check(Activity activity) {
+        return check(activity, "0");
+    }
+
+    /**
+     * changed by ZJJ on 21.3.15
+     * @see #check(Activity) plus to detect {adUnitId}
+     */
     protected String check(Activity activity, String adUnitId) {
-        if (activity == null) {
-            return "activity is null";
+        boolean result = checkActivity(activity);
+        if (!result) {
+            activity = ActLifecycle.getInstance().getActivity();
         }
-        if (isDestroyed(activity)) {
-            return "activity is destroyed";
-        }
+        result = checkActivity(activity);
+        if (!result) return "activity is null or has been destroyed";
         if (TextUtils.isEmpty(mAppKey)) {
             return "app key is null";
         }
@@ -147,20 +163,7 @@ public abstract class CustomAdsAdapter extends CustomAdParams implements Rewarde
         return "";
     }
 
-    protected String check(Activity activity) {
-        if (activity == null) {
-            return "activity is null";
-        }
-        if (isDestroyed(activity)) {
-            return "activity is destroyed";
-        }
-        if (TextUtils.isEmpty(mAppKey)) {
-            return "app key is empty";
-        }
-        return "";
-    }
-
-    private void initData(Activity activity, Map<String, Object> dataMap) {
+    private void initData(@SuppressWarnings("unused") Activity activity, Map<String, Object> dataMap) {
         if (!TextUtils.isEmpty(mAppKey)) {
             return;
         }
@@ -168,23 +171,20 @@ public abstract class CustomAdsAdapter extends CustomAdParams implements Rewarde
     }
 
     /**
-     * Checks if an Activity is available
-     *
-     * @param activity the given activity
-     * @return activity availability
+     * changed by ZJJ on 21.3.15
+     * checks if an Activity is available
      */
-    private boolean isDestroyed(Activity activity) {
-        boolean flage = false;
+    private boolean checkActivity(Activity activity) {
+        boolean flag = activity != null;
         if (Build.VERSION.SDK_INT >= 17) {
             if (activity == null || activity.isDestroyed()) {
-                flage = true;
+                flag = false;
             }
         } else {
             if (activity == null || activity.isFinishing()) {
-                flage = true;
+                flag = false;
             }
         }
-        return flage;
+        return flag;
     }
-
 }
