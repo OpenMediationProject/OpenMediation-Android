@@ -60,7 +60,7 @@ public class CrashUtil implements Thread.UncaughtExceptionHandler {
     public void init() {
         try {
             //inits SP
-            mCrashSp = AdtUtil.getApplication().getSharedPreferences(SP_NAME, Context.MODE_PRIVATE);
+            mCrashSp = AdtUtil.getInstance().getApplicationContext().getSharedPreferences(SP_NAME, Context.MODE_PRIVATE);
             //gets exception handler if set by app
             if (!(Thread.getDefaultUncaughtExceptionHandler() instanceof CrashUtil)) {
                 mDefaultEh = Thread.getDefaultUncaughtExceptionHandler();
@@ -185,7 +185,7 @@ public class CrashUtil implements Thread.UncaughtExceptionHandler {
                                 .url(xrUrl)
                                 .connectTimeout(30000)
                                 .readTimeout(60000)
-                                .performRequest(AdtUtil.getApplication());
+                                .performRequest(AdtUtil.getInstance().getApplicationContext());
                     }
                 } catch (Throwable e) {
                     DeveloperLog.LogD("CrashUtil", e);

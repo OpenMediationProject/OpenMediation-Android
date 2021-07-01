@@ -3,15 +3,13 @@
 
 package com.openmediation.sdk.mobileads;
 
-import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
-import android.os.Handler;
-import android.os.Looper;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.widget.RelativeLayout;
 
-import com.openmediation.sdk.mediation.CustomBannerEvent;
+import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.utils.AdLog;
 
 import net.pubnative.lite.sdk.HyBid;
@@ -54,14 +52,12 @@ public class PubNativeSingleTon {
 
     private volatile InitState mInitState = InitState.NOT_INIT;
     private final List<InitListener> mListeners = new CopyOnWriteArrayList<>();
-    private final Handler mMainHandler;
 
     private static class HyBidHolder {
         private static final PubNativeSingleTon INSTANCE = new PubNativeSingleTon();
     }
 
     private PubNativeSingleTon() {
-        mMainHandler = new Handler(Looper.getMainLooper());
         mRvAds = new ConcurrentHashMap<>();
         mIsAds = new ConcurrentHashMap<>();
         mBidCallbacks = new ConcurrentHashMap<>();
@@ -75,8 +71,16 @@ public class PubNativeSingleTon {
         return HyBidHolder.INSTANCE;
     }
 
-    public synchronized void init(final Activity activity, final String appKey, InitListener listener) {
-        if (activity == null || TextUtils.isEmpty(appKey)) {
+    public InitState getInitState() {
+        return mInitState;
+    }
+
+    public boolean isInit() {
+        return mInitState == InitState.INIT_SUCCESS;
+    }
+
+    public synchronized void init(final Application application, final String appKey, InitListener listener) {
+        if (application == null || TextUtils.isEmpty(appKey)) {
             if (listener != null) {
                 listener.initFailed("Context is null or AppKey is empty");
             }
@@ -96,20 +100,17 @@ public class PubNativeSingleTon {
             return;
         }
         mInitState = InitState.INIT_PENDING;
-        if (Looper.myLooper() == Looper.getMainLooper()) {
-            initOnMainThread(activity, appKey);
-        } else {
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                @Override
-                public void run() {
-                    initOnMainThread(activity, appKey);
-                }
-            });
-        }
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                initOnMainThread(application, appKey);
+            }
+        };
+        MediationUtil.runOnUiThread(runnable);
     }
 
-    private void initOnMainThread(Activity activity, final String appKey) {
-        HyBid.initialize(appKey, activity.getApplication(), new HyBid.InitialisationListener() {
+    private void initOnMainThread(Application application, final String appKey) {
+        HyBid.initialize(appKey, application, new HyBid.InitialisationListener() {
             @Override
             public void onInitialisationFinished(boolean success) {
                 if (success) {
@@ -161,11 +162,11 @@ public class PubNativeSingleTon {
         mInterstitialAdCallback = callback;
     }
 
-    void loadRewardedVideo(final Activity activity, String appKey, final String adUnitId) {
-        PubNativeSingleTon.getInstance().init(activity, appKey, new InitListener() {
+    void loadRewardedVideo(final Application application, String appKey, final String adUnitId) {
+        PubNativeSingleTon.getInstance().init(application, appKey, new PubNativeSingleTon.InitListener() {
             @Override
             public void initSuccess() {
-                loadRewardedVideoOnMainThread(activity, adUnitId);
+                loadRewardedVideoOnMainThread(application, adUnitId);
             }
 
             @Override
@@ -176,22 +177,22 @@ public class PubNativeSingleTon {
         });
     }
 
-    private void loadRewardedVideoOnMainThread(final Activity activity, final String adUnitId) {
+    private void loadRewardedVideoOnMainThread(final Context context, final String adUnitId) {
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
                 try {
                     HyBidRewardedAdListener listener = new HyBidRewardedAdListener();
-                    HyBidRewardedAd rewarded = new HyBidRewardedAd(activity, adUnitId, listener);
+                    HyBidRewardedAd rewarded = new HyBidRewardedAd(context, adUnitId, listener);
                     listener.setParameters(rewarded, adUnitId);
                     rewarded.load();
-                } catch (Exception e) {
+                } catch(Exception e) {
                     AdLog.getSingleton().LogE(TAG, "loadRewardedVideo Error : " + e.getMessage());
                     bidFailed(adUnitId, e.getMessage());
                 }
             }
         };
-        mMainHandler.post(runnable);
+        MediationUtil.runOnUiThread(runnable);
     }
 
     boolean isRewardedVideoReady(final String adUnitId) {
@@ -210,11 +211,11 @@ public class PubNativeSingleTon {
         }
     }
 
-    void loadInterstitial(final Activity activity, String appKey, final String adUnitId) {
-        PubNativeSingleTon.getInstance().init(activity, appKey, new InitListener() {
+    void loadInterstitial(final Application application, String appKey, final String adUnitId) {
+        PubNativeSingleTon.getInstance().init(application, appKey, new PubNativeSingleTon.InitListener() {
             @Override
             public void initSuccess() {
-                loadInterstitialOnMainThread(activity, adUnitId);
+                loadInterstitialOnMainThread(application, adUnitId);
             }
 
             @Override
@@ -225,22 +226,22 @@ public class PubNativeSingleTon {
         });
     }
 
-    private void loadInterstitialOnMainThread(final Activity activity, final String adUnitId) {
+    private void loadInterstitialOnMainThread(final Context context, final String adUnitId) {
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
                 try {
                     HyBidInterstitialAdListener listener = new HyBidInterstitialAdListener();
-                    HyBidInterstitialAd ad = new HyBidInterstitialAd(activity, adUnitId, listener);
+                    HyBidInterstitialAd ad = new HyBidInterstitialAd(context, adUnitId, listener);
                     listener.setParameters(ad, adUnitId);
                     ad.load();
-                } catch (Exception e) {
+                } catch(Exception e) {
                     AdLog.getSingleton().LogE(TAG, "loadInterstitial Error : " + e.getMessage());
                     bidFailed(adUnitId, e.getMessage());
                 }
             }
         };
-        mMainHandler.post(runnable);
+        MediationUtil.runOnUiThread(runnable);
     }
 
     boolean isInterstitialReady(String adUnitId) {
@@ -368,11 +369,11 @@ public class PubNativeSingleTon {
         }
     }
 
-    void loadBanner(final Activity activity, String appKey, final String adUnitId, final com.openmediation.sdk.banner.AdSize adSize) {
-        PubNativeSingleTon.getInstance().init(activity, appKey, new InitListener() {
+    void loadBanner(final Application application, String appKey, final String adUnitId, final com.openmediation.sdk.banner.AdSize adSize) {
+        PubNativeSingleTon.getInstance().init(application, appKey, new PubNativeSingleTon.InitListener() {
             @Override
             public void initSuccess() {
-                loadBannerOnMainThread(activity, adUnitId, adSize);
+                loadBannerOnMainThread(application, adUnitId, adSize);
             }
 
             @Override
@@ -383,33 +384,42 @@ public class PubNativeSingleTon {
         });
     }
 
-    private void loadBannerOnMainThread(final Activity activity, final String adUnitId, final com.openmediation.sdk.banner.AdSize adSize) {
+    private void loadBannerOnMainThread(final Context context, final String adUnitId, final com.openmediation.sdk.banner.AdSize adSize) {
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
                 try {
-                    AdSize bannerSize = getAdSize(activity, adSize);
-                    final HyBidAdView bannerView = new HyBidAdView(activity.getApplicationContext());
+                    AdSize bannerSize = getAdSize(context, adSize);
+                    final HyBidAdView bannerView = new HyBidAdView(context);
                     bannerView.setAdSize(bannerSize);
                     HyBidBannerAdListener listener = new HyBidBannerAdListener();
                     listener.setParameters(adUnitId, bannerView);
                     bannerView.setAutoShowOnLoad(false);
                     RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
-                            dpToPixels(activity, bannerSize.getWidth()),
-                            dpToPixels(activity, bannerSize.getHeight()));
+                            dpToPixels(context, bannerSize.getWidth()),
+                            dpToPixels(context, bannerSize.getHeight()));
                     bannerView.setLayoutParams(layoutParams);
                     bannerView.load(adUnitId, listener);
-                } catch (Exception e) {
+                } catch(Exception e) {
                     AdLog.getSingleton().LogE(TAG, "loadBanner Error : " + e.getMessage());
                     bidFailed(adUnitId, e.getMessage());
                 }
             }
         };
-        mMainHandler.post(runnable);
+        MediationUtil.runOnUiThread(runnable);
     }
 
     HyBidAdView getBannerAd(String adUnitId) {
-        return mBannerAds.remove(adUnitId);
+        return mBannerAds.get(adUnitId);
+    }
+
+    void destroyBannerAd(String adUnitId) {
+        removeBannerListener(adUnitId);
+        if (getBannerAd(adUnitId) != null) {
+            HyBidAdView adView = mBannerAds.remove(adUnitId);
+            adView.destroy();
+            adView = null;
+        }
     }
 
     void addBannerListener(String adUnitId, PubNativeBannerListener listener) {
@@ -469,8 +479,8 @@ public class PubNativeSingleTon {
         }
     }
 
-    void loadNative(final Activity activity, String appKey, final String adUnitId) {
-        PubNativeSingleTon.getInstance().init(activity, appKey, new InitListener() {
+    void loadNative(final Application application, String appKey, final String adUnitId) {
+        PubNativeSingleTon.getInstance().init(application, appKey, new PubNativeSingleTon.InitListener() {
             @Override
             public void initSuccess() {
                 loadNativeOnMainThread(adUnitId);
@@ -492,17 +502,25 @@ public class PubNativeSingleTon {
                     HyBidNativeAdListener listener = new HyBidNativeAdListener(adUnitId);
                     HyBidNativeAdRequest nativeAdRequest = new HyBidNativeAdRequest();
                     nativeAdRequest.load(adUnitId, listener);
-                } catch (Exception e) {
+                } catch(Exception e) {
                     AdLog.getSingleton().LogE(TAG, "loadNative Error : " + e.getMessage());
                     bidFailed(adUnitId, e.getMessage());
                 }
             }
         };
-        mMainHandler.post(runnable);
+        MediationUtil.runOnUiThread(runnable);
     }
 
     NativeAd getNativeAd(String adUnitId) {
-        return mNativeAds.remove(adUnitId);
+        return mNativeAds.get(adUnitId);
+    }
+
+    public void destroyNativeAd(String adUnitId) {
+        NativeAd nativeAd = mNativeAds.remove(adUnitId);
+        if (nativeAd != null) {
+            nativeAd.stopTracking();
+            nativeAd = null;
+        }
     }
 
     private class HyBidNativeAdListener implements HyBidNativeAdRequest.RequestListener {
@@ -563,7 +581,7 @@ public class PubNativeSingleTon {
             case DESC_RECTANGLE:
                 return AdSize.SIZE_300x250;
             case DESC_SMART:
-                if (CustomBannerEvent.isLargeScreen(context)) {
+                if (MediationUtil.isLargeScreen(context)) {
                     return AdSize.SIZE_728x90;
                 } else {
                     return AdSize.SIZE_320x50;

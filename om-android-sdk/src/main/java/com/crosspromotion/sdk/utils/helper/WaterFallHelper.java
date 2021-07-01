@@ -66,7 +66,7 @@ public class WaterFallHelper {
                     ByteRequestBody requestBody = new ByteRequestBody(bytes);
                     Headers headers = HeaderUtils.getBaseHeaders();
                     AdRequest.post().url(url).body(requestBody).headers(headers).connectTimeout(30000).readTimeout(60000)
-                            .callback(callback).performRequest(AdtUtil.getApplication());
+                            .callback(callback).performRequest(AdtUtil.getInstance().getApplicationContext());
                 } catch (Exception e) {
                     DeveloperLog.LogE("CrossPromotionSDK WaterFall Error: " + e.getMessage());
                     CrashUtil.getSingleton().saveException(e);
@@ -109,7 +109,7 @@ public class WaterFallHelper {
         }
         body.put(KeyConstants.RequestBody.KEY_IMPRTIMES, Integer.valueOf(extras[3]));
         body.put(KeyConstants.RequestBody.KEY_IAP, Float.valueOf(extras[4]));
-        body.put(KeyConstants.RequestBody.KEY_NG, DeviceUtil.isGpInstall(AdtUtil.getApplication()));
+        body.put(KeyConstants.RequestBody.KEY_NG, DeviceUtil.isGpInstall(AdtUtil.getInstance().getApplicationContext()));
         body.put(KeyConstants.RequestBody.KEY_ACT, extras[5]);
         if (map != null) {
             if (map.get("InstanceId") != null){

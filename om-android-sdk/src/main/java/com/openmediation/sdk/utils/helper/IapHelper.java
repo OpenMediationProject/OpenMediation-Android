@@ -133,7 +133,7 @@ public class IapHelper {
                             .connectTimeout(30000)
                             .readTimeout(60000)
                             .callback(callback)
-                            .performRequest(AdtUtil.getApplication());
+                            .performRequest(AdtUtil.getInstance().getApplicationContext());
 
                 } catch (Exception e) {
                     DeveloperLog.LogE("HttpIAP error ", e);

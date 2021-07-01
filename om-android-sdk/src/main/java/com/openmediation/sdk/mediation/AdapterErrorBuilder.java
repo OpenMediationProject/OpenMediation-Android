@@ -14,8 +14,8 @@ public class AdapterErrorBuilder {
     public static final String AD_UNIT_SPLASH = "Splash";
     public static final String AD_UNIT_PROMOTION = "Promotion";
 
-    public static AdapterError buildInitError(String adUnit, String adapterName, String errorMsg) {
-        String resultingMessage = "" + adUnit + " Init Failed" + (!TextUtils.isEmpty(adapterName) ? " " + adapterName : "") + " - ";
+    public static AdapterError buildInitError(String adType, String adapterName, String errorMsg) {
+        String resultingMessage = "" + adType + " Init Failed" + (!TextUtils.isEmpty(adapterName) ? " " + adapterName : "") + " - ";
         if (TextUtils.isEmpty(errorMsg)) {
             errorMsg = "unknown error";
         }
@@ -23,8 +23,8 @@ public class AdapterErrorBuilder {
         return new AdapterError(resultingMessage);
     }
 
-    public static AdapterError buildInitError(String adUnit, String adapterName, int errorCode, String errorMsg) {
-        String resultingMessage = "" + adUnit + " Init Failed" + (!TextUtils.isEmpty(adapterName) ? " " + adapterName : "") + " - ";
+    public static AdapterError buildInitError(String adType, String adapterName, int errorCode, String errorMsg) {
+        String resultingMessage = "" + adType + " Init Failed" + (!TextUtils.isEmpty(adapterName) ? " " + adapterName : "") + " - ";
         if (TextUtils.isEmpty(errorMsg)) {
             errorMsg = "unknown error";
         }
@@ -32,8 +32,11 @@ public class AdapterErrorBuilder {
         return new AdapterError(errorCode, resultingMessage);
     }
 
-    public static AdapterError buildLoadError(String adUnit, String adapterName, String errorMsg) {
-        String resultingMessage = "" + adUnit + " Load Failed" + (!TextUtils.isEmpty(adapterName) ? " " + adapterName : "") + " - ";
+    /**
+     * error from ADN
+     */
+    public static AdapterError buildLoadError(String adType, String adapterName, String errorMsg) {
+        String resultingMessage = "" + adType + " Load Failed" + (!TextUtils.isEmpty(adapterName) ? " " + adapterName : "") + " - ";
         if (TextUtils.isEmpty(errorMsg)) {
             errorMsg = "unknown error";
         }
@@ -43,8 +46,11 @@ public class AdapterErrorBuilder {
         return error;
     }
 
-    public static AdapterError buildLoadCheckError(String adUnit, String adapterName, String errorMsg) {
-        String resultingMessage = "" + adUnit + " Load Failed" + (!TextUtils.isEmpty(adapterName) ? " " + adapterName : "") + " - ";
+    /**
+     * error from SDK check
+     */
+    public static AdapterError buildLoadCheckError(String adType, String adapterName, String errorMsg) {
+        String resultingMessage = "" + adType + " Load Failed" + (!TextUtils.isEmpty(adapterName) ? " " + adapterName : "") + " - ";
         if (TextUtils.isEmpty(errorMsg)) {
             errorMsg = "unknown error";
         }
@@ -52,8 +58,8 @@ public class AdapterErrorBuilder {
         return new AdapterError(resultingMessage);
     }
 
-    public static AdapterError buildLoadError(String adUnit, String adapterName, int errorCode, String errorMsg) {
-        String resultingMessage = "" + adUnit + " Load Failed" + (!TextUtils.isEmpty(adapterName) ? " " + adapterName : "") + " - ";
+    public static AdapterError buildLoadError(String adType, String adapterName, int errorCode, String errorMsg) {
+        String resultingMessage = "" + adType + " Load Failed" + (!TextUtils.isEmpty(adapterName) ? " " + adapterName : "") + " - ";
         if (TextUtils.isEmpty(errorMsg)) {
             errorMsg = "unknown error";
         }
@@ -63,8 +69,8 @@ public class AdapterErrorBuilder {
         return error;
     }
 
-    public static AdapterError buildShowError(String adUnit, String adapterName, String errorMsg) {
-        String resultingMessage = "" + adUnit + " Show Failed" + (!TextUtils.isEmpty(adapterName) ? " " + adapterName : "") + " - ";
+    public static AdapterError buildShowError(String adType, String adapterName, String errorMsg) {
+        String resultingMessage = "" + adType + " Show Failed" + (!TextUtils.isEmpty(adapterName) ? " " + adapterName : "") + " - ";
         if (TextUtils.isEmpty(errorMsg)) {
             errorMsg = "unknown error";
         }
@@ -72,8 +78,8 @@ public class AdapterErrorBuilder {
         return new AdapterError(resultingMessage);
     }
 
-    public static AdapterError buildShowError(String adUnit, String adapterName, int errorCode, String errorMsg) {
-        String resultingMessage = "" + adUnit + " Show Failed" + (!TextUtils.isEmpty(adapterName) ? " " + adapterName : "") + " - ";
+    public static AdapterError buildShowError(String adType, String adapterName, int errorCode, String errorMsg) {
+        String resultingMessage = "" + adType + " Show Failed" + (!TextUtils.isEmpty(adapterName) ? " " + adapterName : "") + " - ";
         if (TextUtils.isEmpty(errorMsg)) {
             errorMsg = "unknown error";
         }

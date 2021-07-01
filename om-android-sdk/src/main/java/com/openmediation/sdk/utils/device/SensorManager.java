@@ -39,7 +39,7 @@ public class SensorManager {
 
     private SensorManager() {
         try {
-            Context context = AdtUtil.getApplication();
+            Context context = AdtUtil.getInstance().getApplicationContext();
             mSensorEventListenerList = new ArrayList<>();
             mSensorsType.set(1);
             mSensorsType.set(2);

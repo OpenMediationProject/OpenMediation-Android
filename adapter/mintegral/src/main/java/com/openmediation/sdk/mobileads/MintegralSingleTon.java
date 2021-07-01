@@ -103,7 +103,7 @@ public class MintegralSingleTon {
 
     private void initError(String error) {
         AdLog.getSingleton().LogE(error);
-        mInitState = InitState.INIT_FAIL;
+        mInitState = InitState.NOT_INIT;
         for (InitCallback callback : mCallbacks) {
             if (callback != null) {
                 callback.onFailed(error);
@@ -116,26 +116,17 @@ public class MintegralSingleTon {
         return mInitState;
     }
 
+    public boolean isInit() {
+        return InitState.INIT_SUCCESS == mInitState;
+    }
+
     /**
      * sdk Init State
      */
     public enum InitState {
-        /**
-         *
-         */
         NOT_INIT,
-        /**
-         *
-         */
         INIT_PENDING,
-        /**
-         *
-         */
-        INIT_SUCCESS,
-        /**
-         *
-         */
-        INIT_FAIL
+        INIT_SUCCESS
     }
 
 

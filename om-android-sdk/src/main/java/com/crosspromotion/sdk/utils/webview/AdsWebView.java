@@ -31,7 +31,7 @@ public class AdsWebView {
             public void run() {
                 try {
                     if (mAdView == null || isDestroyed) {
-                        mAdView = new BaseWebView(AdtUtil.getApplication());
+                        mAdView = new BaseWebView(AdtUtil.getInstance().getApplicationContext());
                     }
                     isDestroyed = false;
                     mAdView.loadUrl("about:blank");

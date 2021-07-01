@@ -41,11 +41,11 @@ public final class Cache {
     };
 
     public static void init() {
-        if (AdtUtil.getApplication() == null) {
+        if (AdtUtil.getInstance().getApplicationContext() == null) {
             return;
         }
-        createCacheRootDir(AdtUtil.getApplication());
-        freeSpaceIfNeeded(AdtUtil.getApplication());
+        createCacheRootDir(AdtUtil.getInstance().getApplicationContext());
+        freeSpaceIfNeeded(AdtUtil.getInstance().getApplicationContext());
     }
 
     /**
@@ -68,10 +68,10 @@ public final class Cache {
     public static boolean existCache(Context context, String url) {
         try {
             if (context == null) {
-                if (AdtUtil.getApplication() == null) {
+                if (AdtUtil.getInstance().getApplicationContext() == null) {
                     return false;
                 } else {
-                    context = AdtUtil.getApplication();
+                    context = AdtUtil.getInstance().getApplicationContext();
                 }
             }
             File rootDir = getRootDir(context);

@@ -79,6 +79,7 @@ public class MainActivity extends Activity {
         nativeButton = findViewById(R.id.btn_native);
         adContainer = findViewById(R.id.ad_container);
         initSDK();
+        setListener();
         if (RewardedVideoAd.isReady()) {
             setRewardVideoButtonStat(true);
         }
@@ -90,8 +91,19 @@ public class MainActivity extends Activity {
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        OmAds.onResume(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        OmAds.onPause(this);
+    }
+
     private void initSDK() {
-        setPromotionListener();
         NewApiUtils.printLog("start init sdk");
         InitConfiguration configuration = new InitConfiguration.Builder()
                 .appKey(NewApiUtils.APPKEY)
@@ -101,8 +113,6 @@ public class MainActivity extends Activity {
             @Override
             public void onSuccess() {
                 NewApiUtils.printLog("init success");
-                setVideoListener();
-                setInterstitialListener();
             }
 
             @Override
@@ -110,6 +120,12 @@ public class MainActivity extends Activity {
                 NewApiUtils.printLog("init failed " + result.toString());
             }
         });
+    }
+
+    private void setListener() {
+        setPromotionListener();
+        setVideoListener();
+        setInterstitialListener();
         mDataListener = new ImpressionDataListener() {
             @Override
             public void onImpression(Error error, ImpressionData impressionData) {
@@ -123,6 +139,8 @@ public class MainActivity extends Activity {
         RewardedVideoAd.setAdListener(new RewardedVideoListener() {
             @Override
             public void onRewardedVideoAvailabilityChanged(boolean available) {
+                NewApiUtils.printLog("MainActivity----onRewardedVideoAvailabilityChanged----" + available);
+
                 if (available) {
                     setRewardVideoButtonStat(true);
                 }
@@ -170,6 +188,7 @@ public class MainActivity extends Activity {
         InterstitialAd.setAdListener(new InterstitialAdListener() {
             @Override
             public void onInterstitialAdAvailabilityChanged(boolean available) {
+                NewApiUtils.printLog("MainActivity----onInterstitialAdAvailabilityChanged----" + available);
                 if (available) {
                     setInterstitialButtonStat(true);
                 }
@@ -182,7 +201,7 @@ public class MainActivity extends Activity {
 
             @Override
             public void onInterstitialAdShowFailed(Scene scene, Error error) {
-                NewApiUtils.printLog("onInterstitialAdShowFailed " + scene);
+                NewApiUtils.printLog("onInterstitialAdShowFailed " + error);
             }
 
             @Override
@@ -256,43 +275,45 @@ public class MainActivity extends Activity {
     }
 
     public void loadAndShowBanner(View view) {
-        adContainer.removeAllViews();
+//        adContainer.removeAllViews();
         bannerButton.setEnabled(false);
         bannerButton.setText("Banner Ad Loading...");
-        if (bannerAd != null) {
-            bannerAd.destroy();
-        }
-        bannerAd = new BannerAd(this, NewApiUtils.P_BANNER, new BannerAdListener() {
-            @Override
-            public void onAdReady(View view) {
-                try {
-                    if (null != view.getParent()) {
-                        ((ViewGroup) view.getParent()).removeView(view);
+//        if (bannerAd != null) {
+//            bannerAd.destroy();
+//        }
+        if (bannerAd == null) {
+            bannerAd = new BannerAd(NewApiUtils.P_BANNER, new BannerAdListener() {
+                @Override
+                public void onBannerAdLoaded(String placementId, View view) {
+                    try {
+                        if (null != view.getParent()) {
+                            ((ViewGroup) view.getParent()).removeView(view);
+                        }
+                        adContainer.removeAllViews();
+                        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
+                                RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+                        layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+                        adContainer.addView(view, layoutParams);
+                    } catch(Exception e) {
+                        Log.e("AdtDebug", e.getLocalizedMessage());
                     }
-                    adContainer.removeAllViews();
-                    RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
-                            RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-                    layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
-                    adContainer.addView(view, layoutParams);
-                } catch (Exception e) {
-                    Log.e("AdtDebug", e.getLocalizedMessage());
+                    bannerButton.setEnabled(true);
+                    bannerButton.setText("Load And Show Banner Ad");
                 }
-                bannerButton.setEnabled(true);
-                bannerButton.setText("Load And Show Banner Ad");
-            }
 
-            @Override
-            public void onAdFailed(String error) {
-                bannerButton.setEnabled(true);
-                bannerButton.setText("Banner Load Failed, Try Again");
+                @Override
+                public void onBannerAdLoadFailed(String placementId, Error error) {
+                    bannerButton.setEnabled(true);
+                    bannerButton.setText("Banner Load Failed, Try Again");
+                }
 
-            }
+                @Override
+                public void onBannerAdClicked(String placementId) {
 
-            @Override
-            public void onAdClicked() {
+                }
 
-            }
-        });
+            });
+        }
         bannerAd.setAdSize(AdSize.BANNER);
         bannerAd.loadAd();
     }
@@ -304,15 +325,9 @@ public class MainActivity extends Activity {
             nativeAd.destroy();
         }
         adContainer.removeAllViews();
-        nativeAd = new NativeAd(this, NewApiUtils.P_NATIVE, new NativeAdListener() {
+        nativeAd = new NativeAd(NewApiUtils.P_NATIVE, new NativeAdListener() {
             @Override
-            public void onAdFailed(String msg) {
-                nativeButton.setEnabled(true);
-                nativeButton.setText("Native Load Failed, Try Again");
-            }
-
-            @Override
-            public void onAdReady(AdInfo info) {
+            public void onNativeAdLoaded(String placementId, AdInfo info) {
                 adContainer.removeAllViews();
                 adView = LayoutInflater.from(MainActivity.this).inflate(R.layout.native_ad_layout, null);
 
@@ -356,9 +371,16 @@ public class MainActivity extends Activity {
             }
 
             @Override
-            public void onAdClicked() {
+            public void onNativeAdLoadFailed(String placementId, Error error) {
+                nativeButton.setEnabled(true);
+                nativeButton.setText("Native Load Failed, Try Again");
+            }
+
+            @Override
+            public void onNativeAdClicked(String placementId) {
 
             }
+
         });
 
         nativeAd.loadAd();

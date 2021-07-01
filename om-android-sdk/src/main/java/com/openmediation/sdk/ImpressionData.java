@@ -5,11 +5,10 @@ package com.openmediation.sdk;
 
 import android.text.TextUtils;
 
+import com.openmediation.sdk.core.InsManager;
 import com.openmediation.sdk.utils.AdLog;
-import com.openmediation.sdk.utils.InsUtil;
 import com.openmediation.sdk.utils.PlacementUtils;
 import com.openmediation.sdk.utils.cache.LifetimeRevenueData;
-import com.openmediation.sdk.utils.constant.CommonConstants;
 import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.MediationRule;
 import com.openmediation.sdk.utils.model.Placement;
@@ -54,7 +53,7 @@ public class ImpressionData {
             mJsonObject.putOpt(KEY_INSTANCE_NAME, instance.getName());
             mJsonObject.putOpt(KEY_INSTANCE_PRIORITY, instance.getPriority());
             mJsonObject.putOpt(KEY_AD_NETWORK_ID, String.valueOf(instance.getMediationId()));
-            mJsonObject.putOpt(KEY_AD_NETWORK_NAME, InsUtil.getNetworkName(instance));
+            mJsonObject.putOpt(KEY_AD_NETWORK_NAME, InsManager.getNetworkName(instance));
             mJsonObject.putOpt(KEY_AD_NETWORK_UNIT_ID, instance.getKey());
             MediationRule rule = instance.getMediationRule();
             if (rule != null) {
@@ -68,7 +67,7 @@ public class ImpressionData {
             if (placement != null) {
                 mJsonObject.putOpt(KEY_PLACEMENT_ID, placement.getId());
                 mJsonObject.putOpt(KEY_PLACEMENT_NAME, placement.getName());
-                String adType = getAdType(placement.getT());
+                String adType = PlacementUtils.getAdType(placement.getT());
                 mJsonObject.putOpt(KEY_PLACEMENT_AD_TYPE, TextUtils.isEmpty(adType) ? JSONObject.NULL : adType);
             }
             if (scene != null && !TextUtils.isEmpty(scene.getN())) {
@@ -84,7 +83,7 @@ public class ImpressionData {
             mJsonObject.putOpt(KEY_AB_GROUP, TextUtils.isEmpty(abTest) ? JSONObject.NULL : abTest);
             mJsonObject.putOpt(KEY_LIFETIME_VALUE, LifetimeRevenueData.getLifetimeRevenue());
         } catch (Exception e) {
-            AdLog.getSingleton().LogE("ImpressionData", "Data conversion failed");
+            AdLog.getSingleton().LogE("ImpressionData", "Data conversion failed: " + e.getMessage());
         }
     }
 
@@ -185,25 +184,6 @@ public class ImpressionData {
             return mJsonObject.toString();
         }
         return super.toString();
-    }
-
-    private static String getAdType(int type) {
-        switch (type) {
-            case CommonConstants.BANNER:
-                return "Banner";
-            case CommonConstants.NATIVE:
-                return "Native";
-            case CommonConstants.VIDEO:
-                return "Rewarded Video";
-            case CommonConstants.INTERSTITIAL:
-                return "Interstitial";
-            case CommonConstants.SPLASH:
-                return "Splash";
-            case CommonConstants.PROMOTION:
-                return "Cross Promote";
-            default:
-                return null;
-        }
     }
 
     private static String getPrecision(int type) {

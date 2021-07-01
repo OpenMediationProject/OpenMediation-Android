@@ -41,7 +41,7 @@ public class AfHelper {
                             .body(requestBody)
                             .connectTimeout(30000)
                             .readTimeout(60000)
-                            .performRequest(AdtUtil.getApplication());
+                            .performRequest(AdtUtil.getInstance().getApplicationContext());
                 } catch (Exception e) {
                     CrashUtil.getSingleton().saveException(e);
                 }

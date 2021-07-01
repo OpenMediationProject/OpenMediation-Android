@@ -1,17 +1,22 @@
+// Copyright 2021 ADTIMING TECHNOLOGY COMPANY LIMITED
+// Licensed under the GNU Lesser General Public License Version 3
+
 package com.openmediation.sdk.splash;
+
+import com.openmediation.sdk.utils.error.Error;
 
 public interface SplashAdListener {
 
     /**
      * called when SplashAd loaded
      */
-    void onSplashAdLoad(String placementId);
+    void onSplashAdLoaded(String placementId);
 
     /**
      * called when SplashAd load error
      * @param error error message
      */
-    void onSplashAdFailed(String placementId, String error);
+    void onSplashAdFailed(String placementId, Error error);
 
     /**
      * called when SplashAd clicked
@@ -28,7 +33,7 @@ public interface SplashAdListener {
      *
      * @param error SplashAd show error reason
      */
-    void onSplashAdShowFailed(String placementId, String error);
+    void onSplashAdShowFailed(String placementId, Error error);
 
     /**
      * called when SplashAd countdown

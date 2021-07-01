@@ -177,16 +177,16 @@ public class InsUtil {
         return statusList;
     }
 
-    public static CopyOnWriteArrayList<Instance> getInstanceList(Placement placement) {
+    public static CopyOnWriteArrayList<BaseInstance> getInstanceList(Placement placement) {
         if (placement == null || placement.getInsMap() == null || placement.getInsMap().size() == 0) {
             return null;
         }
         SparseArray<BaseInstance> insMap = placement.getInsMap();
-        CopyOnWriteArrayList<Instance> list = new CopyOnWriteArrayList<>();
+        CopyOnWriteArrayList<BaseInstance> list = new CopyOnWriteArrayList<>();
         for (int i = 0; i < insMap.size(); i++) {
             BaseInstance instance = insMap.valueAt(i);
-            if (instance instanceof Instance) {
-                list.add((Instance) instance);
+            if (instance != null) {
+                list.add(instance);
             }
         }
         return list;
@@ -223,12 +223,10 @@ public class InsUtil {
         if (TextUtils.isEmpty(instanceId)) {
             return null;
         }
-
         if (placement == null) {
             return null;
         }
-
-        CopyOnWriteArrayList<Instance> instanceList = getInstanceList(placement);
+        CopyOnWriteArrayList<BaseInstance> instanceList = getInstanceList(placement);
         if (instanceList == null || instanceList.isEmpty()) {
             return null;
         }
@@ -244,8 +242,7 @@ public class InsUtil {
     }
 
     public static boolean isInstanceAvailable(BaseInstance instance) {
-        return instance instanceof Instance &&
-                Instance.MEDIATION_STATE.AVAILABLE == ((Instance) instance).getMediationState();
+        return Instance.MEDIATION_STATE.AVAILABLE == instance.getMediationState();
     }
 
     public static List<Instance> sort(List<Instance> wfInstances, List<Instance> c2sInstances) {

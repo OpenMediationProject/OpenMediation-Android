@@ -16,11 +16,15 @@ import com.crosspromotion.sdk.utils.error.Error;
 import com.crosspromotion.sdk.video.RewardedVideo;
 import com.crosspromotion.sdk.video.RewardedVideoListener;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
+import com.openmediation.sdk.mediation.MediationUtil;
+import com.openmediation.sdk.mediation.NativeAdCallback;
 import com.openmediation.sdk.mediation.PromotionAdCallback;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
+import com.openmediation.sdk.nativead.NativeAdView;
 import com.openmediation.sdk.utils.AdLog;
 
 import java.util.Map;
@@ -56,9 +60,14 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
     }
 
     @Override
+    public boolean isAdNetworkInit() {
+        return CrossPromotionSingleTon.getInstance().isInit();
+    }
+
+    @Override
     public void initRewardedVideo(Activity activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
-        String error = check(activity);
+        String error = check();
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
@@ -66,7 +75,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
             }
             return;
         }
-        boolean init = CrossPromotionSingleTon.getInstance().init(activity);
+        boolean init = CrossPromotionSingleTon.getInstance().init(MediationUtil.getContext());
         if (callback != null) {
             if (init) {
                 callback.onRewardedVideoInitSuccess();
@@ -80,11 +89,11 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
     @Override
     public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
-        loadRewardedVideoAd(activity, adUnitId, extras, callback);
+        loadRewardedVideoAd(adUnitId, extras, callback);
     }
 
-    private void loadRewardedVideoAd(Activity activity, String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
-        String error = check(activity, adUnitId);
+    private void loadRewardedVideoAd(String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
+        String error = check(adUnitId);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
@@ -106,7 +115,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
     @Override
     public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
-        String error = check(activity, adUnitId);
+        String error = check(adUnitId);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
@@ -136,7 +145,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
     @Override
     public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
-        String error = check(activity);
+        String error = check();
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
@@ -144,7 +153,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
             }
             return;
         }
-        boolean init = CrossPromotionSingleTon.getInstance().init(activity);
+        boolean init = CrossPromotionSingleTon.getInstance().init(MediationUtil.getContext());
         if (callback != null) {
             if (init) {
                 callback.onInterstitialAdInitSuccess();
@@ -158,11 +167,11 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
     @Override
     public void loadInterstitialAd(Activity activity, String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, extras, callback);
-        loadIsAd(activity, adUnitId, extras, callback);
+        loadIsAd(adUnitId, extras, callback);
     }
 
-    private void loadIsAd(Activity activity, String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback) {
-        String error = check(activity, adUnitId);
+    private void loadIsAd(String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback) {
+        String error = check(adUnitId);
         if (!TextUtils.isEmpty(error)) {
             callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
                     AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
@@ -182,7 +191,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
     @Override
     public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
-        String error = check(activity, adUnitId);
+        String error = check(adUnitId);
         if (!TextUtils.isEmpty(error)) {
             callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
                     AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
@@ -210,7 +219,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
     @Override
     public void initPromotionAd(Activity activity, Map<String, Object> dataMap, PromotionAdCallback callback) {
         super.initPromotionAd(activity, dataMap, callback);
-        String error = check(activity);
+        String error = check();
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onPromotionAdInitFailed(AdapterErrorBuilder.buildInitError(
@@ -218,7 +227,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
             }
             return;
         }
-        boolean init = CrossPromotionSingleTon.getInstance().init(activity);
+        boolean init = CrossPromotionSingleTon.getInstance().init(MediationUtil.getContext());
         if (callback != null) {
             if (init) {
                 callback.onPromotionAdInitSuccess();
@@ -232,7 +241,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
     @Override
     public void loadPromotionAd(Activity activity, String adUnitId, Map<String, Object> extras, PromotionAdCallback callback) {
         super.loadPromotionAd(activity, adUnitId, extras, callback);
-        String error = check(activity, adUnitId);
+        String error = check(adUnitId);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onPromotionAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
@@ -245,6 +254,11 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
         }
         PromotionAd.setAdListener(adUnitId, this);
         PromotionAd.loadAd(adUnitId, extras);
+    }
+
+    @Override
+    public boolean isPromotionAdAvailable(String adUnitId) {
+        return PromotionAd.isReady(adUnitId);
     }
 
     @Override
@@ -284,8 +298,98 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
     }
 
     @Override
-    public boolean isPromotionAdAvailable(String adUnitId) {
-        return PromotionAd.isReady(adUnitId);
+    public void initBannerAd(Activity activity, Map<String, Object> extras, BannerAdCallback callback) {
+        super.initBannerAd(activity, extras, callback);
+        String error = check();
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onBannerAdInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error));
+            }
+            return;
+        }
+        boolean init = CrossPromotionSingleTon.getInstance().init(MediationUtil.getContext());
+        if (callback != null) {
+            if (init) {
+                callback.onBannerAdInitSuccess();
+            } else {
+                callback.onBannerAdInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, "InitBannerAd failed"));
+            }
+        }
+    }
+
+    @Override
+    public void loadBannerAd(Activity activity, String adUnitId, Map<String, Object> extras, BannerAdCallback callback) {
+        super.loadBannerAd(activity, adUnitId, extras, callback);
+        String error = check(adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error));
+            }
+            return;
+        }
+        CrossPromotionBannerManager.getInstance().loadAd(adUnitId, extras, callback);
+    }
+
+    @Override
+    public boolean isBannerAdAvailable(String adUnitId) {
+        return CrossPromotionBannerManager.getInstance().isAdAvailable(adUnitId);
+    }
+
+    @Override
+    public void destroyBannerAd(String adUnitId) {
+        super.destroyBannerAd(adUnitId);
+        CrossPromotionBannerManager.getInstance().destroyAd(adUnitId);
+    }
+
+    @Override
+    public void initNativeAd(Activity activity, Map<String, Object> extras, NativeAdCallback callback) {
+        super.initNativeAd(activity, extras, callback);
+        String error = check();
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onNativeAdInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, error));
+            }
+            return;
+        }
+        boolean init = CrossPromotionSingleTon.getInstance().init(MediationUtil.getContext());
+        if (callback != null) {
+            if (init) {
+                callback.onNativeAdInitSuccess();
+            } else {
+                callback.onNativeAdInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, "InitNativeAd failed"));
+            }
+        }
+    }
+
+    @Override
+    public void loadNativeAd(Activity activity, String adUnitId, Map<String, Object> extras, NativeAdCallback callback) {
+        super.loadNativeAd(activity, adUnitId, extras, callback);
+        String error = check(adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, error));
+            }
+            return;
+        }
+        CrossPromotionNativeManager.getInstance().loadAd(adUnitId, extras, callback);
+    }
+
+    @Override
+    public void registerNativeAdView(String adUnitId, NativeAdView adView, NativeAdCallback callback) {
+        super.registerNativeAdView(adUnitId, adView, callback);
+        CrossPromotionNativeManager.getInstance().registerNativeView(adUnitId, adView, callback);
+    }
+
+    @Override
+    public void destroyNativeAd(String adUnitId) {
+        super.destroyNativeAd(adUnitId);
+        CrossPromotionNativeManager.getInstance().destroyAd(adUnitId);
     }
 
     @Override
@@ -295,7 +399,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
             if (callback != null) {
                 callback.onInterstitialAdLoadSuccess();
             }
-        } catch (Exception ignored) {
+        } catch(Exception ignored) {
         }
     }
 
@@ -306,7 +410,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
             if (callback != null) {
                 callback.onInterstitialAdClosed();
             }
-        } catch (Exception ignored) {
+        } catch(Exception ignored) {
         }
     }
 
@@ -317,7 +421,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
             if (callback != null) {
                 callback.onInterstitialAdShowSuccess();
             }
-        } catch (Exception ignored) {
+        } catch(Exception ignored) {
         }
     }
 
@@ -329,7 +433,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
                 callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
                         AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error.getCode(), error.getMessage()));
             }
-        } catch (Exception ignored) {
+        } catch(Exception ignored) {
         }
     }
 
@@ -338,9 +442,9 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
         try {
             InterstitialAdCallback callback = mInterstitialListeners.get(placementId);
             if (callback != null) {
-                callback.onInterstitialAdClick();
+                callback.onInterstitialAdClicked();
             }
-        } catch (Exception ignored) {
+        } catch(Exception ignored) {
         }
     }
 
@@ -356,7 +460,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
                 callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
                         AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error.getCode(), error.getMessage()));
             }
-        } catch (Exception ignored) {
+        } catch(Exception ignored) {
         }
     }
 
@@ -368,7 +472,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
             if (callback != null) {
                 callback.onRewardedVideoLoadSuccess();
             }
-        } catch (Exception ignored) {
+        } catch(Exception ignored) {
         }
     }
 
@@ -379,7 +483,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
             if (callback != null) {
                 callback.onRewardedVideoAdClosed();
             }
-        } catch (Exception ignored) {
+        } catch(Exception ignored) {
         }
     }
 
@@ -390,7 +494,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
             if (callback != null) {
                 callback.onRewardedVideoAdShowSuccess();
             }
-        } catch (Exception ignored) {
+        } catch(Exception ignored) {
         }
     }
 
@@ -401,7 +505,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
             if (callback != null) {
                 callback.onRewardedVideoAdRewarded();
             }
-        } catch (Exception ignored) {
+        } catch(Exception ignored) {
         }
     }
 
@@ -413,7 +517,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
                 callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
                         AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error.getCode(), error.getMessage()));
             }
-        } catch (Exception ignored) {
+        } catch(Exception ignored) {
         }
     }
 
@@ -424,7 +528,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
             if (callback != null) {
                 callback.onRewardedVideoAdClicked();
             }
-        } catch (Exception ignored) {
+        } catch(Exception ignored) {
         }
     }
 
@@ -440,7 +544,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
                 callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
                         AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error.getCode(), error.getMessage()));
             }
-        } catch (Exception ignored) {
+        } catch(Exception ignored) {
         }
     }
 
@@ -451,7 +555,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
             if (callback != null) {
                 callback.onRewardedVideoAdStarted();
             }
-        } catch (Exception ignored) {
+        } catch(Exception ignored) {
         }
     }
 
@@ -462,7 +566,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
             if (callback != null) {
                 callback.onRewardedVideoAdEnded();
             }
-        } catch (Exception ignored) {
+        } catch(Exception ignored) {
         }
     }
 
@@ -476,7 +580,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
             if (callback != null) {
                 callback.onPromotionAdLoadSuccess();
             }
-        } catch (Exception ignored) {
+        } catch(Exception ignored) {
         }
     }
 
@@ -491,7 +595,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
                 callback.onPromotionAdLoadFailed(AdapterErrorBuilder.buildLoadError(
                         AdapterErrorBuilder.AD_UNIT_PROMOTION, mAdapterName, error.getCode(), error.getMessage()));
             }
-        } catch (Exception ignored) {
+        } catch(Exception ignored) {
         }
     }
 
@@ -502,7 +606,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
             if (callback != null) {
                 callback.onPromotionAdShowSuccess();
             }
-        } catch (Exception ignored) {
+        } catch(Exception ignored) {
         }
     }
 
@@ -516,7 +620,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
             if (callback != null) {
                 callback.onPromotionAdHidden();
             }
-        } catch (Exception ignored) {
+        } catch(Exception ignored) {
         }
     }
 
@@ -531,7 +635,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
                 callback.onPromotionAdShowFailed(AdapterErrorBuilder.buildShowError(
                         AdapterErrorBuilder.AD_UNIT_PROMOTION, mAdapterName, error.getCode(), error.getMessage()));
             }
-        } catch (Exception ignored) {
+        } catch(Exception ignored) {
         }
     }
 
@@ -545,7 +649,7 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
             if (callback != null) {
                 callback.onPromotionAdClicked();
             }
-        } catch (Exception ignored) {
+        } catch(Exception ignored) {
         }
     }
 }

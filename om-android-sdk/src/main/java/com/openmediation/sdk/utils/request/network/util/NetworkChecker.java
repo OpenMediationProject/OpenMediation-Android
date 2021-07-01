@@ -80,7 +80,7 @@ public class NetworkChecker {
      */
     public static boolean isAvailable(Context context) {
         if (context == null) {
-            context = AdtUtil.getApplication();
+            context = AdtUtil.getInstance().getApplicationContext();
         }
         return NetType.UNKNOWN.getValue() != getConnectType(context);
     }

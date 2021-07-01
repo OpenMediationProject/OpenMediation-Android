@@ -51,5 +51,5 @@ public interface InterstitialAdCallback {
     /**
      * called when third-party ad networks ads are clicked
      */
-    void onInterstitialAdClick();
+    void onInterstitialAdClicked();
 }

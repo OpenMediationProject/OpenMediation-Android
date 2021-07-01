@@ -4,13 +4,15 @@
 package com.openmediation.sdk.core;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 
 import com.openmediation.sdk.InitCallback;
 import com.openmediation.sdk.InitConfiguration;
 import com.openmediation.sdk.bid.BidAuctionManager;
+import com.openmediation.sdk.core.runnable.InitScheduleTask;
 import com.openmediation.sdk.utils.AFManager;
-import com.openmediation.sdk.utils.ActLifecycle;
+import com.openmediation.sdk.utils.lifecycle.ActLifecycle;
 import com.openmediation.sdk.utils.AdLog;
 import com.openmediation.sdk.utils.AdtUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
@@ -49,56 +51,54 @@ public final class InitImp {
     private static AtomicBoolean isInitRunning = new AtomicBoolean(false);
     private static InitCallback mCallback;
     private static long sInitStart;
+    // Re Init Delay
+    private static AtomicBoolean reInitRunning = new AtomicBoolean(false);
 
     /**
      * init method
      *
-     * @param activity the activity
      * @param callback the callback
      * @param channel  the channel
      */
-    public static void init(final Activity activity, InitConfiguration configuration, final InitCallback callback) {
+    public static void init(Activity activity, InitConfiguration configuration, final InitCallback callback) {
         //
-        if (hasInit.get()) {
-            return;
-        }
+//        if (hasInit.get()) {
+//            return;
+//        }
 
         if (isInitRunning.get()) {
             return;
         }
 
-        if (activity == null) {
-            Error error = new Error(ErrorCode.CODE_INIT_INVALID_REQUEST
-                    , ErrorCode.MSG_INIT_INVALID_REQUEST, ErrorCode.CODE_INTERNAL_REQUEST_ACTIVITY);
-            DeveloperLog.LogE(error.toString() + ", init failed because activity is null");
-            callbackInitErrorOnUIThread(error);
-            return;
-        }
+
         isInitRunning.set(true);
         sInitStart = System.currentTimeMillis();
         mCallback = callback;
-        AdtUtil.init(activity);
 //        SensorManager.getSingleton();
-        ActLifecycle.getInstance().init(activity);
-        EventUploadManager.getInstance().init(activity.getApplicationContext());
-        EventUploadManager.getInstance().uploadEvent(EventId.INIT_START);
+        DeveloperLog.enableDebug(AdtUtil.getInstance().getApplicationContext(), false);
+        CrashUtil.getSingleton().init();
+        ActLifecycle.getInstance().init();
+        if (activity != null) {
+            ActLifecycle.getInstance().setActivity(activity);
+        }
+        EventUploadManager.getInstance().init(AdtUtil.getInstance().getApplicationContext());
+        EventUploadManager.getInstance().uploadEvent(reInitRunning.get() ? EventId.RE_INIT_START : EventId.INIT_START);
         WorkExecutor.execute(new InitAsyncRunnable(configuration));
     }
 
     /**
      * Re init sdk.
      *
-     * @param activity the activity
      * @param callback the callback
      */
-    static void reInitSDK(Activity activity, final InitCallback callback) {
+    static void reInitSDK(final InitCallback callback) {
         if (DataCache.getInstance().containsKey(KeyConstants.KEY_APP_KEY)) {
             String appKey = DataCache.getInstance().getFromMem(KeyConstants.KEY_APP_KEY, String.class);
             String appChannel = DataCache.getInstance().getFromMem(KeyConstants.KEY_APP_CHANNEL, String.class);
             String initHost = DataCache.getInstance().getFromMem(KeyConstants.KEY_INIT_HOST, String.class);
             InitConfiguration configuration = new InitConfiguration.Builder().appKey(appKey)
                     .channel(appChannel).initHost(initHost).build();
-            InitImp.init(activity, configuration, new InitCallback() {
+            init(ActLifecycle.getInstance().getActivity(), configuration, new InitCallback() {
                 @Override
                 public void onSuccess() {
                     DeveloperLog.LogD("reInitSDK success");
@@ -115,6 +115,16 @@ public final class InitImp {
                     , ErrorCode.ERROR_NOT_INIT, ErrorCode.CODE_INTERNAL_REQUEST_APPKEY);
             callback.onError(error);
         }
+    }
+
+    /**
+     * Re init sdk at delay time.
+     *
+     * @param callback the callback
+     */
+    public static void startReInitSDK(final InitCallback callback) {
+        reInitRunning.set(true);
+        reInitSDK(callback);
     }
 
     /**
@@ -135,13 +145,13 @@ public final class InitImp {
         return isInitRunning.get();
     }
 
-    private static void requestConfig(Activity activity, InitConfiguration configuration) {
+    private static void requestConfig(InitConfiguration configuration) {
         try {
             DeveloperLog.LogD("Om init request config");
             //requests Config
             ConfigurationHelper.getConfiguration(configuration.getAppKey(), configuration.getInitHost(),
-                    new InitRequestCallback(activity, configuration.getAppKey()));
-        } catch (Exception e) {
+                    new InitRequestCallback(configuration.getAppKey()));
+        } catch(Exception e) {
             DeveloperLog.LogD("requestConfig  exception : ", e);
             CrashUtil.getSingleton().saveException(e);
             Error error = new Error(ErrorCode.CODE_INIT_UNKNOWN_INTERNAL_ERROR
@@ -155,17 +165,19 @@ public final class InitImp {
      * Inits global utils
      */
     private static void initUtil() {
-        DataCache.getInstance().init(AdtUtil.getApplication());
+        DataCache.getInstance().init(AdtUtil.getInstance().getApplicationContext());
     }
 
     private static void doAfterGetConfig(String appKey, Configurations config) {
         try {
-            DeveloperLog.enableDebug(AdtUtil.getApplication(), config.getD() == 1);
+            DeveloperLog.enableDebug(AdtUtil.getInstance().getApplicationContext(), config.getD() == 1);
             AFManager.checkAfDataStatus();
             EventUploadManager.getInstance().updateReportSettings(config);
             //reports error logs
             CrashUtil.getSingleton().uploadException(config, appKey);
-        } catch (Exception e) {
+
+            InitScheduleTask.startTask(config);
+        } catch(Exception e) {
             DeveloperLog.LogD("doAfterGetConfig  exception : ", e);
             CrashUtil.getSingleton().saveException(e);
         }
@@ -203,7 +215,8 @@ public final class InitImp {
             if (mCallback != null) {
                 mCallback.onSuccess();
             }
-            initCompleteReport(EventId.INIT_COMPLETE, null);
+            initCompleteReport(reInitRunning.get() ? EventId.RE_INIT_COMPLETE : EventId.INIT_COMPLETE, null);
+            reInitRunning.set(false);
         }
     }
 
@@ -217,14 +230,15 @@ public final class InitImp {
         @Override
         public void run() {
             try {
-                final Activity activity = ActLifecycle.getInstance().getActivity();
-                Error error = SdkUtil.banRun(activity, initConfiguration.getAppKey());
+                Context context = AdtUtil.getInstance().getApplicationContext();
+                Error error = SdkUtil.banRun(context, initConfiguration.getAppKey());
                 if (error != null) {
                     callbackInitErrorOnUIThread(error);
                     return;
                 }
                 initUtil();
                 DataCache.getInstance().setMEM(KeyConstants.KEY_APP_KEY, initConfiguration.getAppKey());
+                DataCache.getInstance().setMEM(KeyConstants.KEY_AF_ID, AFManager.getAfId(context));
                 String appChannel = initConfiguration.getChannel();
                 if (TextUtils.isEmpty(appChannel)) {
                     appChannel = "";
@@ -233,23 +247,23 @@ public final class InitImp {
                 if (!TextUtils.isEmpty(initConfiguration.getInitHost())) {
                     DataCache.getInstance().setMEM(KeyConstants.KEY_INIT_HOST, initConfiguration.getInitHost());
                 }
-                AdvertisingIdClient.getGaid(AdtUtil.getApplication(), new AdvertisingIdClient.OnGetGaidListener() {
+                AdvertisingIdClient.getGaid(AdtUtil.getInstance().getApplicationContext(), new AdvertisingIdClient.OnGetGaidListener() {
                     @Override
                     public void onGetGaid(String gaid) {
                         if (!TextUtils.isEmpty(gaid)) {
                             DataCache.getInstance().set(KeyConstants.RequestBody.KEY_GAID, gaid);
-                            requestConfig(activity, initConfiguration);
+                            requestConfig(initConfiguration);
                         } else {
-                            OaidHelper.getOaid(AdtUtil.getApplication(), new OaidHelper.oaidListener() {
+                            OaidHelper.getOaid(AdtUtil.getInstance().getApplicationContext(), new OaidHelper.oaidListener() {
                                 @Override
                                 public void onGetOaid(String oaid) {
-                                    requestConfig(activity, initConfiguration);
+                                    requestConfig(initConfiguration);
                                 }
                             });
                         }
                     }
                 });
-            } catch (Exception e) {
+            } catch(Exception e) {
                 DeveloperLog.LogD("initOnAsyncThread  exception : ", e);
                 CrashUtil.getSingleton().saveException(e);
                 Error error = new Error(ErrorCode.CODE_INIT_UNKNOWN_INTERNAL_ERROR
@@ -275,28 +289,31 @@ public final class InitImp {
         @Override
         public void run() {
             DeveloperLog.LogD("Om init error  " + mError);
-            hasInit.set(false);
             isInitRunning.set(false);
+            if (reInitRunning.get()) {
+                initCompleteReport(EventId.RE_INIT_FAILED, mError);
+            } else {
+                hasInit.set(false);
+                initCompleteReport(EventId.INIT_FAILED, mError);
+            }
             if (mCallback != null) {
                 mCallback.onError(mError);
             }
-            initCompleteReport(EventId.INIT_FAILED, mError);
+            reInitRunning.set(false);
         }
     }
 
     private static class InitRequestCallback implements Request.OnRequestCallback {
 
         private String appKey;
-        private Activity mActivity;
 
         /**
          * Instantiates a new Init request callback.
          *
          * @param appKey the app key
          */
-        InitRequestCallback(Activity activity, String appKey) {
+        InitRequestCallback(String appKey) {
             this.appKey = appKey;
-            this.mActivity = activity;
         }
 
         @Override
@@ -324,8 +341,8 @@ public final class InitImp {
                     DeveloperLog.LogD("Om init request config success");
                     DataCache.getInstance().setMEM(KeyConstants.KEY_CONFIGURATION, config);
                     try {
-                        BidAuctionManager.getInstance().initBid(mActivity, config);
-                    } catch (Exception e) {
+                        BidAuctionManager.getInstance().initBid(AdtUtil.getInstance().getApplicationContext(), config);
+                    } catch(Exception e) {
                         DeveloperLog.LogD("initBid  exception : ", e);
                         CrashUtil.getSingleton().saveException(e);
                     }
@@ -337,7 +354,7 @@ public final class InitImp {
                     DeveloperLog.LogE(error.toString() + ", Om init format config is null");
                     callbackInitErrorOnUIThread(error);
                 }
-            } catch (Exception e) {
+            } catch(Exception e) {
                 CrashUtil.getSingleton().saveException(e);
                 Error error = new Error(ErrorCode.CODE_INIT_SERVER_ERROR
                         , ErrorCode.MSG_INIT_SERVER_ERROR, ErrorCode.CODE_INTERNAL_UNKNOWN_OTHER);

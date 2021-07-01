@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.google.gms.google-services'
 
 android {
     compileSdkVersion rootProject.ext.version.compileSdkVersion
@@ -45,6 +46,7 @@ dependencies {
     implementation rootProject.ext.dependencies.applovin
     //MoPub
     implementation(rootProject.ext.dependencies.mopub) { transitive = true }
+    implementation rootProject.ext.dependencies.mopub_volley
     //TapJoy
     implementation rootProject.ext.dependencies.tapjoy
     implementation rootProject.ext.dependencies.play_service_base
@@ -61,6 +63,7 @@ dependencies {
     // AdTiming
     implementation rootProject.ext.dependencies.adtiming
     // Mintegral
+    implementation project(path: ':adapter:mintegral')
     implementation 'com.mbridge.msdk.oversea:videojs:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mbridge.msdk.oversea:mbjscommon:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mbridge.msdk.oversea:playercommon:' + rootProject.ext.dependencies.mtg_version
@@ -74,7 +77,7 @@ dependencies {
     // ironSource
     implementation rootProject.ext.dependencies.ironsource
     implementation rootProject.ext.dependencies.play_service_ads_identifier
-    implementation 'com.google.android.gms:play-services-basement:17.5.0'
+    implementation 'com.google.android.gms:play-services-basement:17.6.0'
 
     // Fyber
     implementation "com.fyber.vamp:core-sdk:${rootProject.ext.dependencies.fyber}"
@@ -101,11 +104,10 @@ dependencies {
     implementation project(path: ':adapter:chartboost')
     implementation project(path: ':adapter:helium')
     implementation project(path: ':adapter:tapjoy')
-    implementation project(path: ':adapter:mintegral')
 
-    implementation rootProject.ext.dependencies.pangle
-    implementation rootProject.ext.dependencies.play_service_ads_identifier
-    implementation project(path: ':adapter:tiktok')
+//    implementation rootProject.ext.dependencies.pangle
+//    implementation rootProject.ext.dependencies.play_service_ads_identifier
+//    implementation project(path: ':adapter:tiktok')
     implementation project(path: ':adapter:ironsource')
     implementation project(path: ':adapter:fyber')
 
@@ -115,17 +117,18 @@ dependencies {
     implementation rootProject.ext.dependencies.pubnative
     implementation project(path: ':adapter:pubnative')
 
-    implementation 'com.appsflyer:af-android-sdk:6.0.1'
+    implementation 'com.appsflyer:af-android-sdk:6.3.0'
 
     // 国内版
     // OAID
     implementation project(path: ':miit_mdid_1.0.10')
     // TikTok
-//    implementation(name: 'open_ad_sdk_3.5.5.0', ext: 'aar')
-//    implementation project(path: ':adapter_cn:tiktok_cn')
+    implementation(name: 'open_ad_sdk_3.6.1.2', ext: 'aar')
+    implementation project(path: ':adapter_cn:tiktok_cn')
 
     // TencentAds
-    implementation rootProject.ext.dependencies.tencentad
+    implementation(name: 'GDTSDK.unionNormal.4.360.1230', ext: 'aar')
+//    implementation rootProject.ext.dependencies.tencentad
     implementation project(path: ':adapter_cn:tencentad_cn')
 
     // Mintegral
@@ -141,11 +144,13 @@ dependencies {
 //    implementation project(path: ':adapter_cn:mintegral_cn')
 
     // Sigmob
-    implementation(name: 'windAd-3.0.0', ext: 'aar')
+    implementation(name: 'windAd-3.0.1', ext: 'aar')
     implementation project(path: ':adapter_cn:sigmob_cn')
     // 快手
-    implementation(name: 'kssdk-ad-nds-3.3.8', ext: 'aar')
+    implementation(name: 'kssdk-ad-3.3.9', ext: 'aar')
     implementation project(path: ':adapter_cn:ksad_cn')
+
+    implementation 'com.google.firebase:firebase-analytics:19.0.0'
 }
 
 repositories {

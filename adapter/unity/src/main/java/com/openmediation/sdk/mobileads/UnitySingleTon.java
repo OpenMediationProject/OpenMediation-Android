@@ -55,7 +55,6 @@ public class UnitySingleTon {
             mediationMetaData.setName("OpenMediation");
             mediationMetaData.setVersion(com.openmediation.sdk.mobileads.unity.BuildConfig.VERSION_NAME);
             mediationMetaData.commit();
-
             UnityAds.initialize(context.getApplicationContext(), appKey, new IUnityAdsInitializationListener() {
 
                 @Override
@@ -72,7 +71,7 @@ public class UnitySingleTon {
 
                 @Override
                 public void onInitializationFailed(UnityAds.UnityAdsInitializationError error, String message) {
-                    mInitState = InitState.INIT_FAIL;
+                    mInitState = InitState.NOT_INIT;
                     String errorMsg = message;
                     if (error != null) {
                         errorMsg = error.name() + ", " + message;
@@ -86,8 +85,8 @@ public class UnitySingleTon {
                     mCallbacks.clear();
                 }
             });
-        } catch (Exception e) {
-            mInitState = InitState.INIT_FAIL;
+        } catch(Exception e) {
+            mInitState = InitState.NOT_INIT;
             if (listener != null) {
                 String errorMsg = UnityAds.UnityAdsInitializationError.INTERNAL_ERROR.name() + ", " + e.getMessage();
                 listener.onInitializationFailed(UnityAds.UnityAdsInitializationError.INTERNAL_ERROR, errorMsg);
@@ -97,6 +96,10 @@ public class UnitySingleTon {
 
     public InitState getInitState() {
         return mInitState;
+    }
+
+    public boolean isInit() {
+        return mInitState == InitState.INIT_SUCCESS;
     }
 
     /**
@@ -114,10 +117,6 @@ public class UnitySingleTon {
         /**
          *
          */
-        INIT_SUCCESS,
-        /**
-         *
-         */
-        INIT_FAIL
+        INIT_SUCCESS
     }
 }

@@ -3,26 +3,26 @@
 
 package com.openmediation.sdk.core.imp.promotion;
 
-import com.openmediation.sdk.utils.error.Error;
+import com.openmediation.sdk.mediation.AdapterError;
 
 public interface CpManagerListener {
 
-    void onPromotionAdInitSuccess(CpInstance iaInstance);
+    void onPromotionAdInitSuccess(CpInstance cpInstance);
 
-    void onPromotionAdInitFailed(Error error, CpInstance iaInstance);
+    void onPromotionAdInitFailed(CpInstance cpInstance, AdapterError error);
 
-    void onPromotionAdLoadSuccess(CpInstance iaInstance);
+    void onPromotionAdLoadSuccess(CpInstance cpInstance);
 
-    void onPromotionAdLoadFailed(Error error, CpInstance iaInstance);
+    void onPromotionAdLoadFailed(CpInstance cpInstance, AdapterError error);
 
-    void onPromotionAdShowSuccess(CpInstance iaInstance);
+    void onPromotionAdShowSuccess(CpInstance cpInstance);
 
-    void onPromotionAdShowFailed(Error error, CpInstance iaInstance);
+    void onPromotionAdShowFailed(CpInstance cpInstance, AdapterError error);
 
-    void onPromotionAdVisible(CpInstance iaInstance);
+    void onPromotionAdVisible(CpInstance cpInstance);
 
-    void onPromotionAdClicked(CpInstance iaInstance);
+    void onPromotionAdClicked(CpInstance cpInstance);
 
-    void onPromotionAdHidden(CpInstance iaInstance);
+    void onPromotionAdHidden(CpInstance cpInstance);
 
 }

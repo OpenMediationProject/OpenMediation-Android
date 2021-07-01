@@ -5,10 +5,10 @@ package com.openmediation.sdk.banner;
 
 import android.view.View;
 
+import com.openmediation.sdk.utils.error.Error;
+
 /**
  * Listener for banner ad events. Implementing this interface to receive events for banner ads
- *
- * 
  */
 public interface BannerAdListener {
     /**
@@ -16,17 +16,17 @@ public interface BannerAdListener {
      *
      * @param view A view filled with ads. Add this view into a layout container to display
      */
-    void onAdReady(View view);
+    void onBannerAdLoaded(String placementId, View view);
 
     /**
      * called when a banner ad failed to prepare
      *
      * @param error failure reasons
      */
-    void onAdFailed(String error);
+    void onBannerAdLoadFailed(String placementId, Error error);
 
     /**
      * called when a banner ad is clicked
      */
-    void onAdClicked();
+    void onBannerAdClicked(String placementId);
 }

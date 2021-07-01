@@ -7,6 +7,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.5.4'
+        classpath 'com.google.gms:google-services:4.3.5'  // Google Services plugin
     }
 }
 
@@ -33,19 +34,20 @@ ext {
 //support 包相关包的引用
     dependencies = [
             // http://helpcenter.adtiming.com/
-            "adtiming"                   : 'com.adtiming:adnetwork:6.8.2@aar',
+            "adtiming"                   : 'com.adtiming:adnetwork:6.9.0',
             //fb https://developers.facebook.com/docs/audience-network/changelog-android/
-            "facebook"                   : 'com.facebook.android:audience-network-sdk:6.3.0',
+            "facebook"                   : 'com.facebook.android:audience-network-sdk:6.4.0',
             //admob https://developers.google.com/admob/android/rel-notes
-            "admob"                      : 'com.google.android.gms:play-services-ads:20.0.0',
+            "admob"                      : 'com.google.android.gms:play-services-ads:20.1.0',
             //vungle https://github.com/Vungle/Android-SDK/blob/master/CHANGELOG.md
             "vungle"                     : 'com.vungle:publisher-sdk-android:6.9.1',
             //AdColony https://github.com/AdColony/AdColony-Android-SDK/blob/master/CHANGELOG.md
             "adcolony"                   : 'com.adcolony:sdk:4.5.0',
             //AppLovin https://dash.applovin.com/documentation/mediation/android/changelog
-            "applovin"                   : 'com.applovin:applovin-sdk:10.1.2',
+            "applovin"                   : 'com.applovin:applovin-sdk:10.2.1',
             //MoPub https://developers.mopub.com/publishers/android/changelog/
-            "mopub"                      : 'com.mopub:mopub-sdk:5.16.4@aar',
+            "mopub"                      : 'com.mopub:mopub-sdk:5.17.0@aar',
+            "mopub_volley"               : 'com.mopub.volley:mopub-volley:2.1.0',
             //TapJoy https://dev.tapjoy.com/en/android-sdk/Changelog
             "tapjoy"                     : 'com.tapjoy:tapjoy-android-sdk:12.8.0@aar',
             //chartboost https://answers.chartboost.com/en-us/child_article/android-amazon
@@ -53,52 +55,53 @@ ext {
             //unity https://github.com/Unity-Technologies/unity-ads-android/releases
             "unity"                      : 'com.unity3d.ads:unity-ads:3.7.1',
             //gp-base.
-            "play_service_base"          : 'com.google.android.gms:play-services-base:17.5.0',
+            "play_service_base"          : 'com.google.android.gms:play-services-base:17.6.0',
             //gp-ads-identifier
             "play_service_ads_identifier": 'com.google.android.gms:play-services-ads-identifier:17.0.0',
             //Mintegral http://cdn-adn.rayjump.com/cdn-adn/v2/markdown_v2/index.html?file=sdk-m_sdk-android&lang=en
-            "mtg_version"                : '15.4.61',
-            "mtg_china_version"          : '15.4.62',
+            "mtg_version"                : '15.5.11',
+            "mtg_china_version"          : '15.5.12',
             // IronSource https://developers.ironsrc.com/ironsource-mobile/android/sdk-change-log/
-            "ironsource"                 : 'com.ironsource.sdk:mediationsdk:7.1.5',
+            "ironsource"                 : 'com.ironsource.sdk:mediationsdk:7.1.5.1',
             // https://developer.fyber.com/hc/en-us/articles/360010822437-Integrating-the-Android-SDK
             "fyber"                      : '7.8.2',
             // https://www.pangleglobal.com/
-            "pangle"                     : 'com.pangle.global:ads-sdk:3.5.0.5',
+            "pangle"                     : 'com.pangle.global:ads-sdk:3.5.1.0',
+//            "pangle_cn"                  : 'com.pangle.cn:ads-sdk:3.6.1.1',
             // https://helium.chartboost.com/
             "helium"                     : 'com.chartboost:helium:2.2.1',
             "eventbus"                   : 'org.greenrobot:eventbus:3.2.0',
             // https://developers.adnet.qq.com/doc/android/access_doc
-            "tencentad"                  : 'com.qq.e.union:union:4.333.1203',
+//            "tencentad"                  : 'com.qq.e.union:union:4.333.1203',
             // https://ogury-ltd.gitbook.io/android/
-            "ogury"                      : 'co.ogury:ogury-sdk:5.0.7',
+            "ogury"                      : 'co.ogury:ogury-sdk:5.0.9',
             // https://github.com/pubnative/pubnative-hybid-android-sdk/wiki/HyBid-Configuration
-            "pubnative"                  : 'net.pubnative:hybid.sdk:2.4.2'
+            "pubnative"                  : 'net.pubnative:hybid.sdk:2.4.7'
     ]
 
     adapterVersion = [
-            'adtiming'       : '2.0.1',
-            'admob'          : '2.1.0',
-            'facebook'       : '2.1.0',
-            'unity'          : '2.1.0',
-            'vungle'         : '2.1.1',
-            'adcolony'       : '2.1.0',
-            'applovin'       : '2.1.1',
-            'mopub'          : '2.1.0',
-            'tapjoy'         : '2.0.0',
-            'chartboost'     : '2.1.0',
-            'helium'         : '2.2.0',
-            'tiktok'         : '2.1.1',
-            'mintegral'      : '2.2.0',
-            'ironsource'     : '2.1.1',
-            'fyber'          : '2.0.0',
-            'ogury'          : '1.0.0',
-            'pubnative'      : '1.3.0',
-            'tiktok_cn'      : '2.1.1',
-            'tencentad_cn'   : '2.1.0',
-            'mintegral_cn'   : '2.2.0',
-            'sigmob_cn'      : '1.2.0',
-            'ksad_cn'        : '1.1.0',
+            'adtiming'       : '2.3.0',
+            'admob'          : '2.3.0',
+            'facebook'       : '2.3.0',
+            'unity'          : '2.3.0',
+            'vungle'         : '2.3.0',
+            'adcolony'       : '2.3.0',
+            'applovin'       : '2.3.0',
+            'mopub'          : '2.3.0',
+            'tapjoy'         : '2.3.0',
+            'chartboost'     : '2.3.0',
+            'helium'         : '2.3.0',
+            'tiktok'         : '2.3.1',
+            'mintegral'      : '2.3.0',
+            'ironsource'     : '2.3.0',
+            'fyber'          : '2.3.0',
+            'ogury'          : '2.3.0',
+            'pubnative'      : '2.3.0',
+            'tiktok_cn'      : '2.3.0',
+            'tencentad_cn'   : '2.3.0',
+            'mintegral_cn'   : '2.3.0',
+            'sigmob_cn'      : '2.3.0',
+            'ksad_cn'        : '2.3.0',
     ]
 }
 
@@ -124,9 +127,6 @@ allprojects {
             url "https://dl.adtiming.com/android-sdk"
         }
         maven {
-            url "https://dl.bintray.com/ironsource-mobile/android-sdk"
-        }
-        maven {
             url "https://chartboostmobile.bintray.com/Chartboost"
         }
         maven {
@@ -135,9 +135,14 @@ allprojects {
         maven {
             url 'https://maven.ogury.co'
         }
-        maven { url 'https://verve.jfrog.io/artifactory/verve-gradle-release' }
         maven {
             url 'https://artifact.bytedance.com/repository/pangle'
+        }
+        maven {
+            url 'https://verve.jfrog.io/artifactory/verve-gradle-release'
+        }
+        maven {
+            url 'https://android-sdk.is.com/'
         }
         maven { url 'https://dl.openmediation.com/omcenter/' }
     }

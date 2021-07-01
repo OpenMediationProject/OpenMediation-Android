@@ -5,7 +5,6 @@ import android.content.Context;
 import com.adtbid.sdk.AdTimingAds;
 import com.adtbid.sdk.InitCallback;
 import com.adtbid.sdk.utils.error.AdTimingError;
-import com.adtbid.sdk.utils.error.ErrorCode;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -28,7 +27,7 @@ public class AdTimingSingleTon implements InitCallback {
 
     @Override
     public void onError(AdTimingError adTimingError) {
-        mInitState = InitState.INIT_FAIL;
+        mInitState = InitState.NOT_INIT;
         for (AdTimingInitCallback initCallback : initCallbacks) {
             if (initCallback != null) {
                 initCallback.onError(adTimingError);
@@ -49,6 +48,10 @@ public class AdTimingSingleTon implements InitCallback {
         return AdTimingHolder.INSTANCE;
     }
 
+    public boolean isInit() {
+        return mInitState == InitState.INIT_SUCCESS;
+    }
+
     public synchronized void initAdTiming(Context context, String appKey, AdTimingInitCallback callback) {
         switch (mInitState) {
             case NOT_INIT:
@@ -61,11 +64,6 @@ public class AdTimingSingleTon implements InitCallback {
             case INIT_SUCCESS:
                 if (callback != null) {
                     callback.onSuccess();
-                }
-                break;
-            case INIT_FAIL:
-                if (callback != null) {
-                    callback.onError(new AdTimingError(ErrorCode.CODE_INIT_UNKNOWN_ERROR));
                 }
                 break;
         }
@@ -98,9 +96,5 @@ public class AdTimingSingleTon implements InitCallback {
          *
          */
         INIT_SUCCESS,
-        /**
-         *
-         */
-        INIT_FAIL
     }
 }

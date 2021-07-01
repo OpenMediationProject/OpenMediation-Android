@@ -1,6 +1,6 @@
 package com.openmediation.sdk.mobileads;
 
-import android.app.Activity;
+import android.content.Context;
 
 import com.crosspromotion.sdk.CrossPromotionAds;
 
@@ -19,15 +19,19 @@ public class CrossPromotionSingleTon {
         return CrossPromotion.INSTANCE;
     }
 
-    public synchronized boolean init(Activity activity) {
+    public synchronized boolean init(Context context) {
         if (!isDidInit) {
-            if (activity == null) {
+            if (context == null) {
                 return false;
             }
-            CrossPromotionAds.init(activity);
+            CrossPromotionAds.init(context);
             isDidInit = true;
             return true;
         }
         return true;
+    }
+
+    public boolean isInit() {
+        return isDidInit;
     }
 }

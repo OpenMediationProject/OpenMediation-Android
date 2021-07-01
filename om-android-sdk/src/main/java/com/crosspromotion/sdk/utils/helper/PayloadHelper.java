@@ -41,7 +41,7 @@ public class PayloadHelper {
                     ByteRequestBody requestBody = new ByteRequestBody(bytes);
                     Headers headers = HeaderUtils.getBaseHeaders();
                     AdRequest.post().url(url).body(requestBody).headers(headers).connectTimeout(30000).readTimeout(60000)
-                            .callback(callback).performRequest(AdtUtil.getApplication());
+                            .callback(callback).performRequest(AdtUtil.getInstance().getApplicationContext());
                 } catch (Exception e) {
                     DeveloperLog.LogE("CrossPromotion SDK Payload Error: " + e.getMessage());
                     CrashUtil.getSingleton().saveException(e);

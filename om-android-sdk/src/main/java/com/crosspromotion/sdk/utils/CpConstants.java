@@ -1,5 +1,5 @@
 package com.crosspromotion.sdk.utils;
 
 public interface CpConstants {
-    String VERSION = "1.2.0";
+    String VERSION = "2.3.0";
 }

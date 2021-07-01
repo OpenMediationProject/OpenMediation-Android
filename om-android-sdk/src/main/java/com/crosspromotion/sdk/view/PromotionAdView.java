@@ -75,7 +75,7 @@ public final class PromotionAdView implements JsBridge.MessageListener {
     }
 
     private PromotionAdView() {
-        mContext = AdtUtil.getApplication();
+        mContext = AdtUtil.getInstance().getApplicationContext();
     }
 
     public static PromotionAdView getInstance() {
@@ -104,9 +104,9 @@ public final class PromotionAdView implements JsBridge.MessageListener {
         if (mAdView == null) {
             synchronized (PromotionAdView.class) {
                 if (mAdView == null) {
-                    mAdView = new BaseWebView(AdtUtil.getApplication());
+                    mAdView = new BaseWebView(AdtUtil.getInstance().getApplicationContext());
                     mAdView.setBackgroundColor(0);
-                    mWebClient = new AdWebClient(AdtUtil.getApplication(), "");
+                    mWebClient = new AdWebClient(AdtUtil.getInstance().getApplicationContext(), "");
                     mAdView.setWebViewClient(mWebClient);
                 }
             }

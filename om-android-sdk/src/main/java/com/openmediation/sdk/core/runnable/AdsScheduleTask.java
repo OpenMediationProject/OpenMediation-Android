@@ -1,6 +1,7 @@
 package com.openmediation.sdk.core.runnable;
 
-import com.openmediation.sdk.core.AbstractAdsManager;
+import com.openmediation.sdk.core.AbstractInventoryAds;
+import com.openmediation.sdk.core.OmManager;
 import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.WorkExecutor;
 import com.openmediation.sdk.utils.crash.CrashUtil;
@@ -10,10 +11,10 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class AdsScheduleTask implements Runnable {
-    private AbstractAdsManager adsManager;
+    private AbstractInventoryAds adsManager;
     private int delay;
 
-    public AdsScheduleTask(AbstractAdsManager manager, int initDelay) {
+    public AdsScheduleTask(AbstractInventoryAds manager, int initDelay) {
         adsManager = manager;
         delay = initDelay;
     }
@@ -25,7 +26,7 @@ public class AdsScheduleTask implements Runnable {
             if (adsManager == null) {
                 return;
             }
-            adsManager.loadAdWithInterval();
+            adsManager.loadAds(OmManager.LOAD_TYPE.INTERVAL);
             int count = adsManager.getAllLoadFailedCount();
             Map<Integer, Integer> rfs = adsManager.getRfs();
             if (rfs == null || rfs.isEmpty()) {

@@ -33,6 +33,12 @@ public interface KeyConstants {
      * The accumulated value of the user ad revenue
      */
     String KEY_REVENUE = "revenue";
+    String KEY_USER_REVENUE = "user_revenue";
+    String KEY_USER_REVENUE_DATE = "user_revenue_date";
+
+    String KEY_AF_ID = "afid";
+
+    String KEY_TOPX_LEVEL = "topx_level";
 
     /**
      * The interface Request.

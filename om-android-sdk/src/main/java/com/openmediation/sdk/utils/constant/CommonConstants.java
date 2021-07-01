@@ -11,11 +11,14 @@ public interface CommonConstants {
     int API_VERSION = 1;
     int API_VERSION_V3 = 3;
 
-    String SDK_VERSION_NAME = "2.2.0";
+    String SDK_VERSION_NAME = "2.3.1";
 
     String ADTYPE_BANNER = "Banner";
     String ADTYPE_NATIVE = "Native";
     String ADTYPE_SPLASH = "Splash";
+    String ADTYPE_INTERSTITIAL = "Interstitial";
+    String ADTYPE_REWARD_VIDEO = "RewardedVideo";
+    String ADTYPE_CROSS_PROMOTION = "CrossPromotion";
 
     int WATERFALL_READY = 3;
     int INSTANCE_LOAD = 4;

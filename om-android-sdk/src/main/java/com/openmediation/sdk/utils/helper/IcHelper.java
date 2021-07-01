@@ -52,7 +52,7 @@ public class IcHelper {
                     .connectTimeout(30000)
                     .readTimeout(60000)
                     .instanceFollowRedirects(true)
-                    .performRequest(AdtUtil.getApplication());
+                    .performRequest(AdtUtil.getInstance().getApplicationContext());
         } catch (Exception e) {
             DeveloperLog.LogE("icReport error ", e);
             CrashUtil.getSingleton().saveException(e);

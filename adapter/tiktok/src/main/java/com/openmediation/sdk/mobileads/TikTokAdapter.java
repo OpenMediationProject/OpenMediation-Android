@@ -4,29 +4,34 @@
 package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.res.Configuration;
-import android.os.Handler;
-import android.os.Looper;
 import android.text.TextUtils;
 
 import com.bytedance.sdk.openadsdk.AdSlot;
 import com.bytedance.sdk.openadsdk.TTAdConstant;
+import com.bytedance.sdk.openadsdk.TTAdManager;
 import com.bytedance.sdk.openadsdk.TTAdNative;
 import com.bytedance.sdk.openadsdk.TTAdSdk;
 import com.bytedance.sdk.openadsdk.TTFullScreenVideoAd;
 import com.bytedance.sdk.openadsdk.TTRewardVideoAd;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
+import com.openmediation.sdk.mediation.MediationUtil;
+import com.openmediation.sdk.mediation.NativeAdCallback;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
+import com.openmediation.sdk.nativead.NativeAdView;
+import com.openmediation.sdk.utils.AdLog;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class TikTokAdapter extends CustomAdsAdapter {
-
+    private static String TAG = "TikTok: ";
     private TTAdNative mTTAdNative;
     private ConcurrentMap<String, TTRewardVideoAd> mTTRvAds;
     private ConcurrentMap<String, TTFullScreenVideoAd> mTTFvAds;
@@ -52,32 +57,37 @@ public class TikTokAdapter extends CustomAdsAdapter {
     }
 
     @Override
+    public boolean isAdNetworkInit() {
+        return TTAdManagerHolder.getInstance().isInit();
+    }
+
+    @Override
     public void initRewardedVideo(Activity activity, Map<String, Object> dataMap, final RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
-        String error = check(activity);
-        if (TextUtils.isEmpty(error)) {
-            initSdk(activity, new TTAdManagerHolder.InitCallback() {
-                @Override
-                public void onSuccess() {
-                    if (callback != null) {
-                        callback.onRewardedVideoInitSuccess();
-                    }
-                }
-
-                @Override
-                public void onFailed(int code, String msg) {
-                    if (callback != null) {
-                        callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
-                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, code, msg));
-                    }
-                }
-            });
-        } else {
+        String error = check();
+        if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
                         AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
             }
+            return;
         }
+        initSdk(new TTAdManagerHolder.InitCallback() {
+            @Override
+            public void onSuccess() {
+                if (callback != null) {
+                    callback.onRewardedVideoInitSuccess();
+                }
+            }
+
+            @Override
+            public void onFailed(int code, String msg) {
+                if (callback != null) {
+                    callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, code, msg));
+                }
+            }
+        });
     }
 
     @Override
@@ -85,21 +95,22 @@ public class TikTokAdapter extends CustomAdsAdapter {
                                   RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
         try {
-            loadRvAd(activity, adUnitId, callback);
-        } catch (Exception e) {
+            loadRvAd(adUnitId, callback);
+        } catch(Exception e) {
             if (callback != null) {
-                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
                         AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error"));
             }
         }
     }
 
-    private void loadRvAd(Activity activity, String adUnitId, RewardedVideoCallback callback) {
-        String error = check(activity, adUnitId);
+    private void loadRvAd(String adUnitId, RewardedVideoCallback callback) {
+        String error = check(adUnitId);
         if (TextUtils.isEmpty(error)) {
             TTRewardVideoAd rewardedVideoAd = mTTRvAds.get(adUnitId);
             if (rewardedVideoAd == null) {
-                realLoadRvAd(activity, adUnitId, callback);
+                AdSlot adSlot = buildAdSlotReq(MediationUtil.getContext(), adUnitId);
+                mTTAdNative.loadRewardVideoAd(adSlot, new InnerLoadRvAdListener(callback, adUnitId, mTTRvAds));
             } else {
                 if (callback != null) {
                     callback.onRewardedVideoLoadSuccess();
@@ -116,7 +127,7 @@ public class TikTokAdapter extends CustomAdsAdapter {
     @Override
     public void showRewardedVideo(final Activity activity, final String adUnitId, final RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        MediationUtil.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -139,10 +150,10 @@ public class TikTokAdapter extends CustomAdsAdapter {
                                     AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "TikTok RewardedVideo is not ready"));
                         }
                     }
-                } catch (Exception e) {
+                } catch(Exception e) {
                     if (callback != null) {
                         callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, e.getMessage()));
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "TikTok RewardedVideo is not ready"));
                     }
                 }
             }
@@ -160,30 +171,30 @@ public class TikTokAdapter extends CustomAdsAdapter {
     @Override
     public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, final InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
-        String error = check(activity);
-        if (TextUtils.isEmpty(error)) {
-            initSdk(activity, new TTAdManagerHolder.InitCallback() {
-                @Override
-                public void onSuccess() {
-                    if (callback != null) {
-                        callback.onInterstitialAdInitSuccess();
-                    }
-                }
-
-                @Override
-                public void onFailed(int code, String msg) {
-                    if (callback != null) {
-                        callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
-                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, code, msg));
-                    }
-                }
-            });
-        } else {
+        String error = check();
+        if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
                         AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
             }
+            return;
         }
+        initSdk(new TTAdManagerHolder.InitCallback() {
+            @Override
+            public void onSuccess() {
+                if (callback != null) {
+                    callback.onInterstitialAdInitSuccess();
+                }
+            }
+
+            @Override
+            public void onFailed(int code, String msg) {
+                if (callback != null) {
+                    callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, code, msg));
+                }
+            }
+        });
     }
 
     @Override
@@ -191,17 +202,17 @@ public class TikTokAdapter extends CustomAdsAdapter {
                                    InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, extras, callback);
         try {
-            loadInterstitial(activity, adUnitId, callback);
-        } catch (Exception e) {
+            loadInterstitial(MediationUtil.getContext(), adUnitId, callback);
+        } catch(Exception e) {
             if (callback != null) {
-                callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
                         AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error"));
             }
         }
     }
 
-    private void loadInterstitial(Activity activity, String adUnitId, InterstitialAdCallback callback) {
-        String error = check(activity, adUnitId);
+    private void loadInterstitial(Context context, String adUnitId, InterstitialAdCallback callback) {
+        String error = check(adUnitId);
         if (TextUtils.isEmpty(error)) {
             TTFullScreenVideoAd ad = mTTFvAds.get(adUnitId);
             if (ad != null) {
@@ -209,7 +220,7 @@ public class TikTokAdapter extends CustomAdsAdapter {
                     callback.onInterstitialAdLoadSuccess();
                 }
             } else {
-                realLoadFullScreenVideoAd(activity, adUnitId, callback);
+                realLoadFullScreenVideoAd(context, adUnitId, callback);
             }
         } else {
             if (callback != null) {
@@ -222,7 +233,7 @@ public class TikTokAdapter extends CustomAdsAdapter {
     @Override
     public void showInterstitialAd(final Activity activity, final String adUnitId, final InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        MediationUtil.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -245,7 +256,7 @@ public class TikTokAdapter extends CustomAdsAdapter {
                                     AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "TikTok InterstitialAd is not ready"));
                         }
                     }
-                } catch (Exception e) {
+                } catch(Exception e) {
                     if (callback != null) {
                         callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
                                 AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, e.getMessage()));
@@ -263,8 +274,87 @@ public class TikTokAdapter extends CustomAdsAdapter {
         return mTTFvAds.get(adUnitId) != null;
     }
 
-    private void initSdk(final Activity activity, TTAdManagerHolder.InitCallback callback) {
-        TTAdManagerHolder.init(activity.getApplicationContext(), mAppKey, mUserConsent, mAgeRestricted, callback);
+    @Override
+    public void initBannerAd(Activity activity, Map<String, Object> extras, BannerAdCallback callback) {
+        super.initBannerAd(activity, extras, callback);
+        String error = check();
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onBannerAdInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error));
+            }
+            return;
+        }
+        TikTokBannerManager.getInstance().initAd(MediationUtil.getContext(), extras, mUserConsent, mAgeRestricted, callback);
+    }
+
+    @Override
+    public void loadBannerAd(Activity activity, String adUnitId, Map<String, Object> extras, BannerAdCallback callback) {
+        super.loadBannerAd(activity, adUnitId, extras, callback);
+        String error = check(activity, adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error));
+            }
+            return;
+        }
+        TikTokBannerManager.getInstance().loadAd(activity, adUnitId, extras, callback);
+    }
+
+    @Override
+    public boolean isBannerAdAvailable(String adUnitId) {
+        return TikTokBannerManager.getInstance().isAdAvailable(adUnitId);
+    }
+
+    @Override
+    public void destroyBannerAd(String adUnitId) {
+        super.destroyBannerAd(adUnitId);
+        TikTokBannerManager.getInstance().destroyAd(adUnitId);
+    }
+
+    @Override
+    public void initNativeAd(Activity activity, Map<String, Object> extras, NativeAdCallback callback) {
+        super.initNativeAd(activity, extras, callback);
+        String error = check();
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onNativeAdInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, error));
+            }
+            return;
+        }
+        TikTokNativeManager.getInstance().initAd(MediationUtil.getContext(), extras, mUserConsent, mAgeRestricted, callback);
+    }
+
+    @Override
+    public void loadNativeAd(Activity activity, String adUnitId, Map<String, Object> extras, NativeAdCallback callback) {
+        super.loadNativeAd(activity, adUnitId, extras, callback);
+        String error = check(activity, adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, error));
+            }
+            return;
+        }
+        TikTokNativeManager.getInstance().loadAd(MediationUtil.getContext(), adUnitId, extras, callback);
+    }
+
+    @Override
+    public void registerNativeAdView(String adUnitId, NativeAdView adView, NativeAdCallback callback) {
+        super.registerNativeAdView(adUnitId, adView, callback);
+        TikTokNativeManager.getInstance().registerView(adUnitId, adView, callback);
+    }
+
+    @Override
+    public void destroyNativeAd(String adUnitId) {
+        super.destroyNativeAd(adUnitId);
+        TikTokNativeManager.getInstance().destroyAd(adUnitId);
+    }
+
+    private void initSdk(TTAdManagerHolder.InitCallback callback) {
+        TTAdManagerHolder.getInstance().init(MediationUtil.getContext(), mAppKey, mUserConsent, mAgeRestricted, callback);
     }
 
     private class InnerIsAdListener implements TTAdNative.FullScreenVideoAdListener {
@@ -289,11 +379,12 @@ public class TikTokAdapter extends CustomAdsAdapter {
         public void onFullScreenVideoAdLoad(TTFullScreenVideoAd ad) {
             if (ad == null) {
                 if (mCallback != null) {
-                    mCallback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                    mCallback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
                             AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "TikTok InterstitialAd ad load failed"));
                 }
                 return;
             }
+            AdLog.getSingleton().LogD(TAG + "loadInterstitialAd onFullScreenVideoAdLoad");
             mTTFvAds.put(mAdUnitId, ad);
             if (mCallback != null) {
                 mCallback.onInterstitialAdLoadSuccess();
@@ -305,8 +396,8 @@ public class TikTokAdapter extends CustomAdsAdapter {
         }
     }
 
-    private void realLoadFullScreenVideoAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
-        AdSlot adSlot = buildAdSlotReq(activity, adUnitId);
+    private void realLoadFullScreenVideoAd(Context context, String adUnitId, InterstitialAdCallback callback) {
+        AdSlot adSlot = buildAdSlotReq(context, adUnitId);
         InnerIsAdListener listener = new InnerIsAdListener(callback, adUnitId);
         if (mTTAdNative != null) {
             mTTAdNative.loadFullScreenVideoAd(adSlot, listener);
@@ -331,7 +422,7 @@ public class TikTokAdapter extends CustomAdsAdapter {
         @Override
         public void onAdVideoBarClick() {
             if (mCallback != null) {
-                mCallback.onInterstitialAdClick();
+                mCallback.onInterstitialAdClicked();
             }
         }
 
@@ -351,22 +442,16 @@ public class TikTokAdapter extends CustomAdsAdapter {
         }
     }
 
-    private void realLoadRvAd(Activity activity, final String adUnitId, final RewardedVideoCallback rvCallback) {
-        AdSlot adSlot = buildAdSlotReq(activity, adUnitId);
-        mTTAdNative.loadRewardVideoAd(adSlot, new InnerLoadRvAdListener(rvCallback, adUnitId, mTTRvAds));
-    }
-
-    private AdSlot buildAdSlotReq(Activity activity, final String adUnitId) {
+    private AdSlot buildAdSlotReq(Context context, final String adUnitId) {
         if (mTTAdNative == null) {
-            if (TTAdManagerHolder.get() != null) {
-                mTTAdNative = TTAdManagerHolder.get().createAdNative(activity.getApplicationContext());
-            }
+            TTAdManager adManager = TTAdManagerHolder.getInstance().getAdManager();
+            mTTAdNative = adManager.createAdNative(context.getApplicationContext());
         }
         int orientation = TTAdConstant.HORIZONTAL;
-        if (activity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+        if (context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
             orientation = TTAdConstant.VERTICAL;
         }
-        int[] screenPx = TTAdManagerHolder.getScreenPx(activity);
+        int[] screenPx = TTAdManagerHolder.getScreenPx(context);
         return new AdSlot.Builder()
                 .setCodeId(adUnitId)
                 .setSupportDeepLink(true)
@@ -403,7 +488,7 @@ public class TikTokAdapter extends CustomAdsAdapter {
         public void onRewardVideoAdLoad(TTRewardVideoAd ad) {
             if (ad == null) {
                 if (mCallback != null) {
-                    mCallback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                    mCallback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
                             AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, "TikTokAdapter", "TikTok RewardedVideo load failed"));
                 }
                 return;

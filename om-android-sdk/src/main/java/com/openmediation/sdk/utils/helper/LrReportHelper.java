@@ -11,8 +11,8 @@ import com.openmediation.sdk.utils.WorkExecutor;
 import com.openmediation.sdk.utils.cache.DataCache;
 import com.openmediation.sdk.utils.constant.KeyConstants;
 import com.openmediation.sdk.utils.crash.CrashUtil;
-import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.Configurations;
+import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.request.HeaderUtils;
 import com.openmediation.sdk.utils.request.RequestBuilder;
 import com.openmediation.sdk.utils.request.network.AdRequest;
@@ -75,7 +75,7 @@ public final class LrReportHelper {
                             .connectTimeout(30000)
                             .readTimeout(60000)
                             .instanceFollowRedirects(true)
-                            .performRequest(AdtUtil.getApplication());
+                            .performRequest(AdtUtil.getInstance().getApplicationContext());
                 } catch (Exception e) {
                     DeveloperLog.LogE("httpLr error ", e);
                     CrashUtil.getSingleton().saveException(e);

@@ -1,3 +1,6 @@
+// Copyright 2020 ADTIMING TECHNOLOGY COMPANY LIMITED
+// Licensed under the GNU Lesser General Public License Version 3
+
 package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
@@ -13,9 +16,11 @@ import com.ogury.sdk.Ogury;
 import com.ogury.sdk.OguryConfiguration;
 import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
+import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.openmediation.sdk.mobileads.ougry.BuildConfig;
 import com.openmediation.sdk.utils.AdLog;
@@ -54,6 +59,11 @@ public class OguryAdapter extends CustomAdsAdapter {
     }
 
     @Override
+    public boolean isAdNetworkInit() {
+        return hasInit.get();
+    }
+
+    @Override
     public boolean isInterstitialAdAvailable(String adUnitId) {
         if (TextUtils.isEmpty(adUnitId)) {
             return false;
@@ -65,15 +75,15 @@ public class OguryAdapter extends CustomAdsAdapter {
     @Override
     public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
-        String error = check(activity);
+        String error = check();
         if (TextUtils.isEmpty(error)) {
-            AdLog.getSingleton().LogE(TAG + "插屏广告初始化成功...");
-            initSdk(activity);
+            AdLog.getSingleton().LogD(TAG + "initInterstitialAd...");
+            initSdk();
             if (callback != null) {
                 callback.onInterstitialAdInitSuccess();
             }
         } else {
-            AdLog.getSingleton().LogE(TAG + "插屏广告初始化失败...");
+            AdLog.getSingleton().LogD(TAG + "initInterstitialAd Error: " + error);
             if (callback != null) {
                 callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
                         AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
@@ -82,10 +92,10 @@ public class OguryAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void loadInterstitialAd(final Activity activity, final String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback) {
+    public void loadInterstitialAd(Activity activity, final String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, extras, callback);
-        AdLog.getSingleton().LogE(TAG + "插屏广告开始加载... ");
-        String error = check(activity, adUnitId);
+        AdLog.getSingleton().LogD(TAG + "loadInterstitialAd... ");
+        String error = check(adUnitId);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
@@ -93,7 +103,7 @@ public class OguryAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        OguryInterstitialAd interstitialPlacement = new OguryInterstitialAd(activity.getApplicationContext(), adUnitId);
+        OguryInterstitialAd interstitialPlacement = new OguryInterstitialAd(MediationUtil.getContext(), adUnitId);
         mInterstitialAds.put(adUnitId, interstitialPlacement);
         interstitialPlacement.setListener(createInterstitialListener(adUnitId, callback));
         interstitialPlacement.load();
@@ -104,7 +114,7 @@ public class OguryAdapter extends CustomAdsAdapter {
 
             @Override
             public void onAdLoaded() {
-                AdLog.getSingleton().LogE(TAG + "插屏广告已加载好");
+                AdLog.getSingleton().LogD(TAG + "InterstitialAd onAdLoaded");
                 if (callback != null) {
                     callback.onInterstitialAdLoadSuccess();
                 }
@@ -112,7 +122,7 @@ public class OguryAdapter extends CustomAdsAdapter {
 
             @Override
             public void onAdDisplayed() {
-                AdLog.getSingleton().LogE(TAG + "插屏广告展示");
+                AdLog.getSingleton().LogD(TAG + "InterstitialAd onAdDisplayed");
                 if (callback != null) {
                     callback.onInterstitialAdShowSuccess();
                 }
@@ -121,13 +131,13 @@ public class OguryAdapter extends CustomAdsAdapter {
             @Override
             public void onAdClicked() {
                 if (callback != null) {
-                    callback.onInterstitialAdClick();
+                    callback.onInterstitialAdClicked();
                 }
             }
 
             @Override
             public void onAdClosed() {
-                AdLog.getSingleton().LogE(TAG + "插屏广告关闭");
+                AdLog.getSingleton().LogD(TAG + "InterstitialAd onAdClosed");
                 mInterstitialAds.remove(adUnitId);
                 if (callback != null) {
                     callback.onInterstitialAdClosed();
@@ -136,7 +146,7 @@ public class OguryAdapter extends CustomAdsAdapter {
 
             @Override
             public void onAdError(OguryError oguryError) {
-                AdLog.getSingleton().LogE(TAG + "插屏广告加载出错");
+                AdLog.getSingleton().LogE(TAG + "InterstitialAd onAdError: " + oguryError);
                 mInterstitialAds.remove(adUnitId);
                 if (callback != null) {
                     AdapterError adapterError = AdapterErrorBuilder.buildLoadError(
@@ -151,7 +161,7 @@ public class OguryAdapter extends CustomAdsAdapter {
     @Override
     public void showInterstitialAd(final Activity activity, final String adUnitId, final InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
-        String error = check(activity, adUnitId);
+        String error = check(adUnitId);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
@@ -180,16 +190,16 @@ public class OguryAdapter extends CustomAdsAdapter {
     @Override
     public void initRewardedVideo(Activity activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
-        String error = check(activity);
+        String error = check();
         if (TextUtils.isEmpty(error)) {
-            initSdk(activity);
+            initSdk();
             if (callback != null) {
-                AdLog.getSingleton().LogE(TAG + "激励广告初始化成功...");
+                AdLog.getSingleton().LogD(TAG + "initRewardedVideo...");
                 callback.onRewardedVideoInitSuccess();
             }
         } else {
             if (callback != null) {
-                AdLog.getSingleton().LogE(TAG + "激励广告初始化失败...");
+                AdLog.getSingleton().LogE(TAG + "initRewardedVideo Error: " + error);
                 callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
                         AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
             }
@@ -208,8 +218,8 @@ public class OguryAdapter extends CustomAdsAdapter {
     @Override
     public void loadRewardedVideo(final Activity activity, final String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
-        AdLog.getSingleton().LogE(TAG + "激励广告开始加载...");
-        String error = check(activity, adUnitId);
+        AdLog.getSingleton().LogD(TAG + "loadRewardedVideo...");
+        String error = check(adUnitId);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
@@ -217,15 +227,15 @@ public class OguryAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        OguryOptinVideoAd rewardedPlacement = new OguryOptinVideoAd(activity.getApplicationContext(), adUnitId);
+        OguryOptinVideoAd rewardedPlacement = new OguryOptinVideoAd(MediationUtil.getContext(), adUnitId);
         rewardedPlacement.setListener(createRvLoadListener(adUnitId, callback));
         mRewardedAds.put(adUnitId, rewardedPlacement);
         rewardedPlacement.load();
     }
 
-    private void initSdk(Activity activity) {
+    private synchronized void initSdk() {
         if (!hasInit.get()) {
-            OguryConfiguration.Builder configurationBuilder = new OguryConfiguration.Builder(activity.getApplicationContext(), mAppKey);
+            OguryConfiguration.Builder configurationBuilder = new OguryConfiguration.Builder(MediationUtil.getContext(), mAppKey);
             Ogury.start(configurationBuilder.build());
             hasInit.set(true);
         }
@@ -233,7 +243,8 @@ public class OguryAdapter extends CustomAdsAdapter {
 
     @Override
     public void showRewardedVideo(final Activity activity, final String adUnitId, final RewardedVideoCallback callback) {
-        String error = check(activity, adUnitId);
+        super.showRewardedVideo(activity, adUnitId, callback);
+        String error = check(adUnitId);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
@@ -259,12 +270,51 @@ public class OguryAdapter extends CustomAdsAdapter {
         }
     }
 
+    @Override
+    public void initBannerAd(Activity activity, Map<String, Object> extras, BannerAdCallback callback) {
+        super.initBannerAd(activity, extras, callback);
+        String error = check();
+        if (!TextUtils.isEmpty(error)) {
+            callback.onBannerAdInitFailed(AdapterErrorBuilder.buildInitError(
+                    AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error));
+            return;
+        }
+        initSdk();
+        AdLog.getSingleton().LogD(TAG + "initBannerAd...");
+        if (callback != null) {
+            callback.onBannerAdInitSuccess();
+        }
+    }
+
+    @Override
+    public void loadBannerAd(Activity activity, String adUnitId, Map<String, Object> extras, BannerAdCallback callback) {
+        super.loadBannerAd(activity, adUnitId, extras, callback);
+        String error = check(adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                    AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error));
+            return;
+        }
+        OguryBannerManager.getInstance().loadAd(MediationUtil.getContext(), adUnitId, extras, callback);
+    }
+
+    @Override
+    public boolean isBannerAdAvailable(String adUnitId) {
+        return OguryBannerManager.getInstance().isAdAvailable(adUnitId);
+    }
+
+    @Override
+    public void destroyBannerAd(String adUnitId) {
+        super.destroyBannerAd(adUnitId);
+        OguryBannerManager.getInstance().destroyAd(adUnitId);
+    }
+
     private OguryOptinVideoAdListener createRvLoadListener(final String adUnitId, final RewardedVideoCallback callback) {
         return new OguryOptinVideoAdListener() {
 
             @Override
             public void onAdLoaded() {
-                AdLog.getSingleton().LogE(TAG + "激励广告加载成功...");
+                AdLog.getSingleton().LogD(TAG + "RewardedVideoAd onAdLoaded");
                 if (callback != null) {
                     callback.onRewardedVideoLoadSuccess();
                 }
@@ -272,7 +322,7 @@ public class OguryAdapter extends CustomAdsAdapter {
 
             @Override
             public void onAdDisplayed() {
-                AdLog.getSingleton().LogE(TAG + "激励广告显示...");
+                AdLog.getSingleton().LogD(TAG + "RewardedVideoAd onAdDisplayed");
                 if (callback != null) {
                     callback.onRewardedVideoAdShowSuccess();
                     callback.onRewardedVideoAdStarted();
@@ -288,7 +338,7 @@ public class OguryAdapter extends CustomAdsAdapter {
 
             @Override
             public void onAdClosed() {
-                AdLog.getSingleton().LogE(TAG + "激励广告关闭...");
+                AdLog.getSingleton().LogD(TAG + "RewardedVideoAd onAdClosed");
                 mRewardedAds.remove(adUnitId);
                 if (callback != null) {
                     callback.onRewardedVideoAdEnded();
@@ -298,7 +348,7 @@ public class OguryAdapter extends CustomAdsAdapter {
 
             @Override
             public void onAdError(OguryError oguryError) {
-                AdLog.getSingleton().LogE(TAG + "激励广告加载错误...错误码：" + oguryError);
+                AdLog.getSingleton().LogE(TAG + "RewardedVideoAd onAdError：" + oguryError);
                 if (callback != null) {
                     callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
                             AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, oguryError.getErrorCode(), oguryError.getMessage()));
@@ -307,7 +357,7 @@ public class OguryAdapter extends CustomAdsAdapter {
 
             @Override
             public void onAdRewarded(OguryReward oguryReward) {
-                AdLog.getSingleton().LogE(TAG + "获取奖励...");
+                AdLog.getSingleton().LogD(TAG + "RewardedVideoAd onAdRewarded");
                 if (callback != null) {
                     callback.onRewardedVideoAdRewarded();
                 }

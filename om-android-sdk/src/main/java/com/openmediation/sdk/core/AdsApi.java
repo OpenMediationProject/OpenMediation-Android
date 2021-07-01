@@ -5,7 +5,7 @@ package com.openmediation.sdk.core;
 
 import android.app.Activity;
 
-import com.openmediation.sdk.utils.ActLifecycle;
+import com.openmediation.sdk.utils.lifecycle.ActLifecycle;
 import com.openmediation.sdk.utils.error.Error;
 import com.openmediation.sdk.utils.model.Instance;
 import com.openmediation.sdk.utils.model.Placement;

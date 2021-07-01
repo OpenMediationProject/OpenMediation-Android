@@ -3,15 +3,23 @@
 
 package com.openmediation.sdk.core;
 
+import android.view.View;
+
+import com.openmediation.sdk.banner.BannerAdListener;
 import com.openmediation.sdk.interstitial.InterstitialAdListener;
 import com.openmediation.sdk.mediation.MediationInterstitialListener;
 import com.openmediation.sdk.mediation.MediationRewardVideoListener;
+import com.openmediation.sdk.nativead.AdInfo;
+import com.openmediation.sdk.nativead.NativeAdListener;
 import com.openmediation.sdk.promotion.PromotionAdListener;
+import com.openmediation.sdk.splash.SplashAdListener;
 import com.openmediation.sdk.utils.AdsUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.HandlerUtil;
+import com.openmediation.sdk.utils.PlacementUtils;
 import com.openmediation.sdk.utils.error.Error;
 import com.openmediation.sdk.utils.event.EventId;
+import com.openmediation.sdk.utils.event.EventUploadManager;
 import com.openmediation.sdk.utils.model.Scene;
 import com.openmediation.sdk.video.RewardedVideoListener;
 
@@ -22,11 +30,15 @@ import java.util.Set;
  *
  */
 public class ListenerWrapper {
+    private static final String TAG = "ListenerWrapper: ";
     private Set<RewardedVideoListener> mRvListeners;
     private Set<InterstitialAdListener> mIsListeners;
     private Set<PromotionAdListener> mCpListeners;
+    private SplashAdListener mSplashAdListener;
     private MediationRewardVideoListener mMediationRvListener;
     private MediationInterstitialListener mMediationIsListener;
+    private BannerAdListener mBnListener;
+    private NativeAdListener mNaListener;
 
     private String mPlacementId;
 
@@ -42,6 +54,10 @@ public class ListenerWrapper {
 
     private boolean canSendListCallback(Set listeners) {
         return listeners != null && !listeners.isEmpty();
+    }
+
+    private boolean canSendListCallback(Object listener) {
+        return listener != null;
     }
 
     private void sendCallback(Runnable callbackRunnable) {
@@ -78,6 +94,10 @@ public class ListenerWrapper {
         this.mPlacementId = placementId;
     }
 
+    public void setSplashAdListener(SplashAdListener listener) {
+        mSplashAdListener = listener;
+    }
+
     public void setMediationRewardedVideoListener(MediationRewardVideoListener listener) {
         mMediationRvListener = listener;
     }
@@ -86,6 +106,13 @@ public class ListenerWrapper {
         mMediationIsListener = listener;
     }
 
+    public void setBnListener(BannerAdListener listener) {
+        this.mBnListener = listener;
+    }
+
+    public void setNaListener(NativeAdListener listener) {
+        this.mNaListener = listener;
+    }
 
     public void onRewardedVideoAvailabilityChanged(final boolean available) {
         DeveloperLog.LogD("onRewardedVideoAvailabilityChanged : " + available);
@@ -320,7 +347,6 @@ public class ListenerWrapper {
             });
         }
     }
-
 
     public void onInterstitialAdAvailabilityChanged(final boolean available) {
         DeveloperLog.LogD("onInterstitialAdAvailabilityChanged : " + available);
@@ -562,6 +588,188 @@ public class ListenerWrapper {
                         listener.onPromotionAdHidden(scene);
                     }
                     AdsUtil.callbackActionReport(EventId.CALLBACK_DISMISS_SCREEN, mPlacementId, scene, null);
+                }
+            });
+        }
+    }
+
+    public void onSplashAdLoad(final String placementId) {
+        DeveloperLog.LogD(TAG + "onSplashAdLoad : " + placementId);
+        if (canSendListCallback(mSplashAdListener)) {
+            sendCallback(new Runnable() {
+                @Override
+                public void run() {
+                    EventUploadManager.getInstance().uploadEvent(EventId.CALLBACK_LOAD_SUCCESS,
+                            PlacementUtils.placementEventParams(placementId));
+                    mSplashAdListener.onSplashAdLoaded(placementId);
+                }
+            });
+        }
+    }
+
+    public void onSplashAdFailed(final String placementId, final Error error) {
+        DeveloperLog.LogD(TAG + "onSplashAdFailed : " + placementId + ", error: " + error);
+        if (canSendListCallback(mSplashAdListener)) {
+            sendCallback(new Runnable() {
+                @Override
+                public void run() {
+                    EventUploadManager.getInstance().uploadEvent(EventId.CALLBACK_LOAD_ERROR,
+                            PlacementUtils.placementEventParams(placementId));
+                    mSplashAdListener.onSplashAdFailed(placementId, error);
+                }
+            });
+        }
+    }
+
+    public void onSplashAdShowed(final String placementId) {
+        DeveloperLog.LogD(TAG + "onSplashAdShowed : placementId : " + placementId);
+        if (canSendListCallback(mSplashAdListener)) {
+            sendCallback(new Runnable() {
+                @Override
+                public void run() {
+                    EventUploadManager.getInstance().uploadEvent(EventId.CALLBACK_PRESENT_SCREEN,
+                            PlacementUtils.placementEventParams(placementId));
+                    mSplashAdListener.onSplashAdShowed(placementId);
+                }
+            });
+        }
+    }
+
+    public void onSplashAdShowFailed(final String placementId, final Error error) {
+        DeveloperLog.LogD(TAG + "onSplashAdShowFailed : placementId : " + placementId + ", error: " + error);
+        if (canSendListCallback(mSplashAdListener)) {
+            sendCallback(new Runnable() {
+                @Override
+                public void run() {
+                    EventUploadManager.getInstance().uploadEvent(EventId.CALLBACK_SHOW_FAILED,
+                            PlacementUtils.placementEventParams(placementId));
+                    mSplashAdListener.onSplashAdShowFailed(placementId, error);
+                }
+            });
+        }
+    }
+
+    public void onSplashAdClicked(final String placementId) {
+        DeveloperLog.LogD(TAG + "onSplashAdClicked : placementId : " + placementId);
+        if (canSendListCallback(mSplashAdListener)) {
+            sendCallback(new Runnable() {
+                @Override
+                public void run() {
+                    EventUploadManager.getInstance().uploadEvent(EventId.CALLBACK_CLICK,
+                            PlacementUtils.placementEventParams(placementId));
+                    mSplashAdListener.onSplashAdClicked(placementId);
+                }
+            });
+        }
+    }
+
+    public void onSplashAdTick(final String placementId, final long millisUntilFinished) {
+        DeveloperLog.LogD(TAG + "onSplashAdTick : placementId : " + placementId);
+        if (canSendListCallback(mSplashAdListener)) {
+            sendCallback(new Runnable() {
+                @Override
+                public void run() {
+                    EventUploadManager.getInstance().uploadEvent(EventId.CALLBACK_DISMISS_SCREEN,
+                            PlacementUtils.placementEventParams(placementId));
+                    mSplashAdListener.onSplashAdTick(placementId, millisUntilFinished);
+                }
+            });
+        }
+    }
+
+    public void onSplashAdDismissed(final String placementId) {
+        DeveloperLog.LogD(TAG + "onSplashAdDismissed : placementId : " + placementId);
+        if (canSendListCallback(mSplashAdListener)) {
+            sendCallback(new Runnable() {
+                @Override
+                public void run() {
+                    EventUploadManager.getInstance().uploadEvent(EventId.CALLBACK_DISMISS_SCREEN,
+                            PlacementUtils.placementEventParams(placementId));
+                    mSplashAdListener.onSplashAdDismissed(placementId);
+                }
+            });
+        }
+    }
+
+    public void onBannerAdLoaded(final String placementId, final View view) {
+        DeveloperLog.LogD("onBannerAdLoaded");
+        if (canSendCallback(mBnListener)) {
+            sendCallback(new Runnable() {
+
+                @Override
+                public void run() {
+                    mBnListener.onBannerAdLoaded(placementId, view);
+                    AdsUtil.callbackActionReport(EventId.CALLBACK_LOAD_SUCCESS, placementId, null, null);
+                }
+            });
+        }
+    }
+
+    public void onBannerAdLoadFailed(final String placementId, final Error error) {
+        DeveloperLog.LogD("onBannerAdLoadFailed");
+        if (canSendCallback(mBnListener)) {
+            sendCallback(new Runnable() {
+
+                @Override
+                public void run() {
+                    mBnListener.onBannerAdLoadFailed(placementId, error);
+                    AdsUtil.callbackActionReport(EventId.CALLBACK_LOAD_ERROR, placementId, null, null);
+                }
+            });
+        }
+    }
+
+    public void onBannerAdClicked(final String placementId) {
+        DeveloperLog.LogD("onBannerAdClicked");
+        if (canSendCallback(mBnListener)) {
+            sendCallback(new Runnable() {
+
+                @Override
+                public void run() {
+                    mBnListener.onBannerAdClicked(placementId);
+                    AdsUtil.callbackActionReport(EventId.CALLBACK_CLICK, placementId, null, null);
+                }
+            });
+        }
+    }
+
+    public void onNativeAdLoaded(final String placementId, final AdInfo info) {
+        DeveloperLog.LogD("onNativeAdLoaded");
+        if (canSendCallback(mNaListener)) {
+            sendCallback(new Runnable() {
+
+                @Override
+                public void run() {
+                    mNaListener.onNativeAdLoaded(placementId, info);
+                    AdsUtil.callbackActionReport(EventId.CALLBACK_LOAD_SUCCESS, placementId, null, null);
+                }
+            });
+        }
+    }
+
+    public void onNativeAdLoadFailed(final String placementId, final Error error) {
+        DeveloperLog.LogD("onNativeAdLoadFailed");
+        if (canSendCallback(mNaListener)) {
+            sendCallback(new Runnable() {
+
+                @Override
+                public void run() {
+                    mNaListener.onNativeAdLoadFailed(placementId, error);
+                    AdsUtil.callbackActionReport(EventId.CALLBACK_LOAD_ERROR, placementId, null, null);
+                }
+            });
+        }
+    }
+
+    public void onNativeAdClicked(final String placementId) {
+        DeveloperLog.LogD("onNativeAdClicked");
+        if (canSendCallback(mNaListener)) {
+            sendCallback(new Runnable() {
+
+                @Override
+                public void run() {
+                    mNaListener.onNativeAdClicked(placementId);
+                    AdsUtil.callbackActionReport(EventId.CALLBACK_CLICK, placementId, null, null);
                 }
             });
         }

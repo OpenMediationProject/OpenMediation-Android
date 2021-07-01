@@ -38,9 +38,9 @@ public class DownloadManager {
             }
             return;
         }
-        if (Cache.existCache(AdtUtil.getApplication(), url)) {
+        if (Cache.existCache(AdtUtil.getInstance().getApplicationContext(), url)) {
             if (listener != null) {
-                listener.onCompleted(url, Cache.getCacheFile(AdtUtil.getApplication(), url, null));
+                listener.onCompleted(url, Cache.getCacheFile(AdtUtil.getInstance().getApplicationContext(), url, null));
             }
             return;
         }

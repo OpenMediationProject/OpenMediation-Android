@@ -9,6 +9,7 @@ import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.bid.BidAdapter;
 import com.openmediation.sdk.bid.BidCallback;
 import com.openmediation.sdk.bid.BidConstance;
+import com.openmediation.sdk.mediation.MediationUtil;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,7 +26,7 @@ public class HeliumBidAdapter extends BidAdapter implements HeliumBidCallback {
     @Override
     public void initBid(Context context, Map<String, Object> dataMap, BidCallback callback) {
         super.initBid(context, dataMap, callback);
-        if (context == null) {
+        if (MediationUtil.getContext() == null) {
             if (callback != null) {
                 callback.bidFailed("Init Context is null");
             }
@@ -33,7 +34,7 @@ public class HeliumBidAdapter extends BidAdapter implements HeliumBidCallback {
         }
         HeliumSingleTon.InitState initState = HeliumSingleTon.getInstance().getInitState();
         if (initState == HeliumSingleTon.InitState.NOT_INIT) {
-            HeliumSingleTon.getInstance().init(context, String.valueOf(dataMap.get(BidConstance.BID_APP_KEY)), null);
+            HeliumSingleTon.getInstance().init(MediationUtil.getContext(), String.valueOf(dataMap.get(BidConstance.BID_APP_KEY)), null);
         }
     }
 
@@ -44,7 +45,7 @@ public class HeliumBidAdapter extends BidAdapter implements HeliumBidCallback {
         if (dataMap.get(BidConstance.BID_APP_KEY) != null) {
             appKey = String.valueOf(dataMap.get(BidConstance.BID_APP_KEY));
         }
-        HeliumSingleTon.getInstance().init(context, appKey, new HeliumInitCallback() {
+        HeliumSingleTon.getInstance().init(MediationUtil.getContext(), appKey, new HeliumInitCallback() {
             @Override
             public void initSuccess() {
                 executeBid(dataMap, callback);

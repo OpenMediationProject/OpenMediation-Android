@@ -4,17 +4,13 @@
 package com.openmediation.sdk.utils;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.openmediation.sdk.utils.device.DeviceUtil;
-import com.openmediation.sdk.utils.device.GdprUtil;
 import com.openmediation.sdk.utils.error.Error;
 import com.openmediation.sdk.utils.error.ErrorCode;
-import com.openmediation.sdk.utils.request.network.util.NetworkChecker;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,19 +30,12 @@ public class SdkUtil {
     /**
      * Ban run error.
      *
-     * @param activity the activity
-     * @param appKey   the app key
+     * @param context the context
+     * @param appKey  the app key
      * @return the error
      */
-    public static Error banRun(Activity activity, String appKey) {
+    public static Error banRun(Context context, String appKey) {
         Error error;
-        if (!DeviceUtil.isActivityAvailable(activity)) {
-            error = new Error(ErrorCode.CODE_INIT_INVALID_REQUEST
-                    , ErrorCode.MSG_INIT_INVALID_REQUEST, ErrorCode.CODE_INTERNAL_UNKNOWN_ACTIVITY);
-            //init error activity is not available
-            DeveloperLog.LogE(error.toString());
-            return error;
-        }
         if (TextUtils.isEmpty(appKey)) {
             error = new Error(ErrorCode.CODE_INIT_INVALID_REQUEST
                     , ErrorCode.MSG_INIT_INVALID_REQUEST, ErrorCode.CODE_INTERNAL_REQUEST_APPKEY);
@@ -54,7 +43,7 @@ public class SdkUtil {
             DeveloperLog.LogE(error.toString());
             return error;
         }
-        if (!PermissionUtil.isGranted(activity, ADT_PERMISSIONS)) {
+        if (!PermissionUtil.isGranted(context, ADT_PERMISSIONS)) {
             error = new Error(ErrorCode.CODE_INIT_INVALID_REQUEST
                     , ErrorCode.MSG_INIT_INVALID_REQUEST, ErrorCode.CODE_INTERNAL_REQUEST_PERMISSION);
             //init error permission is not granted
@@ -83,7 +72,7 @@ public class SdkUtil {
      */
     public static boolean copy(String copyStr) {
         try {
-            ClipboardManager cm = (ClipboardManager) AdtUtil.getApplication().getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipboardManager cm = (ClipboardManager) AdtUtil.getInstance().getApplicationContext().getSystemService(Context.CLIPBOARD_SERVICE);
             ClipData mClipData = ClipData.newPlainText("Label", copyStr);
             cm.setPrimaryClip(mClipData);
             return true;

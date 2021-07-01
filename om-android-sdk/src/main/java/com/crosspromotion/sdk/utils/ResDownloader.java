@@ -25,7 +25,7 @@ public class ResDownloader {
     static boolean downloadFile(List<String> urls, List<String> necessaryRes) throws Exception {
         int failSize = 0;
         for (String url : urls) {
-            if (!Cache.existCache(AdtUtil.getApplication(), url)) {
+            if (!Cache.existCache(AdtUtil.getInstance().getApplicationContext(), url)) {
                 File file = downloadFile(url);
                 if (file == null && necessaryRes.contains(url)) {
                     failSize++;
@@ -42,25 +42,25 @@ public class ResDownloader {
         Response response = null;
         try {
             response = AdRequest.get().url(url).connectTimeout(30 * 1000).readTimeout(10 * 60 * 1000)
-                    .headers(getCacheHeaders(AdtUtil.getApplication(), url)).syncRequest();
+                    .headers(getCacheHeaders(AdtUtil.getInstance().getApplicationContext(), url)).syncRequest();
 
             if (response == null) {
                 return null;
             }
             int code = response.code();
             if (code == HttpURLConnection.HTTP_OK) {
-                boolean success = Cache.saveFile(AdtUtil.getApplication(), url, response);
+                boolean success = Cache.saveFile(AdtUtil.getInstance().getApplicationContext(), url, response);
                 if (success) {
-                    return Cache.getCacheFile(AdtUtil.getApplication(), url, null);
+                    return Cache.getCacheFile(AdtUtil.getInstance().getApplicationContext(), url, null);
                 } else {
                     deleteFileWhenError(url);
                     return null;
                 }
             } else if (code == HttpURLConnection.HTTP_NOT_MODIFIED) {//文件内容无需更新，但是更新一下header
-                Cache.saveHeaderFields(AdtUtil.getApplication(), url, response);
-                return Cache.getCacheFile(AdtUtil.getApplication(), url, null);
+                Cache.saveHeaderFields(AdtUtil.getInstance().getApplicationContext(), url, response);
+                return Cache.getCacheFile(AdtUtil.getInstance().getApplicationContext(), url, null);
             } else if (code == 301 || code == 302 || code == 303 || code == 307) {
-                Cache.saveHeaderFields(AdtUtil.getApplication(), url, response);
+                Cache.saveHeaderFields(AdtUtil.getInstance().getApplicationContext(), url, response);
                 String redirectUrl = response.headers().getLocation();
                 URL u = new URL(new URL(url), redirectUrl);
                 DeveloperLog.LogD("ResDownLoader", "redirect url is : " + u.toString());
@@ -76,11 +76,11 @@ public class ResDownloader {
     }
 
     private static void deleteFileWhenError(String url) {
-        File content = Cache.getCacheFile(AdtUtil.getApplication(), url, null);
+        File content = Cache.getCacheFile(AdtUtil.getInstance().getApplicationContext(), url, null);
         if (content != null && content.exists()) {
             DeveloperLog.LogD("ResDownLoader", "delete content file when error : " + content.delete());
         }
-        File header = Cache.getCacheFile(AdtUtil.getApplication(), url, CommonConstants.FILE_HEADER_SUFFIX);
+        File header = Cache.getCacheFile(AdtUtil.getInstance().getApplicationContext(), url, CommonConstants.FILE_HEADER_SUFFIX);
         if (header != null && header.exists()) {
             DeveloperLog.LogD("ResDownLoader", "delete header file when error : " + header.delete());
         }

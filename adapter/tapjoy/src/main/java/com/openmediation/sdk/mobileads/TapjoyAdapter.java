@@ -30,7 +30,7 @@ import java.util.concurrent.ConcurrentMap;
 
 public class TapjoyAdapter extends CustomAdsAdapter implements TJConnectListener, TJPlacementListener, TJPlacementVideoListener {
 
-    private static final String ADT_MEDIATION_NAME = "OM";
+    private static final String MEDIATION_NAME = "OM";
     private InitState mInitState = InitState.NOT_INIT;
     private ConcurrentMap<String, TJPlacement> mVideos;
     private ConcurrentMap<TJPlacement, RewardedVideoCallback> mVideoCallbacks;
@@ -94,7 +94,7 @@ public class TapjoyAdapter extends CustomAdsAdapter implements TJConnectListener
         if (placement == null) {
             placement = Tapjoy.getLimitedPlacement(placementId, this);
             placement.setVideoListener(this);
-            placement.setMediationName(ADT_MEDIATION_NAME);
+            placement.setMediationName(MEDIATION_NAME);
             placement.setAdapterVersion(getAdapterVersion());
             mVideos.put(placementId, placement);
         }
@@ -108,7 +108,7 @@ public class TapjoyAdapter extends CustomAdsAdapter implements TJConnectListener
         }
         if (placement == null) {
             placement = Tapjoy.getLimitedPlacement(placementId, this);
-            placement.setMediationName(ADT_MEDIATION_NAME);
+            placement.setMediationName(MEDIATION_NAME);
             placement.setAdapterVersion(getAdapterVersion());
             mInterstitialAds.put(placementId, placement);
         }
@@ -139,12 +139,6 @@ public class TapjoyAdapter extends CustomAdsAdapter implements TJConnectListener
                         callback.onRewardedVideoInitSuccess();
                     }
                     break;
-                case INIT_FAIL:
-                    if (callback != null) {
-                        callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
-                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Tapjoy init failed"));
-                    }
-                    break;
                 default:
                     break;
             }
@@ -159,7 +153,7 @@ public class TapjoyAdapter extends CustomAdsAdapter implements TJConnectListener
     @Override
     public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
-        String error = check(activity, adUnitId);
+        String error = check(adUnitId);
         if (TextUtils.isEmpty(error)) {
             if (!Tapjoy.isLimitedConnected()) {
                 if (callback != null) {
@@ -168,17 +162,15 @@ public class TapjoyAdapter extends CustomAdsAdapter implements TJConnectListener
                 }
             } else {
                 TJPlacement placement = requestVideoAd(adUnitId);
-                if (placement != null) {
-                    if (!mVideoCallbacks.containsKey(placement) && callback != null) {
-                        mVideoCallbacks.put(placement, callback);
+                if (callback != null) {
+                    mVideoCallbacks.put(placement, callback);
+                }
+                if (placement.isContentReady()) {
+                    if (callback != null) {
+                        callback.onRewardedVideoLoadSuccess();
                     }
-                    if (placement.isContentReady()) {
-                        if (callback != null) {
-                            callback.onRewardedVideoLoadSuccess();
-                        }
-                    } else {
-                        placement.requestContent();
-                    }
+                } else {
+                    placement.requestContent();
                 }
             }
         } else {
@@ -201,7 +193,7 @@ public class TapjoyAdapter extends CustomAdsAdapter implements TJConnectListener
         }
         TJPlacement placement = mVideos.get(adUnitId);
         if (placement != null && placement.isContentReady()) {
-            if (!mVideoCallbacks.containsKey(placement) && callback != null) {
+            if (callback != null) {
                 mVideoCallbacks.put(placement, callback);
             }
             placement.showContent();
@@ -245,12 +237,6 @@ public class TapjoyAdapter extends CustomAdsAdapter implements TJConnectListener
                         callback.onInterstitialAdInitSuccess();
                     }
                     break;
-                case INIT_FAIL:
-                    if (callback != null) {
-                        callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
-                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Tapjoy init failed"));
-                    }
-                    break;
                 default:
                     break;
             }
@@ -265,7 +251,7 @@ public class TapjoyAdapter extends CustomAdsAdapter implements TJConnectListener
     @Override
     public void loadInterstitialAd(Activity activity, String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, extras, callback);
-        String error = check(activity, adUnitId);
+        String error = check(adUnitId);
         if (TextUtils.isEmpty(error)) {
             if (!Tapjoy.isLimitedConnected()) {
                 if (callback != null) {
@@ -274,17 +260,15 @@ public class TapjoyAdapter extends CustomAdsAdapter implements TJConnectListener
                 }
             } else {
                 TJPlacement placement = requestInterstitialAd(adUnitId);
-                if (placement != null) {
-                    if (!mInterstitialAdCallbacks.containsKey(placement) && callback != null) {
-                        mInterstitialAdCallbacks.put(placement, callback);
+                if (callback != null) {
+                    mInterstitialAdCallbacks.put(placement, callback);
+                }
+                if (placement.isContentReady()) {
+                    if (callback != null) {
+                        callback.onInterstitialAdLoadSuccess();
                     }
-                    if (placement.isContentReady()) {
-                        if (callback != null) {
-                            callback.onInterstitialAdLoadSuccess();
-                        }
-                    } else {
-                        placement.requestContent();
-                    }
+                } else {
+                    placement.requestContent();
                 }
             }
         } else {
@@ -307,7 +291,7 @@ public class TapjoyAdapter extends CustomAdsAdapter implements TJConnectListener
         }
         TJPlacement placement = mInterstitialAds.get(adUnitId);
         if (placement != null && placement.isContentReady()) {
-            if (!mInterstitialAdCallbacks.containsKey(placement) && callback != null) {
+            if (callback != null) {
                 mInterstitialAdCallbacks.put(placement, callback);
             }
             placement.showContent();
@@ -331,24 +315,24 @@ public class TapjoyAdapter extends CustomAdsAdapter implements TJConnectListener
     @Override
     public void onConnectSuccess() {
         AdLog.getSingleton().LogD("Om-Tapjoy", "Tapjoy init success ");
+        mInitState = InitState.INIT_SUCCESS;
         for (TJPlacement tjPlacement : mVideoCallbacks.keySet()) {
             callbackOnMainThread(8, tjPlacement, null);
         }
         for (TJPlacement tjPlacement : mInterstitialAdCallbacks.keySet()) {
             callbackOnMainThread(8, tjPlacement, null);
         }
-        mInitState = InitState.INIT_SUCCESS;
     }
 
     @Override
     public void onConnectFailure() {
+        mInitState = InitState.NOT_INIT;
         for (TJPlacement tjPlacement : mVideoCallbacks.keySet()) {
             callbackOnMainThread(9, tjPlacement, new TJError(0, "Tapjoy init failed"));
         }
         for (TJPlacement tjPlacement : mInterstitialAdCallbacks.keySet()) {
             callbackOnMainThread(9, tjPlacement, new TJError(0, "Tapjoy init failed"));
         }
-        mInitState = InitState.INIT_FAIL;
     }
 
     @Override
@@ -489,7 +473,7 @@ public class TapjoyAdapter extends CustomAdsAdapter implements TJConnectListener
                             videoCallback.onRewardedVideoAdClicked();
                         }
                         if (isCallback != null) {
-                            isCallback.onInterstitialAdClick();
+                            isCallback.onInterstitialAdClicked();
                         }
                         break;
                     case 5:
@@ -580,9 +564,5 @@ public class TapjoyAdapter extends CustomAdsAdapter implements TJConnectListener
          *
          */
         INIT_SUCCESS,
-        /**
-         *
-         */
-        INIT_FAIL
     }
 }

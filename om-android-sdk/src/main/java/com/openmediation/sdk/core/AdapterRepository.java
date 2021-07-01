@@ -3,6 +3,7 @@
 
 package com.openmediation.sdk.core;
 
+import android.app.Activity;
 import android.util.SparseArray;
 
 import com.openmediation.sdk.mediation.CustomAdParams;
@@ -30,6 +31,28 @@ public class AdapterRepository {
     }
 
     private AdapterRepository() {
+    }
+
+    public void onPause(Activity activity) {
+        SparseArray<CustomAdsAdapter> adapterMap = AdapterUtil.getAdapterMap();
+        int size = adapterMap.size();
+        for (int i = 0; i < size; i++) {
+            CustomAdsAdapter adapter = adapterMap.valueAt(i);
+            if (adapter != null) {
+                adapter.onPause(activity);
+            }
+        }
+    }
+
+    public void onResume(Activity activity) {
+        SparseArray<CustomAdsAdapter> adapterMap = AdapterUtil.getAdapterMap();
+        int size = adapterMap.size();
+        for (int i = 0; i < size; i++) {
+            CustomAdsAdapter adapter = adapterMap.valueAt(i);
+            if (adapter != null) {
+                adapter.onResume(activity);
+            }
+        }
     }
 
     public void setCustomParams(CustomAdParams adEvent) {
@@ -66,7 +89,8 @@ public class AdapterRepository {
         mMetaData.setGDPRConsent(consent);
         saveGDPRConsent();
         SparseArray<CustomAdsAdapter> adapterMap = AdapterUtil.getAdapterMap();
-        for (int i = 0; i < adapterMap.size(); i++) {
+        int size = adapterMap.size();
+        for (int i = 0; i < size; i++) {
             CustomAdsAdapter adapter = adapterMap.valueAt(i);
             setConsent(adapter, consent);
         }
@@ -74,7 +98,7 @@ public class AdapterRepository {
 
     private void setConsent(CustomAdParams adEvent, boolean consent) {
         if (adEvent != null) {
-            adEvent.setGDPRConsent(AdtUtil.getApplication(), consent);
+            adEvent.setGDPRConsent(AdtUtil.getInstance().getApplicationContext(), consent);
         }
     }
 
@@ -82,7 +106,8 @@ public class AdapterRepository {
         mMetaData.setAgeRestricted(restricted);
         saveAgeRestricted();
         SparseArray<CustomAdsAdapter> adapterMap = AdapterUtil.getAdapterMap();
-        for (int i = 0; i < adapterMap.size(); i++) {
+        int size = adapterMap.size();
+        for (int i = 0; i < size; i++) {
             CustomAdsAdapter adapter = adapterMap.valueAt(i);
             setAgeRestricted(adapter, restricted);
         }
@@ -90,7 +115,7 @@ public class AdapterRepository {
 
     private void setAgeRestricted(CustomAdParams adEvent, boolean restricted) {
         if (adEvent != null) {
-            adEvent.setAgeRestricted(AdtUtil.getApplication(), restricted);
+            adEvent.setAgeRestricted(AdtUtil.getInstance().getApplicationContext(), restricted);
         }
     }
 
@@ -98,7 +123,8 @@ public class AdapterRepository {
         mMetaData.setUserAge(age);
         saveUserAge();
         SparseArray<CustomAdsAdapter> adapterMap = AdapterUtil.getAdapterMap();
-        for (int i = 0; i < adapterMap.size(); i++) {
+        int size = adapterMap.size();
+        for (int i = 0; i < size; i++) {
             CustomAdsAdapter adapter = adapterMap.valueAt(i);
             setUserAge(adapter, age);
         }
@@ -106,7 +132,7 @@ public class AdapterRepository {
 
     private void setUserAge(CustomAdParams adEvent, int age) {
         if (adEvent != null) {
-            adEvent.setUserAge(AdtUtil.getApplication(), age);
+            adEvent.setUserAge(AdtUtil.getInstance().getApplicationContext(), age);
         }
     }
 
@@ -114,17 +140,18 @@ public class AdapterRepository {
         mMetaData.setUserGender(gender);
         saveUserGender();
         SparseArray<CustomAdsAdapter> adapterMap = AdapterUtil.getAdapterMap();
-        for (int i = 0; i < adapterMap.size(); i++) {
+        int size = adapterMap.size();
+        for (int i = 0; i < size; i++) {
             CustomAdsAdapter adapter = adapterMap.valueAt(i);
             if (adapter != null) {
-                adapter.setUserGender(AdtUtil.getApplication(), gender);
+                adapter.setUserGender(AdtUtil.getInstance().getApplicationContext(), gender);
             }
         }
     }
 
     private void setUserGender(CustomAdParams adEvent, String gender) {
         if (adEvent != null) {
-            adEvent.setUserGender(AdtUtil.getApplication(), gender);
+            adEvent.setUserGender(AdtUtil.getInstance().getApplicationContext(), gender);
         }
     }
 
@@ -132,7 +159,8 @@ public class AdapterRepository {
         mMetaData.setUSPrivacyLimit(value);
         saveUSPrivacyLimit();
         SparseArray<CustomAdsAdapter> adapterMap = AdapterUtil.getAdapterMap();
-        for (int i = 0; i < adapterMap.size(); i++) {
+        int size = adapterMap.size();
+        for (int i = 0; i < size; i++) {
             CustomAdsAdapter adapter = adapterMap.valueAt(i);
             setUSPrivacyLimit(adapter, value);
         }
@@ -140,7 +168,7 @@ public class AdapterRepository {
 
     private void setUSPrivacyLimit(CustomAdParams adEvent, boolean value) {
         if (adEvent != null) {
-            adEvent.setUSPrivacyLimit(AdtUtil.getApplication(), value);
+            adEvent.setUSPrivacyLimit(AdtUtil.getInstance().getApplicationContext(), value);
         }
     }
 

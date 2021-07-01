@@ -3,18 +3,18 @@
 
 package com.openmediation.sdk.core.imp.rewardedvideo;
 
-import com.openmediation.sdk.utils.SceneUtil;
-import com.openmediation.sdk.utils.model.Instance;
+import com.openmediation.sdk.core.AbstractInventoryAds;
+import com.openmediation.sdk.core.OmManager;
+import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.mediation.MediationRewardVideoListener;
-import com.openmediation.sdk.utils.DeveloperLog;
-import com.openmediation.sdk.utils.helper.IcHelper;
+import com.openmediation.sdk.utils.SceneUtil;
 import com.openmediation.sdk.utils.error.Error;
 import com.openmediation.sdk.utils.error.ErrorCode;
+import com.openmediation.sdk.utils.helper.IcHelper;
+import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.PlacementInfo;
 import com.openmediation.sdk.utils.model.Scene;
 import com.openmediation.sdk.video.RewardedVideoListener;
-import com.openmediation.sdk.core.AbstractAdsManager;
-import com.openmediation.sdk.core.OmManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,7 +22,7 @@ import java.util.Map;
 /**
  *
  */
-public final class RvManager extends AbstractAdsManager implements RvManagerListener {
+public final class RvManager extends AbstractInventoryAds implements RvManagerListener {
     private Map<String, String> mExtIds = new HashMap<>();
 
     public RvManager() {
@@ -34,7 +34,7 @@ public final class RvManager extends AbstractAdsManager implements RvManagerList
     }
 
     public void loadRewardedVideo() {
-        loadAdWithAction(OmManager.LOAD_TYPE.MANUAL);
+        loadAds(OmManager.LOAD_TYPE.MANUAL);
     }
 
     public void showRewardedVideo(String scene) {
@@ -75,21 +75,21 @@ public final class RvManager extends AbstractAdsManager implements RvManagerList
     }
 
     @Override
-    protected void initInsAndSendEvent(Instance instance) {
+    protected void initInsAndSendEvent(BaseInstance instance) {
         super.initInsAndSendEvent(instance);
         if (!(instance instanceof RvInstance)) {
-            instance.setMediationState(Instance.MEDIATION_STATE.INIT_FAILED);
+            instance.setMediationState(BaseInstance.MEDIATION_STATE.INIT_FAILED);
             onInsInitFailed(instance, new Error(ErrorCode.CODE_LOAD_UNKNOWN_INTERNAL_ERROR,
                     "current is not an rewardedVideo adUnit", -1));
             return;
         }
         RvInstance rvInstance = (RvInstance) instance;
         rvInstance.setRvManagerListener(this);
-        rvInstance.initRv(mActivityReference.get());
+        rvInstance.initRv(mActRefs.get());
     }
 
     @Override
-    protected boolean isInsAvailable(Instance instance) {
+    protected boolean isInsAvailable(BaseInstance instance) {
         if (instance instanceof RvInstance) {
             return ((RvInstance) instance).isRvAvailable();
         }
@@ -97,14 +97,14 @@ public final class RvManager extends AbstractAdsManager implements RvManagerList
     }
 
     @Override
-    protected void insShow(final Instance instance) {
-        ((RvInstance) instance).showRv(mActivityReference.get(), mScene);
+    protected void insShow(final BaseInstance instance) {
+        ((RvInstance) instance).showRv(mActRefs.get(), mScene);
     }
 
     @Override
-    protected void insLoad(Instance instance, Map<String, Object> extras) {
+    protected void insLoad(BaseInstance instance, Map<String, Object> extras) {
         RvInstance rvInstance = (RvInstance) instance;
-        rvInstance.loadRv(mActivityReference.get(), extras);
+        rvInstance.loadRv(mActRefs.get(), extras);
     }
 
     @Override
@@ -134,7 +134,7 @@ public final class RvManager extends AbstractAdsManager implements RvManagerList
     @Override
     protected void callbackLoadError(Error error) {
         mListenerWrapper.onRewardedVideoLoadFailed(error);
-        boolean hasCache = hasAvailableCache();
+        boolean hasCache = hasAvailableInventory();
         if (shouldNotifyAvailableChanged(hasCache)) {
             mListenerWrapper.onRewardedVideoAvailabilityChanged(hasCache);
         }
@@ -158,35 +158,37 @@ public final class RvManager extends AbstractAdsManager implements RvManagerList
     }
 
     @Override
-    public void onRewardedVideoInitFailed(Error error, RvInstance rvInstance) {
-        onInsInitFailed(rvInstance, error);
+    public void onRewardedVideoInitFailed(RvInstance rvInstance, AdapterError error) {
+        Error errorResult = new Error(ErrorCode.CODE_LOAD_FAILED_IN_ADAPTER, error.toString(), -1);
+        onInsInitFailed(rvInstance, errorResult);
     }
 
     @Override
-    public void onRewardedVideoAdShowFailed(Error error, RvInstance rvInstance) {
+    public void onRewardedVideoAdShowFailed(RvInstance rvInstance, AdapterError error) {
         isInShowingProgress = false;
-        mListenerWrapper.onRewardedVideoAdShowFailed(mScene, error);
+        Error errorResult = new Error(ErrorCode.CODE_SHOW_FAILED_IN_ADAPTER, error.toString(), -1);
+        onInsShowFailed(rvInstance, error, mScene);
+        mListenerWrapper.onRewardedVideoAdShowFailed(mScene, errorResult);
     }
 
     @Override
     public void onRewardedVideoAdShowSuccess(RvInstance rvInstance) {
-        onInsOpen(rvInstance);
+        onInsShowSuccess(rvInstance, mScene);
         mListenerWrapper.onRewardedVideoAdShowed(mScene);
     }
 
     @Override
     public void onRewardedVideoAdClosed(RvInstance rvInstance) {
-        onInsClose();
+        onInsClosed(rvInstance, mScene);
     }
 
     @Override
     public void onRewardedVideoLoadSuccess(RvInstance rvInstance) {
-        onInsReady(rvInstance);
+        onInsLoadSuccess(rvInstance);
     }
 
     @Override
-    public void onRewardedVideoLoadFailed(Error error, RvInstance rvInstance) {
-        DeveloperLog.LogD("RvManager onRewardedVideoLoadFailed : " + rvInstance + " error : " + error);
+    public void onRewardedVideoLoadFailed(RvInstance rvInstance, AdapterError error) {
         onInsLoadFailed(rvInstance, error);
     }
 
@@ -211,7 +213,7 @@ public final class RvManager extends AbstractAdsManager implements RvManagerList
 
     @Override
     public void onRewardedVideoAdClicked(RvInstance rvInstance) {
+        onInsClicked(rvInstance, mScene);
         mListenerWrapper.onRewardedVideoAdClicked(mScene);
-        onInsClick(rvInstance);
     }
 }

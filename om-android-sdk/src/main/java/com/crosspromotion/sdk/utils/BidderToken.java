@@ -34,7 +34,7 @@ public class BidderToken {
      */
     private static String generateBidToken() {
         JSONObject object = new JSONObject();
-        Context context = AdtUtil.getApplication();
+        Context context = AdtUtil.getInstance().getApplicationContext();
         JsonUtil.put(object, KeyConstants.Request.KEY_SDK_VERSION, CommonConstants.SDK_VERSION_NAME);
         JsonUtil.put(object, KeyConstants.RequestBody.KEY_FIT, DeviceUtil.getFit());
         JsonUtil.put(object, KeyConstants.RequestBody.KEY_FLT, DeviceUtil.getFlt());

@@ -55,7 +55,7 @@ public abstract class AbstractAdsManager implements Request.OnRequestCallback {
 
     public AbstractAdsManager(String placementId) {
         mPlacementId = placementId;
-        mContext = AdtUtil.getApplication();
+        mContext = AdtUtil.getInstance().getApplicationContext();
         mListenerWrapper = new ListenerWrapper();
         mHandler = new HandlerUtil.HandlerHolder(null, Looper.getMainLooper());
     }

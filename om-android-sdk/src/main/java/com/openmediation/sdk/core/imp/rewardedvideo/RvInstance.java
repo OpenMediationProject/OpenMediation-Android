@@ -5,17 +5,17 @@ package com.openmediation.sdk.core.imp.rewardedvideo;
 
 import android.app.Activity;
 
+import com.openmediation.sdk.core.InsManager;
 import com.openmediation.sdk.core.runnable.LoadTimeoutRunnable;
 import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.openmediation.sdk.utils.AdLog;
 import com.openmediation.sdk.utils.DeveloperLog;
-import com.openmediation.sdk.utils.error.Error;
 import com.openmediation.sdk.utils.error.ErrorCode;
 import com.openmediation.sdk.utils.event.EventId;
 import com.openmediation.sdk.utils.event.EventUploadManager;
-import com.openmediation.sdk.utils.model.Instance;
+import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.Scene;
 
 import java.util.Map;
@@ -23,7 +23,7 @@ import java.util.Map;
 /**
  *
  */
-public class RvInstance extends Instance implements RewardedVideoCallback, LoadTimeoutRunnable.OnLoadTimeoutListener {
+public class RvInstance extends BaseInstance implements RewardedVideoCallback, LoadTimeoutRunnable.OnLoadTimeoutListener {
 
     private RvManagerListener mListener;
     private Scene mScene;
@@ -45,8 +45,8 @@ public class RvInstance extends Instance implements RewardedVideoCallback, LoadT
     void initRv(Activity activity) {
         setMediationState(MEDIATION_STATE.INIT_PENDING);
         if (mAdapter != null) {
-            mAdapter.initRewardedVideo(activity, getInitDataMap(), this);
-            onInsInitStart();
+            mAdapter.initRewardedVideo(activity, InsManager.getInitDataMap(this), this);
+            InsManager.onInsInitStart(this);
         }
     }
 
@@ -54,7 +54,7 @@ public class RvInstance extends Instance implements RewardedVideoCallback, LoadT
         setMediationState(MEDIATION_STATE.LOAD_PENDING);
         if (mAdapter != null) {
             DeveloperLog.LogD("load RewardedVideoAd : " + getMediationId() + " key : " + getKey());
-            startInsLoadTimer(this);
+            InsManager.startInsLoadTimer(this, this);
             mLoadStart = System.currentTimeMillis();
             mAdapter.loadRewardedVideo(activity, getKey(), extras, this);
         }
@@ -64,7 +64,7 @@ public class RvInstance extends Instance implements RewardedVideoCallback, LoadT
         if (mAdapter != null) {
             mScene = scene;
             mAdapter.showRewardedVideo(activity, getKey(), this);
-            onInsShow(scene);
+            InsManager.onInsShow(this, scene);
         }
     }
 
@@ -79,27 +79,24 @@ public class RvInstance extends Instance implements RewardedVideoCallback, LoadT
 
     @Override
     public void onRewardedVideoInitSuccess() {
-        onInsInitSuccess();
+        InsManager.onInsInitSuccess(this);
         mListener.onRewardedVideoInitSuccess(this);
     }
 
     @Override
     public void onRewardedVideoInitFailed(AdapterError error) {
         AdLog.getSingleton().LogE("RewardedVideo Ad Init Failed: " + error.toString());
-        onInsInitFailed(error);
-        Error errorResult = new Error(ErrorCode.CODE_LOAD_FAILED_IN_ADAPTER, error.toString(), -1);
-        mListener.onRewardedVideoInitFailed(errorResult, this);
+        InsManager.onInsInitFailed(this, error);
+        mListener.onRewardedVideoInitFailed(this, error);
     }
 
     @Override
     public void onRewardedVideoAdShowSuccess() {
-        onInsShowSuccess(mScene);
         mListener.onRewardedVideoAdShowSuccess(this);
     }
 
     @Override
     public void onRewardedVideoAdClosed() {
-        onInsClosed(mScene);
         mListener.onRewardedVideoAdClosed(this);
         mScene = null;
     }
@@ -107,49 +104,41 @@ public class RvInstance extends Instance implements RewardedVideoCallback, LoadT
     @Override
     public void onRewardedVideoLoadSuccess() {
         DeveloperLog.LogD("RvInstance onRewardedVideoLoadSuccess : " + toString());
-        onInsLoadSuccess();
         mListener.onRewardedVideoLoadSuccess(this);
     }
 
     @Override
     public void onRewardedVideoLoadFailed(AdapterError error) {
-        Error errorResult = new Error(ErrorCode.CODE_LOAD_FAILED_IN_ADAPTER, error.toString(), -1);
-        AdLog.getSingleton().LogE("RewardedVideo Ad Load Failed: " + error.toString());
-        DeveloperLog.LogD("RvInstance onRewardedVideoLoadFailed : " + toString() + " error : " + errorResult);
-        onInsLoadFailed(error);
-        mListener.onRewardedVideoLoadFailed(errorResult, this);
+        DeveloperLog.LogE("RvInstance onRewardedVideoLoadFailed : " + toString() + " error : " + error);
+        mListener.onRewardedVideoLoadFailed(this, error);
     }
 
     @Override
     public void onRewardedVideoAdStarted() {
-        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_VIDEO_START, buildReportDataWithScene(mScene));
+        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_VIDEO_START, InsManager.buildReportDataWithScene(this, mScene));
         mListener.onRewardedVideoAdStarted(this);
     }
 
     @Override
     public void onRewardedVideoAdEnded() {
-        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_VIDEO_COMPLETED, buildReportDataWithScene(mScene));
+        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_VIDEO_COMPLETED, InsManager.buildReportDataWithScene(this, mScene));
         mListener.onRewardedVideoAdEnded(this);
     }
 
     @Override
     public void onRewardedVideoAdRewarded() {
-        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_VIDEO_REWARDED, buildReportDataWithScene(mScene));
+        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_VIDEO_REWARDED, InsManager.buildReportDataWithScene(this, mScene));
         mListener.onRewardedVideoAdRewarded(this);
     }
 
     @Override
     public void onRewardedVideoAdShowFailed(AdapterError error) {
-        Error errorResult = new Error(ErrorCode.CODE_SHOW_FAILED_IN_ADAPTER, error.toString(), -1);
-        AdLog.getSingleton().LogE("RewardedVideo Ad Show Failed: " + error.toString());
-        DeveloperLog.LogE(errorResult.toString() + ", onRewardedVideoAdShowFailed: " + toString());
-        onInsShowFailed(error, mScene);
-        mListener.onRewardedVideoAdShowFailed(errorResult, this);
+        DeveloperLog.LogE(error + ", onRewardedVideoAdShowFailed: " + toString());
+        mListener.onRewardedVideoAdShowFailed(this, error);
     }
 
     @Override
     public void onRewardedVideoAdClicked() {
-        onInsClick(mScene);
         mListener.onRewardedVideoAdClicked(this);
     }
 

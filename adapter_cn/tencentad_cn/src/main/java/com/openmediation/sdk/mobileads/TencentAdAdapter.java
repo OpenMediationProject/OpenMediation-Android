@@ -4,21 +4,25 @@
 package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.SystemClock;
 import android.text.TextUtils;
+import android.view.ViewGroup;
 
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
+import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
+import com.openmediation.sdk.mediation.SplashAdCallback;
 import com.openmediation.sdk.mobileads.tencentad.BuildConfig;
 import com.openmediation.sdk.utils.AdLog;
 import com.qq.e.ads.interstitial2.UnifiedInterstitialAD;
 import com.qq.e.ads.interstitial2.UnifiedInterstitialADListener;
 import com.qq.e.ads.rewardvideo.RewardVideoAD;
 import com.qq.e.ads.rewardvideo.RewardVideoADListener;
-import com.qq.e.comm.managers.GDTADManager;
 import com.qq.e.comm.managers.status.SDKStatus;
 import com.qq.e.comm.util.AdError;
 
@@ -57,18 +61,36 @@ public class TencentAdAdapter extends CustomAdsAdapter {
     }
 
     @Override
+    public boolean isAdNetworkInit() {
+        return TencentAdManagerHolder.isInit();
+    }
+
+    private synchronized boolean initSDK(String appKey) {
+        if (TencentAdManagerHolder.isInit()) {
+            return true;
+        }
+        return TencentAdManagerHolder.init(MediationUtil.getContext().getApplicationContext(), appKey);
+    }
+
+    @Override
     public void initRewardedVideo(Activity activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
-        String error = check(activity);
-        if (TextUtils.isEmpty(error)) {
-            GDTADManager.getInstance().initWith(activity.getApplicationContext(), mAppKey);
+        String error = check();
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
+            }
+            return;
+        }
+        if (initSDK(mAppKey)) {
             if (callback != null) {
                 callback.onRewardedVideoInitSuccess();
             }
         } else {
             if (callback != null) {
                 callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
-                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Init Failed"));
             }
         }
     }
@@ -77,24 +99,24 @@ public class TencentAdAdapter extends CustomAdsAdapter {
     public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras,
                                   RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
-        loadRvAd(activity, adUnitId, callback);
+        loadRvAd(adUnitId, callback);
     }
 
-    private void loadRvAd(Activity activity, String adUnitId, RewardedVideoCallback callback) {
-        String error = check(activity, adUnitId);
-        if (TextUtils.isEmpty(error)) {
-            if (isRewardedVideoAvailable(adUnitId)) {
-                if (callback != null) {
-                    callback.onRewardedVideoLoadSuccess();
-                }
-            } else {
-                realLoadRvAd(activity, adUnitId, callback);
-            }
-        } else {
+    private void loadRvAd(String adUnitId, RewardedVideoCallback callback) {
+        String error = check(adUnitId);
+        if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
                         AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
             }
+            return;
+        }
+        if (isRewardedVideoAvailable(adUnitId)) {
+            if (callback != null) {
+                callback.onRewardedVideoLoadSuccess();
+            }
+        } else {
+            realLoadRvAd(MediationUtil.getContext(), adUnitId, callback);
         }
     }
 
@@ -121,7 +143,7 @@ public class TencentAdAdapter extends CustomAdsAdapter {
         } else {
             if (callback != null) {
                 callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "TencentAds ad not ready"));
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Tencent RewardedVideoAd not ready"));
             }
         }
     }
@@ -138,16 +160,22 @@ public class TencentAdAdapter extends CustomAdsAdapter {
     @Override
     public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
-        String error = check(activity);
-        if (TextUtils.isEmpty(error)) {
-            GDTADManager.getInstance().initWith(activity.getApplicationContext(), mAppKey);
+        String error = check();
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
+            }
+            return;
+        }
+        if (initSDK(mAppKey)) {
             if (callback != null) {
                 callback.onInterstitialAdInitSuccess();
             }
         } else {
             if (callback != null) {
                 callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
-                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Init Failed"));
             }
         }
     }
@@ -161,19 +189,19 @@ public class TencentAdAdapter extends CustomAdsAdapter {
 
     private void loadInterstitial(Activity activity, String adUnitId, InterstitialAdCallback callback) {
         String error = check(activity, adUnitId);
-        if (TextUtils.isEmpty(error)) {
-            if (isInterstitialAdAvailable(adUnitId)) {
-                if (callback != null) {
-                    callback.onInterstitialAdLoadSuccess();
-                }
-            } else {
-                realLoadInterstitial(activity, adUnitId, callback);
-            }
-        } else {
+        if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
                         AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
             }
+            return;
+        }
+        if (isInterstitialAdAvailable(adUnitId)) {
+            if (callback != null) {
+                callback.onInterstitialAdLoadSuccess();
+            }
+        } else {
+            realLoadInterstitial(activity, adUnitId, callback);
         }
     }
 
@@ -213,6 +241,90 @@ public class TencentAdAdapter extends CustomAdsAdapter {
         return mIsAds.get(adUnitId) != null;
     }
 
+    @Override
+    public void initBannerAd(Activity activity, Map<String, Object> extras, BannerAdCallback callback) {
+        super.initBannerAd(activity, extras, callback);
+        String error = check();
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onBannerAdInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error));
+            }
+            return;
+        }
+        TencentBannerManager.getInstance().initAd(MediationUtil.getContext(), extras, callback);
+    }
+
+    @Override
+    public void loadBannerAd(Activity activity, String adUnitId, Map<String, Object> extras, BannerAdCallback callback) {
+        super.loadBannerAd(activity, adUnitId, extras, callback);
+        String error = check(activity, adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error));
+            }
+            return;
+        }
+        TencentBannerManager.getInstance().loadAd(activity, adUnitId, extras, callback);
+    }
+
+    @Override
+    public boolean isBannerAdAvailable(String adUnitId) {
+        return TencentBannerManager.getInstance().isAdAvailable(adUnitId);
+    }
+
+    @Override
+    public void destroyBannerAd(String adUnitId) {
+        super.destroyBannerAd(adUnitId);
+        TencentBannerManager.getInstance().destroyAd(adUnitId);
+    }
+
+    @Override
+    public void initSplashAd(Activity activity, Map<String, Object> extras, SplashAdCallback callback) {
+        super.initSplashAd(activity, extras, callback);
+        String error = check();
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onSplashAdInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, error));
+            }
+            return;
+        }
+        TencentSplashManager.getInstance().initAd(MediationUtil.getContext(), extras, callback);
+    }
+
+    @Override
+    public void loadSplashAd(Activity activity, String adUnitId, Map<String, Object> extras, SplashAdCallback callback) {
+        super.loadSplashAd(activity, adUnitId, extras, callback);
+        String error = check(adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onSplashAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, error));
+            }
+            return;
+        }
+        TencentSplashManager.getInstance().loadAd(MediationUtil.getContext(), adUnitId, extras, callback);
+    }
+
+    @Override
+    public boolean isSplashAdAvailable(String adUnitId) {
+        return TencentSplashManager.getInstance().isAdAvailable(adUnitId);
+    }
+
+    @Override
+    public void showSplashAd(Activity activity, String adUnitId, ViewGroup viewGroup, SplashAdCallback callback) {
+        super.showSplashAd(activity, adUnitId, viewGroup, callback);
+        TencentSplashManager.getInstance().showAd(adUnitId, viewGroup, callback);
+    }
+
+    @Override
+    public void destroySplashAd(String adUnitId) {
+        super.destroySplashAd(adUnitId);
+        TencentSplashManager.getInstance().destroyAd(adUnitId);
+    }
+
     private void realLoadInterstitial(Activity activity, String adUnitId, InterstitialAdCallback callback) {
         if (callback != null) {
             mIsCallbacks.put(adUnitId, callback);
@@ -224,12 +336,12 @@ public class TencentAdAdapter extends CustomAdsAdapter {
         ad.loadFullScreenAD();
     }
 
-    private void realLoadRvAd(Activity activity, final String adUnitId, final RewardedVideoCallback callback) {
+    private void realLoadRvAd(Context context, final String adUnitId, final RewardedVideoCallback callback) {
         if (callback != null) {
             mRvCallbacks.put(adUnitId, callback);
         }
         InnerRvAdListener listener = new InnerRvAdListener(adUnitId);
-        RewardVideoAD rewardVideoAD = new RewardVideoAD(activity, adUnitId, listener);
+        RewardVideoAD rewardVideoAD = new RewardVideoAD(context, adUnitId, listener);
         listener.setAdView(rewardVideoAD);
         rewardVideoAD.loadAD();
     }
@@ -290,7 +402,7 @@ public class TencentAdAdapter extends CustomAdsAdapter {
             AdLog.getSingleton().LogD(TAG + "InterstitialAd click : " + mAdUnitId);
             InterstitialAdCallback callback = mIsCallbacks.get(mAdUnitId);
             if (callback != null) {
-                callback.onInterstitialAdClick();
+                callback.onInterstitialAdClicked();
             }
         }
 

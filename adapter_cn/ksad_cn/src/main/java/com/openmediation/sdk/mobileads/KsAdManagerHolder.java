@@ -16,7 +16,7 @@ public class KsAdManagerHolder {
 
     private static final AtomicBoolean sInit = new AtomicBoolean(false);
 
-    public static void init(Context context, String appId, InitCallback callback) {
+    public synchronized static void init(Context context, String appId, InitCallback callback) {
         if (context == null) {
             return;
         }

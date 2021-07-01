@@ -334,7 +334,7 @@ public class RequestBuilder {
      * @throws Exception the exception
      */
     public static byte[] buildConfigRequestBody(JSONArray adapters) throws Exception {
-        Context context = AdtUtil.getApplication();
+        Context context = AdtUtil.getInstance().getApplicationContext();
         JSONObject body = getRequestBodyBaseJson();
         body.put(KeyConstants.RequestBody.KEY_BTIME, DeviceUtil.getBtime());
         body.put(KeyConstants.RequestBody.KEY_RAM, DeviceUtil.getTotalRAM(context));
@@ -348,14 +348,14 @@ public class RequestBuilder {
     public static JSONObject getRequestBodyBaseJson() throws Exception {
         JSONObject body = new JSONObject();
         Map<String, Object> map = DeviceUtil.getLocaleInfo();
-        Context context = AdtUtil.getApplication();
+        Context context = AdtUtil.getInstance().getApplicationContext();
         body.put(KeyConstants.RequestBody.KEY_TS, System.currentTimeMillis());
-        body.put(KeyConstants.RequestBody.KEY_FLT, DeviceUtil.getFlt());
         body.put(KeyConstants.RequestBody.KEY_FIT, DeviceUtil.getFit());
         body.put(KeyConstants.RequestBody.KEY_ZO, DeviceUtil.getTimeZoneOffset());
         body.put(KeyConstants.RequestBody.KEY_TZ, DeviceUtil.getTimeZone());
         body.put(KeyConstants.RequestBody.KEY_SESSION, DeviceUtil.getSessionId());
         body.put(KeyConstants.RequestBody.KEY_UID, DeviceUtil.getUid());
+        body.put(KeyConstants.RequestBody.KEY_FLT, DeviceUtil.getFlt());
         Map<String, Object> gaidMap = getGaidMap();
         for (Map.Entry<String, Object> integerEntry : gaidMap.entrySet()) {
             body.put(integerEntry.getKey(), integerEntry.getValue());
@@ -377,6 +377,7 @@ public class RequestBuilder {
         body.put(KeyConstants.RequestBody.KEY_LIP, DeviceUtil.getHostIp());
         body.put(KeyConstants.RequestBody.KEY_LCOUNTRY, map.get(KeyConstants.RequestBody.KEY_LCOUNTRY));
         body.put(KeyConstants.RequestBody.KEY_FM, DeviceUtil.getFm());
+        body.put(KeyConstants.RequestBody.KEY_AF_ID, DataCache.getInstance().getFromMem(KeyConstants.KEY_AF_ID, String.class));
         Map<String, Integer> battery = DeviceUtil.getBatteryInfo(context);
         if (battery == null || battery.isEmpty()) {
             body.put(KeyConstants.RequestBody.KEY_BATTERY, 0);
@@ -627,7 +628,7 @@ public class RequestBuilder {
         androidBody.put(KeyConstants.Android.KEY_KERNEL_QEMU, DeviceUtil.getSystemProperties(KeyConstants.Device.KEY_RO_KERNEL_QEMU));
         androidBody.put(KeyConstants.Android.KEY_HARDWARE, DeviceUtil.getSystemProperties(KeyConstants.Device.KEY_RO_HARDWARE));
         androidBody.put(KeyConstants.RequestBody.KEY_TDM, DeviceUtil.disk());
-        androidBody.put(KeyConstants.RequestBody.KEY_IFGP, DeviceUtil.ifGp(AdtUtil.getApplication()));
+        androidBody.put(KeyConstants.RequestBody.KEY_IFGP, DeviceUtil.ifGp(AdtUtil.getInstance().getApplicationContext()));
         return androidBody;
     }
 

@@ -3,14 +3,14 @@
 
 package com.openmediation.sdk.core.imp.rewardedvideo;
 
-import com.openmediation.sdk.utils.error.Error;
+import com.openmediation.sdk.mediation.AdapterError;
 
 public interface RvManagerListener {
     void onRewardedVideoInitSuccess(RvInstance rvInstance);
 
-    void onRewardedVideoInitFailed(Error error, RvInstance rvInstance);
+    void onRewardedVideoInitFailed(RvInstance rvInstance, AdapterError error);
 
-    void onRewardedVideoAdShowFailed(Error error, RvInstance rvInstance);
+    void onRewardedVideoAdShowFailed(RvInstance rvInstance, AdapterError error);
 
     void onRewardedVideoAdShowSuccess(RvInstance rvInstance);
 
@@ -18,7 +18,7 @@ public interface RvManagerListener {
 
     void onRewardedVideoLoadSuccess(RvInstance rvInstance);
 
-    void onRewardedVideoLoadFailed(Error error, RvInstance rvInstance);
+    void onRewardedVideoLoadFailed(RvInstance rvInstance, AdapterError error);
 
     void onRewardedVideoAdStarted(RvInstance rvInstance);
 

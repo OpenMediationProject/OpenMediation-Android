@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import com.openmediation.sdk.demo.utils.NewApiUtils;
 import com.openmediation.sdk.splash.SplashAd;
 import com.openmediation.sdk.splash.SplashAdListener;
+import com.openmediation.sdk.utils.error.Error;
 
 public class SplashAdActivity extends Activity implements SplashAdListener {
 
@@ -32,13 +33,13 @@ public class SplashAdActivity extends Activity implements SplashAdListener {
     }
 
     @Override
-    public void onSplashAdLoad(String placementId) {
+    public void onSplashAdLoaded(String placementId) {
         Log.e("SplashAdActivity", "----------- onSplashAdLoad ----------");
-        SplashAd.showAd(SplashAdActivity.this, NewApiUtils.P_SPLASH, mSplashContainer);
+        SplashAd.showAd(NewApiUtils.P_SPLASH, mSplashContainer);
     }
 
     @Override
-    public void onSplashAdFailed(String placementId, String error) {
+    public void onSplashAdFailed(String placementId, Error error) {
         Log.e("SplashAdActivity", "----------- onSplashAdFailed ----------" + error);
     }
 
@@ -53,7 +54,7 @@ public class SplashAdActivity extends Activity implements SplashAdListener {
     }
 
     @Override
-    public void onSplashAdShowFailed(String placementId, String error) {
+    public void onSplashAdShowFailed(String placementId, Error error) {
         Log.e("SplashAdActivity", "----------- onSplashAdShowFailed ----------" + error);
     }
 

@@ -19,6 +19,7 @@ import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
+import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.openmediation.sdk.mobileads.chartboost.BuildConfig;
 import com.openmediation.sdk.utils.AdLog;
@@ -51,7 +52,7 @@ public class ChartboostAdapter extends CustomAdsAdapter {
         mIsInitCallbacks = new ConcurrentHashMap<>();
     }
 
-    private void initSDK(final Activity activity) {
+    private void initSDK() {
         if (mCbDelegate == null) {
             mCbDelegate = new CbCallback();
         }
@@ -65,7 +66,7 @@ public class ChartboostAdapter extends CustomAdsAdapter {
                     String[] tmp = mAppKey.split("#");
                     String appId = tmp[0];
                     String signature = tmp[1];
-                    Chartboost.startWithAppId(activity.getApplication(), appId, signature);
+                    Chartboost.startWithAppId(MediationUtil.getContext(), appId, signature);
                     Chartboost.setDelegate(mCbDelegate);
                     Chartboost.setMediation(Chartboost.CBMediation.CBMediationOther, getAdapterVersion(), "");
                     Chartboost.setShouldRequestInterstitialsInFirstSession(false);
@@ -140,11 +141,11 @@ public class ChartboostAdapter extends CustomAdsAdapter {
     public void initRewardedVideo(Activity activity, Map<String, Object> dataMap
             , RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
-        String checkError = check(activity);
+        String checkError = check();
         if (TextUtils.isEmpty(checkError)) {
             if (!hasInit.get()) {
                 mRvInitCallbacks.put((String) dataMap.get("pid"), callback);
-                initSDK(activity);
+                initSDK();
             } else {
                 callback.onRewardedVideoInitSuccess();
             }
@@ -157,7 +158,7 @@ public class ChartboostAdapter extends CustomAdsAdapter {
     @Override
     public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
-        String checkError = check(activity, adUnitId);
+        String checkError = check(adUnitId);
         if (TextUtils.isEmpty(checkError)) {
             if (Chartboost.hasRewardedVideo(adUnitId)) {
                 if (callback != null) {
@@ -183,7 +184,7 @@ public class ChartboostAdapter extends CustomAdsAdapter {
 
     @Override
     public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
-        String checkError = check(activity, adUnitId);
+        String checkError = check(adUnitId);
         if (TextUtils.isEmpty(checkError)) {
             if (Chartboost.hasRewardedVideo(adUnitId)) {
                 if (callback != null) {
@@ -213,11 +214,11 @@ public class ChartboostAdapter extends CustomAdsAdapter {
     @Override
     public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
-        String checkError = check(activity);
+        String checkError = check();
         if (TextUtils.isEmpty(checkError)) {
             if (!hasInit.get()) {
                 mIsInitCallbacks.put((String) dataMap.get("pid"), callback);
-                initSDK(activity);
+                initSDK();
             } else {
                 callback.onInterstitialAdInitSuccess();
             }
@@ -230,7 +231,7 @@ public class ChartboostAdapter extends CustomAdsAdapter {
     @Override
     public void loadInterstitialAd(Activity activity, String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, extras, callback);
-        String checkError = check(activity, adUnitId);
+        String checkError = check(adUnitId);
         if (TextUtils.isEmpty(checkError)) {
             if (Chartboost.hasInterstitial(adUnitId)) {
                 if (callback != null) {
@@ -257,7 +258,7 @@ public class ChartboostAdapter extends CustomAdsAdapter {
     @Override
     public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
-        String checkError = check(activity, adUnitId);
+        String checkError = check(adUnitId);
         if (TextUtils.isEmpty(checkError)) {
             if (Chartboost.hasInterstitial(adUnitId)) {
                 if (callback != null) {
@@ -312,7 +313,7 @@ public class ChartboostAdapter extends CustomAdsAdapter {
             AdLog.getSingleton().LogD("OM-Chartboost Interstitial ad click");
             InterstitialAdCallback listener = mIsCallbacks.get(location);
             if (listener != null) {
-                listener.onInterstitialAdClick();
+                listener.onInterstitialAdClicked();
             }
         }
 

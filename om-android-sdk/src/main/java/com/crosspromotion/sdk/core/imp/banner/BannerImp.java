@@ -27,7 +27,7 @@ import com.crosspromotion.sdk.utils.webview.BaseWebView;
 import com.crosspromotion.sdk.utils.webview.BaseWebViewClient;
 import com.crosspromotion.sdk.utils.webview.JsBridge;
 import com.crosspromotion.sdk.utils.webview.JsBridgeConstants;
-import com.openmediation.sdk.mediation.CustomBannerEvent;
+import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.utils.DensityUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.HandlerUtil;
@@ -279,7 +279,7 @@ public final class BannerImp extends AbstractAdsManager implements JsBridge.Mess
         if (adSize == null) {
             adSize = AdSize.BANNER;
         } else if (mAdSize == AdSize.SMART) {
-            if (CustomBannerEvent.isLargeScreen(context)) {
+            if (MediationUtil.isLargeScreen(context)) {
                 adSize = AdSize.LEADERBOARD;
             } else {
                 adSize = AdSize.BANNER;

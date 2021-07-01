@@ -12,12 +12,13 @@ import com.openmediation.sdk.InitConfiguration;
 import com.openmediation.sdk.core.imp.interstitialad.IsManager;
 import com.openmediation.sdk.core.imp.promotion.CpManager;
 import com.openmediation.sdk.core.imp.rewardedvideo.RvManager;
-import com.openmediation.sdk.core.imp.splash.SplashAdManager;
+import com.openmediation.sdk.core.imp.splash.SpAdManager;
 import com.openmediation.sdk.interstitial.InterstitialAdListener;
 import com.openmediation.sdk.mediation.MediationInterstitialListener;
 import com.openmediation.sdk.mediation.MediationRewardVideoListener;
 import com.openmediation.sdk.promotion.PromotionAdListener;
 import com.openmediation.sdk.promotion.PromotionAdRect;
+import com.openmediation.sdk.utils.lifecycle.ActLifecycle;
 import com.openmediation.sdk.utils.AdLog;
 import com.openmediation.sdk.utils.AdsUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
@@ -149,12 +150,16 @@ public final class OmManager implements InitCallback {
     /**
      * The actual init method
      *
-     * @param activity      required param
      * @param configuration required param, include appKey,channel,initHost logEnable and so on
      * @param callback      the callback
      */
     public void init(Activity activity, InitConfiguration configuration, InitCallback callback) {
         Preconditions.checkNotNull(configuration, true);
+        if (activity != null) {
+            if (ActLifecycle.getInstance().getActivity() == null) {
+                ActLifecycle.getInstance().setActivity(activity);
+            }
+        }
         if (InitImp.isInit()) {
             if (callback != null) {
                 callback.onSuccess();
@@ -193,6 +198,8 @@ public final class OmManager implements InitCallback {
      */
     public void onResume(Activity activity) {
         mIsInForeground = true;
+        AdapterRepository.getInstance().onResume(activity);
+
         if (!mIsManagers.isEmpty()) {
             Set<Map.Entry<String, IsManager>> isEntrys = mIsManagers.entrySet();
             for (Map.Entry<String, IsManager> isManagerEntry : isEntrys) {
@@ -227,6 +234,8 @@ public final class OmManager implements InitCallback {
      */
     public void onPause(Activity activity) {
         mIsInForeground = false;
+        AdapterRepository.getInstance().onPause(activity);
+
         if (!mIsManagers.isEmpty()) {
             Set<Map.Entry<String, IsManager>> isEntrys = mIsManagers.entrySet();
             for (Map.Entry<String, IsManager> isManagerEntry : isEntrys) {
@@ -1098,7 +1107,7 @@ public final class OmManager implements InitCallback {
                         }
                         break;
                     case CommonConstants.SPLASH:
-                        SplashAdManager.getInstance().initSplashAd(placementId);
+                        SpAdManager.getInstance().initSplashAd(placementId);
                         break;
                     case CommonConstants.PROMOTION:
                         if (mCpManagers != null && !mCpManagers.containsKey(placementId)) {
@@ -1212,7 +1221,7 @@ public final class OmManager implements InitCallback {
                     IsManager isManager = getIsManager(placement.getId());
                     if (isManager != null) {
                         DeveloperLog.LogD("preloadIS for placementId : " + placement.getId());
-                        isManager.loadAdWithAction(LOAD_TYPE.INIT);
+                        isManager.loadAds(LOAD_TYPE.INIT);
                     }
                 }
             }
@@ -1230,7 +1239,7 @@ public final class OmManager implements InitCallback {
                     RvManager rvManager = getRvManager(placement.getId());
                     if (rvManager != null) {
                         DeveloperLog.LogD("preloadRV for placementId : " + placement.getId());
-                        rvManager.loadAdWithAction(LOAD_TYPE.INIT);
+                        rvManager.loadAds(LOAD_TYPE.INIT);
                     }
                 }
             }
@@ -1248,7 +1257,7 @@ public final class OmManager implements InitCallback {
                     CpManager manager = getCpManager(placement.getId());
                     if (manager != null) {
                         DeveloperLog.LogD("preloadCP for placementId : " + placement.getId());
-                        manager.loadAdWithAction(LOAD_TYPE.INIT);
+                        manager.loadAds(LOAD_TYPE.INIT);
                     }
                 }
             }

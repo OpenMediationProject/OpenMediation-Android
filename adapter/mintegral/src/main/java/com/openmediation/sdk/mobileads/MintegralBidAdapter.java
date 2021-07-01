@@ -15,6 +15,7 @@ import com.openmediation.sdk.bid.BidCallback;
 import com.openmediation.sdk.bid.BidConstance;
 import com.openmediation.sdk.bid.BidLoseReason;
 import com.openmediation.sdk.bid.BidResponse;
+import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.utils.AdLog;
 
 import java.util.Map;
@@ -24,40 +25,18 @@ public class MintegralBidAdapter extends BidAdapter {
     private static final String CLAZZ = "com.mbridge.msdk.mbbid.out.BidManager";
 
     private ConcurrentHashMap<String, BidResponsed> mBidResponses;
-    private Context mContext;
-    private String appKey;
 
     public MintegralBidAdapter() {
         mBidResponses = new ConcurrentHashMap<>();
     }
 
     @Override
-    public void initBid(Context context, Map<String, Object> dataMap, BidCallback callback) {
-        super.initBid(context, dataMap, callback);
-        if (context != null) {
-            mContext = context.getApplicationContext();
-            try {
-                appKey = String.valueOf(dataMap.get(BidConstance.BID_APP_KEY));
-                MintegralSingleTon.getInstance().initSDK(mContext, appKey, null);
-            } catch (Exception ignored) {
-            }
-        }
-    }
-
-    @Override
     public String getBiddingToken(Context context) {
-        if (MintegralSingleTon.getInstance().getInitState() == MintegralSingleTon.InitState.INIT_SUCCESS) {
-            try {
-                Class clazz = Class.forName(CLAZZ);
-                return BidManager.getBuyerUid(context);
-            } catch (Exception e) {
-                AdLog.getSingleton().LogE("Mintegral getBuyerUid Error: " + e.getMessage());
-                return "";
-            }
-        }
         try {
-            MintegralSingleTon.getInstance().initSDK(context, appKey, null);
-        } catch (Exception ignored) {
+            Class clazz = Class.forName(CLAZZ);
+            return BidManager.getBuyerUid(MediationUtil.getContext());
+        } catch(Throwable e) {
+            AdLog.getSingleton().LogE("Mintegral getBuyerUid Error: " + e.getMessage());
         }
         return "";
     }
@@ -65,13 +44,11 @@ public class MintegralBidAdapter extends BidAdapter {
     @Override
     public void executeBid(final Context context, final Map<String, Object> dataMap, final BidCallback callback) {
         super.executeBid(context, dataMap, callback);
-
-        MintegralSingleTon.getInstance().initSDK(context, String.valueOf(dataMap.get(BidConstance.BID_APP_KEY)), new MintegralSingleTon.InitCallback() {
+        MintegralSingleTon.getInstance().initSDK(MediationUtil.getContext(), String.valueOf(dataMap.get(BidConstance.BID_APP_KEY)), new MintegralSingleTon.InitCallback() {
             @Override
             public void onSuccess() {
                 try {
                     Class clazz = Class.forName(CLAZZ);
-                    mContext = context.getApplicationContext();
                     String unitId = (String) dataMap.get(BidConstance.BID_PLACEMENT_ID);
                     if (TextUtils.isEmpty(unitId)) {
                         if (callback != null) {
@@ -82,12 +59,12 @@ public class MintegralBidAdapter extends BidAdapter {
                     BidManager manager = new BidManager("", unitId);
                     manager.setBidListener(new BidResCallback(unitId, callback));
                     manager.bid();
-                } catch (ClassNotFoundException e) {
+                } catch(ClassNotFoundException e) {
                     AdLog.getSingleton().LogE("Mintegral bid sdk not integrated");
                     if (callback != null) {
                         callback.bidFailed("Mintegral bid sdk not integrated");
                     }
-                } catch (Exception e) {
+                } catch(Throwable e) {
                     AdLog.getSingleton().LogE("Mintegral bid failed: " + e.getMessage());
                     if (callback != null) {
                         callback.bidFailed("Mintegral bid failed");
@@ -109,8 +86,8 @@ public class MintegralBidAdapter extends BidAdapter {
         super.notifyWin(placementId, dataMap);
         if (mBidResponses.containsKey(placementId)) {
             BidResponsed bidResponsed = mBidResponses.get(placementId);
-            if (bidResponsed != null && mContext != null) {
-                bidResponsed.sendWinNotice(mContext);
+            if (bidResponsed != null && MediationUtil.getContext() != null) {
+                bidResponsed.sendWinNotice(MediationUtil.getContext());
             }
         }
     }
@@ -120,7 +97,7 @@ public class MintegralBidAdapter extends BidAdapter {
         super.notifyLose(placementId, dataMap);
         if (mBidResponses.containsKey(placementId)) {
             BidResponsed bidResponse = mBidResponses.get(placementId);
-            if (bidResponse != null && mContext != null) {
+            if (bidResponse != null && MediationUtil.getContext() != null) {
                 int reason = -1;
                 if (dataMap != null && dataMap.containsKey(BidConstance.BID_NOTIFY_REASON)) {
                     reason = (int) dataMap.get(BidConstance.BID_NOTIFY_REASON);
@@ -133,7 +110,7 @@ public class MintegralBidAdapter extends BidAdapter {
                 } else {
                     lossCode = BidLossCode.bidWinButNotShow();
                 }
-                bidResponse.sendLossNotice(mContext, lossCode);
+                bidResponse.sendLossNotice(MediationUtil.getContext(), lossCode);
             }
         }
     }
@@ -166,7 +143,7 @@ public class MintegralBidAdapter extends BidAdapter {
             response.setCur(bidResponsed.getCur());
             try {
                 response.setPrice(Double.parseDouble(bidResponsed.getPrice()));
-            } catch (Exception ignored) {
+            } catch(Exception ignored) {
             }
             response.setPayLoad(bidResponsed.getBidToken());
             if (mCallback != null) {

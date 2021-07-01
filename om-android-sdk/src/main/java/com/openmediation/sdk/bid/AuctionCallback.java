@@ -3,11 +3,11 @@
 
 package com.openmediation.sdk.bid;
 
-import com.openmediation.sdk.utils.model.Instance;
+import com.openmediation.sdk.utils.model.BaseInstance;
 
 import java.util.List;
 
 public interface AuctionCallback {
     void onBidS2SComplete(List<BidResponse> responses);
-    void onBidC2SComplete(List<Instance> c2sInstances, List<BidResponse> responses);
+    void onBidC2SComplete(List<BaseInstance> c2sInstances, List<BidResponse> responses);
 }

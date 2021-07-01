@@ -13,6 +13,7 @@ import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
+import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
 
 import java.util.Map;
@@ -74,12 +75,12 @@ public class HeliumAdapter extends CustomAdsAdapter implements HeliumInterstitia
     public void initRewardedVideo(Activity activity, Map<String, Object> dataMap
             , final RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
-        String checkError = check(activity);
+        String checkError = check();
         if (TextUtils.isEmpty(checkError)) {
             if (dataMap.get("pid") != null && callback != null) {
                 mRvCallbacks.put((String) dataMap.get("pid"), callback);
             }
-            HeliumSingleTon.getInstance().init(activity, String.valueOf(dataMap.get(APP_KEY)), new HeliumInitCallback() {
+            HeliumSingleTon.getInstance().init(MediationUtil.getContext(), String.valueOf(dataMap.get(APP_KEY)), new HeliumInitCallback() {
                 @Override
                 public void initSuccess() {
                     if (callback != null) {
@@ -107,11 +108,11 @@ public class HeliumAdapter extends CustomAdsAdapter implements HeliumInterstitia
     @Override
     public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
-        realLoadRvAd(activity, adUnitId, callback);
+        realLoadRvAd(adUnitId, callback);
     }
 
-    private void realLoadRvAd(Activity activity, String adUnitId, RewardedVideoCallback callback) {
-        String checkError = check(activity, adUnitId);
+    private void realLoadRvAd(String adUnitId, RewardedVideoCallback callback) {
+        String checkError = check(adUnitId);
         if (TextUtils.isEmpty(checkError)) {
             if (isRewardedVideoAvailable(adUnitId)) {
                 if (callback != null) {
@@ -139,7 +140,8 @@ public class HeliumAdapter extends CustomAdsAdapter implements HeliumInterstitia
 
     @Override
     public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
-        String checkError = check(activity, adUnitId);
+        super.showRewardedVideo(activity, adUnitId, callback);
+        String checkError = check(adUnitId);
         if (TextUtils.isEmpty(checkError)) {
             if (isRewardedVideoAvailable(adUnitId)) {
                 if (callback != null) {
@@ -167,12 +169,12 @@ public class HeliumAdapter extends CustomAdsAdapter implements HeliumInterstitia
     @Override
     public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, final InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
-        String checkError = check(activity);
+        String checkError = check();
         if (TextUtils.isEmpty(checkError)) {
             if (dataMap.get("pid") != null && callback != null) {
                 mIsCallbacks.put((String) dataMap.get("pid"), callback);
             }
-            HeliumSingleTon.getInstance().init(activity, String.valueOf(dataMap.get(APP_KEY)), new HeliumInitCallback() {
+            HeliumSingleTon.getInstance().init(MediationUtil.getContext(), String.valueOf(dataMap.get(APP_KEY)), new HeliumInitCallback() {
                 @Override
                 public void initSuccess() {
                     if (callback != null) {
@@ -200,11 +202,11 @@ public class HeliumAdapter extends CustomAdsAdapter implements HeliumInterstitia
     @Override
     public void loadInterstitialAd(Activity activity, String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, extras, callback);
-        realLoadIsAd(activity, adUnitId, callback);
+        realLoadIsAd(adUnitId, callback);
     }
 
-    private void realLoadIsAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
-        String checkError = check(activity, adUnitId);
+    private void realLoadIsAd(String adUnitId, InterstitialAdCallback callback) {
+        String checkError = check(adUnitId);
         if (TextUtils.isEmpty(checkError)) {
             if (isInterstitialAdAvailable(adUnitId)) {
                 if (callback != null) {
@@ -233,7 +235,7 @@ public class HeliumAdapter extends CustomAdsAdapter implements HeliumInterstitia
     @Override
     public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
-        String checkError = check(activity, adUnitId);
+        String checkError = check(adUnitId);
         if (TextUtils.isEmpty(checkError)) {
             if (isInterstitialAdAvailable(adUnitId)) {
                 if (callback != null) {

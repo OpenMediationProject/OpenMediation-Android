@@ -7,14 +7,14 @@ import android.content.Context;
 import android.util.SparseArray;
 
 import com.openmediation.sdk.banner.AdSize;
+import com.openmediation.sdk.core.InsManager;
 import com.openmediation.sdk.utils.AdtUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.crash.CrashUtil;
 import com.openmediation.sdk.utils.event.EventId;
 import com.openmediation.sdk.utils.event.EventUploadManager;
-import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.Configurations;
-import com.openmediation.sdk.utils.model.Instance;
+import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.Placement;
 import com.openmediation.sdk.utils.request.network.AdRequest;
 
@@ -92,11 +92,11 @@ public class BidAuctionManager {
         }
     }
 
-    public void c2sBid(Context context, List<Instance> bidInstances, String placementId, String reqId, int adType, AuctionCallback callback) {
+    public void c2sBid(Context context, List<BaseInstance> bidInstances, String placementId, String reqId, int adType, AuctionCallback callback) {
         c2sBid(context, bidInstances, placementId, reqId, adType, null, callback);
     }
 
-    public void c2sBid(Context context, List<Instance> bidInstances, String placementId, String reqId, int adType, AdSize adSize, AuctionCallback callback) {
+    public void c2sBid(Context context, List<BaseInstance> bidInstances, String placementId, String reqId, int adType, AdSize adSize, AuctionCallback callback) {
         BidC2SAuctionManager.getInstance().bid(context, bidInstances, placementId, reqId, adType, adSize, callback);
     }
 
@@ -109,14 +109,14 @@ public class BidAuctionManager {
             BidAdapter bidAdapter = BidAdapterUtil.getBidAdapter(instance.getMediationId());
             if (bidAdapter != null) {
                 bidAdapter.notifyWin(instance.getKey(), null);
-                EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_BID_WIN, instance.buildReportData());
+                EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_BID_WIN, InsManager.buildReportData(instance));
             }
         }
     }
 
     void notifyWin(String url, BaseInstance instance) {
-        AdRequest.get().url(url).performRequest(AdtUtil.getApplication());
-        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_BID_WIN, instance.buildReportData());
+        AdRequest.get().url(url).performRequest(AdtUtil.getInstance().getApplicationContext());
+        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_BID_WIN, InsManager.buildReportData(instance));
     }
 
     public void notifyLose(BaseInstance instance, int reason) {
@@ -124,7 +124,7 @@ public class BidAuctionManager {
             BidAdapter bidAdapter = BidAdapterUtil.getBidAdapter(instance.getMediationId());
             if (bidAdapter != null) {
                 bidAdapter.notifyLose(instance.getKey(), makeNotifyMap(reason));
-                EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_BID_LOSE, instance.buildReportData());
+                EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_BID_LOSE, InsManager.buildReportData(instance));
             }
         }
     }
@@ -136,8 +136,8 @@ public class BidAuctionManager {
     }
 
     void notifyLose(String url, BaseInstance instance) {
-        AdRequest.get().url(url).performRequest(AdtUtil.getApplication());
-        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_BID_LOSE, instance.buildReportData());
+        AdRequest.get().url(url).performRequest(AdtUtil.getInstance().getApplicationContext());
+        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_BID_LOSE, InsManager.buildReportData(instance));
     }
 
 }

@@ -3,19 +3,19 @@
 
 package com.openmediation.sdk.core.imp.interstitialad;
 
-import com.openmediation.sdk.utils.model.Instance;
+import com.openmediation.sdk.core.AbstractInventoryAds;
 import com.openmediation.sdk.core.OmManager;
 import com.openmediation.sdk.interstitial.InterstitialAdListener;
+import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.mediation.MediationInterstitialListener;
-import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.error.Error;
 import com.openmediation.sdk.utils.error.ErrorCode;
+import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.PlacementInfo;
-import com.openmediation.sdk.core.AbstractAdsManager;
 
 import java.util.Map;
 
-public final class IsManager extends AbstractAdsManager implements IsManagerListener {
+public final class IsManager extends AbstractInventoryAds implements IsManagerListener {
 
     public IsManager() {
         super();
@@ -26,7 +26,7 @@ public final class IsManager extends AbstractAdsManager implements IsManagerList
     }
 
     public void loadInterstitialAd() {
-        loadAdWithAction(OmManager.LOAD_TYPE.MANUAL);
+        loadAds(OmManager.LOAD_TYPE.MANUAL);
     }
 
     public void showInterstitialAd(String scene) {
@@ -60,21 +60,21 @@ public final class IsManager extends AbstractAdsManager implements IsManagerList
     }
 
     @Override
-    protected void initInsAndSendEvent(Instance instance) {
+    protected void initInsAndSendEvent(BaseInstance instance) {
         super.initInsAndSendEvent(instance);
         if (!(instance instanceof IsInstance)) {
-            instance.setMediationState(Instance.MEDIATION_STATE.INIT_FAILED);
+            instance.setMediationState(BaseInstance.MEDIATION_STATE.INIT_FAILED);
             onInsInitFailed(instance, new Error(ErrorCode.CODE_LOAD_UNKNOWN_INTERNAL_ERROR,
                     "current is not an rewardedVideo adUnit", -1));
             return;
         }
         IsInstance isInstance = (IsInstance) instance;
         isInstance.setIsManagerListener(this);
-        isInstance.initIs(mActivityReference.get());
+        isInstance.initIs(mActRefs.get());
     }
 
     @Override
-    protected boolean isInsAvailable(Instance instance) {
+    protected boolean isInsAvailable(BaseInstance instance) {
         if (instance instanceof IsInstance) {
             return ((IsInstance) instance).isIsAvailable();
         }
@@ -82,14 +82,14 @@ public final class IsManager extends AbstractAdsManager implements IsManagerList
     }
 
     @Override
-    protected void insShow(final Instance instance) {
-        ((IsInstance) instance).showIs(mActivityReference.get(), mScene);
+    protected void insShow(final BaseInstance instance) {
+        ((IsInstance) instance).showIs(mActRefs.get(), mScene);
     }
 
     @Override
-    protected void insLoad(Instance instance, Map<String, Object> extras) {
+    protected void insLoad(BaseInstance instance, Map<String, Object> extras) {
         IsInstance isInstance = (IsInstance) instance;
-        isInstance.loadIs(mActivityReference.get(), extras);
+        isInstance.loadIs(mActRefs.get(), extras);
     }
 
     @Override
@@ -119,7 +119,7 @@ public final class IsManager extends AbstractAdsManager implements IsManagerList
     @Override
     protected void callbackLoadError(Error error) {
         mListenerWrapper.onInterstitialAdLoadFailed(error);
-        boolean hasCache = hasAvailableCache();
+        boolean hasCache = hasAvailableInventory();
         if (shouldNotifyAvailableChanged(hasCache)) {
             mListenerWrapper.onInterstitialAdAvailabilityChanged(hasCache);
         }
@@ -143,41 +143,46 @@ public final class IsManager extends AbstractAdsManager implements IsManagerList
     }
 
     @Override
-    public void onInterstitialAdInitFailed(Error error, IsInstance isInstance) {
-        onInsInitFailed(isInstance, error);
+    public void onInterstitialAdInitFailed(IsInstance isInstance, AdapterError error) {
+        Error errorResult = new Error(ErrorCode.CODE_LOAD_FAILED_IN_ADAPTER, error.toString(), -1);
+        onInsInitFailed(isInstance, errorResult);
     }
 
     @Override
-    public void onInterstitialAdShowFailed(Error error, IsInstance isInstance) {
+    public void onInterstitialAdShowFailed(IsInstance isInstance, AdapterError error) {
         isInShowingProgress = false;
-        mListenerWrapper.onInterstitialAdShowFailed(mScene, error);
+        Error errorResult = new Error(ErrorCode.CODE_SHOW_FAILED_IN_ADAPTER
+                , ErrorCode.MSG_SHOW_FAILED_IN_ADAPTER
+                + ", mediationID:" + isInstance.getMediationId() + ", error:" + error, -1);
+        onInsShowFailed(isInstance, error, mScene);
+        mListenerWrapper.onInterstitialAdShowFailed(mScene, errorResult);
+//        TestUtil.getInstance().notifyInsFailed(isInstance.getPlacementId(), isInstance);
     }
 
     @Override
     public void onInterstitialAdShowSuccess(IsInstance isInstance) {
-        onInsOpen(isInstance);
+        onInsShowSuccess(isInstance, mScene);
         mListenerWrapper.onInterstitialAdShowed(mScene);
     }
 
     @Override
-    public void onInterstitialAdClick(IsInstance isInstance) {
+    public void onInterstitialAdClicked(IsInstance isInstance) {
+        onInsClicked(isInstance, mScene);
         mListenerWrapper.onInterstitialAdClicked(mScene);
-        onInsClick(isInstance);
     }
 
     @Override
     public void onInterstitialAdClosed(IsInstance isInstance) {
-        onInsClose();
+        onInsClosed(isInstance, mScene);
     }
 
     @Override
     public void onInterstitialAdLoadSuccess(IsInstance isInstance) {
-        onInsReady(isInstance);
+        onInsLoadSuccess(isInstance);
     }
 
     @Override
-    public void onInterstitialAdLoadFailed(Error error, IsInstance isInstance) {
-        DeveloperLog.LogD("IsManager onInterstitialAdLoadFailed : " + isInstance + " error : " + error);
+    public void onInterstitialAdLoadFailed(IsInstance isInstance, AdapterError error) {
         onInsLoadFailed(isInstance, error);
     }
 }

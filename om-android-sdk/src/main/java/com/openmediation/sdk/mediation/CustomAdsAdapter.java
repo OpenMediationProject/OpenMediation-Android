@@ -6,6 +6,9 @@ package com.openmediation.sdk.mediation;
 import android.app.Activity;
 import android.os.Build;
 import android.text.TextUtils;
+import android.view.ViewGroup;
+
+import com.openmediation.sdk.nativead.NativeAdView;
 
 import java.util.Map;
 
@@ -19,29 +22,33 @@ import java.util.Map;
  * and invoke its methods.
  */
 public abstract class CustomAdsAdapter extends CustomAdParams implements RewardedVideoApi,
-        InterstitialAdApi, BannerAdApi, PromotionAdApi {
+        InterstitialAdApi, PromotionAdApi, BannerAdApi, NativeAdApi, SplashAdApi {
 
     protected String mAppKey;
 
+    public boolean isAdNetworkInit() {
+        return false;
+    }
+
     @Override
-    public void initRewardedVideo(Activity activity, Map<String, Object> dataMap
+    public void initRewardedVideo(Activity activity, Map<String, Object> extras
             , RewardedVideoCallback callback) {
-        initData(activity, dataMap);
+        initData(extras);
     }
 
     @Override
-    public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
-        initData(activity, dataMap);
+    public void initInterstitialAd(Activity activity, Map<String, Object> extras, InterstitialAdCallback callback) {
+        initData(extras);
     }
 
     @Override
-    public void initBannerAd(Activity activity, Map<String, Object> dataMap, BannerAdCallback callback) {
-        initData(activity, dataMap);
+    public void initBannerAd(Activity activity, Map<String, Object> extras, BannerAdCallback callback) {
+        initData(extras);
     }
 
     @Override
-    public void initPromotionAd(Activity activity, Map<String, Object> dataMap, PromotionAdCallback callback) {
-        initData(activity, dataMap);
+    public void initPromotionAd(Activity activity, Map<String, Object> extras, PromotionAdCallback callback) {
+        initData(extras);
     }
 
     public void onResume(Activity activity) {
@@ -105,12 +112,17 @@ public abstract class CustomAdsAdapter extends CustomAdParams implements Rewarde
 
 
     @Override
-    public void loadBannerAd(Activity activity, String adUnitId, BannerAdCallback callback) {
-
+    public void loadBannerAd(Activity activity, String adUnitId, Map<String, Object> extras, BannerAdCallback callback) {
+        initData(extras);
     }
 
     @Override
-    public void destroyBannerAd() {
+    public boolean isBannerAdAvailable(String adUnitId) {
+        return false;
+    }
+
+    @Override
+    public void destroyBannerAd(String adUnitId) {
 
     }
 
@@ -131,18 +143,54 @@ public abstract class CustomAdsAdapter extends CustomAdParams implements Rewarde
         return false;
     }
 
-    protected String check(Activity activity, String adUnitId) {
-        if (activity == null) {
-            return "activity is null";
-        }
-        if (isDestroyed(activity)) {
-            return "activity is destroyed";
-        }
+    @Override
+    public void initNativeAd(Activity activity, Map<String, Object> extras, NativeAdCallback callback) {
+        initData(extras);
+    }
+
+    @Override
+    public void loadNativeAd(Activity activity, String adUnitId, Map<String, Object> extras, NativeAdCallback callback) {
+        initData(extras);
+    }
+
+    @Override
+    public void registerNativeAdView(String adUnitId, NativeAdView adView, NativeAdCallback callback) {
+
+    }
+
+    @Override
+    public void destroyNativeAd(String adUnitId) {
+
+    }
+
+    @Override
+    public void initSplashAd(Activity activity, Map<String, Object> extras, SplashAdCallback callback) {
+        initData(extras);
+    }
+
+    @Override
+    public void loadSplashAd(Activity activity, String adUnitId, Map<String, Object> extras, SplashAdCallback callback) {
+        initData(extras);
+    }
+
+    @Override
+    public void showSplashAd(Activity activity, String adUnitId, ViewGroup viewGroup, SplashAdCallback callback) {
+
+    }
+
+    @Override
+    public boolean isSplashAdAvailable(String adUnitId) {
+        return false;
+    }
+
+    @Override
+    public void destroySplashAd(String adUnitId) {
+
+    }
+
+    protected String check() {
         if (TextUtils.isEmpty(mAppKey)) {
-            return "app key is null";
-        }
-        if (TextUtils.isEmpty(adUnitId)) {
-            return "instanceKey is null";
+            return "app key is empty";
         }
         return "";
     }
@@ -154,17 +202,38 @@ public abstract class CustomAdsAdapter extends CustomAdParams implements Rewarde
         if (isDestroyed(activity)) {
             return "activity is destroyed";
         }
+        return "";
+    }
+
+    protected String check(String adUnitId) {
         if (TextUtils.isEmpty(mAppKey)) {
-            return "app key is empty";
+            return "app key is null";
+        }
+        if (TextUtils.isEmpty(adUnitId)) {
+            return "instanceKey is null";
         }
         return "";
     }
 
-    private void initData(Activity activity, Map<String, Object> dataMap) {
+    protected String check(Activity activity, String adUnitId) {
+        String str = check(activity);
+        if (!TextUtils.isEmpty(str)) {
+            return str;
+        }
+        if (TextUtils.isEmpty(mAppKey)) {
+            return "app key is null";
+        }
+        if (TextUtils.isEmpty(adUnitId)) {
+            return "instanceKey is null";
+        }
+        return "";
+    }
+
+    private void initData(Map<String, Object> extras) {
         if (!TextUtils.isEmpty(mAppKey)) {
             return;
         }
-        mAppKey = (String) dataMap.get("AppKey");
+        mAppKey = (String) extras.get("AppKey");
     }
 
     /**

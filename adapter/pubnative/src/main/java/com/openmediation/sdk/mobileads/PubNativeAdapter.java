@@ -8,10 +8,14 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
+import com.openmediation.sdk.mediation.MediationUtil;
+import com.openmediation.sdk.mediation.NativeAdCallback;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
+import com.openmediation.sdk.nativead.NativeAdView;
 
 import net.pubnative.lite.sdk.HyBid;
 
@@ -44,6 +48,11 @@ public class PubNativeAdapter extends CustomAdsAdapter implements PubNativeVideo
     }
 
     @Override
+    public boolean isAdNetworkInit() {
+        return PubNativeSingleTon.getInstance().isInit();
+    }
+
+    @Override
     public void setAgeRestricted(Context context, boolean restricted) {
         super.setAgeRestricted(context, restricted);
         HyBid.setCoppaEnabled(restricted);
@@ -61,15 +70,15 @@ public class PubNativeAdapter extends CustomAdsAdapter implements PubNativeVideo
         HyBid.setGender(gender);
     }
 
-    private synchronized void initSDK(Activity activity, String appKey, PubNativeSingleTon.InitListener listener) {
-        PubNativeSingleTon.getInstance().init(activity, appKey, listener);
+    private synchronized void initSDK(String appKey, PubNativeSingleTon.InitListener listener) {
+        PubNativeSingleTon.getInstance().init(MediationUtil.getApplication(), appKey, listener);
     }
 
     @Override
     public void initRewardedVideo(Activity activity, Map<String, Object> dataMap
             , final RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
-        String error = check(activity);
+        String error = check();
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
@@ -77,7 +86,7 @@ public class PubNativeAdapter extends CustomAdsAdapter implements PubNativeVideo
             }
             return;
         }
-        initSDK(activity, mAppKey, new PubNativeSingleTon.InitListener() {
+        initSDK(mAppKey, new PubNativeSingleTon.InitListener() {
             @Override
             public void initSuccess() {
                 if (callback != null) {
@@ -98,7 +107,7 @@ public class PubNativeAdapter extends CustomAdsAdapter implements PubNativeVideo
     @Override
     public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
-        String checkError = check(activity, adUnitId);
+        String checkError = check(adUnitId);
         if (TextUtils.isEmpty(checkError)) {
             if (isRewardedVideoAvailable(adUnitId)) {
                 if (callback != null) {
@@ -124,7 +133,7 @@ public class PubNativeAdapter extends CustomAdsAdapter implements PubNativeVideo
     @Override
     public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
-        String error = check(activity, adUnitId);
+        String error = check(adUnitId);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
@@ -154,7 +163,7 @@ public class PubNativeAdapter extends CustomAdsAdapter implements PubNativeVideo
     @Override
     public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, final InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
-        String error = check(activity);
+        String error = check();
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
@@ -163,7 +172,7 @@ public class PubNativeAdapter extends CustomAdsAdapter implements PubNativeVideo
             return;
         }
 
-        initSDK(activity, mAppKey, new PubNativeSingleTon.InitListener() {
+        initSDK(mAppKey, new PubNativeSingleTon.InitListener() {
             @Override
             public void initSuccess() {
                 if (callback != null) {
@@ -184,7 +193,7 @@ public class PubNativeAdapter extends CustomAdsAdapter implements PubNativeVideo
     @Override
     public void loadInterstitialAd(Activity activity, String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, extras, callback);
-        String checkError = check(activity, adUnitId);
+        String checkError = check(adUnitId);
         if (!TextUtils.isEmpty(checkError)) {
             if (callback != null) {
                 callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
@@ -216,7 +225,7 @@ public class PubNativeAdapter extends CustomAdsAdapter implements PubNativeVideo
     @Override
     public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
-        String error = check(activity, adUnitId);
+        String error = check(adUnitId);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
@@ -236,6 +245,85 @@ public class PubNativeAdapter extends CustomAdsAdapter implements PubNativeVideo
                         AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "ad not ready"));
             }
         }
+    }
+
+    @Override
+    public void initBannerAd(Activity activity, Map<String, Object> extras, BannerAdCallback callback) {
+        super.initBannerAd(activity, extras, callback);
+        String error = check();
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onBannerAdInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error));
+            }
+            return;
+        }
+        PubNativeBannerManager.getInstance().initAd(MediationUtil.getApplication(), extras, callback);
+    }
+
+    @Override
+    public void loadBannerAd(Activity activity, String adUnitId, Map<String, Object> extras, BannerAdCallback callback) {
+        super.loadBannerAd(activity, adUnitId, extras, callback);
+        String error = check(adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error));
+            }
+            return;
+        }
+        PubNativeBannerManager.getInstance().loadAd(adUnitId, extras, callback);
+    }
+
+    @Override
+    public boolean isBannerAdAvailable(String adUnitId) {
+        return PubNativeBannerManager.getInstance().isAdAvailable(adUnitId);
+    }
+
+    @Override
+    public void destroyBannerAd(String adUnitId) {
+        super.destroyBannerAd(adUnitId);
+        PubNativeBannerManager.getInstance().destroyAd(adUnitId);
+    }
+
+    @Override
+    public void initNativeAd(Activity activity, Map<String, Object> extras, NativeAdCallback callback) {
+        super.initNativeAd(activity, extras, callback);
+        String error = check();
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onNativeAdInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, error));
+            }
+            return;
+        }
+        PubNativeNativeManager.getInstance().initAd(MediationUtil.getApplication(), extras, callback);
+    }
+
+    @Override
+    public void loadNativeAd(Activity activity, String adUnitId, Map<String, Object> extras, NativeAdCallback callback) {
+        super.loadNativeAd(activity, adUnitId, extras, callback);
+        String error = check(adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, error));
+            }
+            return;
+        }
+        PubNativeNativeManager.getInstance().loadAd(adUnitId, extras, callback);
+    }
+
+    @Override
+    public void registerNativeAdView(String adUnitId, NativeAdView adView, NativeAdCallback callback) {
+        super.registerNativeAdView(adUnitId, adView, callback);
+        PubNativeNativeManager.getInstance().registerNativeView(adUnitId, adView, callback);
+    }
+
+    @Override
+    public void destroyNativeAd(String adUnitId) {
+        super.destroyNativeAd(adUnitId);
+        PubNativeNativeManager.getInstance().destroyAd(adUnitId);
     }
 
     @Override
@@ -292,7 +380,7 @@ public class PubNativeAdapter extends CustomAdsAdapter implements PubNativeVideo
     public void onInterstitialClick(String placementId) {
         InterstitialAdCallback callback = mIsCallbacks.get(placementId);
         if (callback != null) {
-            callback.onInterstitialAdClick();
+            callback.onInterstitialAdClicked();
         }
     }
 

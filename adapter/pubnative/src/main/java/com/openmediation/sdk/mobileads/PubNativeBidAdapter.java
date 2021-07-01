@@ -3,15 +3,15 @@
 
 package com.openmediation.sdk.mobileads;
 
-import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 
 import com.openmediation.sdk.banner.AdSize;
-import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.bid.BidAdapter;
 import com.openmediation.sdk.bid.BidCallback;
 import com.openmediation.sdk.bid.BidConstance;
+import com.openmediation.sdk.bid.BidResponse;
+import com.openmediation.sdk.mediation.MediationUtil;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,20 +30,20 @@ public class PubNativeBidAdapter extends BidAdapter implements PubNativeCallback
     @Override
     public void initBid(Context context, Map<String, Object> dataMap, BidCallback callback) {
         super.initBid(context, dataMap, callback);
-        if (!(context instanceof Activity)) {
+        if (MediationUtil.getApplication() == null) {
             if (callback != null) {
                 callback.bidFailed("Init Context is null");
             }
             return;
         }
-        PubNativeSingleTon.getInstance().init((Activity) context,
+        PubNativeSingleTon.getInstance().init(MediationUtil.getApplication(),
                 String.valueOf(dataMap.get(BidConstance.BID_APP_KEY)), null);
     }
 
     @Override
     public void executeBid(Context context, Map<String, Object> dataMap, BidCallback callback) {
         super.executeBid(context, dataMap, callback);
-        if (dataMap == null || !(context instanceof Activity)) {
+        if (dataMap == null) {
             if (callback != null) {
                 callback.bidFailed("Bid Failed : Context is null");
             }
@@ -56,20 +56,19 @@ public class PubNativeBidAdapter extends BidAdapter implements PubNativeCallback
             }
             return;
         }
-        Activity activity = (Activity) context;
         int adType = (int) dataMap.get(BidConstance.BID_AD_TYPE);
         PubNativeSingleTon.getInstance().addBidCallback(adUnitId, this);
         mBidCallbacks.put(adUnitId, callback);
         String appKey = String.valueOf(dataMap.get(BidConstance.BID_APP_KEY));
         if (adType == BidConstance.BANNER) {
             AdSize adSize = (AdSize) dataMap.get(BidConstance.BID_BANNER_SIZE);
-            PubNativeSingleTon.getInstance().loadBanner(activity, appKey, adUnitId, adSize);
+            PubNativeSingleTon.getInstance().loadBanner(MediationUtil.getApplication(), appKey, adUnitId, adSize);
         } else if (adType == BidConstance.NATIVE) {
-            PubNativeSingleTon.getInstance().loadNative((Activity) context, appKey, adUnitId);
+            PubNativeSingleTon.getInstance().loadNative(MediationUtil.getApplication(), appKey, adUnitId);
         } else if (adType == BidConstance.INTERSTITIAL) {
-            PubNativeSingleTon.getInstance().loadInterstitial((Activity) context, appKey, adUnitId);
+            PubNativeSingleTon.getInstance().loadInterstitial(MediationUtil.getApplication(), appKey, adUnitId);
         } else if (adType == BidConstance.VIDEO) {
-            PubNativeSingleTon.getInstance().loadRewardedVideo((Activity) context, appKey, adUnitId);
+            PubNativeSingleTon.getInstance().loadRewardedVideo(MediationUtil.getApplication(), appKey, adUnitId);
         } else {
             mBidCallbacks.remove(adUnitId);
             if (callback != null) {

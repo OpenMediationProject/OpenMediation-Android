@@ -3,11 +3,10 @@
 
 package com.openmediation.sdk.nativead;
 
+import com.openmediation.sdk.utils.error.Error;
 
 /**
  * Lifecycle to receive native ads events
- *
- * 
  */
 public interface NativeAdListener {
     /**
@@ -15,17 +14,17 @@ public interface NativeAdListener {
      *
      * @param info An object {@link AdInfo}include base elements of ads {#title,#description,#CTA,#rate}
      */
-    void onAdReady(AdInfo info);
+    void onNativeAdLoaded(String placementId, AdInfo info);
 
     /**
      * called when native ads preparation failed
      *
      * @param error failure reason
      */
-    void onAdFailed(String error);
+    void onNativeAdLoadFailed(String placementId, Error error);
 
     /**
      * called when native ad is clicked
      */
-    void onAdClicked();
+    void onNativeAdClicked(String placementId);
 }

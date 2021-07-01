@@ -10,7 +10,6 @@ import com.ironsource.mediationsdk.sdk.ISDemandOnlyInterstitialListener;
 import com.ironsource.mediationsdk.sdk.ISDemandOnlyRewardedVideoListener;
 import com.ironsource.mediationsdk.sdk.InterstitialListener;
 import com.ironsource.mediationsdk.sdk.RewardedVideoListener;
-import com.openmediation.sdk.mobileads.ironsource.BuildConfig;
 import com.openmediation.sdk.utils.AdLog;
 
 import java.lang.ref.WeakReference;

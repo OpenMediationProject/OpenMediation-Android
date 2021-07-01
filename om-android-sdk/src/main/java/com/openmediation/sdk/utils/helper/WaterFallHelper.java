@@ -47,7 +47,7 @@ import java.util.Map;
 public class WaterFallHelper {
     private static final String AUCTION_PRICE = "${AUCTION_PRICE}";
     //testing instance
-    private static final Map<String, List<Instance>> testInstanceMap = new HashMap<>();
+    private static final Map<String, List<BaseInstance>> testInstanceMap = new HashMap<>();
 
     /**
      * Sets test instance.
@@ -55,7 +55,7 @@ public class WaterFallHelper {
      * @param placementId   the placement id
      * @param testInstances the test instances
      */
-    public static void setTestInstance(String placementId, List<Instance> testInstances) {
+    public static void setTestInstance(String placementId, List<BaseInstance> testInstances) {
         testInstanceMap.put(placementId, testInstances);
     }
 
@@ -66,7 +66,7 @@ public class WaterFallHelper {
         testInstanceMap.clear();
     }
 
-    private static Map<String, List<Instance>> getTestInstanceMap() {
+    public static Map<String, List<BaseInstance>> getTestInstanceMap() {
         return testInstanceMap;
     }
 
@@ -112,7 +112,7 @@ public class WaterFallHelper {
                     ByteRequestBody requestBody = new ByteRequestBody(bytes);
                     Headers headers = HeaderUtils.getBaseHeaders();
                     AdRequest.post().url(url).body(requestBody).headers(headers).connectTimeout(30000).readTimeout(60000)
-                            .callback(callback).performRequest(AdtUtil.getApplication());
+                            .callback(callback).performRequest(AdtUtil.getInstance().getApplicationContext());
                 } catch (Exception e) {
                     DeveloperLog.LogE("WaterFall Error: " + e.getMessage());
                     CrashUtil.getSingleton().saveException(e);
@@ -166,10 +166,6 @@ public class WaterFallHelper {
         return bidResponses;
     }
 
-    public static List<Instance> getListInsResult(String reqId, JSONObject clInfo, Placement placement) {
-        return getListInsResult(reqId, clInfo, placement, 0);
-    }
-
     /**
      * Gets list ins result.
      *
@@ -177,9 +173,9 @@ public class WaterFallHelper {
      * @param placement the placement
      * @return the list ins result
      */
-    public static List<Instance> getListInsResult(String reqId, JSONObject clInfo, Placement placement, int bs) {
+    public static List<BaseInstance> getListInsResult(String reqId, JSONObject clInfo, Placement placement, int bs) {
 
-        List<Instance> test = getTestInstanceMap().get(placement.getId());
+        List<BaseInstance> test = getTestInstanceMap().get(placement.getId());
         //for testing
         if (test != null && test.size() > 0) {
             if (bs > 0) {
@@ -202,7 +198,7 @@ public class WaterFallHelper {
         int abt = clInfo.optInt("abt");
 
         boolean cacheAds = PlacementUtils.isCacheAdsType(placement.getT());
-        List<Instance> instancesList = new ArrayList<>();
+        List<BaseInstance> instancesList = new ArrayList<>();
         for (int i = 0; i < insArray.length(); i++) {
             JSONObject insObject = insArray.optJSONObject(i);
             Instance instance = getInstance(reqId, placement, insObject, insMap, mediationRule, abt);
@@ -226,13 +222,13 @@ public class WaterFallHelper {
      * @param bs        the bs
      * @return the base instance [ ]
      */
-    public static List<Instance> getArrayInstances(String reqId, JSONObject clInfo, Placement placement, int bs) {
+    public static List<BaseInstance> getArrayInstances(String reqId, JSONObject clInfo, Placement placement, int bs) {
         if (bs == 0 || placement == null) {
             return null;
         }
 
         // TODO
-        List<Instance> test = getTestInstanceMap().get(placement.getId());
+        List<BaseInstance> test = getTestInstanceMap().get(placement.getId());
         //for testing
         if (test != null && test.size() > 0) {
             return splitInsByBs(test, bs);
@@ -250,7 +246,7 @@ public class WaterFallHelper {
 
         MediationRule mediationRule = getMediationRule(clInfo);
         int abt = clInfo.optInt("abt");
-        List<Instance> instancesList = new ArrayList<>();
+        List<BaseInstance> instancesList = new ArrayList<>();
         for (int i = 0; i < insArray.length(); i++) {
             JSONObject insObject = insArray.optJSONObject(i);
             Instance instance = getInstance(reqId, placement, insObject, insMap, mediationRule, abt);
@@ -292,11 +288,11 @@ public class WaterFallHelper {
         return rule;
     }
 
-    private static List<Instance> splitAbsIns(List<Instance> origin) {
+    public static List<BaseInstance> splitAbsIns(List<BaseInstance> origin) {
         //shallow copy!!!
         int len = origin.size();
         for (int a = 0; a < len; a++) {
-            Instance i = origin.get(a);
+            BaseInstance i = origin.get(a);
 
             //resets instance's state if init failed or load failed
             Instance.MEDIATION_STATE state = i.getMediationState();
@@ -313,14 +309,14 @@ public class WaterFallHelper {
         return origin;
     }
 
-    public static List<Instance> splitInsByBs(List<Instance> origin, int bs) {
+    public static List<BaseInstance> splitInsByBs(List<BaseInstance> origin, int bs) {
         if (origin == null) {
             return null;
         }
         int len = origin.size();
         int grpIndex = 0;
         for (int a = 0; a < len; a++) {
-            Instance i = origin.get(a);
+            BaseInstance i = origin.get(a);
             i.setIndex(a);
 
             //when index of instance >= group index, increase group index

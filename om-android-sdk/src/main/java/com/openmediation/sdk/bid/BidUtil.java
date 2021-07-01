@@ -4,8 +4,8 @@
 package com.openmediation.sdk.bid;
 
 import com.openmediation.sdk.banner.AdSize;
-import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.Configurations;
+import com.openmediation.sdk.utils.model.BaseInstance;
 
 import java.util.HashMap;
 import java.util.Map;

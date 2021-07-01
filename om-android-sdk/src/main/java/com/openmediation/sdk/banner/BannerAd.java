@@ -6,7 +6,7 @@ package com.openmediation.sdk.banner;
 import android.app.Activity;
 
 import com.openmediation.sdk.core.OmManager;
-import com.openmediation.sdk.core.imp.banner.BannerImp;
+import com.openmediation.sdk.core.imp.banner.BnManager;
 
 /**
  * <p>
@@ -19,7 +19,7 @@ import com.openmediation.sdk.core.imp.banner.BannerImp;
  */
 public class BannerAd {
 
-    private BannerImp mBanner;
+    private BnManager mBanner;
 
     /**
      * Instantiates the BannerAd
@@ -28,14 +28,18 @@ public class BannerAd {
      * @param placementId Current placement id
      * @param adListener  A lifecycle listener to receive native ad events
      */
+    @Deprecated
     public BannerAd(Activity activity, String placementId, BannerAdListener adListener) {
-        this.mBanner = new BannerImp(activity, placementId, adListener);
+        this.mBanner = new BnManager(placementId, adListener);
+    }
+
+    public BannerAd(String placementId, BannerAdListener adListener) {
+        this.mBanner = new BnManager(placementId, adListener);
     }
 
     public void loadAd() {
         if (mBanner != null) {
-            mBanner.setManualTriggered(true);
-            mBanner.loadAd(OmManager.LOAD_TYPE.MANUAL);
+            mBanner.loadAds(OmManager.LOAD_TYPE.MANUAL);
         }
     }
 

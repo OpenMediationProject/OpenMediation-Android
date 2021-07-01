@@ -89,7 +89,7 @@ public class HeliumSingleTon {
             String[] tmp = appKey.split("#");
             String appId = tmp[0];
             String signature = tmp[1];
-            HeliumSdk.start(context.getApplicationContext(), appId, signature, new HeliumSdk.HeliumSdkListener() {
+            HeliumSdk.start(context, appId, signature, new HeliumSdk.HeliumSdkListener() {
                 @Override
                 public void didInitialize(Error error) {
                     if (error == null) {

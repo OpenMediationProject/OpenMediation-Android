@@ -11,9 +11,9 @@ import com.openmediation.sdk.utils.cache.DataCache;
 import com.openmediation.sdk.utils.constant.CommonConstants;
 import com.openmediation.sdk.utils.constant.KeyConstants;
 import com.openmediation.sdk.utils.crash.CrashUtil;
-import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.Configurations;
 import com.openmediation.sdk.utils.model.ImpRecord;
+import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.Placement;
 
 import org.json.JSONArray;
@@ -39,7 +39,7 @@ public class PlacementUtils {
     /**
      * Gets placement info.
      *
-     * @param reqId the auction id
+     * @param reqId       the auction id
      * @param placementId the placement id
      * @param instances   the instances
      * @param payload     the payload
@@ -59,6 +59,31 @@ public class PlacementUtils {
         return maps;
     }
 
+    public static String getPlacementType(int type) {
+        String adType = "";
+        switch (type) {
+            case CommonConstants.BANNER:
+                adType = CommonConstants.ADTYPE_BANNER;
+                break;
+            case CommonConstants.NATIVE:
+                adType = CommonConstants.ADTYPE_NATIVE;
+                break;
+            case CommonConstants.SPLASH:
+                adType = CommonConstants.ADTYPE_SPLASH;
+                break;
+            case CommonConstants.INTERSTITIAL:
+                adType = CommonConstants.ADTYPE_INTERSTITIAL;
+                break;
+            case CommonConstants.VIDEO:
+                adType = CommonConstants.ADTYPE_REWARD_VIDEO;
+                break;
+            case CommonConstants.PROMOTION:
+                adType = CommonConstants.ADTYPE_CROSS_PROMOTION;
+                break;
+        }
+        return adType;
+    }
+
     public static Map<String, Object> getLoadExtrasMap(String reqId, BaseInstance instance, BidResponse bidResponse) {
         Map<String, Object> extras = new HashMap<>();
         if (bidResponse != null && !TextUtils.isEmpty(bidResponse.getPayLoad())) {
@@ -68,6 +93,7 @@ public class PlacementUtils {
             extras.put("InstanceId", String.valueOf(instance.getId()));
         }
         extras.put("AuctionId", reqId);
+        extras.put("AppKey", instance.getAppKey());
         return extras;
     }
 
@@ -390,6 +416,25 @@ public class PlacementUtils {
                 return false;
             default:
                 return true;
+        }
+    }
+
+    public static String getAdType(int type) {
+        switch (type) {
+            case CommonConstants.BANNER:
+                return "Banner";
+            case CommonConstants.NATIVE:
+                return "Native";
+            case CommonConstants.VIDEO:
+                return "Rewarded Video";
+            case CommonConstants.INTERSTITIAL:
+                return "Interstitial";
+            case CommonConstants.SPLASH:
+                return "Splash";
+            case CommonConstants.PROMOTION:
+                return "Cross Promote";
+            default:
+                return null;
         }
     }
 }

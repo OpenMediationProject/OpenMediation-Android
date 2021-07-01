@@ -6,7 +6,7 @@ package com.openmediation.sdk.nativead;
 import android.app.Activity;
 
 import com.openmediation.sdk.core.OmManager;
-import com.openmediation.sdk.core.imp.nativead.NativeImp;
+import com.openmediation.sdk.core.imp.nativead.NaManager;
 
 /**
  * <p>
@@ -20,7 +20,7 @@ import com.openmediation.sdk.core.imp.nativead.NativeImp;
  */
 public class NativeAd {
 
-    private NativeImp mNative;
+    private NaManager mNative;
 
     /**
      * Instantiates NativeAd
@@ -29,15 +29,20 @@ public class NativeAd {
      * @param placementId the placement id
      * @param adListener  the ad listener
      */
+    @Deprecated
     public NativeAd(Activity activity, String placementId, NativeAdListener adListener) {
-        mNative = new NativeImp(activity, placementId, adListener);
+        mNative = new NaManager(placementId, adListener);
+    }
+
+    public NativeAd(String placementId, NativeAdListener adListener) {
+        mNative = new NaManager(placementId, adListener);
     }
 
     /**
      * Load ad.
      */
     public void loadAd() {
-        mNative.loadAd(OmManager.LOAD_TYPE.MANUAL);
+        mNative.loadAds(OmManager.LOAD_TYPE.MANUAL);
     }
 
     /**

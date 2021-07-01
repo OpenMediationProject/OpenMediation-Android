@@ -3,23 +3,23 @@
 
 package com.openmediation.sdk.core.imp.interstitialad;
 
-import com.openmediation.sdk.utils.error.Error;
+import com.openmediation.sdk.mediation.AdapterError;
 
 public interface IsManagerListener {
 
     void onInterstitialAdInitSuccess(IsInstance isInstance);
 
-    void onInterstitialAdInitFailed(Error error, IsInstance isInstance);
+    void onInterstitialAdInitFailed(IsInstance isInstance, AdapterError error);
 
-    void onInterstitialAdShowFailed(Error error, IsInstance isInstance);
+    void onInterstitialAdShowFailed(IsInstance isInstance, AdapterError error);
 
     void onInterstitialAdShowSuccess(IsInstance isInstance);
 
-    void onInterstitialAdClick(IsInstance isInstance);
+    void onInterstitialAdClicked(IsInstance isInstance);
 
     void onInterstitialAdClosed(IsInstance isInstance);
 
     void onInterstitialAdLoadSuccess(IsInstance isInstance);
 
-    void onInterstitialAdLoadFailed(Error error, IsInstance isInstance);
+    void onInterstitialAdLoadFailed(IsInstance isInstance, AdapterError error);
 }

@@ -7,9 +7,9 @@ import android.content.Context;
 import android.os.Looper;
 
 import com.openmediation.sdk.banner.AdSize;
+import com.openmediation.sdk.core.InsManager;
 import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.HandlerUtil;
-import com.openmediation.sdk.utils.InsUtil;
 import com.openmediation.sdk.utils.JsonUtil;
 import com.openmediation.sdk.utils.PlacementUtils;
 import com.openmediation.sdk.utils.WorkExecutor;
@@ -17,7 +17,6 @@ import com.openmediation.sdk.utils.crash.CrashUtil;
 import com.openmediation.sdk.utils.event.EventId;
 import com.openmediation.sdk.utils.event.EventUploadManager;
 import com.openmediation.sdk.utils.model.BaseInstance;
-import com.openmediation.sdk.utils.model.Instance;
 
 import org.json.JSONObject;
 
@@ -27,9 +26,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class BidC2SAuctionManager {
 
-    private final ConcurrentHashMap<String, List<Instance>> mBidInstances;
+    private final ConcurrentHashMap<String, List<BaseInstance>> mBidInstances;
     private final ConcurrentHashMap<String, List<BidResponse>> mInstanceBidResponse;
-    private final ConcurrentHashMap<String, List<Instance>> mSuccessInstances;
+    private final ConcurrentHashMap<String, List<BaseInstance>> mSuccessInstances;
     private final ConcurrentHashMap<Integer, BidTimeout> mBidTimeoutRunnable;
     private final ConcurrentHashMap<String, AuctionCallback> mBidResultCallbacks;
     private final ConcurrentHashMap<Integer, Long> mBidStartTime;
@@ -56,7 +55,7 @@ public class BidC2SAuctionManager {
     /**
      * c2s
      */
-    public void bid(final Context context, final List<Instance> bidInstances, final String placementId, final String reqId, final int adType, final AdSize adSize, final AuctionCallback callback) {
+    public void bid(final Context context, final List<BaseInstance> bidInstances, final String placementId, final String reqId, final int adType, final AdSize adSize, final AuctionCallback callback) {
         resetBidResponse(placementId);
         if (bidInstances == null || bidInstances.isEmpty()) {
             callback.onBidC2SComplete(null, null);
@@ -73,7 +72,7 @@ public class BidC2SAuctionManager {
                 boolean cacheAdsType = PlacementUtils.isCacheAdsType(adType);
                 resetBidState(cacheAdsType, bidInstances);
                 int biding = 0;
-                for (Instance bidInstance : bidInstances) {
+                for (BaseInstance bidInstance : bidInstances) {
                     if (bidInstance == null) {
                         continue;
                     }
@@ -83,7 +82,7 @@ public class BidC2SAuctionManager {
                         continue;
                     }
                     // if MEDIATION_STATE is AVAILABLE, no bid
-                    if (cacheAdsType && InsUtil.isInstanceAvailable(bidInstance)) {
+                    if (cacheAdsType && InsManager.isInstanceAvailable(bidInstance)) {
                         continue;
                     }
                     biding++;
@@ -91,7 +90,7 @@ public class BidC2SAuctionManager {
                     bidInstance.setBidState(BaseInstance.BID_STATE.BID_PENDING);
                     executeBid(context, adType, adSize, bidInstance, bidAdapter);
                     mBidStartTime.put(bidInstance.getId(), System.currentTimeMillis());
-                    EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_BID_REQUEST, bidInstance.buildReportData());
+                    EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_BID_REQUEST, InsManager.buildReportData(bidInstance));
                     startTimeout(bidInstance);
                 }
 
@@ -102,7 +101,7 @@ public class BidC2SAuctionManager {
         });
     }
 
-    private void executeBid(Context context, int adType, AdSize adSize, Instance bidInstance, BidAdapter bidAdapter) {
+    private void executeBid(Context context, int adType, AdSize adSize, BaseInstance bidInstance, BidAdapter bidAdapter) {
         HbCallback callback = new HbCallback(bidInstance);
         try {
             bidAdapter.executeBid(context, BidUtil.makeBidRequestInfo(bidInstance, adType, adSize),
@@ -114,11 +113,11 @@ public class BidC2SAuctionManager {
         }
     }
 
-    private synchronized void bidSuccess(Instance instance, BidResponse response) {
+    private synchronized void bidSuccess(BaseInstance instance, BidResponse response) {
         instance.setRevenue(response.getPrice());
 
         instance.setBidState(BaseInstance.BID_STATE.BID_SUCCESS);
-        JSONObject jsonObject = instance.buildReportData();
+        JSONObject jsonObject = InsManager.buildReportData(instance);
         if (mBidStartTime != null && mBidStartTime.get(instance.getId()) != null) {
             long start = mBidStartTime.get(instance.getId());
             JsonUtil.put(jsonObject, "duration", (System.currentTimeMillis() - start) / 1000);
@@ -135,7 +134,7 @@ public class BidC2SAuctionManager {
         mInstanceBidResponse.put(placementId, responseList);
 
         // Add Success Instances
-        List<Instance> instanceList = mSuccessInstances.get(placementId);
+        List<BaseInstance> instanceList = mSuccessInstances.get(placementId);
         if (instanceList == null) {
             instanceList = new ArrayList<>();
         }
@@ -147,9 +146,9 @@ public class BidC2SAuctionManager {
         }
     }
 
-    private synchronized void bidFailed(Instance instance, String error) {
+    private synchronized void bidFailed(BaseInstance instance, String error) {
         instance.setBidState(BaseInstance.BID_STATE.BID_FAILED);
-        JSONObject jsonObject = instance.buildReportData();
+        JSONObject jsonObject = InsManager.buildReportData(instance);
         JsonUtil.put(jsonObject, "msg", error);
         if (mBidStartTime != null && mBidStartTime.get(instance.getId()) != null) {
             long start = mBidStartTime.get(instance.getId());
@@ -168,14 +167,14 @@ public class BidC2SAuctionManager {
             AuctionCallback callback = mBidResultCallbacks.get(placementId);
             if (callback != null) {
                 List<BidResponse> responseList = mInstanceBidResponse.get(placementId);
-                List<Instance> c2sInstances = mSuccessInstances.get(placementId);
+                List<BaseInstance> c2sInstances = mSuccessInstances.get(placementId);
                 callback.onBidC2SComplete(c2sInstances, responseList);
                 mBidResultCallbacks.remove(placementId);
             }
         }
     }
 
-    private void startTimeout(Instance instance) {
+    private void startTimeout(BaseInstance instance) {
         BidTimeout timeout = mBidTimeoutRunnable.get(instance.getId());
         if (timeout == null) {
             timeout = new BidTimeout(instance);
@@ -193,7 +192,7 @@ public class BidC2SAuctionManager {
     }
 
     private synchronized boolean isBidComplete(String placementId) {
-        List<Instance> instances = mBidInstances.get(placementId);
+        List<BaseInstance> instances = mBidInstances.get(placementId);
         if (instances == null || instances.isEmpty()) {
             return true;
         }
@@ -209,9 +208,9 @@ public class BidC2SAuctionManager {
         return success + failed == instances.size();
     }
 
-    private void resetBidState(boolean cacheAdsType, List<Instance> bidInstances) {
+    private void resetBidState(boolean cacheAdsType, List<BaseInstance> bidInstances) {
         for (BaseInstance instance : bidInstances) {
-            if (cacheAdsType && InsUtil.isInstanceAvailable(instance)) {
+            if (cacheAdsType && InsManager.isInstanceAvailable(instance)) {
                 continue;
             }
             instance.setReqId(null);
@@ -230,9 +229,9 @@ public class BidC2SAuctionManager {
 
     private static class HbCallback implements BidCallback {
 
-        private final Instance mInstance;
+        private final BaseInstance mInstance;
 
-        HbCallback(Instance instance) {
+        HbCallback(BaseInstance instance) {
             mInstance = instance;
         }
 
@@ -248,9 +247,9 @@ public class BidC2SAuctionManager {
     }
 
     private static class BidTimeout implements Runnable {
-        private final Instance mInstance;
+        private final BaseInstance mInstance;
 
-        BidTimeout(Instance instance) {
+        BidTimeout(BaseInstance instance) {
             mInstance = instance;
         }
 

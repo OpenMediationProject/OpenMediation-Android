@@ -8,6 +8,7 @@ import com.ironsource.mediationsdk.IronSource;
 import com.ironsource.mediationsdk.logger.IronSourceError;
 import com.ironsource.mediationsdk.utils.IronSourceUtils;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
@@ -62,6 +63,11 @@ public class IronSourceAdapter extends CustomAdsAdapter {
     @Override
     public int getAdNetworkId() {
         return MediationInfo.MEDIATION_ID_15;
+    }
+
+    @Override
+    public boolean isAdNetworkInit() {
+        return IronSourceBannerManager.getInstance().isInit();
     }
 
     @Override
@@ -132,7 +138,7 @@ public class IronSourceAdapter extends CustomAdsAdapter {
     @Override
     public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
-        String checkError = check(activity, adUnitId);
+        String checkError = check(adUnitId);
         if (TextUtils.isEmpty(checkError)) {
             if (callback != null) {
                 mRvCallbacks.put(adUnitId, callback);
@@ -194,7 +200,7 @@ public class IronSourceAdapter extends CustomAdsAdapter {
     @Override
     public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
-        String checkError = check(activity, adUnitId);
+        String checkError = check(adUnitId);
         if (TextUtils.isEmpty(checkError)) {
             if (callback != null) {
                 mIsCallbacks.put(adUnitId, callback);
@@ -211,6 +217,45 @@ public class IronSourceAdapter extends CustomAdsAdapter {
     @Override
     public boolean isInterstitialAdAvailable(String adUnitId) {
         return IronSourceManager.getInstance().isInterstitialReady(adUnitId);
+    }
+
+    @Override
+    public void initBannerAd(Activity activity, Map<String, Object> extras, BannerAdCallback callback) {
+        super.initBannerAd(activity, extras, callback);
+        String error = check(activity);
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onBannerAdInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error));
+            }
+            return;
+        }
+        IronSourceBannerManager.getInstance().initAd(activity, extras, callback);
+    }
+
+    @Override
+    public void loadBannerAd(Activity activity, String adUnitId, Map<String, Object> extras, BannerAdCallback callback) {
+        super.loadBannerAd(activity, adUnitId, extras, callback);
+        String error = check(activity);
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error));
+            }
+            return;
+        }
+        IronSourceBannerManager.getInstance().loadAd(activity, adUnitId, extras, callback);
+    }
+
+    @Override
+    public boolean isBannerAdAvailable(String adUnitId) {
+        return IronSourceBannerManager.getInstance().isAdAvailable(adUnitId);
+    }
+
+    @Override
+    public void destroyBannerAd(String adUnitId) {
+        super.destroyBannerAd(adUnitId);
+        IronSourceBannerManager.getInstance().destroyAd(adUnitId);
     }
 
     //region ISDemandOnlyInterstitialListener implementation.
@@ -254,7 +299,7 @@ public class IronSourceAdapter extends CustomAdsAdapter {
     void onInterstitialAdClicked(String instanceId) {
         InterstitialAdCallback callback = mIsCallbacks.get(instanceId);
         if (callback != null) {
-            callback.onInterstitialAdClick();
+            callback.onInterstitialAdClicked();
         }
     }
 

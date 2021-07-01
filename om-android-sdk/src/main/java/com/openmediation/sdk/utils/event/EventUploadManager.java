@@ -232,7 +232,7 @@ public class EventUploadManager implements Request.OnRequestCallback {
         AdRequest.post().url(url).body(requestBody).headers(headers).connectTimeout(50000)
                 .readTimeout(100000)
                 .callback(this)
-                .performRequest(AdtUtil.getApplication());
+                .performRequest(AdtUtil.getInstance().getApplicationContext());
     }
 
     /**

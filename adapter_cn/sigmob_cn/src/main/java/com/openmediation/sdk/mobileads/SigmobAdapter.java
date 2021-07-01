@@ -16,8 +16,6 @@ import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.sigmob.windad.WindAdError;
 import com.sigmob.windad.WindAdOptions;
 import com.sigmob.windad.WindAds;
-import com.sigmob.windad.WindAgeRestrictedUserStatus;
-import com.sigmob.windad.WindConsentStatus;
 import com.sigmob.windad.interstitial.WindInterstitialAd;
 import com.sigmob.windad.interstitial.WindInterstitialAdListener;
 import com.sigmob.windad.interstitial.WindInterstitialAdRequest;
@@ -56,21 +54,6 @@ public class SigmobAdapter extends CustomAdsAdapter implements WindRewardedVideo
     @Override
     public int getAdNetworkId() {
         return MediationInfo.MEDIATION_ID_20;
-    }
-
-    @Override
-    public void setGDPRConsent(Context context, boolean consent) {
-        super.setGDPRConsent(context, consent);
-        WindAds ads = WindAds.sharedAds();
-        ads.setUserGDPRConsentStatus(consent ? WindConsentStatus.ACCEPT : WindConsentStatus.DENIED);
-    }
-
-    @Override
-    public void setAgeRestricted(Context context, boolean restricted) {
-        super.setAgeRestricted(context, restricted);
-        WindAds ads = WindAds.sharedAds();
-        ads.setIsAgeRestrictedUser(restricted ?
-                WindAgeRestrictedUserStatus.WindAgeRestrictedStatusYES : WindAgeRestrictedUserStatus.WindAgeRestrictedStatusNO);
     }
 
     @Override
@@ -380,7 +363,7 @@ public class SigmobAdapter extends CustomAdsAdapter implements WindRewardedVideo
     public void onInterstitialAdClicked(String placementId) {
         InterstitialAdCallback callback = mFvCallbacks.get(placementId);
         if (callback != null) {
-            callback.onInterstitialAdClick();
+            callback.onInterstitialAdClicked();
         }
     }
 

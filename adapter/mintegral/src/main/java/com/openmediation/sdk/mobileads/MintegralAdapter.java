@@ -20,9 +20,11 @@ import com.mbridge.msdk.out.MBRewardVideoHandler;
 import com.mbridge.msdk.out.MBridgeSDKFactory;
 import com.mbridge.msdk.out.RewardVideoListener;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
+import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.openmediation.sdk.mobileads.mintegral.BuildConfig;
 
@@ -61,6 +63,11 @@ public class MintegralAdapter extends CustomAdsAdapter {
     }
 
     @Override
+    public boolean isAdNetworkInit() {
+        return MintegralSingleTon.getInstance().isInit();
+    }
+
+    @Override
     public void setGDPRConsent(final Context context, final boolean consent) {
         super.setGDPRConsent(context, consent);
         if (context != null) {
@@ -80,63 +87,62 @@ public class MintegralAdapter extends CustomAdsAdapter {
     @Override
     public void initRewardedVideo(final Activity activity, Map<String, Object> dataMap, final RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
-        final String error = check(activity);
-        if (TextUtils.isEmpty(error)) {
-            initSDK(activity.getApplicationContext(), new MintegralSingleTon.InitCallback() {
-                @Override
-                public void onSuccess() {
-                    if (callback != null) {
-                        callback.onRewardedVideoInitSuccess();
-                    }
-                    setCustomParam(activity);
-                }
-
-                @Override
-                public void onFailed(String msg) {
-                    if (callback != null) {
-                        callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
-                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, msg));
-                    }
-                }
-            });
-        } else {
+        final String error = check();
+        if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
                         AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
             }
+            return;
         }
+        initSDK(new MintegralSingleTon.InitCallback() {
+            @Override
+            public void onSuccess() {
+                if (callback != null) {
+                    callback.onRewardedVideoInitSuccess();
+                }
+            }
+
+            @Override
+            public void onFailed(String msg) {
+                if (callback != null) {
+                    callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, msg));
+                }
+            }
+        });
     }
 
     public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
-        realLoadRvAd(activity, adUnitId, extras, callback);
+        String error = check(adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
+            }
+            return;
+        }
+        realLoadRvAd(MediationUtil.getContext(), adUnitId, extras, callback);
     }
 
-    private void realLoadRvAd(final Activity activity, final String adUnitId, final Map<String, Object> extras, final RewardedVideoCallback callback) {
+    private void realLoadRvAd(final Context context, final String adUnitId, final Map<String, Object> extras, final RewardedVideoCallback callback) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
                 try {
-                    String error = check(activity, adUnitId);
-                    if (TextUtils.isEmpty(error)) {
-                        String payload = "";
-                        if (extras != null && extras.containsKey(PAY_LOAD)) {
-                            payload = String.valueOf(extras.get(PAY_LOAD));
-                        }
-                        if (TextUtils.isEmpty(payload)) {
-                            mBidAdUnits.remove(adUnitId);
-                            loadRvAd(activity, adUnitId, callback);
-                        } else {
-                            mBidAdUnits.put(adUnitId, true);
-                            loadRvAdWithBid(activity, adUnitId, payload, callback);
-                        }
-                    } else {
-                        if (callback != null) {
-                            callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
-                                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
-                        }
+                    String payload = "";
+                    if (extras != null && extras.containsKey(PAY_LOAD)) {
+                        payload = String.valueOf(extras.get(PAY_LOAD));
                     }
-                } catch (Exception e) {
+                    if (TextUtils.isEmpty(payload)) {
+                        mBidAdUnits.remove(adUnitId);
+                        loadRvAd(context, adUnitId, callback);
+                    } else {
+                        mBidAdUnits.put(adUnitId, true);
+                        loadRvAdWithBid(context, adUnitId, payload, callback);
+                    }
+                } catch(Exception e) {
                     if (callback != null) {
                         callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
                                 AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, e.getMessage()));
@@ -146,10 +152,10 @@ public class MintegralAdapter extends CustomAdsAdapter {
         });
     }
 
-    private void loadRvAd(Activity activity, String adUnitId, RewardedVideoCallback callback) {
+    private void loadRvAd(Context context, String adUnitId, RewardedVideoCallback callback) {
         MBRewardVideoHandler rewardVideoHandler = mRvAds.get(adUnitId);
         if (rewardVideoHandler == null) {
-            rewardVideoHandler = new MBRewardVideoHandler(activity, "", adUnitId);
+            rewardVideoHandler = new MBRewardVideoHandler(context, "", adUnitId);
             mRvAds.put(adUnitId, rewardVideoHandler);
             rewardVideoHandler.setRewardVideoListener(new MtgRvAdListener(callback));
         }
@@ -162,10 +168,10 @@ public class MintegralAdapter extends CustomAdsAdapter {
         }
     }
 
-    private void loadRvAdWithBid(Activity activity, String adUnitId, String payload, RewardedVideoCallback callback) {
+    private void loadRvAdWithBid(Context context, String adUnitId, String payload, RewardedVideoCallback callback) {
         MBBidRewardVideoHandler rewardVideoHandler = mRvBidAds.get(adUnitId);
         if (rewardVideoHandler == null) {
-            rewardVideoHandler = new MBBidRewardVideoHandler(activity, "", adUnitId);
+            rewardVideoHandler = new MBBidRewardVideoHandler(context, "", adUnitId);
             mRvBidAds.put(adUnitId, rewardVideoHandler);
             rewardVideoHandler.setRewardVideoListener(new MtgRvAdListener(callback));
         }
@@ -194,7 +200,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
     @Override
     public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
-        String error = check(activity, adUnitId);
+        String error = check(adUnitId);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
@@ -232,63 +238,62 @@ public class MintegralAdapter extends CustomAdsAdapter {
     @Override
     public void initInterstitialAd(final Activity activity, Map<String, Object> dataMap, final InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
-        String error = check(activity);
-        if (TextUtils.isEmpty(error)) {
-            initSDK(activity.getApplicationContext(), new MintegralSingleTon.InitCallback() {
-                @Override
-                public void onSuccess() {
-                    if (callback != null) {
-                        callback.onInterstitialAdInitSuccess();
-                    }
-                    setCustomParam(activity);
-                }
-
-                @Override
-                public void onFailed(String msg) {
-                    if (callback != null) {
-                        callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
-                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, msg));
-                    }
-                }
-            });
-        } else {
+        String error = check();
+        if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
                         AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
             }
+            return;
         }
+        initSDK(new MintegralSingleTon.InitCallback() {
+            @Override
+            public void onSuccess() {
+                if (callback != null) {
+                    callback.onInterstitialAdInitSuccess();
+                }
+            }
+
+            @Override
+            public void onFailed(String msg) {
+                if (callback != null) {
+                    callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, msg));
+                }
+            }
+        });
     }
 
     public void loadInterstitialAd(Activity activity, String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, extras, callback);
-        realLoadIsAd(activity, adUnitId, extras, callback);
+        String error = check(adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
+            }
+            return;
+        }
+        realLoadIsAd(MediationUtil.getContext(), adUnitId, extras, callback);
     }
 
-    private void realLoadIsAd(final Activity activity, final String adUnitId, final Map<String, Object> extras, final InterstitialAdCallback callback) {
+    private void realLoadIsAd(final Context context, final String adUnitId, final Map<String, Object> extras, final InterstitialAdCallback callback) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
                 try {
-                    String error = check(activity, adUnitId);
-                    if (TextUtils.isEmpty(error)) {
-                        String payload = "";
-                        if (extras != null && extras.containsKey(PAY_LOAD)) {
-                            payload = String.valueOf(extras.get(PAY_LOAD));
-                        }
-                        if (TextUtils.isEmpty(payload)) {
-                            mBidAdUnits.remove(adUnitId);
-                            loadIsAd(activity, adUnitId, callback);
-                        } else {
-                            mBidAdUnits.put(adUnitId, true);
-                            loadIsAdWithBid(activity, adUnitId, payload, callback);
-                        }
-                    } else {
-                        if (callback != null) {
-                            callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
-                                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
-                        }
+                    String payload = "";
+                    if (extras != null && extras.containsKey(PAY_LOAD)) {
+                        payload = String.valueOf(extras.get(PAY_LOAD));
                     }
-                } catch (Exception e) {
+                    if (TextUtils.isEmpty(payload)) {
+                        mBidAdUnits.remove(adUnitId);
+                        loadIsAd(context, adUnitId, callback);
+                    } else {
+                        mBidAdUnits.put(adUnitId, true);
+                        loadIsAdWithBid(context, adUnitId, payload, callback);
+                    }
+                } catch(Exception e) {
                     if (callback != null) {
                         callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
                                 AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, e.getMessage()));
@@ -298,10 +303,10 @@ public class MintegralAdapter extends CustomAdsAdapter {
         });
     }
 
-    private void loadIsAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
+    private void loadIsAd(Context context, String adUnitId, InterstitialAdCallback callback) {
         MBInterstitialVideoHandler mtgInterstitialVideoHandler = mInterstitialAds.get(adUnitId);
         if (mtgInterstitialVideoHandler == null) {
-            mtgInterstitialVideoHandler = new MBInterstitialVideoHandler(activity, "", adUnitId);
+            mtgInterstitialVideoHandler = new MBInterstitialVideoHandler(context, "", adUnitId);
             mInterstitialAds.put(adUnitId, mtgInterstitialVideoHandler);
             mtgInterstitialVideoHandler.setInterstitialVideoListener(new MtgInterstitialAdListener(callback));
         }
@@ -314,10 +319,10 @@ public class MintegralAdapter extends CustomAdsAdapter {
         }
     }
 
-    private void loadIsAdWithBid(Activity activity, String adUnitId, String payload, InterstitialAdCallback callback) {
+    private void loadIsAdWithBid(Context context, String adUnitId, String payload, InterstitialAdCallback callback) {
         MBBidInterstitialVideoHandler mtgInterstitialVideoHandler = mInterstitialBidAds.get(adUnitId);
         if (mtgInterstitialVideoHandler == null) {
-            mtgInterstitialVideoHandler = new MBBidInterstitialVideoHandler(activity, "", adUnitId);
+            mtgInterstitialVideoHandler = new MBBidInterstitialVideoHandler(context, "", adUnitId);
             mInterstitialBidAds.put(adUnitId, mtgInterstitialVideoHandler);
             mtgInterstitialVideoHandler.setInterstitialVideoListener(new MtgInterstitialAdListener(callback));
         }
@@ -346,7 +351,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
     @Override
     public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
-        String error = check(activity, adUnitId);
+        String error = check(adUnitId);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
@@ -381,17 +386,47 @@ public class MintegralAdapter extends CustomAdsAdapter {
         }
     }
 
-    private void initSDK(Context context, MintegralSingleTon.InitCallback listener) {
-        MintegralSingleTon.getInstance().initSDK(context, mAppKey, listener);
+    @Override
+    public void initBannerAd(Activity activity, Map<String, Object> extras, BannerAdCallback callback) {
+        super.initBannerAd(activity, extras, callback);
+        String error = check();
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onBannerAdInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error));
+            }
+            return;
+        }
+        MintegralBannerManager.getInstance().initAd(MediationUtil.getContext(), extras, callback);
     }
 
-    private void setCustomParam(Context context) {
-        if (mUserAge != null) {
-            setUserAge(context, mUserAge);
+    @Override
+    public void loadBannerAd(Activity activity, String adUnitId, Map<String, Object> extras, BannerAdCallback callback) {
+        super.loadBannerAd(activity, adUnitId, extras, callback);
+        String error = check(adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error));
+            }
+            return;
         }
-        if (mUserGender != null) {
-            setUserGender(context, mUserGender);
-        }
+        MintegralBannerManager.getInstance().loadAd(MediationUtil.getContext(), adUnitId, extras, callback);
+    }
+
+    @Override
+    public boolean isBannerAdAvailable(String adUnitId) {
+        return MintegralBannerManager.getInstance().isAdAvailable(adUnitId);
+    }
+
+    @Override
+    public void destroyBannerAd(String adUnitId) {
+        super.destroyBannerAd(adUnitId);
+        MintegralBannerManager.getInstance().destroyAd(adUnitId);
+    }
+
+    private void initSDK(MintegralSingleTon.InitCallback listener) {
+        MintegralSingleTon.getInstance().initSDK(MediationUtil.getContext(), mAppKey, listener);
     }
 
     private static class MtgInterstitialAdListener implements InterstitialVideoListener {
@@ -437,17 +472,17 @@ public class MintegralAdapter extends CustomAdsAdapter {
         }
 
         @Override
-        public void onShowFail(String s) {
+        public void onShowFail(String errorMsg) {
             if (mCallback != null) {
                 mCallback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, "MintegralAdapter", s));
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, "MintegralAdapter", errorMsg));
             }
         }
 
         @Override
         public void onVideoAdClicked(String placementId, String unitId) {
             if (mCallback != null) {
-                mCallback.onInterstitialAdClick();
+                mCallback.onInterstitialAdClicked();
             }
         }
 

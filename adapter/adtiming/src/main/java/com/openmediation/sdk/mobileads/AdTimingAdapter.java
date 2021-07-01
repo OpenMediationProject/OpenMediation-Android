@@ -14,28 +14,34 @@ import com.adtbid.sdk.utils.error.AdTimingError;
 import com.adtbid.sdk.video.AdTimingRewardedVideo;
 import com.adtbid.sdk.video.RewardedVideoListener;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
+import com.openmediation.sdk.mediation.MediationUtil;
+import com.openmediation.sdk.mediation.NativeAdCallback;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.openmediation.sdk.mobileads.adtiming.BuildConfig;
+import com.openmediation.sdk.nativead.NativeAdView;
 import com.openmediation.sdk.utils.AdLog;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoListener, InterstitialAdListener {
     private static final String TAG = "OM-AdTiming: ";
     private static final String PAY_LOAD = "pay_load";
-    private ConcurrentMap<String, RewardedVideoCallback> mInitVideoListeners;
-    private ConcurrentMap<String, InterstitialAdCallback> mInitInterstitialListeners;
+    private List<RewardedVideoCallback> mInitVideoListeners;
+    private List<InterstitialAdCallback> mInitInterstitialListeners;
     private ConcurrentMap<String, RewardedVideoCallback> mVideoListeners;
     private ConcurrentMap<String, InterstitialAdCallback> mInterstitialListeners;
 
     public AdTimingAdapter() {
-        mInitVideoListeners = new ConcurrentHashMap<>();
-        mInitInterstitialListeners = new ConcurrentHashMap<>();
+        mInitVideoListeners = new CopyOnWriteArrayList<>();
+        mInitInterstitialListeners = new CopyOnWriteArrayList<>();
         mVideoListeners = new ConcurrentHashMap<>();
         mInterstitialListeners = new ConcurrentHashMap<>();
     }
@@ -53,6 +59,11 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
     @Override
     public int getAdNetworkId() {
         return MediationInfo.MEDIATION_ID_1;
+    }
+
+    @Override
+    public boolean isAdNetworkInit() {
+        return AdTimingSingleTon.getInstance().isInit();
     }
 
     @Override
@@ -100,32 +111,35 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
     @Override
     public void initRewardedVideo(Activity activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
-        String error = check(activity);
+        String error = check();
         if (!TextUtils.isEmpty(error)) {
             callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
                     AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
             return;
         }
-        String pid = (String) dataMap.get("pid");
-        mInitVideoListeners.put(pid, callback);
+        if (callback != null) {
+            mInitVideoListeners.add(callback);
+        }
         String appKey = (String) dataMap.get("AppKey");
-        initSDK(activity, appKey);
+        initSDK(appKey);
     }
 
     @Override
     public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
-        loadRewardedVideoAd(activity, adUnitId, extras, callback);
+        loadRewardedVideoAd(adUnitId, extras, callback);
     }
 
-    private void loadRewardedVideoAd(Activity activity, String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
-        String error = check(activity, adUnitId);
+    private void loadRewardedVideoAd(String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
+        String error = check(adUnitId);
         if (!TextUtils.isEmpty(error)) {
             callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
                     AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
             return;
         }
-        mVideoListeners.put(adUnitId, callback);
+        if (!TextUtils.isEmpty(adUnitId) && callback != null) {
+            mVideoListeners.put(adUnitId, callback);
+        }
         AdTimingRewardedVideo.setAdListener(adUnitId, this);
         String payload = "";
         if (extras != null && extras.containsKey(PAY_LOAD)) {
@@ -137,7 +151,7 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
     @Override
     public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
-        String error = check(activity, adUnitId);
+        String error = check(adUnitId);
         if (!TextUtils.isEmpty(error)) {
             callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
                     AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
@@ -160,26 +174,27 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
     @Override
     public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
-        String error = check(activity);
+        String error = check();
         if (!TextUtils.isEmpty(error)) {
             callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
                     AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
             return;
         }
-        String pid = (String) dataMap.get("pid");
-        mInitInterstitialListeners.put(pid, callback);
+        if (callback != null) {
+            mInitInterstitialListeners.add(callback);
+        }
         String appKey = (String) dataMap.get("AppKey");
-        initSDK(activity, appKey);
+        initSDK(appKey);
     }
 
     @Override
     public void loadInterstitialAd(Activity activity, String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, extras, callback);
-        loadIsAd(activity, adUnitId, extras, callback);
+        loadIsAd(adUnitId, extras, callback);
     }
 
-    private void loadIsAd(Activity activity, String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback) {
-        String error = check(activity, adUnitId);
+    private void loadIsAd(String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback) {
+        String error = check(adUnitId);
         if (!TextUtils.isEmpty(error)) {
             callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
                     AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
@@ -189,7 +204,9 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
         if (extras != null && extras.containsKey(PAY_LOAD)) {
             payload = String.valueOf(extras.get(PAY_LOAD));
         }
-        mInterstitialListeners.put(adUnitId, callback);
+        if (!TextUtils.isEmpty(adUnitId) && callback != null) {
+            mInterstitialListeners.put(adUnitId, callback);
+        }
         AdTimingInterstitialAd.setAdListener(adUnitId, this);
         AdTimingInterstitialAd.loadAdWithPayload(adUnitId, payload);
     }
@@ -197,7 +214,7 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
     @Override
     public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
-        String error = check(activity, adUnitId);
+        String error = check(adUnitId);
         if (!TextUtils.isEmpty(error)) {
             callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
                     AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
@@ -217,50 +234,126 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
         return AdTimingInterstitialAd.isReady(adUnitId);
     }
 
-    private void initSDK(final Activity activity, String appKey) {
-        AdTimingSingleTon.getInstance().initAdTiming(activity, appKey, new AdTimingSingleTon.AdTimingInitCallback() {
+    @Override
+    public void initBannerAd(Activity activity, Map<String, Object> extras, BannerAdCallback callback) {
+        super.initBannerAd(activity, extras, callback);
+        String error = check();
+        if (!TextUtils.isEmpty(error)) {
+            callback.onBannerAdInitFailed(AdapterErrorBuilder.buildInitError(
+                    AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error));
+            return;
+        }
+        AdTimingBannerManager.getInstance().addBannerAdCallback(callback);
+        String appKey = (String) extras.get("AppKey");
+        initSDK(appKey);
+    }
+
+    @Override
+    public void loadBannerAd(Activity activity, String adUnitId, Map<String, Object> extras, BannerAdCallback callback) {
+        super.loadBannerAd(activity, adUnitId, extras, callback);
+        String error = check(adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                    AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error));
+            return;
+        }
+        AdTimingBannerManager.getInstance().loadAd(adUnitId, extras, callback);
+    }
+
+    @Override
+    public boolean isBannerAdAvailable(String adUnitId) {
+        return AdTimingBannerManager.getInstance().isAdAvailable(adUnitId);
+    }
+
+    @Override
+    public void destroyBannerAd(String adUnitId) {
+        super.destroyBannerAd(adUnitId);
+        AdTimingBannerManager.getInstance().destroyAd(adUnitId);
+    }
+
+    @Override
+    public void initNativeAd(Activity activity, Map<String, Object> extras, NativeAdCallback callback) {
+        super.initNativeAd(activity, extras, callback);
+        String error = check();
+        if (!TextUtils.isEmpty(error)) {
+            callback.onNativeAdInitFailed(AdapterErrorBuilder.buildInitError(
+                    AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, error));
+            return;
+        }
+        AdTimingNativeManager.getInstance().addNativeAdCallback(callback);
+        String appKey = (String) extras.get("AppKey");
+        initSDK(appKey);
+    }
+
+    @Override
+    public void loadNativeAd(Activity activity, String adUnitId, Map<String, Object> extras, NativeAdCallback callback) {
+        super.loadNativeAd(activity, adUnitId, extras, callback);
+        String error = check(adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                    AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, error));
+            return;
+        }
+        AdTimingNativeManager.getInstance().loadAd(adUnitId, extras, callback);
+    }
+
+    @Override
+    public void registerNativeAdView(String adUnitId, NativeAdView adView, NativeAdCallback callback) {
+        super.registerNativeAdView(adUnitId, adView, callback);
+        AdTimingNativeManager.getInstance().registerNativeView(adUnitId, adView, callback);
+    }
+
+    @Override
+    public void destroyNativeAd(String adUnitId) {
+        super.destroyNativeAd(adUnitId);
+        AdTimingNativeManager.getInstance().destroyAd(adUnitId);
+    }
+
+    private void initSDK(String appKey) {
+        AdTimingSingleTon.getInstance().initAdTiming(MediationUtil.getContext(), appKey, new AdTimingSingleTon.AdTimingInitCallback() {
             @Override
             public void onSuccess() {
                 if (!mInitVideoListeners.isEmpty()) {
-                    for (Map.Entry<String, RewardedVideoCallback> rewardedVideoCallbackEntry : mInitVideoListeners.entrySet()) {
-                        if (rewardedVideoCallbackEntry != null) {
-                            rewardedVideoCallbackEntry.getValue().onRewardedVideoInitSuccess();
-                        }
+                    for (RewardedVideoCallback videoCallback : mInitVideoListeners) {
+                        videoCallback.onRewardedVideoInitSuccess();
                     }
                     mInitVideoListeners.clear();
                 }
 
                 if (!mInitInterstitialListeners.isEmpty()) {
-                    for (Map.Entry<String, InterstitialAdCallback> interstitialAdCallbackEntry : mInitInterstitialListeners.entrySet()) {
-                        if (interstitialAdCallbackEntry != null) {
-                            interstitialAdCallbackEntry.getValue().onInterstitialAdInitSuccess();
-                        }
+                    for (InterstitialAdCallback adCallback : mInitInterstitialListeners) {
+                        adCallback.onInterstitialAdInitSuccess();
                     }
                 }
                 mInitInterstitialListeners.clear();
+
+                AdTimingBannerManager.getInstance().onInitSuccess();
+                AdTimingNativeManager.getInstance().onInitSuccess();
             }
 
             @Override
             public void onError(AdTimingError adTimingError) {
                 if (!mInitVideoListeners.isEmpty()) {
-                    for (Map.Entry<String, RewardedVideoCallback> rewardedVideoCallbackEntry : mInitVideoListeners.entrySet()) {
-                        if (rewardedVideoCallbackEntry != null) {
-                            rewardedVideoCallbackEntry.getValue().onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
-                                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, adTimingError.getCode(), adTimingError.getMessage()));
-                        }
+                    for (RewardedVideoCallback videoCallback : mInitVideoListeners) {
+                        videoCallback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, adTimingError.getCode(), adTimingError.getMessage()));
                     }
                     mInitVideoListeners.clear();
                 }
 
                 if (!mInitInterstitialListeners.isEmpty()) {
-                    for (Map.Entry<String, InterstitialAdCallback> interstitialAdCallbackEntry : mInitInterstitialListeners.entrySet()) {
-                        if (interstitialAdCallbackEntry != null) {
-                            interstitialAdCallbackEntry.getValue().onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
-                                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, adTimingError.getCode(), adTimingError.getMessage()));
-                        }
+                    for (InterstitialAdCallback adCallback : mInitInterstitialListeners) {
+                        adCallback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
+                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, adTimingError.getCode(), adTimingError.getMessage()));
                     }
                     mInitInterstitialListeners.clear();
                 }
+
+                AdTimingBannerManager.getInstance().onInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, adTimingError.getCode(), adTimingError.getMessage()));
+
+                AdTimingNativeManager.getInstance().onInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, adTimingError.getCode(), adTimingError.getMessage()));
             }
         });
     }
@@ -320,7 +413,7 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
             AdLog.getSingleton().LogD(TAG + "onInterstitialAdClicked : " + placementId);
             InterstitialAdCallback callback = mInterstitialListeners.get(placementId);
             if (callback != null) {
-                callback.onInterstitialAdClick();
+                callback.onInterstitialAdClicked();
             }
         } catch (Exception ignored) {
         }

@@ -4,6 +4,7 @@
 package com.openmediation.sdk;
 
 import com.openmediation.sdk.utils.AdLog;
+import com.openmediation.sdk.utils.HandlerUtil;
 import com.openmediation.sdk.utils.Preconditions;
 import com.openmediation.sdk.utils.cache.DataCache;
 import com.openmediation.sdk.utils.cache.LifetimeRevenueData;
@@ -61,10 +62,8 @@ public class ImpressionManager {
             AdLog.getSingleton().LogD("Impressions reportImpressionDataToPublisher error: instance is null");
             return;
         }
-
-        // add Revenue
+        // Add Revenue
         LifetimeRevenueData.addRevenue(instance.getShowRevenue());
-
         // sendImpressionDataToPublisher
         if (!mListeners.isEmpty()) {
             send(instance, scene);
@@ -83,10 +82,17 @@ public class ImpressionManager {
         } else {
             error = ErrorBuilder.build(ErrorCode.CODE_SHOW_IMPRESSION_NOT_ENABLED, ErrorCode.MSG_SHOW_IMPRESSION_NOT_ENABLED, -1);
         }
-        Set<ImpressionDataListener> listenerSet = cloneListeners();
-        for (ImpressionDataListener listener : listenerSet) {
-            listener.onImpression(error, data);
-        }
+        final Error finalError = error;
+        final ImpressionData finalData = data;
+        HandlerUtil.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Set<ImpressionDataListener> listenerSet = cloneListeners();
+                for (ImpressionDataListener listener : listenerSet) {
+                    listener.onImpression(finalError, finalData);
+                }
+            }
+        });
     }
 
     private static Set<ImpressionDataListener> cloneListeners() {

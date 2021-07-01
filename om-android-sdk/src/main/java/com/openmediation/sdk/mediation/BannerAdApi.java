@@ -10,7 +10,15 @@ import java.util.Map;
 public interface BannerAdApi {
     void initBannerAd(Activity activity, Map<String, Object> dataMap, BannerAdCallback callback);
 
-    void loadBannerAd(Activity activity, String adUnitId, BannerAdCallback callback);
+    void loadBannerAd(Activity activity, String placementId, Map<String, Object> extras, BannerAdCallback callback);
 
-    void destroyBannerAd();
+    /**
+     * Checks if third-party ad networks have available ads
+     *
+     * @param adUnitId ad unit id on third-party ad networks
+     * @return third-party ad networks have available ads or not
+     */
+    boolean isBannerAdAvailable(String adUnitId);
+
+    void destroyBannerAd(String placementId);
 }

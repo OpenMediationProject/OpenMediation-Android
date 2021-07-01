@@ -6,12 +6,16 @@ package com.openmediation.sdk.mobileads;
 import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
+import android.view.ViewGroup;
 
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
+import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
+import com.openmediation.sdk.mediation.SplashAdCallback;
 import com.vungle.warren.BuildConfig;
 import com.vungle.warren.InitCallback;
 import com.vungle.warren.LoadAdCallback;
@@ -50,6 +54,11 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
     }
 
     @Override
+    public boolean isAdNetworkInit() {
+        return VungleSingleTon.getInstance().getInitState() == VungleSingleTon.InitState.INIT_SUCCESS;
+    }
+
+    @Override
     public void setGDPRConsent(Context context, boolean consent) {
         super.setGDPRConsent(context, consent);
         Vungle.updateConsentStatus(consent ? Vungle.Consent.OPTED_IN : Vungle.Consent.OPTED_OUT, CONSENT_MESSAGE_VERSION);
@@ -61,96 +70,61 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
         Vungle.updateCCPAStatus(value ? Vungle.Consent.OPTED_OUT : Vungle.Consent.OPTED_IN);
     }
 
-    private void initSDK(final Activity activity) {
-        VungleSingleTon.getInstance().init(activity.getApplicationContext(), mAppKey, new InitCallback() {
+    private void setCustomParams() {
+        if (mUserConsent != null) {
+            setGDPRConsent(MediationUtil.getContext(), mUserConsent);
+        }
+        if (mUSPrivacyLimit != null) {
+            setUSPrivacyLimit(MediationUtil.getContext(), mUSPrivacyLimit);
+        }
+    }
+
+    @Override
+    public void initRewardedVideo(final Activity activity, Map<String, Object> dataMap
+            , final RewardedVideoCallback callback) {
+        super.initRewardedVideo(activity, dataMap, callback);
+        String error = check();
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
+            }
+            return;
+        }
+        VungleSingleTon.getInstance().init(MediationUtil.getContext(), mAppKey, new InitCallback() {
             @Override
             public void onSuccess() {
-                if (mUserConsent != null) {
-                    setGDPRConsent(activity, mUserConsent);
-                }
-                if (mUSPrivacyLimit != null) {
-                    setUSPrivacyLimit(activity, mUSPrivacyLimit);
-                }
-
-                if (!mRvCallback.isEmpty()) {
-                    for (Map.Entry<String, RewardedVideoCallback> videoCallbackEntry : mRvCallback.entrySet()) {
-                        videoCallbackEntry.getValue().onRewardedVideoInitSuccess();
-                    }
-                }
-                if (!mIsCallback.isEmpty()) {
-                    for (Map.Entry<String, InterstitialAdCallback> interstitialAdCallbackEntry : mIsCallback.entrySet()) {
-                        interstitialAdCallbackEntry.getValue().onInterstitialAdInitSuccess();
-                    }
+                setCustomParams();
+                if (callback != null) {
+                    callback.onRewardedVideoInitSuccess();
                 }
             }
 
             @Override
             public void onError(VungleException error) {
-                if (!mRvCallback.isEmpty()) {
-                    for (Map.Entry<String, RewardedVideoCallback> videoCallbackEntry : mRvCallback.entrySet()) {
-                        videoCallbackEntry.getValue().onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
-                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error.getExceptionCode(), error.getLocalizedMessage()));
-                    }
-                }
-                if (!mIsCallback.isEmpty()) {
-                    for (Map.Entry<String, InterstitialAdCallback> interstitialAdCallbackEntry : mIsCallback.entrySet()) {
-                        interstitialAdCallbackEntry.getValue().onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
-                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error.getExceptionCode(), error.getLocalizedMessage()));
-                    }
+                if (callback != null) {
+                    callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error.getExceptionCode(), error.getLocalizedMessage()));
                 }
             }
 
             @Override
             public void onAutoCacheAdAvailable(String placementId) {
+
             }
         });
     }
 
     @Override
-    public void initRewardedVideo(Activity activity, Map<String, Object> dataMap
-            , final RewardedVideoCallback callback) {
-        super.initRewardedVideo(activity, dataMap, callback);
-        String error = check(activity, (String) dataMap.get("pid"));
-        if (TextUtils.isEmpty(error)) {
-            String pid = (String) dataMap.get("pid");
-            switch (VungleSingleTon.getInstance().getInitState()) {
-                case NOT_INIT:
-                case INIT_PENDING:
-                    mRvCallback.put(pid, callback);
-                    initSDK(activity);
-                    break;
-                case INIT_SUCCESS:
-                    if (callback != null) {
-                        callback.onRewardedVideoInitSuccess();
-                    }
-                    break;
-                case INIT_FAIL:
-                    if (callback != null) {
-                        callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
-                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Vungle init failed"));
-                    }
-                    break;
-                default:
-                    break;
-            }
-        } else {
-            callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
-                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
-        }
-    }
-
-    @Override
     public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
-        loadRv(activity, adUnitId, extras, callback);
+        loadRv(adUnitId, extras, callback);
     }
 
-    private void loadRv(Activity activity, String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
-        String error = check(activity, adUnitId);
+    private void loadRv(String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
+        String error = check(adUnitId);
         if (TextUtils.isEmpty(error)) {
-            if (!mRvCallback.containsKey(adUnitId)) {
-                mRvCallback.put(adUnitId, callback);
-            }
+            mRvCallback.put(adUnitId, callback);
             if (Vungle.isInitialized()) {
                 if (isRewardedVideoAvailable(adUnitId)) {
                     callback.onRewardedVideoLoadSuccess();
@@ -170,11 +144,9 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
     @Override
     public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
-        String error = check(activity, adUnitId);
+        String error = check(adUnitId);
         if (TextUtils.isEmpty(error)) {
-            if (!mRvCallback.containsKey(adUnitId)) {
-                mRvCallback.put(adUnitId, callback);
-            }
+            mRvCallback.put(adUnitId, callback);
             if (isRewardedVideoAvailable(adUnitId)) {
                 Vungle.playAd(adUnitId, null, this);
             } else {
@@ -193,49 +165,48 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
     }
 
     @Override
-    public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
+    public void initInterstitialAd(final Activity activity, Map<String, Object> dataMap, final InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
-        String error = check(activity, (String) dataMap.get("pid"));
-        if (TextUtils.isEmpty(error)) {
-            String pid = (String) dataMap.get("pid");
-            switch (VungleSingleTon.getInstance().getInitState()) {
-                case NOT_INIT:
-                case INIT_PENDING:
-                    mIsCallback.put(pid, callback);
-                    initSDK(activity);
-                    break;
-                case INIT_SUCCESS:
-                    if (callback != null) {
-                        callback.onInterstitialAdInitSuccess();
-                    }
-                    break;
-                case INIT_FAIL:
-                    if (callback != null) {
-                        callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
-                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Vungle init failed"));
-                    }
-                    break;
-                default:
-                    break;
-            }
-        } else {
+        final String error = check();
+        if (!TextUtils.isEmpty(error)) {
             callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
                     AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
+            return;
         }
+        VungleSingleTon.getInstance().init(MediationUtil.getContext(), mAppKey, new InitCallback() {
+            @Override
+            public void onSuccess() {
+                setCustomParams();
+                if (callback != null) {
+                    callback.onInterstitialAdInitSuccess();
+                }
+            }
+
+            @Override
+            public void onError(VungleException error) {
+                if (callback != null) {
+                    callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error.getExceptionCode(), error.getLocalizedMessage()));
+                }
+            }
+
+            @Override
+            public void onAutoCacheAdAvailable(String placementId) {
+
+            }
+        });
     }
 
     @Override
     public void loadInterstitialAd(Activity activity, String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, extras, callback);
-        loadIs(activity, adUnitId, extras, callback);
+        loadIs(adUnitId, extras, callback);
     }
 
-    private void loadIs(Activity activity, String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback) {
-        String error = check(activity, adUnitId);
+    private void loadIs(String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback) {
+        String error = check(adUnitId);
         if (TextUtils.isEmpty(error)) {
-            if (!mIsCallback.containsKey(adUnitId)) {
-                mIsCallback.put(adUnitId, callback);
-            }
+            mIsCallback.put(adUnitId, callback);
             if (Vungle.isInitialized()) {
                 if (isInterstitialAdAvailable(adUnitId)) {
                     callback.onInterstitialAdLoadSuccess();
@@ -255,11 +226,9 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
     @Override
     public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
-        String error = check(activity, adUnitId);
+        String error = check(adUnitId);
         if (TextUtils.isEmpty(error)) {
-            if (!mIsCallback.containsKey(adUnitId)) {
-                mIsCallback.put(adUnitId, callback);
-            }
+            mIsCallback.put(adUnitId, callback);
             if (isInterstitialAdAvailable(adUnitId)) {
                 Vungle.playAd(adUnitId, null, this);
             } else {
@@ -275,6 +244,130 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
     @Override
     public boolean isInterstitialAdAvailable(String adUnitId) {
         return !TextUtils.isEmpty(adUnitId) && Vungle.canPlayAd(adUnitId);
+    }
+
+    @Override
+    public void initBannerAd(final Activity activity, Map<String, Object> extras, final BannerAdCallback callback) {
+        super.initBannerAd(activity, extras, callback);
+        final String error = check(activity);
+        if (!TextUtils.isEmpty(error)) {
+            callback.onBannerAdInitFailed(AdapterErrorBuilder.buildInitError(
+                    AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error));
+            return;
+        }
+        VungleSingleTon.getInstance().init(MediationUtil.getContext(), mAppKey, new InitCallback() {
+            @Override
+            public void onSuccess() {
+                setCustomParams();
+                if (callback != null) {
+                    callback.onBannerAdInitSuccess();
+                }
+            }
+
+            @Override
+            public void onError(VungleException error) {
+                if (callback != null) {
+                    callback.onBannerAdInitFailed(AdapterErrorBuilder.buildInitError(
+                            AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error.getExceptionCode(), error.getLocalizedMessage()));
+                }
+            }
+
+            @Override
+            public void onAutoCacheAdAvailable(String placementId) {
+
+            }
+        });
+    }
+
+    @Override
+    public void loadBannerAd(Activity activity, String adUnitId, Map<String, Object> extras, BannerAdCallback callback) {
+        super.loadBannerAd(activity, adUnitId, extras, callback);
+        String error = check(adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error));
+            }
+            return;
+        }
+        VungleBannerManager.getInstance().loadAd(MediationUtil.getContext(), adUnitId, extras, callback);
+    }
+
+    @Override
+    public boolean isBannerAdAvailable(String adUnitId) {
+        return VungleBannerManager.getInstance().isAdAvailable(adUnitId);
+    }
+
+    @Override
+    public void destroyBannerAd(String adUnitId) {
+        super.destroyBannerAd(adUnitId);
+        VungleBannerManager.getInstance().destroyAd(adUnitId);
+    }
+
+    @Override
+    public void initSplashAd(Activity activity, Map<String, Object> extras, final SplashAdCallback callback) {
+        super.initSplashAd(activity, extras, callback);
+        String error = check();
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onSplashAdInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, error));
+            }
+            return;
+        }
+        VungleSingleTon.getInstance().init(MediationUtil.getContext(), mAppKey, new InitCallback() {
+            @Override
+            public void onSuccess() {
+                setCustomParams();
+                if (callback != null) {
+                    callback.onSplashAdInitSuccess();
+                }
+            }
+
+            @Override
+            public void onError(VungleException error) {
+                if (callback != null) {
+                    callback.onSplashAdInitFailed(AdapterErrorBuilder.buildInitError(
+                            AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, error.getExceptionCode(), error.getLocalizedMessage()));
+                }
+            }
+
+            @Override
+            public void onAutoCacheAdAvailable(String placementId) {
+
+            }
+        });
+    }
+
+    @Override
+    public void loadSplashAd(Activity activity, String adUnitId, Map<String, Object> extras, SplashAdCallback callback) {
+        super.loadSplashAd(activity, adUnitId, extras, callback);
+        String error = check(adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onSplashAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error));
+            }
+            return;
+        }
+        VungleSplashManager.getInstance().loadAd(adUnitId, extras, callback);
+    }
+
+    @Override
+    public boolean isSplashAdAvailable(String adUnitId) {
+        return VungleSplashManager.getInstance().isAdAvailable(adUnitId);
+    }
+
+    @Override
+    public void showSplashAd(Activity activity, String adUnitId, ViewGroup viewGroup, SplashAdCallback callback) {
+        super.showSplashAd(activity, adUnitId, viewGroup, callback);
+        VungleSplashManager.getInstance().showAd(adUnitId, callback);
+    }
+
+    @Override
+    public void destroySplashAd(String adUnitId) {
+        super.destroySplashAd(adUnitId);
+        VungleSplashManager.getInstance().destroyAd(adUnitId);
     }
 
     @Override
@@ -323,7 +416,7 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
         } else {
             InterstitialAdCallback callback = mIsCallback.get(id);
             if (callback != null) {
-                callback.onInterstitialAdClick();
+                callback.onInterstitialAdClicked();
             }
         }
     }

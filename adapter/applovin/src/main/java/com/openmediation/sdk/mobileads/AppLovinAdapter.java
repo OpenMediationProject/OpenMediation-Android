@@ -6,7 +6,10 @@ package com.openmediation.sdk.mobileads;
 import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
+import com.applovin.adview.AppLovinAdView;
 import com.applovin.adview.AppLovinIncentivizedInterstitial;
 import com.applovin.adview.AppLovinInterstitialAd;
 import com.applovin.adview.AppLovinInterstitialAdDialog;
@@ -14,14 +17,17 @@ import com.applovin.sdk.AppLovinAd;
 import com.applovin.sdk.AppLovinAdClickListener;
 import com.applovin.sdk.AppLovinAdDisplayListener;
 import com.applovin.sdk.AppLovinAdLoadListener;
+import com.applovin.sdk.AppLovinAdSize;
 import com.applovin.sdk.AppLovinAdVideoPlaybackListener;
 import com.applovin.sdk.AppLovinErrorCodes;
 import com.applovin.sdk.AppLovinPrivacySettings;
 import com.applovin.sdk.AppLovinSdk;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
+import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.openmediation.sdk.mobileads.applovin.BuildConfig;
 import com.openmediation.sdk.utils.AdLog;
@@ -39,6 +45,8 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
     private final ConcurrentMap<String, AppLovinIncentivizedInterstitial> mRvAds;
     private final ConcurrentMap<String, RewardedVideoCallback> mRvCallbacks;
 
+    private final ConcurrentMap<String, AppLovinAdView> mBannerAds;
+
     static final int AGE_RESTRICTION = 16;
 
     public AppLovinAdapter() {
@@ -47,6 +55,8 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
 
         mRvAds = new ConcurrentHashMap<>();
         mRvCallbacks = new ConcurrentHashMap<>();
+
+        mBannerAds = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -62,6 +72,11 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
     @Override
     public int getAdNetworkId() {
         return MediationInfo.MEDIATION_ID_8;
+    }
+
+    @Override
+    public boolean isAdNetworkInit() {
+        return AppLovinSingleTon.getInstance().isInit();
     }
 
     @Override
@@ -97,9 +112,9 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
     @Override
     public void initRewardedVideo(Activity activity, Map<String, Object> dataMap, final RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
-        String error = check(activity);
+        String error = check();
         if (TextUtils.isEmpty(error)) {
-            initSDK(activity, new AppLovinSingleTon.InitCallback() {
+            initSDK(new AppLovinSingleTon.InitCallback() {
                 @Override
                 public void onSuccess() {
                     if (callback != null) {
@@ -123,11 +138,11 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
         }
     }
 
-    private synchronized void initSDK(Activity activity, AppLovinSingleTon.InitCallback callback) {
-        AppLovinSingleTon.getInstance().init(activity, mAppKey, callback);
+    private synchronized void initSDK(AppLovinSingleTon.InitCallback callback) {
+        AppLovinSingleTon.getInstance().init(MediationUtil.getContext(), mAppKey, callback);
     }
 
-    private AppLovinIncentivizedInterstitial getVideo(Activity activity, String adUnitId) {
+    private AppLovinIncentivizedInterstitial getVideo(String adUnitId) {
         AppLovinIncentivizedInterstitial videoAd = mRvAds.get(adUnitId);
         if (videoAd == null) {
             AppLovinSdk sdk = AppLovinSingleTon.getInstance().getAppLovinSdk();
@@ -142,9 +157,9 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
     @Override
     public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras, final RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
-        String error = check(activity, adUnitId);
+        String error = check(adUnitId);
         if (TextUtils.isEmpty(error)) {
-            AppLovinIncentivizedInterstitial videoAd = getVideo(activity, adUnitId);
+            AppLovinIncentivizedInterstitial videoAd = getVideo(adUnitId);
             if (videoAd == null) {
                 callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
                         AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Ad LoadFailed"));
@@ -186,7 +201,7 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
     @Override
     public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
-        String error = check(activity, adUnitId);
+        String error = check(adUnitId);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
@@ -194,7 +209,7 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
             }
             return;
         }
-        AppLovinIncentivizedInterstitial videoAd = getVideo(activity, adUnitId);
+        AppLovinIncentivizedInterstitial videoAd = getVideo(adUnitId);
         if (videoAd == null) {
             if (callback != null) {
                 callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
@@ -211,7 +226,7 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
             if (callback != null) {
                 mRvCallbacks.put(adUnitId, callback);
             }
-            videoAd.show(activity, null, this,
+            videoAd.show(MediationUtil.getContext(), null, this,
                     this, this);
         }
     }
@@ -225,9 +240,9 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
     @Override
     public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, final InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
-        final String error = check(activity);
+        final String error = check();
         if (TextUtils.isEmpty(error)) {
-            initSDK(activity, new AppLovinSingleTon.InitCallback() {
+            initSDK(new AppLovinSingleTon.InitCallback() {
                 @Override
                 public void onSuccess() {
                     if (callback != null) {
@@ -254,7 +269,7 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
     @Override
     public void loadInterstitialAd(Activity activity, final String adUnitId, Map<String, Object> extras, final InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, extras, callback);
-        String error = check(activity, adUnitId);
+        String error = check(adUnitId);
         if (TextUtils.isEmpty(error)) {
             if (isInterstitialAdAvailable(adUnitId)) {
                 if (callback != null) {
@@ -295,7 +310,7 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
     @Override
     public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
-        String error = check(activity, adUnitId);
+        String error = check(adUnitId);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
@@ -306,7 +321,7 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
         if (isInterstitialAdAvailable(adUnitId)) {
             AppLovinSdk sdk = AppLovinSingleTon.getInstance().getAppLovinSdk();
             if (sdk != null) {
-                AppLovinInterstitialAdDialog interstitialAd = AppLovinInterstitialAd.create(sdk, activity);
+                AppLovinInterstitialAdDialog interstitialAd = AppLovinInterstitialAd.create(sdk, MediationUtil.getContext());
                 if (interstitialAd != null) {
                     interstitialAd.setAdClickListener(this);
                     interstitialAd.setAdDisplayListener(this);
@@ -331,6 +346,110 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
     }
 
     @Override
+    public void initBannerAd(Activity activity, Map<String, Object> extras, final BannerAdCallback callback) {
+        super.initBannerAd(activity, extras, callback);
+        final String error = check();
+        if (TextUtils.isEmpty(error)) {
+            initSDK(new AppLovinSingleTon.InitCallback() {
+                @Override
+                public void onSuccess() {
+                    if (callback != null) {
+                        callback.onBannerAdInitSuccess();
+                    }
+                }
+
+                @Override
+                public void onFailed(String msg) {
+                    if (callback != null) {
+                        callback.onBannerAdInitFailed(AdapterErrorBuilder.buildInitError(
+                                AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, msg));
+                    }
+                }
+            });
+        } else {
+            if (callback != null) {
+                callback.onBannerAdInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error));
+            }
+        }
+    }
+
+    @Override
+    public void loadBannerAd(Activity activity, String adUnitId, final Map<String, Object> extras, final BannerAdCallback callback) {
+        super.loadBannerAd(activity, adUnitId, extras, callback);
+        String error = check(adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error));
+            }
+            return;
+        }
+
+        AppLovinAdSize adSize = getAdSize(MediationUtil.getContext(), extras);
+        if (adSize == null) {
+            callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                    AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, "unsupported banner size"));
+            return;
+        }
+        AppLovinSdk sdk = AppLovinSingleTon.getInstance().getAppLovinSdk();
+        final AppLovinAdView appLovinAdView = new AppLovinAdView(sdk, adSize, adUnitId, MediationUtil.getContext());
+        appLovinAdView.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+        appLovinAdView.setAdLoadListener(new AppLovinAdLoadListener() {
+            @Override
+            public void adReceived(AppLovinAd appLovinAd) {
+                if (callback != null) {
+                    callback.onBannerAdLoadSuccess(appLovinAdView);
+                }
+            }
+
+            @Override
+            public void failedToReceiveAd(int i) {
+                if (callback != null) {
+                    callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                            AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, i, AppLovinAdapter.getErrorString(i)));
+                }
+            }
+        });
+        appLovinAdView.setAdClickListener(new AppLovinAdClickListener() {
+            @Override
+            public void adClicked(AppLovinAd appLovinAd) {
+                if (callback != null) {
+                    callback.onBannerAdAdClicked();
+                }
+            }
+        });
+        appLovinAdView.setAdDisplayListener(new AppLovinAdDisplayListener() {
+            @Override
+            public void adDisplayed(AppLovinAd appLovinAd) {
+                if (callback != null) {
+                    callback.onBannerAdAdClicked();
+                }
+            }
+
+            @Override
+            public void adHidden(AppLovinAd appLovinAd) {
+
+            }
+        });
+        appLovinAdView.loadNextAd();
+        mBannerAds.put(adUnitId, appLovinAdView);
+    }
+
+    @Override
+    public void destroyBannerAd(String adUnitId) {
+        super.destroyBannerAd(adUnitId);
+        if (!mBannerAds.containsKey(adUnitId)) {
+            return;
+        }
+        if (mBannerAds.get(adUnitId) != null) {
+            mBannerAds.get(adUnitId).destroy();
+            mBannerAds.remove(adUnitId);
+        }
+    }
+
+    @Override
     public void adClicked(AppLovinAd appLovinAd) {
         AdLog.getSingleton().LogD("OM-AppLovin", "adClicked:" + appLovinAd);
         if (appLovinAd != null) {
@@ -340,7 +459,7 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
             } else {
                 InterstitialAdCallback interstitialAdCallback = mIsCallbacks.get(appLovinAd.getZoneId());
                 if (interstitialAdCallback != null) {
-                    interstitialAdCallback.onInterstitialAdClick();
+                    interstitialAdCallback.onInterstitialAdClicked();
                 }
             }
         }
@@ -401,6 +520,24 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
                     callback.onRewardedVideoAdRewarded();
                 }
             }
+        }
+    }
+
+    private AppLovinAdSize getAdSize(Context context, Map<String, Object> config) {
+        String bannerDesc = MediationUtil.getBannerDesc(config);
+        switch (bannerDesc) {
+            case MediationUtil.DESC_LEADERBOARD:
+                return AppLovinAdSize.LEADER;
+            case MediationUtil.DESC_RECTANGLE:
+                return null;
+            case MediationUtil.DESC_SMART:
+                if (MediationUtil.isLargeScreen(context)) {
+                    return AppLovinAdSize.LEADER;
+                } else {
+                    return AppLovinAdSize.BANNER;
+                }
+            default:
+                return AppLovinAdSize.BANNER;
         }
     }
 

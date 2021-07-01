@@ -6,18 +6,20 @@ package com.openmediation.sdk.utils.helper;
 import android.text.TextUtils;
 import android.util.SparseArray;
 
+import com.openmediation.sdk.core.imp.banner.BnInstance;
 import com.openmediation.sdk.core.imp.interstitialad.IsInstance;
+import com.openmediation.sdk.core.imp.nativead.NaInstance;
 import com.openmediation.sdk.core.imp.promotion.CpInstance;
 import com.openmediation.sdk.core.imp.rewardedvideo.RvInstance;
+import com.openmediation.sdk.core.imp.splash.SpInstance;
 import com.openmediation.sdk.utils.AdapterUtil;
 import com.openmediation.sdk.utils.AdtUtil;
 import com.openmediation.sdk.utils.constant.CommonConstants;
 import com.openmediation.sdk.utils.crash.CrashUtil;
 import com.openmediation.sdk.utils.model.ApiConfigurations;
-import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.Configurations;
 import com.openmediation.sdk.utils.model.Events;
-import com.openmediation.sdk.utils.model.Instance;
+import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.Mediation;
 import com.openmediation.sdk.utils.model.Placement;
 import com.openmediation.sdk.utils.model.Scene;
@@ -32,8 +34,10 @@ import com.openmediation.sdk.utils.request.network.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -75,7 +79,7 @@ public class ConfigurationHelper {
                 .readTimeout(60000)
                 .instanceFollowRedirects(true)
                 .callback(requestCallback)
-                .performRequest(AdtUtil.getApplication());
+                .performRequest(AdtUtil.getInstance().getApplicationContext());
     }
 
     /**
@@ -94,7 +98,7 @@ public class ConfigurationHelper {
         }
         try {
             data = response.body().byteArray();
-        } catch (Exception e) {
+        } catch(Exception e) {
             CrashUtil.getSingleton().saveException(e);
         }
         return data;
@@ -111,6 +115,7 @@ public class ConfigurationHelper {
             Configurations configurations = new Configurations();
             JSONObject configJson = new JSONObject(json);
             configurations.setD(configJson.optInt("d"));
+            configurations.setRi(configJson.optInt("ri"));
             configurations.setCoa(configJson.optInt("coa"));
             configurations.setIcs(configJson.optInt("ics"));
             configurations.setApi(parseApiConfiguration(configJson.optJSONObject("api")));
@@ -125,8 +130,12 @@ public class ConfigurationHelper {
             SparseArray<Mediation> mapps = parseMediationConfigurations(configJson.optJSONArray("ms"));
             configurations.setMs(mapps);
             configurations.setPls(formatPlacement(mapps, configJson.optJSONArray("pls")));
+
+            // uarx
+            JSONArray uarArray = configJson.optJSONArray("uarx");
+            configurations.setUarX(parseUarX(uarArray));
             return configurations;
-        } catch (Exception e) {
+        } catch(Exception e) {
             //
             CrashUtil.getSingleton().saveException(e);
         }
@@ -251,18 +260,30 @@ public class ConfigurationHelper {
         switch (adType) {
             case CommonConstants.VIDEO:
                 RvInstance rvInstance = new RvInstance();
-                rvInstance.setMediationState(Instance.MEDIATION_STATE.NOT_INITIATED);
+                rvInstance.setMediationState(BaseInstance.MEDIATION_STATE.NOT_INITIATED);
                 return rvInstance;
             case CommonConstants.INTERSTITIAL:
                 IsInstance isInstance = new IsInstance();
-                isInstance.setMediationState(Instance.MEDIATION_STATE.NOT_INITIATED);
+                isInstance.setMediationState(BaseInstance.MEDIATION_STATE.NOT_INITIATED);
                 return isInstance;
             case CommonConstants.PROMOTION:
                 CpInstance instance = new CpInstance();
-                instance.setMediationState(Instance.MEDIATION_STATE.NOT_INITIATED);
+                instance.setMediationState(BaseInstance.MEDIATION_STATE.NOT_INITIATED);
                 return instance;
+            case CommonConstants.BANNER:
+                BnInstance bnInstance = new BnInstance();
+                bnInstance.setMediationState(BaseInstance.MEDIATION_STATE.NOT_INITIATED);
+                return bnInstance;
+            case CommonConstants.NATIVE:
+                NaInstance naInstance = new NaInstance();
+                naInstance.setMediationState(BaseInstance.MEDIATION_STATE.NOT_INITIATED);
+                return naInstance;
+            case CommonConstants.SPLASH:
+                SpInstance spInstance = new SpInstance();
+                spInstance.setMediationState(BaseInstance.MEDIATION_STATE.NOT_INITIATED);
+                return spInstance;
             default:
-                return new Instance();
+                return new BaseInstance();
         }
     }
 
@@ -285,5 +306,17 @@ public class ConfigurationHelper {
             mediationSparseArray.put(id, mediation);
         }
         return mediationSparseArray;
+    }
+
+    private static List<Double> parseUarX(JSONArray array) throws Exception {
+        if (array == null || array.length() == 0) {
+            return null;
+        }
+        int len = array.length();
+        List<Double> uarx = new ArrayList<>();
+        for (int i = 0; i < len; i++) {
+            uarx.add(array.optDouble(i));
+        }
+        return uarx;
     }
 }

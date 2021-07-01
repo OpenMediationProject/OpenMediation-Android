@@ -46,7 +46,7 @@ public final class ActWebView {
 
     public BaseWebView getActView() {
         if (isDestroyed || mActView == null) {
-            init(AdtUtil.getApplication());
+            init(AdtUtil.getInstance().getApplicationContext());
             return mActView;
         }
         return mActView;

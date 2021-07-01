@@ -1,27 +1,14 @@
-// Copyright 2020 ADTIMING TECHNOLOGY COMPANY LIMITED
-// Licensed under the GNU Lesser General Public License Version 3
-
 package com.openmediation.sdk.utils.model;
 
 import android.text.TextUtils;
 
-import com.openmediation.sdk.ImpressionManager;
 import com.openmediation.sdk.bid.BidResponse;
-import com.openmediation.sdk.mediation.AdapterError;
+import com.openmediation.sdk.core.runnable.LoadTimeoutRunnable;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
-import com.openmediation.sdk.utils.AdRateUtil;
-import com.openmediation.sdk.utils.AdtUtil;
-import com.openmediation.sdk.utils.DensityUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
-import com.openmediation.sdk.utils.JsonUtil;
-import com.openmediation.sdk.utils.PlacementUtils;
-import com.openmediation.sdk.utils.error.ErrorCode;
-import com.openmediation.sdk.utils.event.EventId;
-import com.openmediation.sdk.utils.event.EventUploadManager;
-
-import org.json.JSONObject;
 
 import java.math.BigDecimal;
+import java.util.concurrent.ScheduledFuture;
 
 public class BaseInstance extends Frequency implements Comparable<BaseInstance> {
     // AuctionID
@@ -75,8 +62,9 @@ public class BaseInstance extends Frequency implements Comparable<BaseInstance> 
 
     protected InstanceLoadStatus mLastLoadStatus;
 
-    public BaseInstance() {
-    }
+    private MEDIATION_STATE mMediationState;
+    private LoadTimeoutRunnable mTimeoutRunnable;
+    private ScheduledFuture mScheduledFuture;
 
     public String getReqId() {
         return reqId;
@@ -202,17 +190,21 @@ public class BaseInstance extends Frequency implements Comparable<BaseInstance> 
         return Double.isNaN(revenue) || revenue <= 0 ? 0d : revenue;
     }
 
-    public double getShowRevenue() {
+    public double getShowRevenue(int scale) {
         if (Double.isNaN(revenue) || revenue <= 0) {
             return 0d;
         }
         try {
             BigDecimal bigDecimal = new BigDecimal(revenue).divide(new BigDecimal(1000d));
-            return bigDecimal.setScale(8, BigDecimal.ROUND_HALF_UP).doubleValue();
+            return bigDecimal.setScale(scale, BigDecimal.ROUND_HALF_UP).doubleValue();
         } catch (Exception e) {
             DeveloperLog.LogE("Instance getRevenue Error: " + e.getMessage());
         }
         return 0d;
+    }
+
+    public double getShowRevenue() {
+        return getShowRevenue(8);
     }
 
     public void setRevenue(double revenue) {
@@ -263,19 +255,94 @@ public class BaseInstance extends Frequency implements Comparable<BaseInstance> 
         this.bidResponse = bidResponse;
     }
 
+    public BidResponse getBidResponse() {
+        return bidResponse;
+    }
+
+    public void setLastLoadStatus(InstanceLoadStatus lastLoadStatus) {
+        this.mLastLoadStatus = lastLoadStatus;
+    }
+
     public InstanceLoadStatus getLastLoadStatus() {
         return mLastLoadStatus;
+    }
+
+    /**
+     * Sets mediation state.
+     *
+     * @param state the state
+     */
+    public void setMediationState(MEDIATION_STATE state) {
+        mMediationState = state;
+    }
+
+    /**
+     * Gets mediation state.
+     *
+     * @return the mediation state
+     */
+    public MEDIATION_STATE getMediationState() {
+        return mMediationState;
+    }
+
+    /**
+     * Is caped boolean.
+     *
+     * @return the boolean
+     */
+    public boolean isCaped() {
+        return getMediationState() == MEDIATION_STATE.CAPPED;
+    }
+
+    public void setInitStart(long initStart) {
+        this.mInitStart = initStart;
+    }
+
+    public long getInitStart() {
+        return mInitStart;
+    }
+
+    public void setShowStart(long showStart) {
+        this.mShowStart = showStart;
+    }
+
+    public long getShowStart() {
+        return mShowStart;
+    }
+
+    public void setLoadStart(long loadStart) {
+        this.mLoadStart = loadStart;
+    }
+
+    public long getLoadStart() {
+        return mLoadStart;
+    }
+
+    public LoadTimeoutRunnable getTimeoutRunnable() {
+        return mTimeoutRunnable;
+    }
+
+    public void setTimeoutRunnable(LoadTimeoutRunnable timeoutRunnable) {
+        this.mTimeoutRunnable = timeoutRunnable;
+    }
+
+    public void setScheduledFuture(ScheduledFuture scheduledFuture) {
+        this.mScheduledFuture = scheduledFuture;
+    }
+
+    public ScheduledFuture getScheduledFuture() {
+        return mScheduledFuture;
     }
 
     @Override
     public String toString() {
         return "Ins{" +
                 "id=" + id +
+                ", mId=" + mediationId +
                 ", index=" + index +
                 ", grpIndex=" + grpIndex +
                 ", pid=" + mPlacementId +
                 ", revenue=" + revenue +
-                ", mId=" + mediationId +
                 ", name=" + name +
                 '}';
     }
@@ -300,166 +367,6 @@ public class BaseInstance extends Frequency implements Comparable<BaseInstance> 
         }
         BaseInstance other = (BaseInstance) obj;
         return TextUtils.equals(key, other.key) && id == other.id;
-    }
-
-    public JSONObject buildReportData() {
-        try {
-            JSONObject jsonObject = new JSONObject();
-            JsonUtil.put(jsonObject, "pid", mPlacementId);
-            JsonUtil.put(jsonObject, "iid", id);
-            JsonUtil.put(jsonObject, "mid", mediationId);
-            if (mAdapter != null) {
-                JsonUtil.put(jsonObject, "adapterv", mAdapter.getAdapterVersion());
-                JsonUtil.put(jsonObject, "msdkv", mAdapter.getMediationVersion());
-            }
-            JsonUtil.put(jsonObject, "priority", index);
-            Placement placement = PlacementUtils.getPlacement(mPlacementId);
-            if (placement != null) {
-                JsonUtil.put(jsonObject, "cs", placement.getCs());
-            }
-            JsonUtil.put(jsonObject, "abt", wfAbt);
-            if (hb == 1 && bidResponse != null) {
-                JsonUtil.put(jsonObject, "bid", 1);
-                JsonUtil.put(jsonObject, "price", bidResponse.getPrice());
-                JsonUtil.put(jsonObject, "cur", bidResponse.getCur());
-            }
-            JsonUtil.put(jsonObject, "reqId", reqId);
-            if (mMediationRule != null) {
-                JsonUtil.put(jsonObject, "ruleId", mMediationRule.getId());
-            }
-            return jsonObject;
-        } catch (Exception e) {
-            DeveloperLog.LogD("buildReportData exception : ", e);
-        }
-        return null;
-    }
-
-    public JSONObject buildReportDataWithScene(Scene scene) {
-        JSONObject jsonObject = buildReportData();
-        JsonUtil.put(jsonObject, "scene", scene != null ? scene.getId() : 0);
-        JsonUtil.put(jsonObject, "ot", DensityUtil.getDirection(AdtUtil.getApplication()));
-        return jsonObject;
-    }
-
-    public void reportInsLoad(int eventId) {
-        EventUploadManager.getInstance().uploadEvent(eventId, buildReportData());
-    }
-
-    public void reportInsDestroyed() {
-        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_DESTROY, buildReportData());
-    }
-
-    public void onInsLoadFailed(AdapterError error) {
-        JSONObject data = buildReportData();
-        if (error != null) {
-            JsonUtil.put(data, "code", error.getCode());
-            JsonUtil.put(data, "msg", error.getMessage());
-        }
-        int dur = 0;
-        if (mLoadStart > 0) {
-            dur = (int) (System.currentTimeMillis() - mLoadStart) / 1000;
-            JsonUtil.put(data, "duration", dur);
-        }
-        if (getHb() == 1) {
-            EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_PAYLOAD_FAILED, data);
-        } else {
-            if (error != null && error.getMessage().contains(ErrorCode.ERROR_TIMEOUT)) {
-                EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_LOAD_TIMEOUT, data);
-            } else {
-                EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_LOAD_ERROR, data);
-            }
-        }
-        setLoadStatus(dur, error);
-    }
-
-    public void onInsReLoadFailed(AdapterError error) {
-        JSONObject data = buildReportData();
-        if (error != null) {
-            JsonUtil.put(data, "code", error.getCode());
-            JsonUtil.put(data, "msg", error.getMessage());
-        }
-        int dur = 0;
-        if (mLoadStart > 0) {
-            dur = (int) (System.currentTimeMillis() - mLoadStart) / 1000;
-            JsonUtil.put(data, "duration", dur);
-        }
-        if (getHb() == 1) {
-            EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_PAYLOAD_FAILED, data);
-        } else {
-            EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_RELOAD_ERROR, data);
-        }
-        setLoadStatus(dur, error);
-    }
-
-    private void setLoadStatus(long duration, AdapterError error) {
-        if (error == null) {
-            mLastLoadStatus = null;
-        } else {
-            if (error.isLoadFailFromAdn()) {
-                InstanceLoadStatus status = new InstanceLoadStatus();
-                status.setIid(id);
-                status.setLts(mLoadStart);
-                status.setDur(duration);
-                status.setCode(error.getCode());
-                status.setMsg(error.getMessage());
-                mLastLoadStatus = status;
-            } else {
-                mLastLoadStatus = null;
-            }
-        }
-    }
-
-    public void onInsShow(Scene scene) {
-        mShowStart = System.currentTimeMillis();
-        AdRateUtil.onInstancesShowed(mPlacementId, key);
-        if (scene != null) {
-            AdRateUtil.onSceneShowed(mPlacementId, scene);
-        }
-        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_SHOW, buildReportDataWithScene(scene));
-    }
-
-    public void onInsClosed(Scene scene) {
-        JSONObject data = buildReportDataWithScene(scene);
-        if (mShowStart > 0) {
-            int dur = (int) (System.currentTimeMillis() - mShowStart) / 1000;
-            JsonUtil.put(data, "duration", dur);
-            mShowStart = 0;
-        }
-        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_CLOSED, data);
-        if (bidResponse != null) {
-            setBidResponse(null);
-        }
-    }
-
-    public void onInsClick(Scene scene) {
-        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_CLICKED, buildReportDataWithScene(scene));
-    }
-
-    public void onInsShowSuccess(Scene scene) {
-        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_SHOW_SUCCESS, buildReportDataWithScene(scene));
-
-        ImpressionManager.onInsShowSuccess(this, scene);
-    }
-
-    public void onInsShowFailed(AdapterError error, Scene scene) {
-        JSONObject data = buildReportDataWithScene(scene);
-        if (error != null) {
-            JsonUtil.put(data, "code", error.getCode());
-            JsonUtil.put(data, "msg", error.getMessage());
-        }
-        if (mShowStart > 0) {
-            int dur = (int) (System.currentTimeMillis() - mShowStart) / 1000;
-            JsonUtil.put(data, "duration", dur);
-            mShowStart = 0;
-        }
-        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_SHOW_FAILED, data);
-    }
-
-    public void onInsClose(Scene scene) {
-        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_CLOSED, buildReportDataWithScene(scene));
-        if (bidResponse != null) {
-            setBidResponse(null);
-        }
     }
 
     @Override
@@ -512,6 +419,74 @@ public class BaseInstance extends Frequency implements Comparable<BaseInstance> 
             this.mValue = value;
         }
 
+        public int getValue() {
+            return this.mValue;
+        }
+    }
+
+    /**
+     * The enum Mediation state.
+     */
+    public enum MEDIATION_STATE {
+        /**
+         * mediation not yet initialized; sets instance's state to after SDK init is done
+         */
+        NOT_INITIATED(0),
+        /**
+         * set after initialization failure
+         */
+        INIT_FAILED(1),
+        /**
+         * set after initialization success
+         */
+        INITIATED(2),
+        /**
+         * set after load success
+         */
+        AVAILABLE(3),
+        /**
+         * set after load failure
+         */
+        NOT_AVAILABLE(4),
+
+        /**
+         * Capped per session mediation state.
+         */
+        CAPPED_PER_SESSION(5),
+        /**
+         * set after initialization starts
+         */
+        INIT_PENDING(6),
+        /**
+         * set after load starts
+         */
+        LOAD_PENDING(7),
+
+        /**
+         * set after load fails
+         */
+        LOAD_FAILED(8),
+        /**
+         * Capped per day mediation state.
+         */
+        CAPPED_PER_DAY(9),
+
+        /**
+         * set in the case of frequency control
+         */
+        CAPPED(10);
+
+        private int mValue;
+
+        MEDIATION_STATE(int value) {
+            this.mValue = value;
+        }
+
+        /**
+         * Gets value.
+         *
+         * @return the value
+         */
         public int getValue() {
             return this.mValue;
         }

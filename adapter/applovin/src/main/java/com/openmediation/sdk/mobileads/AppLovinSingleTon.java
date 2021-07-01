@@ -30,6 +30,10 @@ public class AppLovinSingleTon {
         return AppLovinHolder.INSTANCE;
     }
 
+    public boolean isInit() {
+        return InitState.INIT_SUCCESS == mInitState;
+    }
+
     public void init(final Context context, String appKey, final InitCallback listener) {
         if (context == null || TextUtils.isEmpty(appKey)) {
             if (listener != null) {
@@ -68,7 +72,7 @@ public class AppLovinSingleTon {
                 }
             });
         } catch (Exception e) {
-            mInitState = InitState.INIT_FAIL;
+            mInitState = InitState.NOT_INIT;
             for (InitCallback callback : mCallbacks) {
                 if (callback != null) {
                     listener.onFailed("Init Failed: " + e.getMessage());
@@ -83,22 +87,9 @@ public class AppLovinSingleTon {
     }
 
     public enum InitState {
-        /**
-         *
-         */
         NOT_INIT,
-        /**
-         *
-         */
         INIT_PENDING,
-        /**
-         *
-         */
-        INIT_SUCCESS,
-        /**
-         *
-         */
-        INIT_FAIL
+        INIT_SUCCESS
     }
 
     public interface InitCallback {

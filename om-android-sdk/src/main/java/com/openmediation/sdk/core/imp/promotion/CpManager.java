@@ -6,8 +6,9 @@ package com.openmediation.sdk.core.imp.promotion;
 import android.app.Activity;
 import android.text.TextUtils;
 
-import com.openmediation.sdk.core.AbstractAdsManager;
+import com.openmediation.sdk.core.AbstractInventoryAds;
 import com.openmediation.sdk.core.OmManager;
+import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.promotion.PromotionAdListener;
 import com.openmediation.sdk.promotion.PromotionAdRect;
 import com.openmediation.sdk.utils.AdLog;
@@ -15,17 +16,18 @@ import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.SceneUtil;
 import com.openmediation.sdk.utils.error.Error;
 import com.openmediation.sdk.utils.error.ErrorCode;
-import com.openmediation.sdk.utils.model.Instance;
+import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.PlacementInfo;
 
 import java.lang.ref.WeakReference;
 import java.util.Map;
 
-public final class CpManager extends AbstractAdsManager implements CpManagerListener {
+public final class CpManager extends AbstractInventoryAds implements CpManagerListener {
 
-    private WeakReference<Activity> mActRefs;
     private PromotionAdRect mRect;
     private CpInstance mShowingInstance;
+
+    private WeakReference<Activity> mCpActReference;
 
     public CpManager() {
         super();
@@ -36,7 +38,7 @@ public final class CpManager extends AbstractAdsManager implements CpManagerList
     }
 
     public void loadPromotionAd() {
-        loadAdWithAction(OmManager.LOAD_TYPE.MANUAL);
+        loadAds(OmManager.LOAD_TYPE.MANUAL);
     }
 
     public void showPromotionAd(Activity activity, PromotionAdRect rect, String scene) {
@@ -53,8 +55,8 @@ public final class CpManager extends AbstractAdsManager implements CpManagerList
             mListenerWrapper.onPromotionAdShowFailed(SceneUtil.getScene(mPlacement, scene), error);
             return;
         }
-        mActRefs = new WeakReference<>(activity);
         mRect = rect;
+        mCpActReference = new WeakReference<>(activity);
         showAd(scene);
     }
 
@@ -85,21 +87,21 @@ public final class CpManager extends AbstractAdsManager implements CpManagerList
     }
 
     @Override
-    protected void initInsAndSendEvent(Instance instance) {
+    protected void initInsAndSendEvent(BaseInstance instance) {
         super.initInsAndSendEvent(instance);
         if (!(instance instanceof CpInstance)) {
-            instance.setMediationState(Instance.MEDIATION_STATE.INIT_FAILED);
+            instance.setMediationState(BaseInstance.MEDIATION_STATE.INIT_FAILED);
             onInsInitFailed(instance, new Error(ErrorCode.CODE_LOAD_UNKNOWN_INTERNAL_ERROR,
                     "current is not an promotion adUnit", -1));
             return;
         }
         CpInstance cpInstance = (CpInstance) instance;
         cpInstance.setCpManagerListener(this);
-        cpInstance.initCp(mActivityReference.get());
+        cpInstance.initCp(mActRefs.get());
     }
 
     @Override
-    protected boolean isInsAvailable(Instance instance) {
+    protected boolean isInsAvailable(BaseInstance instance) {
         if (instance instanceof CpInstance) {
             return ((CpInstance) instance).isCpAvailable();
         }
@@ -107,18 +109,18 @@ public final class CpManager extends AbstractAdsManager implements CpManagerList
     }
 
     @Override
-    protected void insShow(Instance instance) {
+    protected void insShow(BaseInstance instance) {
         if (instance instanceof CpInstance) {
             mShowingInstance = (CpInstance) instance;
-            Activity activity = mActRefs == null ? mActivityReference.get() : mActRefs.get();
+            Activity activity = mCpActReference == null ? null : mCpActReference.get();
             mShowingInstance.showCp(activity, mRect, mScene);
         }
     }
 
     @Override
-    protected void insLoad(Instance instance, Map<String, Object> extras) {
+    protected void insLoad(BaseInstance instance, Map<String, Object> extras) {
         CpInstance cpInstance = (CpInstance) instance;
-        cpInstance.loadCp(mActivityReference.get(), extras);
+        cpInstance.loadCp(mActRefs.get(), extras);
     }
 
     @Override
@@ -134,7 +136,7 @@ public final class CpManager extends AbstractAdsManager implements CpManagerList
 
     @Override
     protected void callbackLoadError(Error error) {
-        boolean hasCache = hasAvailableCache();
+        boolean hasCache = hasAvailableInventory();
         if (shouldNotifyAvailableChanged(hasCache)) {
             mListenerWrapper.onPromotionAdAvailabilityChanged(hasCache);
         }
@@ -158,26 +160,32 @@ public final class CpManager extends AbstractAdsManager implements CpManagerList
     }
 
     @Override
-    public void onPromotionAdInitFailed(Error error, CpInstance instance) {
-        onInsInitFailed(instance, error);
+    public void onPromotionAdInitFailed(CpInstance instance, AdapterError error) {
+        Error errorResult = new Error(ErrorCode.CODE_LOAD_FAILED_IN_ADAPTER, error.toString(), -1);
+        onInsInitFailed(instance, errorResult);
     }
 
     @Override
-    public void onPromotionAdShowFailed(Error error, CpInstance instance) {
+    public void onPromotionAdShowFailed(CpInstance instance, AdapterError error) {
         isInShowingProgress = false;
-        mListenerWrapper.onPromotionAdShowFailed(mScene, error);
+        Error errorResult = new Error(ErrorCode.CODE_SHOW_FAILED_IN_ADAPTER
+                , ErrorCode.MSG_SHOW_FAILED_IN_ADAPTER
+                + ", mediationID:" + instance.getMediationId() + ", error:" + error, -1);
+        onInsShowFailed(instance, error, mScene);
+        mListenerWrapper.onPromotionAdShowFailed(mScene, errorResult);
+//        TestUtil.getInstance().notifyInsFailed(instance.getPlacementId(), instance);
     }
 
     @Override
     public void onPromotionAdShowSuccess(CpInstance instance) {
-        onInsOpen(instance);
+        onInsShowSuccess(instance, mScene);
         mListenerWrapper.onPromotionAdShowed(mScene);
     }
 
     @Override
     public void onPromotionAdClicked(CpInstance instance) {
+        onInsClicked(instance, mScene);
         mListenerWrapper.onPromotionAdClicked(mScene);
-        onInsClick(instance);
     }
 
     @Override
@@ -185,7 +193,7 @@ public final class CpManager extends AbstractAdsManager implements CpManagerList
         if (mActRefs != null) {
             mActRefs.clear();
         }
-        onInsClose();
+        onInsClosed(instance, mScene);
     }
 
     @Override
@@ -194,12 +202,12 @@ public final class CpManager extends AbstractAdsManager implements CpManagerList
 
     @Override
     public void onPromotionAdLoadSuccess(CpInstance instance) {
-        onInsReady(instance);
+        onInsLoadSuccess(instance);
     }
 
     @Override
-    public void onPromotionAdLoadFailed(Error error, CpInstance instance) {
-        DeveloperLog.LogD("CpManager onPromotionAdLoadFailed : " + instance + " error : " + error);
+    public void onPromotionAdLoadFailed(CpInstance instance, AdapterError  error) {
+        DeveloperLog.LogE("CpManager onPromotionAdLoadFailed : " + instance + " error : " + error);
         onInsLoadFailed(instance, error);
     }
 }

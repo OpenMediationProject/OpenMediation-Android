@@ -18,6 +18,7 @@ import android.os.Environment;
 import android.os.StatFs;
 import android.os.SystemClock;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.webkit.WebSettings;
 
 import com.openmediation.sdk.utils.AdtUtil;
@@ -254,7 +255,7 @@ public class DeviceUtil {
      */
     public static long getFit() {
         try {
-            Context context = AdtUtil.getApplication();
+            Context context = AdtUtil.getInstance().getApplicationContext();
             if (context == null) {
                 return 0;
             }
@@ -494,7 +495,8 @@ public class DeviceUtil {
 
     public static boolean isPkgInstalled(String pkg) {
         try {
-            PackageInfo packageInfo = AdtUtil.getApplication().getPackageManager().getPackageInfo(pkg, PackageManager.GET_GIDS);
+            PackageInfo packageInfo = AdtUtil.getInstance().getApplicationContext().getPackageManager()
+                    .getPackageInfo(pkg, PackageManager.GET_GIDS);
             return packageInfo != null;
         } catch (Exception e) {
         }
@@ -503,5 +505,15 @@ public class DeviceUtil {
 
     public static String createReqId() {
         return UUID.randomUUID().toString();
+    }
+
+    public static boolean isLargeScreen(Context context) {
+        if (context == null) {
+            return false;
+        }
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+        float dpHeight = displayMetrics.heightPixels / displayMetrics.density;
+        float dpWidth = displayMetrics.widthPixels / displayMetrics.density;
+        return (dpHeight > 720.0F && dpWidth >= 728.0F);
     }
 }

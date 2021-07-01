@@ -31,7 +31,7 @@ public class VungleSingleTon {
         return VungleHolder.INSTANCE;
     }
 
-    public void init(final Context context, String appKey, final InitCallback listener) {
+    public synchronized void init(final Context context, String appKey, final InitCallback listener) {
         if (context == null || TextUtils.isEmpty(appKey)) {
             if (listener != null) {
                 listener.onError(new VungleException(VungleException.APPLICATION_CONTEXT_REQUIRED));
@@ -69,7 +69,7 @@ public class VungleSingleTon {
                 @Override
                 public void onError(VungleException exception) {
                     AdLog.getSingleton().LogD("Vungle SDK Init Failed: " + exception.getLocalizedMessage());
-                    mInitState = InitState.INIT_FAIL;
+                    mInitState = InitState.NOT_INIT;
                     for (InitCallback callback : mCallbacks) {
                         if (callback != null) {
                             callback.onError(exception);
@@ -84,7 +84,7 @@ public class VungleSingleTon {
                 }
             });
         } catch (Exception e) {
-            mInitState = InitState.INIT_FAIL;
+            mInitState = InitState.NOT_INIT;
             if (listener != null) {
                 listener.onError(new VungleException(VungleException.UNKNOWN_ERROR));
             }
@@ -110,10 +110,6 @@ public class VungleSingleTon {
         /**
          *
          */
-        INIT_SUCCESS,
-        /**
-         *
-         */
-        INIT_FAIL
+        INIT_SUCCESS
     }
 }

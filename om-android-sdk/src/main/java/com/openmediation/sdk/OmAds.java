@@ -19,6 +19,16 @@ public abstract class OmAds {
     /**
      * mediation SDK init method
      *
+     * @param configuration required param: include appKey,channel,initHost logEnable and so on
+     * @param callback      the callback
+     */
+    public static void init(InitConfiguration configuration, InitCallback callback) {
+        init(null, configuration, callback);
+    }
+
+    /**
+     * mediation SDK init method
+     *
      * @param activity      required param
      * @param configuration required param: include appKey,channel,initHost logEnable and so on
      * @param callback      the callback
@@ -87,6 +97,7 @@ public abstract class OmAds {
 
     /**
      * setUserId
+     *
      * @param userId userId
      */
     public static void setUserId(String userId) {

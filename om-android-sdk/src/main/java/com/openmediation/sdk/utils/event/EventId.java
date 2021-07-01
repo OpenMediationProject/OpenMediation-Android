@@ -14,6 +14,11 @@ public interface EventId {
     int LOAD = 102;
     int DESTROY = 103;
     int INIT_FAILED = 104;
+
+    int RE_INIT_START = 105;
+    int RE_INIT_COMPLETE = 106;
+    int RE_INIT_FAILED = 107;
+
     int REFRESH_INTERVAL = 110;
     int ATTEMPT_TO_BRING_NEW_FEED = 111;
     int NO_MORE_OFFERS = 112;
@@ -96,4 +101,15 @@ public interface EventId {
     int CALLBACK_PRESENT_SCREEN = 605;
     int CALLBACK_DISMISS_SCREEN = 606;
     int CALLBACK_REWARDED = 608;
+
+    // Firebase Report UAR Top10%, Need Report UAR Price, Only Once a Day
+    int REPORT_UAR_TOP10 = 630;
+    // Firebase Report UAR Top20%
+    int REPORT_UAR_TOP20 = 631;
+    // Firebase Report UAR Top30%
+    int REPORT_UAR_TOP30 = 632;
+    // Firebase Report UAR Top40%
+    int REPORT_UAR_TOP40 = 633;
+    // Firebase Report UAR Top50%
+    int REPORT_UAR_TOP50 = 634;
 }

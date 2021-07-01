@@ -5,6 +5,7 @@ package com.openmediation.sdk.utils;
 
 import android.text.TextUtils;
 
+import com.openmediation.sdk.core.InsManager;
 import com.openmediation.sdk.utils.event.EventId;
 import com.openmediation.sdk.utils.event.EventUploadManager;
 import com.openmediation.sdk.utils.model.BaseInstance;
@@ -115,7 +116,7 @@ public class AdRateUtil {
         boolean result = AdRateUtil.isInterval(key, instance.getFrequencyInterval())
                 || AdRateUtil.isCAP(key, instance.getFrequencyUnit(), instance.getFrequencyCap());
         if (result) {
-            EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_CAPPED, instance.buildReportData());
+            EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_CAPPED, InsManager.buildReportData(instance));
         }
         return result;
     }
@@ -189,15 +190,23 @@ public class AdRateUtil {
         if (capTime == null) {
             return false;
         }
-        Integer cap = DataCache.getInstance().get(CAP + key, int.class);
-        DeveloperLog.LogD("CapTime:" + key + ":" + (System.currentTimeMillis() - capTime) +
-                ":" + time + ":Cap:" + cap + ":" + count);
-        if (System.currentTimeMillis() - capTime < time) {
-            return cap >= count;
-        } else {
-            DataCache.getInstance().delete(CAP_TIME + key);
-            DataCache.getInstance().delete(CAP + key);
-            return false;
+        try {
+            Integer cap = DataCache.getInstance().get(CAP + key, int.class);
+            DeveloperLog.LogD("CapTime:" + key + ":" + (System.currentTimeMillis() - capTime) +
+                    ":" + time + ":Cap:" + cap + ":" + count);
+            if (cap == null) {
+                cap = 0;
+            }
+            if (System.currentTimeMillis() - capTime < time) {
+                return cap >= count;
+            } else {
+                DataCache.getInstance().delete(CAP_TIME + key);
+                DataCache.getInstance().delete(CAP + key);
+                return false;
+            }
+        } catch(Exception e) {
+            DeveloperLog.LogD("isCAP Error: " + e.getMessage());
         }
+        return false;
     }
 }

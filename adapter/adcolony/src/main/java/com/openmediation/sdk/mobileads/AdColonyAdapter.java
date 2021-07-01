@@ -18,6 +18,7 @@ import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
+import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.openmediation.sdk.mobileads.adcolony.BuildConfig;
 
@@ -82,9 +83,9 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
     @Override
     public void initRewardedVideo(Activity activity, Map<String, Object> dataMap, RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
-        String error = check(activity);
+        String error = check();
         if (TextUtils.isEmpty(error)) {
-            initAdColony(activity, dataMap);
+            initAdColony(dataMap);
             if (callback != null) {
                 callback.onRewardedVideoInitSuccess();
             }
@@ -99,7 +100,7 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
     @Override
     public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
-        String error = check(activity, adUnitId);
+        String error = check(adUnitId);
         if (TextUtils.isEmpty(error)) {
             AdColonyInterstitial rvAd = mAdColonyAds.get(adUnitId);
             mRvCallback.put(adUnitId, callback);
@@ -149,7 +150,7 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
         }
     }
 
-    private synchronized void initAdColony(Activity activity, Map<String, Object> dataMap) {
+    private synchronized void initAdColony(Map<String, Object> dataMap) {
         if (!mDidInited) {
             List<String> idList = null;
             if (dataMap.get("zoneIds") instanceof List) {
@@ -158,9 +159,9 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
             String[] zoneIds;
             if (idList != null) {
                 zoneIds = idList.toArray(new String[idList.size()]);
-                AdColony.configure(activity.getApplication(), mAdColonyOptions, mAppKey, zoneIds);
+                AdColony.configure(MediationUtil.getApplication(), mAdColonyOptions, mAppKey, zoneIds);
             } else {
-                AdColony.configure(activity.getApplication(), mAdColonyOptions, mAppKey);
+                AdColony.configure(MediationUtil.getApplication(), mAdColonyOptions, mAppKey);
             }
             mDidInited = true;
         }
@@ -177,9 +178,9 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
     @Override
     public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
-        String error = check(activity);
+        String error = check();
         if (TextUtils.isEmpty(error)) {
-            initAdColony(activity, dataMap);
+            initAdColony(dataMap);
             if (callback != null) {
                 callback.onInterstitialAdInitSuccess();
             }
@@ -194,7 +195,7 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
     @Override
     public void loadInterstitialAd(Activity activity, String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, extras, callback);
-        String error = check(activity, adUnitId);
+        String error = check(adUnitId);
         if (TextUtils.isEmpty(error)) {
             mIsCallback.put(adUnitId, callback);
             if (isInterstitialAdAvailable(adUnitId)) {
@@ -218,13 +219,13 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
             } else {
                 if (callback != null) {
                     callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, AdColonyAdapter.this.mAdapterName, "AdColony ad not ready"));
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "AdColony ad not ready"));
                 }
             }
         } else {
             if (callback != null) {
                 callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, AdColonyAdapter.this.mAdapterName, "AdColony ad not ready"));
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "AdColony ad not ready"));
             }
         }
     }
@@ -334,7 +335,7 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
         public void onClicked(AdColonyInterstitial ad) {
             InterstitialAdCallback callback = mIsCallback.get(ad.getZoneID());
             if (callback != null) {
-                callback.onInterstitialAdClick();
+                callback.onInterstitialAdClicked();
             }
         }
     }

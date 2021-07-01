@@ -16,7 +16,7 @@ public class LifetimeRevenueData {
             BigDecimal bigDecimal = new BigDecimal(revenue);
             double result = new BigDecimal(lifetimeRevenue).add(bigDecimal).setScale(8, BigDecimal.ROUND_HALF_UP).doubleValue();
             DataCache.getInstance().set(getRevenueKey(), result);
-        } catch (Exception e) {
+        } catch(Exception e) {
             DeveloperLog.LogE("Error in LifetimeRevenueData.addRevenue() : revenue is " + revenue + ", Error: " + e.getMessage());
         }
     }
@@ -35,5 +35,39 @@ public class LifetimeRevenueData {
     private static String getRevenueKey() {
         String appKey = DataCache.getInstance().getFromMem(KeyConstants.KEY_APP_KEY, String.class);
         return appKey + "_" + KeyConstants.KEY_REVENUE;
+    }
+
+    private static String getUserRevenueKey() {
+        String appKey = DataCache.getInstance().getFromMem(KeyConstants.KEY_APP_KEY, String.class);
+        return appKey + "_" + KeyConstants.KEY_USER_REVENUE;
+    }
+
+    /**
+     * User Ad Revenue by Day
+     *
+     * @param revenue revenue
+     */
+    public static void addUserRevenue(double revenue) {
+        try {
+            double currRevenue = getUserRevenue();
+            DataCache.getInstance().set(getUserRevenueKey(), currRevenue + revenue);
+        } catch(Exception e) {
+            DeveloperLog.LogE("Error in LifetimeRevenueData.addUserRevenue() : revenue is " + revenue + ", Error: " + e.getMessage());
+        }
+    }
+
+    /**
+     * The accumulated value of the user ad revenue
+     *
+     * @return double
+     */
+    public static double getUserRevenue() {
+        String key = getUserRevenueKey();
+        Double revenue = DataCache.getInstance().get(key, double.class);
+        return (revenue == null || Double.isNaN(revenue)) ? 0d : revenue;
+    }
+
+    public static void clearUarData() {
+        DataCache.getInstance().set(getUserRevenueKey(), 0);
     }
 }

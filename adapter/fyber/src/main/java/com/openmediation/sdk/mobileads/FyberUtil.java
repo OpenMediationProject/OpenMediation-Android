@@ -1,11 +1,11 @@
 package com.openmediation.sdk.mobileads;
 
-import android.app.Activity;
+import android.content.Context;
 import android.util.TypedValue;
 
 public final class FyberUtil {
 
-    static int dpToPixels(Activity activity, int dpSize) {
+    static int dpToPixels(Context activity, int dpSize) {
         if (activity == null) {
             return dpSize;
         } else {
