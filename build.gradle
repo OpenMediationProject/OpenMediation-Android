@@ -136,7 +136,7 @@ allprojects {
             url 'https://maven.ogury.co'
         }
         maven {
-            url 'https://dl.bintray.com/pubnative/maven'
+            url 'https://verve.jfrog.io/artifactory/verve-gradle-release'
         }
         maven {
             url 'https://artifact.bytedance.com/repository/pangle'

@@ -34,6 +34,8 @@ public interface KeyConstants {
      */
     String KEY_REVENUE = "revenue";
 
+    String KEY_AF_ID = "afid";
+
     /**
      * The interface Request.
      */

@@ -358,7 +358,7 @@ public class WaterFallHelper {
         if (insMap == null || insMap.size() <= 0) {
             return null;
         }
-
+        boolean cacheAds = PlacementUtils.isCacheAdsType(placement.getT());
         MediationRule mediationRule = getMediationRule(clInfo);
         int abt = clInfo.optInt("abt");
         List<Instance> instancesList = new ArrayList<>();
@@ -372,6 +372,9 @@ public class WaterFallHelper {
                 instance.setRevenue(0);
                 instance.setPriority(0);
                 instance.setRevenuePrecision(1);
+                if (!cacheAds) {
+                    instance.setBidResponse(null);
+                }
                 instancesList.add((Instance) instance);
             } else {
                 reportNoInstance(reqId, placement, mediationRule, insId);

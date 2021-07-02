@@ -318,8 +318,10 @@ public class BaseInstance extends Frequency implements Comparable<BaseInstance> 
                 JsonUtil.put(jsonObject, "cs", placement.getCs());
             }
             JsonUtil.put(jsonObject, "abt", wfAbt);
-            if (hb == 1 && bidResponse != null) {
-                JsonUtil.put(jsonObject, "bid", 1);
+            if (hb == 1) {
+                JsonUtil.put(jsonObject, "bid", hb);
+            }
+            if (bidResponse != null) {
                 JsonUtil.put(jsonObject, "price", bidResponse.getPrice());
                 JsonUtil.put(jsonObject, "cur", bidResponse.getCur());
             }

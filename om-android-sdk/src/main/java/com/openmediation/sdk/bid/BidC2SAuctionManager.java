@@ -116,8 +116,8 @@ public class BidC2SAuctionManager {
 
     private synchronized void bidSuccess(Instance instance, BidResponse response) {
         instance.setRevenue(response.getPrice());
-
         instance.setBidState(BaseInstance.BID_STATE.BID_SUCCESS);
+        instance.setBidResponse(response);
         JSONObject jsonObject = instance.buildReportData();
         if (mBidStartTime != null && mBidStartTime.get(instance.getId()) != null) {
             long start = mBidStartTime.get(instance.getId());

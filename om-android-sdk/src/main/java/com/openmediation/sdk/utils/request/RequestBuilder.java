@@ -377,6 +377,7 @@ public class RequestBuilder {
         body.put(KeyConstants.RequestBody.KEY_LIP, DeviceUtil.getHostIp());
         body.put(KeyConstants.RequestBody.KEY_LCOUNTRY, map.get(KeyConstants.RequestBody.KEY_LCOUNTRY));
         body.put(KeyConstants.RequestBody.KEY_FM, DeviceUtil.getFm());
+        body.put(KeyConstants.RequestBody.KEY_AF_ID, DataCache.getInstance().getFromMem(KeyConstants.KEY_AF_ID, String.class));
         Map<String, Integer> battery = DeviceUtil.getBatteryInfo(context);
         if (battery == null || battery.isEmpty()) {
             body.put(KeyConstants.RequestBody.KEY_BATTERY, 0);

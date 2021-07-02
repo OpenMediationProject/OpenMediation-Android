@@ -225,6 +225,7 @@ public final class InitImp {
                 }
                 initUtil();
                 DataCache.getInstance().setMEM(KeyConstants.KEY_APP_KEY, initConfiguration.getAppKey());
+                DataCache.getInstance().setMEM(KeyConstants.KEY_AF_ID, AFManager.getAfId(activity));
                 String appChannel = initConfiguration.getChannel();
                 if (TextUtils.isEmpty(appChannel)) {
                     appChannel = "";
