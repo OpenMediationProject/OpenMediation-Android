@@ -587,7 +587,7 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
             isInLoadingProgress = false;
         } else {
             if (mPlacement != null) {
-                Map<Integer, BidResponse> bidResponseMap = WaterFallHelper.getS2sBidResponse(clInfo);
+                Map<Integer, BidResponse> bidResponseMap = WaterFallHelper.getS2sBidResponse(mPlacement, clInfo);
                 if (bidResponseMap != null && !bidResponseMap.isEmpty()) {
                     mBidResponses.putAll(bidResponseMap);
                 }
@@ -988,7 +988,6 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
         if (mTotalIns == null || mBidResponses == null) {
             return;
         }
-        Map<BaseInstance, BidResponse> unLoadInsBidResponses = new HashMap<>();
         for (Instance in : mTotalIns) {
             if (in == null) {
                 continue;
@@ -996,13 +995,13 @@ public abstract class AbstractAdsManager extends AdsApi implements InitCallback,
             if ((in.getMediationState() == Instance.MEDIATION_STATE.NOT_INITIATED ||
                     in.getMediationState() == Instance.MEDIATION_STATE.NOT_AVAILABLE) &&
                     mBidResponses.containsKey(in.getId())) {
-                unLoadInsBidResponses.put(in, mBidResponses.get(in.getId()));
-                mBidResponses.remove(in.getId());
+                BidResponse bidResponse = mBidResponses.remove(in.getId());
+                if (bidResponse == null) {
+                    continue;
+                }
+                AuctionUtil.notifyLose(in, bidResponse, BidLoseReason.LOST_TO_HIGHER_BIDDER.getValue());
                 in.setBidResponse(null);
             }
-        }
-        if (!unLoadInsBidResponses.isEmpty()) {
-            AuctionUtil.notifyLose(unLoadInsBidResponses, BidLoseReason.LOST_TO_HIGHER_BIDDER.getValue());
         }
     }
 

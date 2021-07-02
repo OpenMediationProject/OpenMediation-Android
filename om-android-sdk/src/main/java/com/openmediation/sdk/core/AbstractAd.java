@@ -321,9 +321,11 @@ public abstract class AbstractAd extends Callback implements Request.OnRequestCa
         } else {
             mTotalIns.clear();
             mTotalIns.addAll(finalTotalIns);
-            Map<Integer, BidResponse> bidResponseMap = WaterFallHelper.getS2sBidResponse(clInfo);
-            if (bidResponseMap != null && !bidResponseMap.isEmpty()) {
-                mBidResponses.putAll(bidResponseMap);
+            if (mPlacement != null) {
+                Map<Integer, BidResponse> bidResponseMap = WaterFallHelper.getS2sBidResponse(mPlacement, clInfo);
+                if (bidResponseMap != null && !bidResponseMap.isEmpty()) {
+                    mBidResponses.putAll(bidResponseMap);
+                }
             }
             doLoadOnUiThread();
         }

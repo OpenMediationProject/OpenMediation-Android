@@ -453,7 +453,6 @@ public abstract class AbstractHybridAd extends AbstractAd {
         if (mLoadedInsIndex == len) {
             return;
         }
-        Map<BaseInstance, BidResponse> unLoadInsBidResponses = new HashMap<>();
         for (int i = mLoadedInsIndex; i < len; i++) {
             BaseInstance instance = mTotalIns.get(i);
             if (instance == null) {
@@ -463,12 +462,12 @@ public abstract class AbstractHybridAd extends AbstractAd {
             if (!mBidResponses.containsKey(instance.getId())) {
                 continue;
             }
-            unLoadInsBidResponses.put(instance, mBidResponses.get(instance.getId()));
-            mBidResponses.remove(instance.getId());
+            BidResponse bidResponse = mBidResponses.remove(instance.getId());
+            if (bidResponse == null) {
+                continue;
+            }
+            AuctionUtil.notifyLose(instance, bidResponse, BidLoseReason.LOST_TO_HIGHER_BIDDER.getValue());
             instance.setBidResponse(null);
-        }
-        if (!unLoadInsBidResponses.isEmpty()) {
-            AuctionUtil.notifyLose(unLoadInsBidResponses, BidLoseReason.LOST_TO_HIGHER_BIDDER.getValue());
         }
     }
 

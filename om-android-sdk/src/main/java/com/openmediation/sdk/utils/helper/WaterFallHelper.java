@@ -11,6 +11,7 @@ import com.openmediation.sdk.core.OmManager;
 import com.openmediation.sdk.utils.AdsUtil;
 import com.openmediation.sdk.utils.AdtUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
+import com.openmediation.sdk.utils.InsUtil;
 import com.openmediation.sdk.utils.JsonUtil;
 import com.openmediation.sdk.utils.PlacementUtils;
 import com.openmediation.sdk.utils.WorkExecutor;
@@ -122,7 +123,7 @@ public class WaterFallHelper {
         });
     }
 
-    public static Map<Integer, BidResponse> getS2sBidResponse(JSONObject clInfo) {
+    public static Map<Integer, BidResponse> getS2sBidResponse(Placement placement, JSONObject clInfo) {
         if (clInfo == null) {
             return null;
         }
@@ -161,6 +162,10 @@ public class WaterFallHelper {
             response.setLurl(lurl);
             response.setPrice(price);
             response.setExpire(object.optInt("expire"));
+            BaseInstance instance = InsUtil.getInsById(placement, String.valueOf(iid));
+            if (instance != null) {
+                instance.setBidResponse(response);
+            }
             bidResponses.put(iid, response);
         }
         return bidResponses;
