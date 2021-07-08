@@ -11,6 +11,7 @@ import android.content.Context;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 
+import com.openmediation.sdk.core.AdapterRepository;
 import com.openmediation.sdk.utils.lifecycle.ActLifecycle;
 import com.openmediation.sdk.utils.AdtUtil;
 import com.openmediation.sdk.utils.HandlerUtil;
@@ -48,7 +49,7 @@ public class MediationUtil {
         if (config != null && config.containsKey("description")) {
             try {
                 description = config.get("description").toString();
-            } catch(Exception ignored) {
+            } catch (Exception ignored) {
             }
         }
         return description;
@@ -62,5 +63,9 @@ public class MediationUtil {
         float dpHeight = displayMetrics.heightPixels / displayMetrics.density;
         float dpWidth = displayMetrics.widthPixels / displayMetrics.density;
         return (dpHeight > 720.0F && dpWidth >= 728.0F);
+    }
+
+    public static Map<String, Object> getPolicySettings() {
+        return AdapterRepository.getInstance().getPolicySettings();
     }
 }

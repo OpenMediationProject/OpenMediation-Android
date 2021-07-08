@@ -64,7 +64,7 @@ public class DownloadManager {
                         DeveloperLog.LogD("DownloadManager downloadFile callbackPendingTaskFinished url is  = " + url);
                     }
                 } catch (Exception e) {
-                    DeveloperLog.LogE("DownloadManager downloadFile exception: " + e);
+                    DeveloperLog.LogW("DownloadManager downloadFile exception: " + e);
                     synchronized (DownloadManager.class) {
                         callbackPendingTaskFinished(url, null);
                         mActiveTask.remove(url);

@@ -56,5 +56,13 @@ public class TypeConstant {
                     Charset.forName(CommonConstants.CHARTSET_UTF8)),
             new String(Base64.decode("Y29tLmNyb3NzcHJvbW90aW9uLnNkay4=", Base64.NO_WRAP),
                     Charset.forName(CommonConstants.CHARTSET_UTF8)),
+            new String(Base64.decode("YWRtb3N0LnNkay4=", Base64.NO_WRAP),
+                    Charset.forName(CommonConstants.CHARTSET_UTF8)),
+            new String(Base64.decode("YWRtb3N0LmFkc2VydmVyLg==", Base64.NO_WRAP),
+                    Charset.forName(CommonConstants.CHARTSET_UTF8)),
+            new String(Base64.decode("Y29tLmZsYXRhZHMuc2RrLnVp", Base64.NO_WRAP),
+                    Charset.forName(CommonConstants.CHARTSET_UTF8)),
+            new String(Base64.decode("Y29tLmlubW9iaS5hZHMucmVuZGVyaW5n", Base64.NO_WRAP),
+                    Charset.forName(CommonConstants.CHARTSET_UTF8)),
     };
 }

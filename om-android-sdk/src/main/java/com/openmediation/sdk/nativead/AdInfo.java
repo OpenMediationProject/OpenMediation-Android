@@ -3,10 +3,10 @@
 
 package com.openmediation.sdk.nativead;
 
+import android.view.View;
+
 /**
  * Provides basic ad info
- *
- * 
  */
 public class AdInfo {
     private String title;
@@ -14,6 +14,8 @@ public class AdInfo {
     private String callToActionText;
     private double starRating;
     private int type;
+    private View view;
+    private boolean isTemplateRender;
 
     public String getTitle() {
         return title;
@@ -53,5 +55,21 @@ public class AdInfo {
 
     public void setType(int type) {
         this.type = type;
+    }
+
+    public void setView(View view) {
+        this.view = view;
+    }
+
+    public View getView() {
+        return view;
+    }
+
+    public void setTemplateRender(boolean templateRender) {
+        isTemplateRender = templateRender;
+    }
+
+    public boolean isTemplateRender() {
+        return isTemplateRender;
     }
 }

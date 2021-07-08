@@ -419,6 +419,16 @@ public class TencentAdAdapter extends CustomAdsAdapter {
                 callback.onInterstitialAdClosed();
             }
         }
+
+        @Override
+        public void onRenderSuccess() {
+            AdLog.getSingleton().LogD(TAG + "InterstitialAd onRenderSuccess : " + mAdUnitId);
+        }
+
+        @Override
+        public void onRenderFail() {
+            AdLog.getSingleton().LogD(TAG + "InterstitialAd onRenderFail : " + mAdUnitId);
+        }
     }
 
     private class InnerRvAdListener implements RewardVideoADListener {

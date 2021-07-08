@@ -27,8 +27,7 @@ android.libraryVariants.all { variant ->
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation project(':om-android-sdk')
-    implementation(name: 'GDTSDK.unionNormal.4.360.1230', ext: 'aar')
-//    implementation rootProject.ext.dependencies.tencentad
+    implementation rootProject.ext.dependencies.tencentad
 }
 
 repositories {

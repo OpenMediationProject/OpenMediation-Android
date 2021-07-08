@@ -79,12 +79,12 @@ public class BidS2SAuctionManager {
                         if (response != null) {
                             bidSuccess(bidInstance, response);
                         } else {
-                            bidFailed(bidInstance, "S2S Bid Failed: No BidToken");
+                            bidFailed(bidInstance, "No BidToken");
                         }
                     }
                     callbackBidResult(placementId);
                 } catch (Throwable e) {
-                    DeveloperLog.LogE("S2S Failed: " + e.getMessage());
+                    DeveloperLog.LogW("S2S Failed: " + e.getMessage());
                     callbackBidResult(placementId);
                 }
             }
@@ -109,7 +109,7 @@ public class BidS2SAuctionManager {
             bidResponse.setIid(bidInstance.getId());
             bidResponse.setToken(token);
         } catch (Throwable throwable) {
-            DeveloperLog.LogE("S2S bid error: " + throwable.toString());
+            DeveloperLog.LogW("S2S bid error: " + throwable.toString());
             CrashUtil.getSingleton().saveException(throwable);
         }
         return bidResponse;
@@ -127,7 +127,7 @@ public class BidS2SAuctionManager {
     }
 
     private synchronized void bidFailed(BaseInstance instance, String error) {
-        DeveloperLog.LogE(instance + " S2S Bid Failed: " + error);
+        DeveloperLog.LogD(instance + " S2S Bid Failed: " + error);
         instance.setBidState(BaseInstance.BID_STATE.BID_FAILED);
     }
 

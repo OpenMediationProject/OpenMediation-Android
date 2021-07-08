@@ -19,6 +19,7 @@ import com.crosspromotion.sdk.report.AdReport;
 import com.crosspromotion.sdk.utils.Cache;
 import com.crosspromotion.sdk.utils.ImageUtils;
 import com.crosspromotion.sdk.utils.PUtils;
+import com.crosspromotion.sdk.utils.ResDownloader;
 import com.crosspromotion.sdk.utils.error.ErrorBuilder;
 import com.crosspromotion.sdk.utils.error.ErrorCode;
 import com.crosspromotion.sdk.view.AdMarketView;
@@ -27,14 +28,11 @@ import com.openmediation.sdk.nativead.MediaView;
 import com.openmediation.sdk.nativead.NativeAdView;
 import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.IOUtil;
+import com.openmediation.sdk.utils.WorkExecutor;
 import com.openmediation.sdk.utils.constant.CommonConstants;
 import com.openmediation.sdk.utils.crash.CrashUtil;
-import com.openmediation.sdk.utils.request.network.AdRequest;
-import com.openmediation.sdk.utils.request.network.Response;
 
 import java.util.List;
-
-import javax.net.ssl.HttpsURLConnection;
 
 
 public final class NativeAdImp extends AbstractAdsManager implements View.OnClickListener, View.OnAttachStateChangeListener {
@@ -73,6 +71,24 @@ public final class NativeAdImp extends AbstractAdsManager implements View.OnClic
     }
 
     @Override
+    protected void preLoadResImpl(AdBean adBean) {
+        super.preLoadResImpl(adBean);
+        AdMark adMark = adBean.getAdMark();
+        if (adMark != null && !TextUtils.isEmpty(adMark.getLogo())) {
+            final String logo = adMark.getLogo();
+            WorkExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        ResDownloader.downloadFile(logo);
+                    } catch (Exception ignored) {
+                    }
+                }
+            });
+        }
+    }
+
+    @Override
     protected void onAdsLoadSuccess(AdBean bean) {
         super.onAdsLoadSuccess(bean);
         try {
@@ -90,10 +106,10 @@ public final class NativeAdImp extends AbstractAdsManager implements View.OnClic
             Bitmap icon = ImageUtils.getBitmap(Cache.getCacheFile(mContext, mAdBean.getIconUrl(), null));
 
             Ad.Builder builder = new Ad.Builder();
-            builder.title(mAdBean.getTitle()).
-                    description(mAdBean.getDescription())
-                    .cta("install").
-                    content(content)
+            builder.title(mAdBean.getTitle())
+                    .description(mAdBean.getDescription())
+                    .cta("install")
+                    .content(content)
                     .icon(icon);
 
             mAd = builder.build();
@@ -178,26 +194,20 @@ public final class NativeAdImp extends AbstractAdsManager implements View.OnClic
      */
     private void setUpLogo(ViewGroup parent) {
         final AdMark adMark = mAdBean.getAdMark();
-        if (adMark != null) {
-            if (TextUtils.isEmpty(adMark.getLink()) || TextUtils.isEmpty(adMark.getLogo())) {
-                return;
-            }
-            if (Cache.existCache(mContext, adMark.getLogo())) {
-                drawLogo(parent, ImageUtils.getBitmap(Cache.getCacheFile(mContext, adMark.getLogo(),
-                        null)), adMark.getLink());
+        if (adMark == null || TextUtils.isEmpty(adMark.getLogo()) || TextUtils.isEmpty(adMark.getLink())) {
+            return;
+        }
+        String link = adMark.getLink();
+        try {
+            String logoUrl = adMark.getLogo();
+            if (!TextUtils.isEmpty(logoUrl) && Cache.existCache(mContext, logoUrl)) {
+                drawLogo(parent, ImageUtils.getBitmap(Cache.getCacheFile(mContext, logoUrl,
+                        null)), link);
             } else {
-                Response response = AdRequest.get().url(adMark.getLogo()).connectTimeout(3000)
-                        .readTimeout(6000).syncRequest();
-                if (response == null || response.code() != HttpsURLConnection.HTTP_OK) {
-                    drawLogo(parent, null, adMark.getLink());
-                } else {
-                    try {
-                        drawLogo(parent, ImageUtils.getBitmap(response.body().stream()), adMark.getLink());
-                    } catch (Exception e) {
-                        drawLogo(parent, null, adMark.getLink());
-                    }
-                }
+                drawLogo(parent, null, link);
             }
+        } catch (Exception e) {
+            drawLogo(parent, null, link);
         }
     }
 

@@ -23,8 +23,8 @@ import com.openmediation.sdk.utils.event.EventUploadManager;
 import com.openmediation.sdk.utils.model.Scene;
 import com.openmediation.sdk.video.RewardedVideoListener;
 
-import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  *
@@ -43,9 +43,9 @@ public class ListenerWrapper {
     private String mPlacementId;
 
     ListenerWrapper() {
-        mRvListeners = new HashSet<>();
-        mIsListeners = new HashSet<>();
-        mCpListeners = new HashSet<>();
+        mRvListeners = new CopyOnWriteArraySet<>();
+        mIsListeners = new CopyOnWriteArraySet<>();
+        mCpListeners = new CopyOnWriteArraySet<>();
     }
 
     private boolean canSendCallback(Object listener) {

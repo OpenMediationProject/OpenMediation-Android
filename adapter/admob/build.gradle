@@ -26,6 +26,7 @@ android.libraryVariants.all { variant ->
 }
 dependencies {
     implementation project(':om-android-sdk')
-    //Admob
+    //AdMob
     implementation rootProject.ext.dependencies.admob
+    implementation rootProject.ext.dependencies.admob_facebook_adapter
 }

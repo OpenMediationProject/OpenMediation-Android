@@ -19,12 +19,14 @@ import com.openmediation.sdk.nativead.AdIconView;
 import com.openmediation.sdk.nativead.AdInfo;
 import com.openmediation.sdk.nativead.MediaView;
 import com.openmediation.sdk.nativead.NativeAdView;
+import com.openmediation.sdk.utils.AdLog;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class CrossPromotionNativeManager {
+    private static final String TAG = "OM-CrossPromotion: ";
     private static final String PAY_LOAD = "pay_load";
     private final ConcurrentMap<String, CrossPromotionNativeAdsConfig> mNativeAds;
 
@@ -44,6 +46,14 @@ public class CrossPromotionNativeManager {
         String payload = "";
         if (extras.containsKey(PAY_LOAD)) {
             payload = extras.get(PAY_LOAD).toString();
+        }
+        if (TextUtils.isEmpty(payload)) {
+            AdLog.getSingleton().LogD(TAG, "NativeAd load failed: payload is empty");
+            if (callback != null) {
+                callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_NATIVE, "CrossPromotionAdapter", "payload is empty"));
+            }
+            return;
         }
         NativeAd nativeAd = new NativeAd(MediationUtil.getContext(), adUnitId);
         InnerNativeAdListener listener = new InnerNativeAdListener(nativeAd, adUnitId, callback);
@@ -84,7 +94,7 @@ public class CrossPromotionNativeManager {
                 }
             }
             nativeAd.getNativeAd().registerNativeAdView(adView);
-        } catch(Throwable ignored) {
+        } catch (Throwable ignored) {
 
         }
     }

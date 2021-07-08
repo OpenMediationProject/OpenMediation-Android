@@ -1,0 +1,48 @@
+/*
+ * // Copyright 2021 ADTIMING TECHNOLOGY COMPANY LIMITED
+ * // Licensed under the GNU Lesser General Public License Version 3
+ */
+
+plugins {
+    id 'com.android.library'
+}
+
+android {
+    compileSdkVersion 30
+    buildToolsVersion "30.0.3"
+
+    defaultConfig {
+        minSdkVersion rootProject.ext.version.minSdkVersion
+        targetSdkVersion rootProject.ext.version.targetSdkVersion
+        versionCode rootProject.ext.version.versionCode
+        versionName rootProject.ext.adapterVersion.admost
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+
+    implementation project (':om-android-sdk')
+    //AdMost
+    implementation rootProject.ext.dependencies.admost
+    implementation rootProject.ext.dependencies.admost_volley
+    implementation rootProject.ext.dependencies.play_service_base
+    implementation rootProject.ext.dependencies.admost_facebook_adapter
+    implementation rootProject.ext.dependencies.facebook
+    implementation rootProject.ext.dependencies.admost_s2sbidding_adapter
+    implementation rootProject.ext.dependencies.admost_recyclerview
+    implementation rootProject.ext.dependencies.admost_annotation
+}

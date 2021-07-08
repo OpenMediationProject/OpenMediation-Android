@@ -103,13 +103,13 @@ public class DataBaseEventsStorage extends DataBaseHelper {
                 cursor.close();
             }
         }
-        DeveloperLog.LogE("loading events: " + events.size());
+        DeveloperLog.LogD("loading events: " + events.size());
         return events;
     }
 
     synchronized void clearEvents(ConcurrentLinkedQueue<Event> events) {
         try {
-            DeveloperLog.LogE("clearing events: " + events.size());
+            DeveloperLog.LogD("clearing events: " + events.size());
             getWritableDatabase();
             if (!isRead()) {
                 return;

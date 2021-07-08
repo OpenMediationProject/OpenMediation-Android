@@ -94,6 +94,7 @@ public class PlacementUtils {
         }
         extras.put("AuctionId", reqId);
         extras.put("AppKey", instance.getAppKey());
+        extras.put("Bid", instance.getHb());
         return extras;
     }
 

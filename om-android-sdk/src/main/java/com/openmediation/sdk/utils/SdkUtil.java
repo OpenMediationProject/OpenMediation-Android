@@ -47,7 +47,7 @@ public class SdkUtil {
             error = new Error(ErrorCode.CODE_INIT_INVALID_REQUEST
                     , ErrorCode.MSG_INIT_INVALID_REQUEST, ErrorCode.CODE_INTERNAL_REQUEST_PERMISSION);
             //init error permission is not granted
-            DeveloperLog.LogE(error.toString());
+            DeveloperLog.LogE("Permission Error: " + error.toString());
             return error;
         }
 //        if (!NetworkChecker.isAvailable(activity)) {

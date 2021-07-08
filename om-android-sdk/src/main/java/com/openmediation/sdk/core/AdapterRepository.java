@@ -12,6 +12,9 @@ import com.openmediation.sdk.utils.AdapterUtil;
 import com.openmediation.sdk.utils.AdtUtil;
 import com.openmediation.sdk.utils.cache.DataCache;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class AdapterRepository {
 
     private static final String KEY_GDPR_CONSENT = "MetaData_GDPRConsent";
@@ -21,6 +24,7 @@ public class AdapterRepository {
     private static final String KEY_US_PRIVACY_LIMIT = "MetaData_USPrivacyLimit";
 
     private MetaData mMetaData = new MetaData();
+    private Map<String, Object> mPolicySettings = new HashMap<>();
 
     public static AdapterRepository getInstance() {
         return AdapterRepositoryHolder.mSingleton;
@@ -87,6 +91,7 @@ public class AdapterRepository {
 
     public synchronized void setGDPRConsent(boolean consent) {
         mMetaData.setGDPRConsent(consent);
+        mPolicySettings.put("consent", consent);
         saveGDPRConsent();
         SparseArray<CustomAdsAdapter> adapterMap = AdapterUtil.getAdapterMap();
         int size = adapterMap.size();
@@ -104,6 +109,7 @@ public class AdapterRepository {
 
     public synchronized void setAgeRestricted(boolean restricted) {
         mMetaData.setAgeRestricted(restricted);
+        mPolicySettings.put("restricted", restricted);
         saveAgeRestricted();
         SparseArray<CustomAdsAdapter> adapterMap = AdapterUtil.getAdapterMap();
         int size = adapterMap.size();
@@ -121,6 +127,7 @@ public class AdapterRepository {
 
     public synchronized void setUserAge(int age) {
         mMetaData.setUserAge(age);
+        mPolicySettings.put("age", age);
         saveUserAge();
         SparseArray<CustomAdsAdapter> adapterMap = AdapterUtil.getAdapterMap();
         int size = adapterMap.size();
@@ -138,6 +145,7 @@ public class AdapterRepository {
 
     public synchronized void setUserGender(String gender) {
         mMetaData.setUserGender(gender);
+        mPolicySettings.put("gender", gender);
         saveUserGender();
         SparseArray<CustomAdsAdapter> adapterMap = AdapterUtil.getAdapterMap();
         int size = adapterMap.size();
@@ -157,6 +165,7 @@ public class AdapterRepository {
 
     public synchronized void setUSPrivacyLimit(boolean value) {
         mMetaData.setUSPrivacyLimit(value);
+        mPolicySettings.put("usPrivacyLimit", value);
         saveUSPrivacyLimit();
         SparseArray<CustomAdsAdapter> adapterMap = AdapterUtil.getAdapterMap();
         int size = adapterMap.size();
@@ -194,6 +203,10 @@ public class AdapterRepository {
 
     public MetaData getMetaData() {
         return mMetaData;
+    }
+
+    public Map<String, Object> getPolicySettings() {
+        return mPolicySettings;
     }
 
     private void saveMetaData() {

@@ -8,7 +8,6 @@ import android.util.SparseArray;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.utils.AdapterUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
-import com.openmediation.sdk.utils.crash.CrashUtil;
 
 final class BidAdapterUtil extends AdapterUtil {
     private static final String BID_ADAPTER = "BidAdapter";
@@ -25,6 +24,9 @@ final class BidAdapterUtil extends AdapterUtil {
         mBidAdapterPaths.put(MediationInfo.MEDIATION_ID_17, getBidAdapterPath(MediationInfo.MEDIATION_ID_17));
         mBidAdapterPaths.put(MediationInfo.MEDIATION_ID_19, getBidAdapterPath(MediationInfo.MEDIATION_ID_19));
         mBidAdapterPaths.put(MediationInfo.MEDIATION_ID_23, getBidAdapterPath(MediationInfo.MEDIATION_ID_23));
+        mBidAdapterPaths.put(MediationInfo.MEDIATION_ID_24, getBidAdapterPath(MediationInfo.MEDIATION_ID_24));
+        mBidAdapterPaths.put(MediationInfo.MEDIATION_ID_25, getBidAdapterPath(MediationInfo.MEDIATION_ID_25));
+        mBidAdapterPaths.put(MediationInfo.MEDIATION_ID_26, getBidAdapterPath(MediationInfo.MEDIATION_ID_26));
     }
 
     static BidAdapter getBidAdapter(int mediationId) {
@@ -74,6 +76,15 @@ final class BidAdapterUtil extends AdapterUtil {
                 break;
             case MediationInfo.MEDIATION_ID_23:
                 path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_23)).concat(BID_ADAPTER);
+                break;
+            case MediationInfo.MEDIATION_ID_24:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_24)).concat(BID_ADAPTER);
+                break;
+            case MediationInfo.MEDIATION_ID_25:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_25)).concat(BID_ADAPTER);
+                break;
+            case MediationInfo.MEDIATION_ID_26:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_26)).concat(BID_ADAPTER);
                 break;
             default:
                 break;

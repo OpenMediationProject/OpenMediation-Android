@@ -625,11 +625,13 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedAdLis
     @Override
     public void destroyNativeAd(String adUnitId) {
         super.destroyNativeAd(adUnitId);
-        if (!mNativeAds.containsKey(adUnitId) && mNativeAds.get(adUnitId) == null) {
+        if (!mNativeAds.containsKey(adUnitId)) {
             return;
         }
-        mNativeAds.get(adUnitId).getNativeAd().destroy();
-        mNativeAds.remove(adUnitId);
+        MoPubNativeAdsConfig config = mNativeAds.remove(adUnitId);
+        if (config.getNativeAd() != null) {
+            config.getNativeAd().destroy();
+        }
     }
 
     private MoPubInterstitial getInterstitialAd(Activity activity, String adUnitId) {
@@ -679,7 +681,7 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedAdLis
             nativeAd.prepare(parent);
             nativeAd.renderAdView(parent);
         } catch(Throwable e) {
-            AdLog.getSingleton().LogE("Om-Mopub: addAndShowAdLogo error : " + e.getMessage());
+            AdLog.getSingleton().LogE(TAG, "addAndShowAdLogo error : " + e.getMessage());
         }
     }
 
@@ -817,46 +819,53 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedAdLis
 
         @Override
         public void onNativeLoad(NativeAd nativeAd) {
-            nativeAd.setMoPubNativeEventListener(new MpNaImpressionListener(callback));
-            MoPubNativeAdsConfig config = new MoPubNativeAdsConfig();
-            config.setNativeAd(nativeAd);
-            mNativeAds.put(adUnitId, config);
-            StaticNativeAd staticNativeAd = (StaticNativeAd) nativeAd.getBaseNativeAd();
-            final AdInfo adInfo = new AdInfo();
-            adInfo.setDesc(staticNativeAd.getText());
-            adInfo.setType(getAdNetworkId());
-            adInfo.setCallToActionText(staticNativeAd.getCallToAction());
-            adInfo.setTitle(staticNativeAd.getTitle());
-            MoPubUtil.Request(context, staticNativeAd.getIconImageUrl(), new Response.Listener<Bitmap>() {
-                @Override
-                public void onResponse(Bitmap bitmap) {
-                    mNativeAds.get(adUnitId).setIcon(bitmap);
-                }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError volleyError) {
+            try {
+                nativeAd.setMoPubNativeEventListener(new MpNaImpressionListener(callback));
+                final MoPubNativeAdsConfig config = new MoPubNativeAdsConfig();
+                config.setNativeAd(nativeAd);
+                mNativeAds.put(adUnitId, config);
+                StaticNativeAd staticNativeAd = (StaticNativeAd) nativeAd.getBaseNativeAd();
+                final AdInfo adInfo = new AdInfo();
+                adInfo.setDesc(staticNativeAd.getText());
+                adInfo.setType(getAdNetworkId());
+                adInfo.setCallToActionText(staticNativeAd.getCallToAction());
+                adInfo.setTitle(staticNativeAd.getTitle());
+                MoPubUtil.Request(context, staticNativeAd.getIconImageUrl(), new Response.Listener<Bitmap>() {
+                    @Override
+                    public void onResponse(Bitmap bitmap) {
+                        config.setIcon(bitmap);
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError volleyError) {
 
-                }
-            });
-            MoPubUtil.Request(context, staticNativeAd.getMainImageUrl(), new Response.Listener<Bitmap>() {
-                @Override
-                public void onResponse(Bitmap bitmap) {
-                    mNativeAds.get(adUnitId).setContent(bitmap);
-                    mNativeAds.put(adUnitId, mNativeAds.get(adUnitId));
-                    if (callback != null) {
-                        callback.onNativeAdLoadSuccess(adInfo);
                     }
-                    AdLog.getSingleton().LogD("OM-Mopub", "Mopub Native ad load success ");
-                }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError volleyError) {
-                    if (callback != null) {
-                        callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                                AdapterErrorBuilder.AD_UNIT_NATIVE, "MoPubAdapter", volleyError.getMessage()));
+                });
+                MoPubUtil.Request(context, staticNativeAd.getMainImageUrl(), new Response.Listener<Bitmap>() {
+                    @Override
+                    public void onResponse(Bitmap bitmap) {
+                        config.setContent(bitmap);
+                        mNativeAds.put(adUnitId, config);
+                        if (callback != null) {
+                            callback.onNativeAdLoadSuccess(adInfo);
+                        }
+                        AdLog.getSingleton().LogD(TAG, "MoPub Native ad load success ");
                     }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError volleyError) {
+                        if (callback != null) {
+                            callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                                    AdapterErrorBuilder.AD_UNIT_NATIVE, "MoPubAdapter", volleyError.getMessage()));
+                        }
+                    }
+                });
+            } catch (Throwable e) {
+                if (callback != null) {
+                    callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                            AdapterErrorBuilder.AD_UNIT_NATIVE, "MoPubAdapter", e.getMessage()));
                 }
-            });
+            }
         }
 
         @Override

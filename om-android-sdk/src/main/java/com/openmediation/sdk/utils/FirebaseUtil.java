@@ -26,8 +26,9 @@ public class FirebaseUtil {
         DeveloperLog.LogD("FirebaseAnalytics Upload Ad_Impression_Revenue Event");
         try {
             Class clazz = Class.forName(CLAZZ);
-        } catch(Throwable e) {
+        } catch (Throwable e) {
             AdLog.getSingleton().LogE("FirebaseAnalytics SDK Not Found Error: " + e.getMessage());
+            return;
         }
         Application context = AdtUtil.getInstance().getApplicationContext();
         if (context == null) {
@@ -60,8 +61,9 @@ public class FirebaseUtil {
 
         try {
             Class clazz = Class.forName(CLAZZ);
-        } catch(Throwable e) {
+        } catch (Throwable e) {
             AdLog.getSingleton().LogE("FirebaseAnalytics SDK Not Found Error: " + e.getMessage());
+            return;
         }
         Application context = AdtUtil.getInstance().getApplicationContext();
         if (context == null) {

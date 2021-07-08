@@ -38,6 +38,7 @@ dependencies {
     }
     //admob
     implementation rootProject.ext.dependencies.admob
+    implementation rootProject.ext.dependencies.admob_facebook_adapter
     //vungle
     implementation rootProject.ext.dependencies.vungle
     //AdColony
@@ -86,6 +87,7 @@ dependencies {
 
     // Helium
     implementation rootProject.ext.dependencies.helium
+    implementation rootProject.ext.dependencies.helium_facebook_adapter
     implementation rootProject.ext.dependencies.eventbus
     implementation rootProject.ext.dependencies.play_service_base
     implementation rootProject.ext.dependencies.play_service_ads_identifier
@@ -123,12 +125,12 @@ dependencies {
     // OAID
     implementation project(path: ':miit_mdid_1.0.10')
     // TikTok
-    implementation(name: 'open_ad_sdk_3.6.1.2', ext: 'aar')
+    implementation(name: 'open_ad_sdk_3.7.0.2', ext: 'aar')
     implementation project(path: ':adapter_cn:tiktok_cn')
 
     // TencentAds
-    implementation(name: 'GDTSDK.unionNormal.4.360.1230', ext: 'aar')
-//    implementation rootProject.ext.dependencies.tencentad
+//    implementation(name: 'GDTSDK.unionNormal.4.370.1240', ext: 'aar')
+    implementation rootProject.ext.dependencies.tencentad
     implementation project(path: ':adapter_cn:tencentad_cn')
 
     // Mintegral
@@ -144,11 +146,20 @@ dependencies {
 //    implementation project(path: ':adapter_cn:mintegral_cn')
 
     // Sigmob
-    implementation(name: 'windAd-3.0.1', ext: 'aar')
+    implementation(name: 'windAd-3.1.0', ext: 'aar')
     implementation project(path: ':adapter_cn:sigmob_cn')
     // 快手
-    implementation(name: 'kssdk-ad-3.3.9', ext: 'aar')
+    implementation(name: 'kssdk-ad--3.3.10.2', ext: 'aar')
     implementation project(path: ':adapter_cn:ksad_cn')
+
+    implementation rootProject.ext.dependencies.admost
+    implementation rootProject.ext.dependencies.admost_volley
+    implementation rootProject.ext.dependencies.play_service_base
+    implementation rootProject.ext.dependencies.admost_facebook_adapter
+    implementation rootProject.ext.dependencies.admost_s2sbidding_adapter
+    implementation rootProject.ext.dependencies.admost_recyclerview
+    implementation rootProject.ext.dependencies.admost_annotation
+    implementation project(path: ':adapter:admost')
 
     implementation 'com.google.firebase:firebase-analytics:19.0.0'
 }

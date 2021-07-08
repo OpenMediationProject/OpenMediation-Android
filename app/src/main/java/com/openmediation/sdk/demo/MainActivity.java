@@ -9,6 +9,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -329,43 +330,35 @@ public class MainActivity extends Activity {
             @Override
             public void onNativeAdLoaded(String placementId, AdInfo info) {
                 adContainer.removeAllViews();
-                adView = LayoutInflater.from(MainActivity.this).inflate(R.layout.native_ad_layout, null);
-
-
-                TextView title = adView.findViewById(R.id.ad_title);
-                title.setText(info.getTitle());
-
-                TextView desc = adView.findViewById(R.id.ad_desc);
-                desc.setText(info.getDesc());
-
-                Button btn = adView.findViewById(R.id.ad_btn);
-                btn.setText(info.getCallToActionText());
-
-
-                MediaView mediaView = adView.findViewById(R.id.ad_media);
-
-                nativeAdView = new NativeAdView(MainActivity.this);
-
-
-                AdIconView adIconView = adView.findViewById(R.id.ad_icon_media);
-
-
-                DisplayMetrics displayMetrics = MainActivity.this.getResources().getDisplayMetrics();
-                mediaView.getLayoutParams().height = (int) (displayMetrics.widthPixels / (1200.0 / 627.0));
-
-                nativeAdView.addView(adView);
-
-                nativeAdView.setTitleView(title);
-                nativeAdView.setDescView(desc);
-                nativeAdView.setAdIconView(adIconView);
-                nativeAdView.setCallToActionView(btn);
-                nativeAdView.setMediaView(mediaView);
-
-
-                nativeAd.registerNativeAdView(nativeAdView);
-                RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
-                        RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-                adContainer.addView(nativeAdView, layoutParams);
+                if (info.isTemplateRender()) {
+                    RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
+                            RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+                    layoutParams.addRule(Gravity.CENTER);
+                    adContainer.addView(info.getView(), layoutParams);
+                } else {
+                    adView = LayoutInflater.from(MainActivity.this).inflate(R.layout.native_ad_layout, null);
+                    TextView title = adView.findViewById(R.id.ad_title);
+                    title.setText(info.getTitle());
+                    TextView desc = adView.findViewById(R.id.ad_desc);
+                    desc.setText(info.getDesc());
+                    Button btn = adView.findViewById(R.id.ad_btn);
+                    btn.setText(info.getCallToActionText());
+                    MediaView mediaView = adView.findViewById(R.id.ad_media);
+                    nativeAdView = new NativeAdView(MainActivity.this);
+                    AdIconView adIconView = adView.findViewById(R.id.ad_icon_media);
+                    DisplayMetrics displayMetrics = MainActivity.this.getResources().getDisplayMetrics();
+                    mediaView.getLayoutParams().height = (int) (displayMetrics.widthPixels / (1200.0 / 627.0));
+                    nativeAdView.addView(adView);
+                    nativeAdView.setTitleView(title);
+                    nativeAdView.setDescView(desc);
+                    nativeAdView.setAdIconView(adIconView);
+                    nativeAdView.setCallToActionView(btn);
+                    nativeAdView.setMediaView(mediaView);
+                    nativeAd.registerNativeAdView(nativeAdView);
+                    RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
+                            RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+                    adContainer.addView(nativeAdView, layoutParams);
+                }
                 nativeButton.setEnabled(true);
                 nativeButton.setText("Load And Show Native Ad");
             }

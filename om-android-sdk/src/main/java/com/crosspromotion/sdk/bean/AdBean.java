@@ -261,10 +261,13 @@ public class AdBean {
             List<String> localImgUrl = getLocalImgUrl();
             if (localImgUrl == null) {
                 localImgUrl = new ArrayList<>(size);
+                for (int i = 0; i < size; i ++) {
+                    localImgUrl.add("");
+                }
             }
             for (int i = 0; i < size; i ++ ) {
                 if (TextUtils.equals(url, imgUrls.get(i))) {
-                    localImgUrl.add(i, path);
+                    localImgUrl.set(i, path);
                     break;
                 }
             }
@@ -281,10 +284,13 @@ public class AdBean {
                 int size = resList.size();
                 if (localRes == null || localRes.isEmpty()) {
                     localRes = new ArrayList<>(size);
+                    for (int i = 0; i < size; i ++) {
+                        localRes.add("");
+                    }
                 }
                 for (int i = 0; i < size; i ++ ) {
                     if (TextUtils.equals(url, resList.get(i))) {
-                        localRes.add(i, path);
+                        localRes.set(i, path);
                         break;
                     }
                 }

@@ -663,19 +663,27 @@ public class AdMobAdapter extends CustomAdsAdapter {
                         }
                         return;
                     }
-                    AdMobNativeAdsConfig config = new AdMobNativeAdsConfig();
+                    final AdMobNativeAdsConfig config = new AdMobNativeAdsConfig();
                     AdLoader.Builder builder = new AdLoader.Builder(MediationUtil.getContext(), adUnitId);
                     builder.forNativeAd(new NativeAd.OnNativeAdLoadedListener() {
                         @Override
                         public void onNativeAdLoaded(NativeAd nativeAd) {
-                            mNativeAds.get(adUnitId).setAdMobNativeAd(nativeAd);
-                            AdInfo info = new AdInfo();
-                            info.setType(getAdNetworkId());
-                            info.setTitle(nativeAd.getHeadline());
-                            info.setDesc(nativeAd.getBody());
-                            info.setCallToActionText(nativeAd.getCallToAction());
-                            if (callback != null) {
-                                callback.onNativeAdLoadSuccess(info);
+                            try {
+                                config.setAdMobNativeAd(nativeAd);
+                                mNativeAds.put(adUnitId, config);
+                                AdInfo info = new AdInfo();
+                                info.setType(getAdNetworkId());
+                                info.setTitle(nativeAd.getHeadline());
+                                info.setDesc(nativeAd.getBody());
+                                info.setCallToActionText(nativeAd.getCallToAction());
+                                if (callback != null) {
+                                    callback.onNativeAdLoadSuccess(info);
+                                }
+                            } catch (Throwable e) {
+                                if (callback != null) {
+                                    callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                                            AdapterErrorBuilder.AD_UNIT_NATIVE, "AdMobAdapter", e.getMessage()));
+                                }
                             }
                         }
                     });

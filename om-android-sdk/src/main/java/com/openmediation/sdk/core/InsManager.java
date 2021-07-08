@@ -4,6 +4,7 @@ import android.text.TextUtils;
 import android.util.SparseArray;
 
 import com.openmediation.sdk.ImpressionManager;
+import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.core.runnable.LoadTimeoutRunnable;
 import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
@@ -96,10 +97,13 @@ public class InsManager {
                 JsonUtil.put(jsonObject, "cs", placement.getCs());
             }
             JsonUtil.put(jsonObject, "abt", insFields.getWfAbt());
-            if (insFields.getHb() == 1 && insFields.getBidResponse() != null) {
+            if (insFields.getHb() == 1) {
                 JsonUtil.put(jsonObject, "bid", 1);
-                JsonUtil.put(jsonObject, "price", insFields.getBidResponse().getPrice());
-                JsonUtil.put(jsonObject, "cur", insFields.getBidResponse().getCur());
+            }
+            BidResponse bidResponse = insFields.getBidResponse();
+            if (bidResponse != null) {
+                JsonUtil.put(jsonObject, "price", bidResponse.getPrice());
+                JsonUtil.put(jsonObject, "cur", bidResponse.getCur());
             }
             JsonUtil.put(jsonObject, "reqId", insFields.getReqId());
             if (insFields.getMediationRule() != null) {
@@ -320,9 +324,7 @@ public class InsManager {
             insFields.setShowStart(0);
         }
         EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_CLOSED, data);
-        if (insFields.getBidResponse() != null) {
-            insFields.setBidResponse(null);
-        }
+        insFields.setBidResponse(null);
     }
 
     public static void onInsClick(BaseInstance insFields, Scene scene) {
@@ -630,7 +632,7 @@ public class InsManager {
         if (insMap == null || insMap.size() <= 0) {
             return null;
         }
-
+        boolean cacheAds = PlacementUtils.isCacheAdsType(placement.getT());
         MediationRule mediationRule = WaterFallHelper.getMediationRule(clInfo);
         int abt = clInfo.optInt("abt");
         List<BaseInstance> instancesList = new ArrayList<>();
@@ -644,6 +646,10 @@ public class InsManager {
                 instance.setRevenue(0);
                 instance.setPriority(0);
                 instance.setRevenuePrecision(1);
+                // clear bid response
+                if (!cacheAds) {
+                    instance.setBidResponse(null);
+                }
                 instancesList.add(instance);
             } else {
                 reportNoInstance(reqId, placement, mediationRule, insId);

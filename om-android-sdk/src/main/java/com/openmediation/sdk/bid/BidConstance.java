@@ -5,6 +5,7 @@ package com.openmediation.sdk.bid;
 
 public interface BidConstance {
     String BID_APP_KEY = "app_key";
+    String BID_OM_PLACEMENT_ID = "om_placement_id";
     String BID_PLACEMENT_ID = "placement_id";
     String BID_AD_TYPE = "ad_type";
     String BID_NOTIFY_REASON = "notify_reason";

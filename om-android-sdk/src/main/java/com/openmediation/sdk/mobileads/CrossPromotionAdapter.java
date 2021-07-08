@@ -33,6 +33,7 @@ import java.util.concurrent.ConcurrentMap;
 
 public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedVideoListener, InterstitialAdListener,
         PromotionAdListener {
+    private static final String TAG = "CrossPromotionAdapter";
     private static final String PAY_LOAD = "pay_load";
     private final ConcurrentMap<String, RewardedVideoCallback> mVideoListeners;
     private final ConcurrentMap<String, InterstitialAdCallback> mInterstitialListeners;
@@ -101,14 +102,22 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
             }
             return;
         }
-        if (callback != null) {
-            mVideoListeners.put(adUnitId, callback);
-        }
-        RewardedVideo.setAdListener(adUnitId, this);
         String payload = "";
         if (extras != null && extras.containsKey(PAY_LOAD)) {
             payload = String.valueOf(extras.get(PAY_LOAD));
         }
+        if (TextUtils.isEmpty(payload)) {
+            AdLog.getSingleton().LogD(TAG, "RewardedVideoAd load failed: payload is empty");
+            if (callback != null) {
+                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "payload is empty"));
+            }
+            return;
+        }
+        if (callback != null) {
+            mVideoListeners.put(adUnitId, callback);
+        }
+        RewardedVideo.setAdListener(adUnitId, this);
         RewardedVideo.loadAdWithPayload(adUnitId, payload, extras);
     }
 
@@ -181,6 +190,14 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
         if (extras != null && extras.containsKey(PAY_LOAD)) {
             payload = String.valueOf(extras.get(PAY_LOAD));
         }
+        if (TextUtils.isEmpty(payload)) {
+            AdLog.getSingleton().LogD(TAG, "InterstitialAd load failed: payload is empty");
+            if (callback != null) {
+                callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "payload is empty"));
+            }
+            return;
+        }
         if (callback != null) {
             mInterstitialListeners.put(adUnitId, callback);
         }
@@ -193,8 +210,10 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
         super.showInterstitialAd(activity, adUnitId, callback);
         String error = check(adUnitId);
         if (!TextUtils.isEmpty(error)) {
-            callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
+            if (callback != null) {
+                callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
+            }
             return;
         }
         if (isInterstitialAdAvailable(adUnitId)) {

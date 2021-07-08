@@ -33,12 +33,12 @@ public class IapHelper {
     public static void setIap(final float iapNumber, final String currency) {
 
         if (FLOAT_ACCURACY > iapNumber) {
-            DeveloperLog.LogE("iapNumber  is zero");
+            DeveloperLog.LogD("iapNumber  is zero");
             return;
         }
 
         if (TextUtils.isEmpty(currency)) {
-            DeveloperLog.LogE("currency is null");
+            DeveloperLog.LogD("currency is null");
             return;
         }
 
@@ -51,7 +51,7 @@ public class IapHelper {
                         return;
                     }
                     String resStr = response.body().string();
-                    DeveloperLog.LogE(String.format("iap result : %s", resStr));
+                    DeveloperLog.LogD(String.format("iap result : %s", resStr));
                     if (!TextUtils.isEmpty(resStr)) {
                         JSONObject resObj = new JSONObject(resStr);
                         saveIap(resObj.optDouble("iapUsd", 0L));
@@ -72,7 +72,7 @@ public class IapHelper {
     private static void saveIap(double iapNumber) {
         try {
             if (FLOAT_ACCURACY > iapNumber) {
-                DeveloperLog.LogE("iapNumber  is zero");
+                DeveloperLog.LogE("iapNumber is zero");
                 return;
             }
 

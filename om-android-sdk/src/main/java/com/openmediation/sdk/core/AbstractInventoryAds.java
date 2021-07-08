@@ -35,7 +35,6 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -214,7 +213,7 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
             isInLoadingProgress = false;
         } else {
             if (mPlacement != null) {
-                Map<Integer, BidResponse> bidResponseMap = WaterFallHelper.getS2sBidResponse(clInfo);
+                Map<Integer, BidResponse> bidResponseMap = WaterFallHelper.getS2sBidResponse(mPlacement, clInfo);
                 if (bidResponseMap != null && !bidResponseMap.isEmpty()) {
                     mBidResponses.putAll(bidResponseMap);
                 }
@@ -651,7 +650,6 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
         if (mTotalIns == null || mBidResponses == null) {
             return;
         }
-        Map<BaseInstance, BidResponse> unLoadInsBidResponses = new HashMap<>();
         for (BaseInstance in : mTotalIns) {
             if (in == null) {
                 continue;
@@ -659,13 +657,13 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
             if ((in.getMediationState() == BaseInstance.MEDIATION_STATE.NOT_INITIATED ||
                     in.getMediationState() == BaseInstance.MEDIATION_STATE.NOT_AVAILABLE) &&
                     mBidResponses.containsKey(in.getId())) {
-                unLoadInsBidResponses.put(in, mBidResponses.get(in.getId()));
-                mBidResponses.remove(in.getId());
+                BidResponse bidResponse = mBidResponses.remove(in.getId());
+                if (bidResponse == null) {
+                    continue;
+                }
+                AuctionUtil.notifyLose(in, bidResponse, BidLoseReason.LOST_TO_HIGHER_BIDDER.getValue());
                 in.setBidResponse(null);
             }
-        }
-        if (!unLoadInsBidResponses.isEmpty()) {
-            AuctionUtil.notifyLose(unLoadInsBidResponses, BidLoseReason.LOST_TO_HIGHER_BIDDER.getValue());
         }
     }
 

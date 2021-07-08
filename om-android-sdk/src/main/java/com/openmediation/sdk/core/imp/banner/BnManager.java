@@ -17,6 +17,7 @@ import com.openmediation.sdk.core.OmManager;
 import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.utils.AdsUtil;
+import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.HandlerUtil;
 import com.openmediation.sdk.utils.PlacementUtils;
 import com.openmediation.sdk.utils.cache.DataCache;
@@ -32,7 +33,6 @@ import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.PlacementInfo;
 
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BnManager extends AbstractHybridAds implements BnManagerListener, View.OnAttachStateChangeListener {
 
@@ -248,13 +248,20 @@ public class BnManager extends AbstractHybridAds implements BnManagerListener, V
         if (mPlacement == null || isDestroyed) {
             return;
         }
-        int rlw = mPlacement.getRlw();
 
-        if (mRefreshTask == null) {
-            mRefreshTask = new RefreshTask(rlw);
+        if (mRlwHandler == null) {
+            return;
         }
+        try {
+            int rlw = mPlacement.getRlw();
 
-        mRlwHandler.postDelayed(mRefreshTask, rlw * 1000);
+            if (mRefreshTask == null) {
+                mRefreshTask = new RefreshTask(rlw);
+            }
+            mRlwHandler.postDelayed(mRefreshTask, rlw * 1000);
+        } catch (Throwable e) {
+            DeveloperLog.LogE("BnManager, startRefreshTask error: " + e.getMessage());
+        }
     }
 
     private class RefreshTask implements Runnable {
@@ -267,17 +274,24 @@ public class BnManager extends AbstractHybridAds implements BnManagerListener, V
 
         @Override
         public void run() {
-            mRlwHandler.postDelayed(mRefreshTask, mInterval * 1000);
-            // not in foreground, stop load AD
-            if (!OmManager.getInstance().isInForeground()) {
-                return;
+            try {
+                if (mPlacement != null && mPlacement.getRlw() > 0) {
+                    mInterval = mPlacement.getRlw();
+                }
+                mRlwHandler.postDelayed(mRefreshTask, mInterval * 1000);
+                // not in foreground, stop load AD
+                if (!OmManager.getInstance().isInForeground()) {
+                    return;
+                }
+                if (mLoadTs > mCallbackTs) {
+                    return;
+                }
+                EventUploadManager.getInstance().uploadEvent(EventId.REFRESH_INTERVAL,
+                        PlacementUtils.placementEventParams(mPlacement != null ? mPlacement.getId() : ""));
+                loadAds(OmManager.LOAD_TYPE.INTERVAL);
+            } catch (Throwable e) {
+                DeveloperLog.LogE("BnManager, RefreshTask run error: " + e.getMessage());
             }
-            if (mLoadTs > mCallbackTs) {
-                return;
-            }
-            EventUploadManager.getInstance().uploadEvent(EventId.REFRESH_INTERVAL,
-                    PlacementUtils.placementEventParams(mPlacement != null ? mPlacement.getId() : ""));
-            loadAds(OmManager.LOAD_TYPE.INTERVAL);
         }
     }
 }

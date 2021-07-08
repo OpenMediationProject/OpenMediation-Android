@@ -26,10 +26,18 @@ public class NaManager extends AbstractHybridAds implements NaManagerListener, V
 
     private NativeAdView mNativeAdView;
     private boolean isImpressed;
+    private int width = -1;
+    private int height = -1;
+    private boolean isTemplateRender;
 
     public NaManager(String placementId, NativeAdListener listener) {
         super(placementId);
         mListenerWrapper.setNaListener(listener);
+    }
+
+    public void setDisplayParams(int width, int height) {
+        this.width = width;
+        this.height = height;
     }
 
     @Override
@@ -43,6 +51,15 @@ public class NaManager extends AbstractHybridAds implements NaManagerListener, V
             Object o = mCurrentIns.getObject();
             if (o instanceof AdInfo) {
                 AdInfo adInfo = (AdInfo) o;
+                if (adInfo.isTemplateRender()) {
+                    isTemplateRender = true;
+                    View view = adInfo.getView();
+                    if (view != null) {
+                        view.addOnAttachStateChangeListener(this);
+                    }
+                } else {
+                    isTemplateRender = false;
+                }
                 mListenerWrapper.onNativeAdLoaded(mPlacementId, adInfo);
             } else {
                 Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_NO_AVAILABLE_AD,
@@ -80,6 +97,13 @@ public class NaManager extends AbstractHybridAds implements NaManagerListener, V
         if (instance instanceof NaInstance) {
             NaInstance naInstance = (NaInstance) instance;
             naInstance.setNaManagerListener(this);
+            if (width > -1) {
+                extras.put("width", width);
+            }
+
+            if (height > -1) {
+                extras.put("height", height);
+            }
             naInstance.loadNa(mActRefs.get(), extras);
         }
     }
@@ -112,7 +136,7 @@ public class NaManager extends AbstractHybridAds implements NaManagerListener, V
     }
 
     public void registerView(NativeAdView adView) {
-        if (isDestroyed) {
+        if (isDestroyed || isTemplateRender) {
             return;
         }
         mNativeAdView = adView;

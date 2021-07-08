@@ -461,20 +461,25 @@ public abstract class AbstractAdsManager implements Request.OnRequestCallback {
 
         @Override
         public void onCompleted(String url, File file) {
-            if (file == null) {
-                adBean.getFailed().incrementAndGet();
-            } else {
-                adBean.getSuccess().incrementAndGet();
-                adBean.replaceOnlineResToLocal(url, "file://".concat(file.getPath()));
-            }
-            if (total == (adBean.getSuccess().get() + adBean.getFailed().get())) {
-                if (adBean.getFailed().get() > 0) {
-                    onAdsLoadFailed(ErrorBuilder.build(ErrorCode.CODE_LOAD_DOWNLOAD_FAILED));
+            try {
+                if (file == null) {
+                    adBean.getFailed().incrementAndGet();
                 } else {
-                    mAdBean = adBean;
-                    mAdBean.setFillTime(System.currentTimeMillis());
-                    onAdsLoadSuccess(mAdBean);
+                    adBean.getSuccess().incrementAndGet();
+                    adBean.replaceOnlineResToLocal(url, "file://".concat(file.getPath()));
                 }
+                if (total == (adBean.getSuccess().get() + adBean.getFailed().get())) {
+                    if (adBean.getFailed().get() > 0) {
+                        onAdsLoadFailed(ErrorBuilder.build(ErrorCode.CODE_LOAD_DOWNLOAD_FAILED));
+                    } else {
+                        mAdBean = adBean;
+                        mAdBean.setFillTime(System.currentTimeMillis());
+                        onAdsLoadSuccess(mAdBean);
+                    }
+                }
+            } catch (Throwable e) {
+                DeveloperLog.LogE("CrossPromotion AbstractAdsManager DownloadRes error: " + e.toString());
+                onAdsLoadFailed(ErrorBuilder.build(ErrorCode.CODE_LOAD_DOWNLOAD_FAILED));
             }
         }
     }

@@ -14,6 +14,7 @@ import com.crosspromotion.sdk.utils.error.Error;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.MediationUtil;
+import com.openmediation.sdk.utils.AdLog;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,6 +42,14 @@ public class CrossPromotionBannerManager {
         String payload = "";
         if (extras.containsKey(PAY_LOAD)) {
             payload = extras.get(PAY_LOAD).toString();
+        }
+        if (TextUtils.isEmpty(payload)) {
+            AdLog.getSingleton().LogD(TAG, "BannerAd load failed: payload is empty");
+            if (callback != null) {
+                callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, "CrossPromotionAdapter", "payload is empty"));
+            }
+            return;
         }
         BannerAd bannerAd = new BannerAd(MediationUtil.getContext(), adUnitId);
         bannerAd.setAdListener(new InnerBannerAdListener(bannerAd, adUnitId, callback));

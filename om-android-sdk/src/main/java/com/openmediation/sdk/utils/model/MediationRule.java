@@ -31,7 +31,7 @@ public class MediationRule {
         try {
             return new MediationRule(jsonObject);
         } catch (Exception e) {
-            DeveloperLog.LogE(e.toString());
+            DeveloperLog.LogE("MediationRule parse error: " + e.toString());
         }
         return null;
     }

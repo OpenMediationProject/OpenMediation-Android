@@ -38,6 +38,12 @@ public class NativeAd {
         mNative = new NaManager(placementId, adListener);
     }
 
+    public void setDisplayParams(int width, int height) {
+        if (mNative != null) {
+            mNative.setDisplayParams(width, height);
+        }
+    }
+
     /**
      * Load ad.
      */

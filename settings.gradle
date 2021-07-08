@@ -10,3 +10,4 @@ include ':adapter:applovin', ':adapter:chartboost', ':adapter:adcolony', ':adapt
         ':adapter:ogury',
         ':adapter:pubnative',
 rootProject.name = 'AdTiming-OpenMediation-Android'
+include ':adapter:admost'

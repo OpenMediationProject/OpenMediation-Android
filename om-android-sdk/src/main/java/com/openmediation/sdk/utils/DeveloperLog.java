@@ -47,6 +47,13 @@ public class DeveloperLog {
         Log.e(TAG, info);
     }
 
+    public static void LogW(String info) {
+        if (!debug) {
+            return;
+        }
+        Log.w(TAG, info);
+    }
+
     public static void LogE(String info, Throwable t) {
         if (!debug) {
             return;

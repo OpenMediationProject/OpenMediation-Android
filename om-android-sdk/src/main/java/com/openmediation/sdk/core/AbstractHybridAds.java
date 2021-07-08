@@ -28,7 +28,6 @@ import com.openmediation.sdk.utils.model.Scene;
 
 import org.json.JSONObject;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -148,6 +147,7 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
         EventUploadManager.getInstance().uploadEvent(EventId.DESTROY, TextUtils.isEmpty(mPlacementId) ?
                 PlacementUtils.placementEventParams(mPlacementId) : null);
         mCurrentIns = null;
+        isDestroyed = true;
     }
 
     @Override
@@ -188,9 +188,11 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
             mTotalIns.clear();
             mTotalIns.addAll(finalTotalIns);
             InsManager.resetInsStateOnClResponse(mTotalIns);
-            Map<Integer, BidResponse> bidResponseMap = WaterFallHelper.getS2sBidResponse(clInfo);
-            if (bidResponseMap != null && !bidResponseMap.isEmpty()) {
-                mBidResponses.putAll(bidResponseMap);
+            if (mPlacement != null) {
+                Map<Integer, BidResponse> bidResponseMap = WaterFallHelper.getS2sBidResponse(mPlacement, clInfo);
+                if (bidResponseMap != null && !bidResponseMap.isEmpty()) {
+                    mBidResponses.putAll(bidResponseMap);
+                }
             }
             HandlerUtil.runOnUiThread(new Runnable() {
                 @Override
@@ -576,7 +578,6 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
         if (mLoadedInsIndex == len) {
             return;
         }
-        Map<BaseInstance, BidResponse> unLoadInsBidResponses = new HashMap<>();
         for (int i = mLoadedInsIndex; i < len; i++) {
             BaseInstance instance = mTotalIns.get(i);
             if (instance == null) {
@@ -586,12 +587,12 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
             if (!mBidResponses.containsKey(instance.getId())) {
                 continue;
             }
-            unLoadInsBidResponses.put(instance, mBidResponses.get(instance.getId()));
-            mBidResponses.remove(instance.getId());
+            BidResponse bidResponse = mBidResponses.remove(instance.getId());
+            if (bidResponse == null) {
+                continue;
+            }
+            AuctionUtil.notifyLose(instance, bidResponse, BidLoseReason.LOST_TO_HIGHER_BIDDER.getValue());
             instance.setBidResponse(null);
-        }
-        if (!unLoadInsBidResponses.isEmpty()) {
-            AuctionUtil.notifyLose(unLoadInsBidResponses, BidLoseReason.LOST_TO_HIGHER_BIDDER.getValue());
         }
     }
 

@@ -442,16 +442,14 @@ public abstract class AbstractAdsApi implements InitCallback, AuctionCallback, R
                     , ErrorCode.ERROR_LOAD_AD_BUT_DESTROYED, ErrorCode.CODE_INTERNAL_UNKNOWN_OTHER);
         }
 
+        mPlacement = PlacementUtils.getPlacement(mPlacementId);
         if (mPlacement == null) {
-            mPlacement = PlacementUtils.getPlacement(mPlacementId);
-            if (mPlacement == null) {
-                return ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
-                        , ErrorCode.ERROR_PLACEMENT_EMPTY, ErrorCode.CODE_INTERNAL_UNKNOWN_OTHER);
-            }
-            if (mPlacement.getT() != getPlacementType()) {
-                return ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
-                        , ErrorCode.ERROR_PLACEMENT_TYPE, ErrorCode.CODE_INTERNAL_UNKNOWN_OTHER);
-            }
+            return ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
+                    , ErrorCode.ERROR_PLACEMENT_EMPTY, ErrorCode.CODE_INTERNAL_UNKNOWN_OTHER);
+        }
+        if (mPlacement.getT() != getPlacementType()) {
+            return ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
+                    , ErrorCode.ERROR_PLACEMENT_TYPE, ErrorCode.CODE_INTERNAL_UNKNOWN_OTHER);
         }
 
         if (AdRateUtil.shouldBlockPlacement(mPlacement) || AdRateUtil.isPlacementCapped(mPlacement)) {
