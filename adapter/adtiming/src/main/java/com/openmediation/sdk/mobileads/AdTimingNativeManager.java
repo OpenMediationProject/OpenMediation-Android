@@ -12,11 +12,11 @@ import com.adtbid.sdk.nativead.NativeAdListener;
 import com.adtbid.sdk.utils.error.AdTimingError;
 import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.mediation.NativeAdCallback;
 import com.openmediation.sdk.nativead.AdIconView;
-import com.openmediation.sdk.nativead.AdInfo;
 import com.openmediation.sdk.nativead.MediaView;
 import com.openmediation.sdk.nativead.NativeAdView;
 import com.openmediation.sdk.utils.AdLog;
@@ -29,7 +29,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class AdTimingNativeManager {
     private static final String PAY_LOAD = "pay_load";
-    private final ConcurrentMap<String, NativeAd> mNativeAds;
     private final List<NativeAdCallback> mNaCallback;
 
     private static class Holder {
@@ -37,7 +36,6 @@ public class AdTimingNativeManager {
     }
 
     private AdTimingNativeManager() {
-        mNativeAds = new ConcurrentHashMap<>();
         mNaCallback = new CopyOnWriteArrayList<>();
     }
 
@@ -76,9 +74,13 @@ public class AdTimingNativeManager {
         nativeAd.loadAdWithPayload(payload);
     }
 
-    public void registerNativeView(String adUnitId, NativeAdView adView, NativeAdCallback callback) {
+    public void registerNativeView(String adUnitId, NativeAdView adView, AdnAdInfo adInfo, NativeAdCallback callback) {
         try {
-            NativeAd nativeAd = mNativeAds.get(adUnitId);
+            if (adInfo == null || !(adInfo.getAdnNativeAd() instanceof NativeAd)) {
+                AdLog.getSingleton().LogE("AdTiming NativeAd Not Ready! " + adUnitId);
+                return;
+            }
+            NativeAd nativeAd = (NativeAd) adInfo.getAdnNativeAd();
             if (nativeAd == null) {
                 AdLog.getSingleton().LogE("AdTiming NativeAd Not Ready! " + adUnitId);
                 return;
@@ -115,9 +117,9 @@ public class AdTimingNativeManager {
         }
     }
 
-    public void destroyAd(String adUnitId) {
-        if (!TextUtils.isEmpty(adUnitId) && mNativeAds.containsKey(adUnitId)) {
-            NativeAd nativeAd = mNativeAds.remove(adUnitId);
+    public void destroyAd(String adUnitId, AdnAdInfo adInfo) {
+        if (adInfo != null && adInfo.getAdnNativeAd() instanceof NativeAd) {
+            NativeAd nativeAd = (NativeAd) adInfo.getAdnNativeAd();
             nativeAd.destroy();
             nativeAd = null;
         }
@@ -143,9 +145,9 @@ public class AdTimingNativeManager {
                 }
                 return;
             }
-            mNativeAds.put(mAdUnitId, mNativeAd);
             if (mAdCallback != null) {
-                AdInfo adInfo = new AdInfo();
+                AdnAdInfo adInfo = new AdnAdInfo();
+                adInfo.setAdnNativeAd(mNativeAd);
                 adInfo.setDesc(ad.getDescription());
                 adInfo.setType(MediationInfo.MEDIATION_ID_1);
                 adInfo.setTitle(ad.getTitle());

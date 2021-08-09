@@ -14,10 +14,10 @@ import com.crosspromotion.sdk.utils.Cache;
 import com.crosspromotion.sdk.utils.ImageUtils;
 import com.crosspromotion.sdk.utils.ResDownloader;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.NativeAdCallback;
 import com.openmediation.sdk.nativead.AdIconView;
-import com.openmediation.sdk.nativead.AdInfo;
 import com.openmediation.sdk.nativead.MediaView;
 import com.openmediation.sdk.nativead.NativeAdView;
 import com.openmediation.sdk.utils.AdLog;
@@ -63,7 +63,7 @@ public class PubNativeNativeManager {
     }
 
     public void loadAd(String adUnitId, Map<String, Object> extras, final NativeAdCallback callback) {
-        final NativeAd nativeAd = PubNativeSingleTon.getInstance().getNativeAd(adUnitId);
+        final NativeAd nativeAd = PubNativeSingleTon.getInstance().removeNativeAd(adUnitId);
         if (nativeAd == null) {
             String error = PubNativeSingleTon.getInstance().getError(adUnitId);
             if (TextUtils.isEmpty(error)) {
@@ -83,9 +83,13 @@ public class PubNativeNativeManager {
         });
     }
 
-    public void registerNativeView(String adUnitId, NativeAdView adView, final NativeAdCallback callback) {
+    public void registerNativeView(String adUnitId, NativeAdView adView, AdnAdInfo adInfo, final NativeAdCallback callback) {
         try {
-            final NativeAd nativeAd = PubNativeSingleTon.getInstance().getNativeAd(adUnitId);
+            if (adInfo == null || !(adInfo.getAdnNativeAd() instanceof NativeAd)) {
+                AdLog.getSingleton().LogE("PubNativeAdapter NativeAd not ready");
+                return;
+            }
+            final NativeAd nativeAd = (NativeAd) adInfo.getAdnNativeAd();
             if (nativeAd == null) {
                 return;
             }
@@ -118,7 +122,10 @@ public class PubNativeNativeManager {
             NativeAd.Listener listener = new NativeAd.Listener() {
                 @Override
                 public void onAdImpression(NativeAd ad, View view) {
-
+                    AdLog.getSingleton().LogD("PubNative NativeAd onAdImpression");
+                    if (callback != null) {
+                        callback.onNativeAdImpression();
+                    }
                 }
 
                 @Override
@@ -137,8 +144,16 @@ public class PubNativeNativeManager {
         }
     }
 
-    public void destroyAd(String adUnitId) {
-        PubNativeSingleTon.getInstance().destroyNativeAd(adUnitId);
+    public void destroyAd(String adUnitId, AdnAdInfo adInfo) {
+        try {
+            if (adInfo == null || !(adInfo.getAdnNativeAd() instanceof NativeAd)) {
+                AdLog.getSingleton().LogE("PubNativeAdapter NativeAd destroyAd failed");
+                return;
+            }
+            NativeAd nativeAd = (NativeAd) adInfo.getAdnNativeAd();
+            nativeAd.stopTracking();
+        } catch (Exception ignored) {
+        }
     }
 
     private void downloadRes(NativeAd ad, NativeAdCallback callback) {
@@ -165,7 +180,8 @@ public class PubNativeNativeManager {
                 }
                 AdLog.getSingleton().LogD("PubNativeNative", "Icon File = " + file);
             }
-            AdInfo adInfo = new AdInfo();
+            AdnAdInfo adInfo = new AdnAdInfo();
+            adInfo.setAdnNativeAd(ad);
             adInfo.setDesc(ad.getDescription());
             adInfo.setType(MediationInfo.MEDIATION_ID_23);
             adInfo.setTitle(ad.getTitle());

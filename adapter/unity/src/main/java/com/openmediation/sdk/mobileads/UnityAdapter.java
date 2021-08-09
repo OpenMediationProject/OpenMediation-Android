@@ -140,14 +140,7 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
                     callback.onRewardedVideoLoadSuccess();
                 }
             } else {
-                if (UnityAds.isInitialized() && UnityAds.getPlacementState(adUnitId) != UnityAds.PlacementState.WAITING) {
-                    if (callback != null) {
-                        callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
-                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, UnityAds.getPlacementState(adUnitId).name()));
-                    }
-                } else {
-                    mRvLoadTrigerIds.add(adUnitId);
-                }
+                mRvLoadTrigerIds.add(adUnitId);
             }
         } else {
             if (callback != null) {
@@ -261,19 +254,15 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
             }
             return;
         }
+        if (callback != null) {
+            mIsCallbacks.put(adUnitId, callback);
+        }
         if (isInterstitialAdAvailable(adUnitId)) {
             if (callback != null) {
                 callback.onInterstitialAdLoadSuccess();
             }
         } else {
-            if (UnityAds.isInitialized() && UnityAds.getPlacementState(adUnitId) != UnityAds.PlacementState.WAITING) {
-                if (callback != null) {
-                    callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, UnityAds.getPlacementState(adUnitId).name()));
-                }
-            } else {
-                mIsLoadTrigerIds.add(adUnitId);
-            }
+            mIsLoadTrigerIds.add(adUnitId);
         }
     }
 

@@ -514,13 +514,8 @@ public class PubNativeSingleTon {
     NativeAd getNativeAd(String adUnitId) {
         return mNativeAds.get(adUnitId);
     }
-
-    public void destroyNativeAd(String adUnitId) {
-        NativeAd nativeAd = mNativeAds.remove(adUnitId);
-        if (nativeAd != null) {
-            nativeAd.stopTracking();
-            nativeAd = null;
-        }
+    NativeAd removeNativeAd(String adUnitId) {
+        return mNativeAds.get(adUnitId);
     }
 
     private class HyBidNativeAdListener implements HyBidNativeAdRequest.RequestListener {

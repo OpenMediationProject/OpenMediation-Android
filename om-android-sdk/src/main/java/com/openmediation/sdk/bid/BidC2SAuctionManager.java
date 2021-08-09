@@ -114,7 +114,6 @@ public class BidC2SAuctionManager {
     }
 
     private synchronized void bidSuccess(BaseInstance instance, BidResponse response) {
-        // TODO
         if (instance.getBidState() != BaseInstance.BID_STATE.BID_PENDING) {
             return;
         }
@@ -153,6 +152,7 @@ public class BidC2SAuctionManager {
     private synchronized void bidFailed(BaseInstance instance, String error) {
         DeveloperLog.LogD(instance + " C2S Bid Failed: " + error);
         instance.setBidState(BaseInstance.BID_STATE.BID_FAILED);
+        instance.setBidResponse(null);
         JSONObject jsonObject = InsManager.buildReportData(instance);
         JsonUtil.put(jsonObject, "msg", error);
         if (mBidStartTime != null && mBidStartTime.get(instance.getId()) != null) {

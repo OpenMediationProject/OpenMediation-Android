@@ -4,6 +4,7 @@
     package="com.openmediation.sdk.demo">
 
     <application
+        android:hardwareAccelerated="true"
         android:name="com.openmediation.sdk.demo.AppApplication"
         android:allowBackup="true"
         android:fullBackupContent="@xml/vungle_backup_rule"

@@ -11,13 +11,15 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.NativeAdCallback;
-import com.openmediation.sdk.nativead.AdInfo;
 import com.openmediation.sdk.nativead.NativeAdView;
 import com.openmediation.sdk.utils.AdLog;
 
 import java.util.Map;
+
+import admost.sdk.AdMostView;
 
 public class AdmostNativeManager {
 
@@ -54,7 +56,7 @@ public class AdmostNativeManager {
     }
 
     public void loadAd(String adUnitId, Map<String, Object> extras, NativeAdCallback callback) {
-        AdmostBannerAdsConfig config = AdmostSingleTon.getInstance().getBannerAd(adUnitId);
+        AdmostBannerAdsConfig config = AdmostSingleTon.getInstance().getNativeAd();
         if (config == null || config.getAdMostView() == null || config.getAdView() == null) {
             String error = AdmostSingleTon.getInstance().getError(adUnitId);
             if (callback != null) {
@@ -64,7 +66,7 @@ public class AdmostNativeManager {
             return;
         }
         View adView = config.getAdView();
-        AdmostSingleTon.getInstance().addBannerListener(adUnitId, new AdmostBannerCallback() {
+        AdmostSingleTon.getInstance().addNativeAdListener(config, new AdmostBannerCallback() {
 
             @Override
             public void onBannerAdClick(String adUnitId) {
@@ -73,7 +75,8 @@ public class AdmostNativeManager {
                 }
             }
         });
-        AdInfo info = new AdInfo();
+        AdnAdInfo info = new AdnAdInfo();
+        info.setAdnNativeAd(config);
         info.setType(MediationInfo.MEDIATION_ID_24);
         info.setView(adView);
         info.setTemplateRender(true);
@@ -82,9 +85,14 @@ public class AdmostNativeManager {
         }
     }
 
-    void registerView(String adUnitId, NativeAdView adView, NativeAdCallback callback) {
-        AdmostBannerAdsConfig config = AdmostSingleTon.getInstance().getBannerAd(adUnitId);
+    void registerView(String adUnitId, NativeAdView adView, AdnAdInfo adInfo, NativeAdCallback callback) {
+        if (adInfo == null || !(adInfo.getAdnNativeAd() instanceof AdmostBannerAdsConfig)) {
+            AdLog.getSingleton().LogE("Admost NativeAd Not Ready: AdnAdInfo is null, " + adUnitId);
+            return;
+        }
+        AdmostBannerAdsConfig config = (AdmostBannerAdsConfig) adInfo.getAdnNativeAd();
         if (config == null || config.getAdMostView() == null || config.getAdView() == null) {
+            AdLog.getSingleton().LogE("Admost NativeAd Not Ready: AdmostBannerAdsConfig is null, " + adUnitId);
             return;
         }
         try {
@@ -98,7 +106,23 @@ public class AdmostNativeManager {
             layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
             adView.addView(adMostView, layoutParams);
         } catch (Throwable e) {
-            AdLog.getSingleton().LogE("AdMost NativeAd Render Failed: " + e.getMessage());
+            AdLog.getSingleton().LogE("Admost NativeAd Render Failed: " + e.getMessage());
+        }
+    }
+
+    public void destroyNativeAd(String adUnitId, AdnAdInfo adInfo) {
+        if (adInfo == null || !(adInfo.getAdnNativeAd() instanceof AdmostBannerAdsConfig)) {
+            return;
+        }
+        AdmostBannerAdsConfig config = (AdmostBannerAdsConfig) adInfo.getAdnNativeAd();
+        if (config == null || config.getAdMostView() == null || config.getAdView() == null) {
+            return;
+        }
+        try {
+            AdmostSingleTon.getInstance().destroyNativeAd(config);
+            AdMostView adMostView = config.getAdMostView();
+            adMostView.destroy();
+        } catch (Throwable ignored) {
         }
     }
 

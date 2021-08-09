@@ -153,13 +153,25 @@ public abstract class CustomAdsAdapter extends CustomAdParams implements Rewarde
         initData(extras);
     }
 
+    @Deprecated
     @Override
     public void registerNativeAdView(String adUnitId, NativeAdView adView, NativeAdCallback callback) {
 
     }
 
     @Override
+    public void registerNativeAdView(String adUnitId, NativeAdView adView, AdnAdInfo adnAdInfo, NativeAdCallback callback) {
+
+    }
+
+    @Deprecated
+    @Override
     public void destroyNativeAd(String adUnitId) {
+
+    }
+
+    @Override
+    public void destroyNativeAd(String adUnitId, AdnAdInfo adnAdInfo) {
 
     }
 

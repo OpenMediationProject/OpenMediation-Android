@@ -412,7 +412,6 @@ public class PlacementUtils {
     public static boolean isCacheAdsType(int adType) {
         switch (adType) {
             case CommonConstants.BANNER:
-            case CommonConstants.NATIVE:
             case CommonConstants.SPLASH:
                 return false;
             default:

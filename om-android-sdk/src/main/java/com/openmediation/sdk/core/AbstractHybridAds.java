@@ -117,9 +117,6 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
      * On ad show failed callback.
      */
     protected void onAdShowFailedCallback(Error error) {
-        if (mCurrentIns != null && mBidResponses != null) {
-            mBidResponses.remove(mCurrentIns.getId());
-        }
     }
 
     protected void onViewAttachToWindow() {
@@ -166,9 +163,6 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
         if (mBs == 0) {
             mBs = 3;
         }
-        if (mBidResponses != null) {
-            mBidResponses.clear();
-        }
     }
 
     @Override
@@ -189,10 +183,7 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
             mTotalIns.addAll(finalTotalIns);
             InsManager.resetInsStateOnClResponse(mTotalIns);
             if (mPlacement != null) {
-                Map<Integer, BidResponse> bidResponseMap = WaterFallHelper.getS2sBidResponse(mPlacement, clInfo);
-                if (bidResponseMap != null && !bidResponseMap.isEmpty()) {
-                    mBidResponses.putAll(bidResponseMap);
-                }
+                WaterFallHelper.getS2sBidResponse(mPlacement, clInfo);
             }
             HandlerUtil.runOnUiThread(new Runnable() {
                 @Override
@@ -219,7 +210,7 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
         }
         CustomAdsAdapter adsAdapter = AdapterUtil.getCustomAdsAdapter(instance.getMediationId());
         if (adsAdapter == null) {
-            onInsError(instance, ErrorCode.ERROR_CREATE_MEDATION_ADAPTER);
+            onInsError(instance, ErrorCode.ERROR_CREATE_MEDIATION_ADAPTER);
             return;
         }
         instance.setAdapter(adsAdapter);
@@ -233,7 +224,7 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
                 InsManager.reportInsLoad(instance, EventId.INSTANCE_LOAD);
                 iLoadReport(instance);
             }
-            Map<String, Object> placementInfo = PlacementUtils.getLoadExtrasMap(mReqId, instance, mBidResponses.get(instance.getId()));
+            Map<String, Object> placementInfo = PlacementUtils.getLoadExtrasMap(mReqId, instance, instance.getBidResponse());
             insLoad(instance, placementInfo);
         }
     }
@@ -249,16 +240,12 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
         String adapterName = instance.getAdapter() == null ? "" : instance.getAdapter().getClass().getSimpleName();
         AdapterError adapterError = AdapterErrorBuilder.buildLoadCheckError(
                 adType, adapterName, error);
-        onInsLoadFailed(instance, adapterError);
+        onInsLoadFailed(instance, adapterError, !isManualTriggered);
     }
 
     @Override
-    protected synchronized void onInsLoadSuccess(BaseInstance instances) {
-        super.onInsLoadSuccess(instances);
-
-        if (!isManualTriggered) {
-            EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_RELOAD_SUCCESS, InsManager.buildReportData(instances));
-        }
+    protected synchronized void onInsLoadSuccess(BaseInstance instances, boolean reload) {
+        super.onInsLoadSuccess(instances, reload);
         if (isFo || instances.getIndex() <= mCanCallbackIndex) {
             //gives ready callback without waiting for priority checking
             placementReadyCallback(instances);
@@ -366,8 +353,8 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
     }
 
     @Override
-    protected void onInsLoadFailed(BaseInstance instance, AdapterError error) {
-        super.onInsLoadFailed(instance, error);
+    protected void onInsLoadFailed(BaseInstance instance, AdapterError error, boolean reload) {
+        super.onInsLoadFailed(instance, error, reload);
 
 //        testNotifyInsFailed(instance);
         //MoPubBanner registered a receiver, we need to take care of it
@@ -465,14 +452,11 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
 
                 //blocked?
                 if (AdRateUtil.shouldBlockInstance(mPlacementId + i.getKey(), i)) {
-                    onInsCapped(PlacementUtils.getPlacementType(getPlacementType()), i);
+                    onInsCapped(PlacementUtils.getPlacementType(getPlacementType()), i, !isManualTriggered);
                     continue;
                 }
 
                 try {
-                    if (mBidResponses != null && mBidResponses.containsKey(i.getId())) {
-                        i.setBidResponse(mBidResponses.get(i.getId()));
-                    }
                     i.setReqId(mReqId);
                     groupLoadCount++;
                     i.setMediationState(BaseInstance.MEDIATION_STATE.LOAD_PENDING);
@@ -571,7 +555,7 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
 
     @Override
     protected void notifyUnLoadInsBidLose() {
-        if (mTotalIns == null || mBidResponses == null) {
+        if (mTotalIns == null) {
             return;
         }
         int len = mTotalIns.size();
@@ -584,10 +568,7 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
                 continue;
             }
 
-            if (!mBidResponses.containsKey(instance.getId())) {
-                continue;
-            }
-            BidResponse bidResponse = mBidResponses.remove(instance.getId());
+            BidResponse bidResponse = instance.getBidResponse();
             if (bidResponse == null) {
                 continue;
             }

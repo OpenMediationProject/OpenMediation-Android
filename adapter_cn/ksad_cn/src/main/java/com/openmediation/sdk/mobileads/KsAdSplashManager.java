@@ -234,6 +234,21 @@ public class KsAdSplashManager {
                 mAdCallback.onSplashAdDismissed();
             }
         }
+
+        @Override
+        public void onDownloadTipsDialogShow() {
+
+        }
+
+        @Override
+        public void onDownloadTipsDialogDismiss() {
+
+        }
+
+        @Override
+        public void onDownloadTipsDialogCancel() {
+
+        }
     }
 
 }

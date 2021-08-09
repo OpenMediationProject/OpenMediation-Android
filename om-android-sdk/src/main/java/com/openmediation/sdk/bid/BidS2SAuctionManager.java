@@ -6,8 +6,8 @@ package com.openmediation.sdk.bid;
 import android.content.Context;
 import android.text.TextUtils;
 
+import com.openmediation.sdk.core.InsManager;
 import com.openmediation.sdk.utils.DeveloperLog;
-import com.openmediation.sdk.utils.InsUtil;
 import com.openmediation.sdk.utils.PlacementUtils;
 import com.openmediation.sdk.utils.WorkExecutor;
 import com.openmediation.sdk.utils.crash.CrashUtil;
@@ -70,7 +70,7 @@ public class BidS2SAuctionManager {
                             continue;
                         }
                         // if MEDIATION_STATE is AVAILABLE, no bid
-                        if (cacheAdsType && InsUtil.isInstanceAvailable(bidInstance)) {
+                        if (cacheAdsType && InsManager.isInstanceAvailable(bidInstance)) {
                             continue;
                         }
                         bidInstance.setReqId(reqId);
@@ -144,7 +144,7 @@ public class BidS2SAuctionManager {
 
     private void resetBidState(boolean cacheAdsType, List<BaseInstance> bidInstances) {
         for (BaseInstance instance : bidInstances) {
-            if (cacheAdsType && InsUtil.isInstanceAvailable(instance)) {
+            if (cacheAdsType && InsManager.isInstanceAvailable(instance)) {
                 continue;
             }
             instance.setReqId(null);

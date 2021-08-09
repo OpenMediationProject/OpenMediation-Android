@@ -6,22 +6,26 @@ package com.openmediation.sdk.core.imp.nativead;
 import android.app.Activity;
 
 import com.openmediation.sdk.core.InsManager;
+import com.openmediation.sdk.core.runnable.LoadTimeoutRunnable;
 import com.openmediation.sdk.mediation.AdapterError;
+import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.mediation.NativeAdCallback;
 import com.openmediation.sdk.nativead.AdInfo;
 import com.openmediation.sdk.nativead.NativeAdView;
 import com.openmediation.sdk.utils.DeveloperLog;
+import com.openmediation.sdk.utils.error.ErrorCode;
 import com.openmediation.sdk.utils.model.BaseInstance;
 
 import java.util.Map;
 
-public class NaInstance extends BaseInstance implements NativeAdCallback {
+public class NaInstance extends BaseInstance implements NativeAdCallback, LoadTimeoutRunnable.OnLoadTimeoutListener {
 
     private NaManagerListener mListener;
 
-    void initNa(Activity activity, Map<String, Object> extras) {
+    void initNa(Activity activity) {
         if (mAdapter != null) {
-            mAdapter.initNativeAd(activity, extras, this);
+            mAdapter.initNativeAd(activity, InsManager.getInitDataMap(this), this);
             InsManager.onInsInitStart(this);
         }
     }
@@ -29,24 +33,25 @@ public class NaInstance extends BaseInstance implements NativeAdCallback {
     void loadNa(Activity activity, Map<String, Object> extras) {
         if (mAdapter != null) {
             DeveloperLog.LogD("load NativeAd : " + getMediationId() + " key : " + getKey());
+            InsManager.startInsLoadTimer(this, this);
             mLoadStart = System.currentTimeMillis();
             mAdapter.loadNativeAd(activity, getKey(), extras, this);
         }
     }
 
-    void registerView(NativeAdView adView) {
+    void registerView(NativeAdView adView, AdnAdInfo adInfo) {
         if (mAdapter != null) {
-            mAdapter.registerNativeAdView(getKey(), adView, this);
+            mAdapter.registerNativeAdView(getKey(), adView, adInfo, this);
         }
     }
 
     boolean isNaAvailable() {
-        return mAdapter != null && getObject() instanceof AdInfo;
+        return mAdapter != null && getObject() instanceof AdnAdInfo;
     }
 
-    void destroyNa() {
+    void destroyNa(AdnAdInfo adInfo) {
         if (mAdapter != null) {
-            mAdapter.destroyNativeAd(getKey());
+            mAdapter.destroyNativeAd(getKey(), adInfo);
         }
         setObject(null);
     }
@@ -67,9 +72,17 @@ public class NaInstance extends BaseInstance implements NativeAdCallback {
         mListener.onNativeAdInitFailed(this, error);
     }
 
-    public void onNativeAdLoadSuccess(AdInfo info) {
+    public void onNativeAdLoadSuccess(AdnAdInfo info) {
         setObject(info);
-        mListener.onNativeAdLoadSuccess(this);
+        AdInfo adInfo = new AdInfo();
+        adInfo.setView(info.getView());
+        adInfo.setTemplateRender(info.isTemplateRender());
+        adInfo.setCallToActionText(info.getCallToActionText());
+        adInfo.setDesc(info.getDesc());
+        adInfo.setStarRating(info.getStarRating());
+        adInfo.setTitle(info.getTitle());
+        adInfo.setType(info.getType());
+        mListener.onNativeAdLoadSuccess(this, adInfo);
     }
 
     @Override
@@ -78,7 +91,19 @@ public class NaInstance extends BaseInstance implements NativeAdCallback {
     }
 
     @Override
+    public void onNativeAdImpression() {
+        mListener.onNativeAdImpression(this);
+    }
+
+    @Override
     public void onNativeAdAdClicked() {
         mListener.onNativeAdAdClicked(this);
+    }
+
+    @Override
+    public void onLoadTimeout() {
+        AdapterError errorResult = AdapterErrorBuilder.buildLoadCheckError(
+                AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapter == null ? "" : mAdapter.getClass().getSimpleName(), ErrorCode.ERROR_TIMEOUT);
+        onNativeAdLoadFailed(errorResult);
     }
 }

@@ -334,6 +334,25 @@ public class BaseInstance extends Frequency implements Comparable<BaseInstance> 
         return mScheduledFuture;
     }
 
+    public BaseInstance copy(BaseInstance baseInstance) {
+        baseInstance.setAppKey(appKey);
+        baseInstance.setHb(hb);
+        baseInstance.setHbt(hbt);
+        baseInstance.setId(id);
+        baseInstance.setMediationId(mediationId);
+        baseInstance.setName(name);
+        baseInstance.setPath(path);
+        baseInstance.setKey(key);
+        baseInstance.setPlacementId(mPlacementId);
+        baseInstance.setAdapter(mAdapter);
+        if (mMediationState == MEDIATION_STATE.NOT_INITIATED || mMediationState == MEDIATION_STATE.INIT_FAILED) {
+            baseInstance.setMediationState(MEDIATION_STATE.NOT_INITIATED);
+        } else {
+            baseInstance.setMediationState(MEDIATION_STATE.NOT_AVAILABLE);
+        }
+        return baseInstance;
+    }
+
     @Override
     public String toString() {
         return "Ins{" +
@@ -347,27 +366,27 @@ public class BaseInstance extends Frequency implements Comparable<BaseInstance> 
                 '}';
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + mediationId;
-        result = prime * result + (TextUtils.isEmpty(key) ? 0 : key.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        } else if (getClass() != obj.getClass()) {
-            return false;
-        } else if (this == obj) {
-            return true;
-        }
-        BaseInstance other = (BaseInstance) obj;
-        return TextUtils.equals(key, other.key) && id == other.id;
-    }
+//    @Override
+//    public int hashCode() {
+//        final int prime = 31;
+//        int result = 1;
+//        result = prime * result + mediationId;
+//        result = prime * result + (TextUtils.isEmpty(key) ? 0 : key.hashCode());
+//        return result;
+//    }
+//
+//    @Override
+//    public boolean equals(Object obj) {
+//        if (obj == null) {
+//            return false;
+//        } else if (getClass() != obj.getClass()) {
+//            return false;
+//        } else if (this == obj) {
+//            return true;
+//        }
+//        BaseInstance other = (BaseInstance) obj;
+//        return TextUtils.equals(key, other.key) && id == other.id;
+//    }
 
     @Override
     public int compareTo(BaseInstance instance) {
@@ -474,7 +493,12 @@ public class BaseInstance extends Frequency implements Comparable<BaseInstance> 
         /**
          * set in the case of frequency control
          */
-        CAPPED(10);
+        CAPPED(10),
+
+        /**
+         * set to skip load
+         */
+        SKIP(11);
 
         private int mValue;
 

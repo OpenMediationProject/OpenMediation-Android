@@ -17,7 +17,9 @@ import com.mbridge.msdk.interstitialvideo.out.MBInterstitialVideoHandler;
 import com.mbridge.msdk.out.MBBidRewardVideoHandler;
 import com.mbridge.msdk.out.MBConfiguration;
 import com.mbridge.msdk.out.MBRewardVideoHandler;
+import com.mbridge.msdk.out.MBridgeIds;
 import com.mbridge.msdk.out.MBridgeSDKFactory;
+import com.mbridge.msdk.out.RewardInfo;
 import com.mbridge.msdk.out.RewardVideoListener;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.BannerAdCallback;
@@ -438,65 +440,67 @@ public class MintegralAdapter extends CustomAdsAdapter {
         }
 
         @Override
-        public void onLoadSuccess(String placementId, String unitId) {
+        public void onLoadSuccess(MBridgeIds mBridgeIds) {
 
         }
 
         @Override
-        public void onVideoLoadSuccess(String placementId, String unitId) {
+        public void onVideoLoadSuccess(MBridgeIds mBridgeIds) {
             if (mCallback != null) {
                 mCallback.onInterstitialAdLoadSuccess();
             }
         }
 
         @Override
-        public void onVideoLoadFail(String errorMsg) {
+        public void onVideoLoadFail(MBridgeIds mBridgeIds, String msg) {
             if (mCallback != null) {
                 mCallback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, "MintegralAdapter", errorMsg));
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, "MintegralAdapter", msg));
             }
         }
 
         @Override
-        public void onAdShow() {
+        public void onAdShow(MBridgeIds mBridgeIds) {
             if (mCallback != null) {
                 mCallback.onInterstitialAdShowSuccess();
             }
         }
 
         @Override
-        public void onAdClose(boolean b) {
+        public void onAdClose(MBridgeIds mBridgeIds, RewardInfo rewardInfo) {
             if (mCallback != null) {
                 mCallback.onInterstitialAdClosed();
             }
         }
 
         @Override
-        public void onShowFail(String errorMsg) {
+        public void onShowFail(MBridgeIds mBridgeIds, String msg) {
             if (mCallback != null) {
                 mCallback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, "MintegralAdapter", errorMsg));
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, "MintegralAdapter", msg));
             }
         }
 
         @Override
-        public void onVideoAdClicked(String placementId, String unitId) {
+        public void onVideoAdClicked(MBridgeIds mBridgeIds) {
             if (mCallback != null) {
                 mCallback.onInterstitialAdClicked();
             }
         }
 
         @Override
-        public void onVideoComplete(String placementId, String unitId) {
-        }
-
-        @Override
-        public void onAdCloseWithIVReward(boolean isComplete, int rewardAlertStatus) {
+        public void onVideoComplete(MBridgeIds mBridgeIds) {
 
         }
 
         @Override
-        public void onEndcardShow(String placementId, String unitId) {
+        public void onAdCloseWithIVReward(MBridgeIds mBridgeIds, RewardInfo rewardInfo) {
+
+        }
+
+        @Override
+        public void onEndcardShow(MBridgeIds mBridgeIds) {
+
         }
     }
 
@@ -509,27 +513,27 @@ public class MintegralAdapter extends CustomAdsAdapter {
         }
 
         @Override
-        public void onVideoLoadSuccess(String placementId, String unitId) {
+        public void onVideoLoadSuccess(MBridgeIds mBridgeIds) {
             if (mRvCallback != null) {
                 mRvCallback.onRewardedVideoLoadSuccess();
             }
         }
 
         @Override
-        public void onLoadSuccess(String placementId, String unitId) {
+        public void onLoadSuccess(MBridgeIds mBridgeIds) {
 
         }
 
         @Override
-        public void onVideoLoadFail(String errorMsg) {
+        public void onVideoLoadFail(MBridgeIds mBridgeIds, String msg) {
             if (mRvCallback != null) {
                 mRvCallback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
-                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, "MintegralAdapter", errorMsg));
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, "MintegralAdapter", msg));
             }
         }
 
         @Override
-        public void onAdShow() {
+        public void onAdShow(MBridgeIds mBridgeIds) {
             if (mRvCallback != null) {
                 mRvCallback.onRewardedVideoAdShowSuccess();
                 mRvCallback.onRewardedVideoAdStarted();
@@ -537,29 +541,29 @@ public class MintegralAdapter extends CustomAdsAdapter {
         }
 
         @Override
-        public void onAdClose(boolean isCompleteView, String rewardName, float rewardAmount) {
+        public void onAdClose(MBridgeIds mBridgeIds, RewardInfo rewardInfo) {
             if (mRvCallback != null) {
                 mRvCallback.onRewardedVideoAdClosed();
             }
         }
 
         @Override
-        public void onShowFail(String errorMsg) {
+        public void onShowFail(MBridgeIds mBridgeIds, String msg) {
             if (mRvCallback != null) {
                 mRvCallback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, "MintegralAdapter", errorMsg));
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, "MintegralAdapter", msg));
             }
         }
 
         @Override
-        public void onVideoAdClicked(String placementId, String unitId) {
+        public void onVideoAdClicked(MBridgeIds mBridgeIds) {
             if (mRvCallback != null) {
                 mRvCallback.onRewardedVideoAdClicked();
             }
         }
 
         @Override
-        public void onVideoComplete(String placementId, String unitId) {
+        public void onVideoComplete(MBridgeIds mBridgeIds) {
             if (mRvCallback != null) {
                 mRvCallback.onRewardedVideoAdEnded();
                 mRvCallback.onRewardedVideoAdRewarded();
@@ -567,7 +571,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
         }
 
         @Override
-        public void onEndcardShow(String placementId, String unitId) {
+        public void onEndcardShow(MBridgeIds mBridgeIds) {
 
         }
     }

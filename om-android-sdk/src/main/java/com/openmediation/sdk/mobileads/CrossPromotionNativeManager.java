@@ -12,30 +12,26 @@ import com.crosspromotion.sdk.nativead.NativeAd;
 import com.crosspromotion.sdk.nativead.NativeAdListener;
 import com.crosspromotion.sdk.utils.error.Error;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.mediation.NativeAdCallback;
 import com.openmediation.sdk.nativead.AdIconView;
-import com.openmediation.sdk.nativead.AdInfo;
 import com.openmediation.sdk.nativead.MediaView;
 import com.openmediation.sdk.nativead.NativeAdView;
 import com.openmediation.sdk.utils.AdLog;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 public class CrossPromotionNativeManager {
     private static final String TAG = "OM-CrossPromotion: ";
     private static final String PAY_LOAD = "pay_load";
-    private final ConcurrentMap<String, CrossPromotionNativeAdsConfig> mNativeAds;
 
     private static class Holder {
         private static final CrossPromotionNativeManager INSTANCE = new CrossPromotionNativeManager();
     }
 
     private CrossPromotionNativeManager() {
-        mNativeAds = new ConcurrentHashMap<>();
     }
 
     public static CrossPromotionNativeManager getInstance() {
@@ -61,14 +57,13 @@ public class CrossPromotionNativeManager {
         nativeAd.loadAdWithPayload(payload, extras);
     }
 
-    public void registerNativeView(String adUnitId, NativeAdView adView, NativeAdCallback callback) {
-        CrossPromotionNativeAdsConfig nativeAd = mNativeAds.get(adUnitId);
-        if (nativeAd == null || nativeAd.getNativeAd() == null || nativeAd.getContent() == null) {
-            mNativeAds.remove(adUnitId);
+    public void registerNativeView(String adUnitId, NativeAdView adView, AdnAdInfo adInfo, NativeAdCallback callback) {
+        if (adInfo == null || !(adInfo.getAdnNativeAd() instanceof CrossPromotionNativeAdsConfig)) {
             return;
         }
         try {
-            Ad ad = nativeAd.getContent();
+            CrossPromotionNativeAdsConfig config = (CrossPromotionNativeAdsConfig) adInfo.getAdnNativeAd();
+            Ad ad = config.getContent();
             if (adView.getMediaView() != null) {
                 MediaView mediaView = adView.getMediaView();
 
@@ -93,18 +88,19 @@ public class CrossPromotionNativeManager {
                     iconImageView.getLayoutParams().height = RelativeLayout.LayoutParams.MATCH_PARENT;
                 }
             }
-            nativeAd.getNativeAd().registerNativeAdView(adView);
+            config.getNativeAd().registerNativeAdView(adView);
         } catch (Throwable ignored) {
 
         }
     }
 
-    public void destroyAd(String adUnitId) {
-        if (!TextUtils.isEmpty(adUnitId) && mNativeAds.containsKey(adUnitId)) {
-            CrossPromotionNativeAdsConfig nativeAd = mNativeAds.remove(adUnitId);
-            if (nativeAd.getNativeAd() != null) {
-                nativeAd.getNativeAd().destroy();
-            }
+    public void destroyAd(String adUnitId, AdnAdInfo adInfo) {
+        if (adInfo == null || !(adInfo.getAdnNativeAd() instanceof CrossPromotionNativeAdsConfig)) {
+            return;
+        }
+        CrossPromotionNativeAdsConfig config = (CrossPromotionNativeAdsConfig) adInfo.getAdnNativeAd();
+        if (config.getNativeAd() != null) {
+            config.getNativeAd().destroy();
         }
     }
 
@@ -128,17 +124,16 @@ public class CrossPromotionNativeManager {
                 }
                 return;
             }
-
-            CrossPromotionNativeAdsConfig nativeAdsConfig = new CrossPromotionNativeAdsConfig();
-            nativeAdsConfig.setContent(ad);
-            nativeAdsConfig.setNativeAd(mNativeAd);
-            mNativeAds.put(mAdUnitId, nativeAdsConfig);
             if (mAdCallback != null) {
-                AdInfo adInfo = new AdInfo();
+                AdnAdInfo adInfo = new AdnAdInfo();
                 adInfo.setDesc(ad.getDescription());
                 adInfo.setType(MediationInfo.MEDIATION_ID_1);
                 adInfo.setTitle(ad.getTitle());
                 adInfo.setCallToActionText(ad.getCTA());
+                CrossPromotionNativeAdsConfig nativeAdsConfig = new CrossPromotionNativeAdsConfig();
+                nativeAdsConfig.setContent(ad);
+                nativeAdsConfig.setNativeAd(mNativeAd);
+                adInfo.setAdnNativeAd(nativeAdsConfig);
                 mAdCallback.onNativeAdLoadSuccess(adInfo);
             }
         }

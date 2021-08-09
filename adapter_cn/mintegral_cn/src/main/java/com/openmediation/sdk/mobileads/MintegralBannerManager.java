@@ -11,6 +11,7 @@ import android.widget.RelativeLayout;
 import com.mbridge.msdk.out.BannerAdListener;
 import com.mbridge.msdk.out.BannerSize;
 import com.mbridge.msdk.out.MBBannerView;
+import com.mbridge.msdk.out.MBridgeIds;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.MediationUtil;
@@ -104,16 +105,16 @@ public class MintegralBannerManager {
         }
 
         @Override
-        public void onLoadFailed(String s) {
+        public void onLoadFailed(MBridgeIds mBridgeIds, String msg) {
             mBannerViews.remove(mAdUnitId);
             if (mAdCallback != null) {
                 mAdCallback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                        AdapterErrorBuilder.AD_UNIT_BANNER, "MintegralAdapter", s));
+                        AdapterErrorBuilder.AD_UNIT_BANNER, "MintegralAdapter", msg));
             }
         }
 
         @Override
-        public void onLoadSuccessed() {
+        public void onLoadSuccessed(MBridgeIds mBridgeIds) {
             if (mBannerView != null) {
                 mBannerViews.put(mAdUnitId, mBannerView);
                 if (mAdCallback != null) {
@@ -123,36 +124,36 @@ public class MintegralBannerManager {
         }
 
         @Override
-        public void onLogImpression() {
+        public void onLogImpression(MBridgeIds mBridgeIds) {
             if (mAdCallback != null) {
                 mAdCallback.onBannerAdImpression();
             }
         }
 
         @Override
-        public void onClick() {
+        public void onClick(MBridgeIds mBridgeIds) {
             if (mAdCallback != null) {
                 mAdCallback.onBannerAdAdClicked();
             }
         }
 
         @Override
-        public void onLeaveApp() {
+        public void onLeaveApp(MBridgeIds mBridgeIds) {
 
         }
 
         @Override
-        public void showFullScreen() {
+        public void showFullScreen(MBridgeIds mBridgeIds) {
 
         }
 
         @Override
-        public void closeFullScreen() {
+        public void closeFullScreen(MBridgeIds mBridgeIds) {
 
         }
 
         @Override
-        public void onCloseBanner() {
+        public void onCloseBanner(MBridgeIds mBridgeIds) {
 
         }
     }

@@ -65,7 +65,7 @@ public final class IsManager extends AbstractInventoryAds implements IsManagerLi
         if (!(instance instanceof IsInstance)) {
             instance.setMediationState(BaseInstance.MEDIATION_STATE.INIT_FAILED);
             onInsInitFailed(instance, new Error(ErrorCode.CODE_LOAD_UNKNOWN_INTERNAL_ERROR,
-                    "current is not an rewardedVideo adUnit", -1));
+                    "current is not an interstitial adUnit", -1));
             return;
         }
         IsInstance isInstance = (IsInstance) instance;
@@ -98,15 +98,15 @@ public final class IsManager extends AbstractInventoryAds implements IsManagerLi
     }
 
     @Override
-    protected void callbackAvailableOnManual() {
-        super.callbackAvailableOnManual();
+    protected void callbackAvailableOnManual(BaseInstance instance) {
+        super.callbackAvailableOnManual(instance);
         mListenerWrapper.onInterstitialAdAvailabilityChanged(true);
         mListenerWrapper.onInterstitialAdLoadSuccess();
     }
 
     @Override
-    protected void callbackLoadSuccessOnManual() {
-        super.callbackLoadSuccessOnManual();
+    protected void callbackLoadSuccessOnManual(BaseInstance instance) {
+        super.callbackLoadSuccessOnManual(instance);
         mListenerWrapper.onInterstitialAdLoadSuccess();
     }
 
@@ -178,11 +178,11 @@ public final class IsManager extends AbstractInventoryAds implements IsManagerLi
 
     @Override
     public void onInterstitialAdLoadSuccess(IsInstance isInstance) {
-        onInsLoadSuccess(isInstance);
+        onInsLoadSuccess(isInstance, false);
     }
 
     @Override
     public void onInterstitialAdLoadFailed(IsInstance isInstance, AdapterError error) {
-        onInsLoadFailed(isInstance, error);
+        onInsLoadFailed(isInstance, error, false);
     }
 }
