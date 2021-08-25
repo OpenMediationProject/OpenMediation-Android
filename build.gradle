@@ -34,84 +34,92 @@ ext {
 //support 包相关包的引用
     dependencies = [
             // http://helpcenter.adtiming.com/
-            "adtiming"                   : 'com.adtiming:adnetwork:6.9.1',
+            "adtiming"                   : 'com.adtiming:adnetwork:6.9.2',
             //fb https://developers.facebook.com/docs/audience-network/changelog-android/
-            "facebook"                   : 'com.facebook.android:audience-network-sdk:6.5.0',
+            "facebook"                   : 'com.facebook.android:audience-network-sdk:6.5.1',
             //admob https://developers.google.com/admob/android/rel-notes
             "admob"                      : 'com.google.android.gms:play-services-ads:20.2.0',
-            "admob_facebook_adapter"     : 'com.google.ads.mediation:facebook:6.5.0.0',
+            "admob_facebook_adapter"     : 'com.google.ads.mediation:facebook:6.5.1.0',
             //vungle https://github.com/Vungle/Android-SDK/blob/master/CHANGELOG.md
-            "vungle"                     : 'com.vungle:publisher-sdk-android:6.9.1',
+            "vungle"                     : 'com.vungle:publisher-sdk-android:6.10.1',
+            "vungle_androidx"            : 'androidx.core:core:1.3.2',
+            "vungle_localbroadcast"      : 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0',
             //AdColony https://github.com/AdColony/AdColony-Android-SDK/blob/master/CHANGELOG.md
-            "adcolony"                   : 'com.adcolony:sdk:4.5.0',
+            "adcolony"                   : 'com.adcolony:sdk:4.6.1',
             //AppLovin https://dash.applovin.com/documentation/mediation/android/changelog
-            "applovin"                   : 'com.applovin:applovin-sdk:10.3.0',
+            "applovin"                   : 'com.applovin:applovin-sdk:10.3.2',
             //MoPub https://developers.mopub.com/publishers/android/changelog/
-            "mopub"                      : 'com.mopub:mopub-sdk:5.17.0@aar',
+            "mopub"                      : 'com.mopub:mopub-sdk:5.18.0@aar',
             "mopub_volley"               : 'com.mopub.volley:mopub-volley:2.1.0',
             //TapJoy https://dev.tapjoy.com/en/android-sdk/Changelog
             "tapjoy"                     : 'com.tapjoy:tapjoy-android-sdk:12.8.1@aar',
             //chartboost https://answers.chartboost.com/en-us/child_article/android-amazon
             "chartboost"                 : 'com.chartboost:chartboost-sdk:8.2.1',
             //unity https://github.com/Unity-Technologies/unity-ads-android/releases
-            "unity"                      : 'com.unity3d.ads:unity-ads:3.7.2',
+            "unity"                      : 'com.unity3d.ads:unity-ads:3.7.5',
             //gp-base.
             "play_service_base"          : 'com.google.android.gms:play-services-base:17.6.0',
             //gp-ads-identifier
-            "play_service_ads_identifier": 'com.google.android.gms:play-services-ads-identifier:17.0.0',
+            "play_service_ads_identifier": 'com.google.android.gms:play-services-ads-identifier:17.0.1',
             //Mintegral http://cdn-adn.rayjump.com/cdn-adn/v2/markdown_v2/index.html?file=sdk-m_sdk-android&lang=en
-            "mtg_version"                : '15.5.31',
-            "mtg_china_version"          : '15.5.32',
+            "mtg_version"                : '15.6.31',
+            "mtg_china_version"          : '15.6.32',
             // IronSource https://developers.ironsrc.com/ironsource-mobile/android/sdk-change-log/
-            "ironsource"                 : 'com.ironsource.sdk:mediationsdk:7.1.6',
+            "ironsource"                 : 'com.ironsource.sdk:mediationsdk:7.1.8',
             // https://developer.fyber.com/hc/en-us/articles/360010822437-Integrating-the-Android-SDK
             "fyber"                      : '7.8.2',
             // https://www.pangleglobal.com/
-            "pangle"                     : 'com.pangle.global:ads-sdk:3.5.1.0',
+            "pangle"                     : 'com.pangle.global:ads-sdk:3.7.1.1',
 //            "pangle_cn"                  : 'com.pangle.cn:ads-sdk:3.6.1.1',
             // https://helium.chartboost.com/
-            "helium_facebook_adapter"    : 'com.chartboost:helium-facebook:2.2.1',
-            "helium"                     : 'com.chartboost:helium:2.2.1',
+            "helium"                     : 'com.chartboost:helium:2.3.1',
+            "helium_facebook_adapter"    : 'com.chartboost:helium-facebook:2.3.1.0',
             "eventbus"                   : 'org.greenrobot:eventbus:3.2.0',
             // https://developers.adnet.qq.com/doc/android/access_doc
-            "tencentad"                  : 'com.qq.e.union:union:4.370.1240',
+            "tencentad"                  : 'com.qq.e.union:union:4.390.1260',
             // https://ogury-ltd.gitbook.io/release-notes/android
-            "ogury"                      : 'co.ogury:ogury-sdk:5.0.9',
+            "ogury"                      : 'co.ogury:ogury-sdk:5.0.10',
             // https://github.com/pubnative/pubnative-hybid-android-sdk/wiki/HyBid-Configuration
-            "pubnative"                  : 'net.pubnative:hybid.sdk:2.4.7',
+            "pubnative"                  : 'net.pubnative:hybid.sdk:2.5.2',
             // https://admost.github.io/amrandroid/
-            "admost"                     : 'com.admost.sdk:amr:2.3.4',
+            "admost"                     : 'com.admost.sdk:amr:2.3.7',
             "admost_volley"              : 'com.android.volley:volley:1.1.1',
-            "admost_facebook_adapter"    : 'com.admost.sdk:facebook-adapter:6.5.0.a25',
-            "admost_s2sbidding_adapter"  : 'com.admost.sdk:s2sbidding-adapter:1.0.4.a25',
+            "admost_facebook_adapter"    : 'com.admost.sdk:facebook-adapter:6.5.1.a25',
+            "admost_s2sbidding_adapter"  : 'com.admost.sdk:s2sbidding-adapter:1.0.5.a25',
             "admost_recyclerview"        : 'androidx.recyclerview:recyclerview:1.1.0',
             "admost_annotation"          : 'androidx.annotation:annotation:1.2.0',
+            //flat https://github.com/flatads/document
+            "flatads"                    : 'com.flatads.sdk:flatads:1.1.13',
+            //inmobi https://support.inmobi.com/monetize/android-guidelines/#page__content1
+            "inmobi"                     : 'com.inmobi.monetization:inmobi-ads:9.2.0'
     ]
 
     adapterVersion = [
-            'adtiming'    : '2.3.0',
-            'admob'       : '2.3.1',
-            'facebook'    : '2.3.0',
-            'unity'       : '2.3.0',
-            'vungle'      : '2.3.0',
-            'adcolony'    : '2.3.0',
-            'applovin'    : '2.3.0',
-            'mopub'       : '2.3.1',
+            'adtiming'    : '2.4.0',
+            'admob'       : '2.4.0',
+            'facebook'    : '2.4.0',
+            'unity'       : '2.3.1',
+            'vungle'      : '2.3.1',
+            'adcolony'    : '2.3.1',
+            'applovin'    : '2.3.1',
+            'mopub'       : '2.4.0',
             'tapjoy'      : '2.3.0',
             'chartboost'  : '2.3.0',
             'helium'      : '2.3.0',
-            'tiktok'      : '2.3.1',
-            'mintegral'   : '2.3.0',
+            'tiktok'      : '2.4.0',
+            'mintegral'   : '2.3.1',
             'ironsource'  : '2.3.0',
             'fyber'       : '2.3.0',
             'ogury'       : '2.3.0',
-            'pubnative'   : '2.3.0',
-            'admost'      : '2.3.2',
-            'tiktok_cn'   : '2.3.0',
-            'tencentad_cn': '2.3.1',
-            'mintegral_cn': '2.3.0',
+            'pubnative'   : '2.4.0',
+            'admost'      : '2.4.0',
+            'flatads'     : '2.4.0',
+            'inmobi'      : '2.3.4',
+            'tiktok_cn'   : '2.4.0',
+            'tencentad_cn': '2.4.0',
+            'mintegral_cn': '2.3.1',
             'sigmob_cn'   : '2.3.1',
-            'ksad_cn'     : '2.3.0',
+            'ksad_cn'     : '2.3.2',
     ]
 }
 
@@ -137,9 +145,6 @@ allprojects {
             url "https://dl.adtiming.com/android-sdk"
         }
         maven {
-            url "https://chartboostmobile.bintray.com/Chartboost"
-        }
-        maven {
             url "https://fyber.bintray.com/marketplace"
         }
         maven {
@@ -156,6 +161,9 @@ allprojects {
         }
         maven {
             url 'http://repo.admost.com:8081/artifactory/amr'
+        }
+        maven {
+            url "http://maven.flat-ads.com/repository/maven-public/"
         }
         maven {
             url 'https://dl.openmediation.com/omcenter/'

@@ -8,6 +8,8 @@ import android.content.res.Resources;
 import android.text.TextUtils;
 import android.view.View;
 
+import com.openmediation.sdk.mediation.AdnAdInfo;
+import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.utils.AdLog;
 
@@ -38,7 +40,9 @@ public class AdmostSingleTon {
     private final ConcurrentHashMap<String, AdMostInterstitial> mRvAds;
     private final ConcurrentHashMap<String, AdMostInterstitial> mIsAds;
     private final ConcurrentHashMap<String, AdmostBannerAdsConfig> mBannerAds;
+    private final List<AdmostBannerAdsConfig> mReadyNativeAds;
     private final ConcurrentHashMap<String, AdmostBannerCallback> mAdListeners;
+    private final ConcurrentHashMap<AdmostBannerAdsConfig, AdmostBannerCallback> mNativeAdListeners;
 
     private final ConcurrentMap<String, AdmostBidCallback> mBidCallbacks;
     private final ConcurrentMap<String, String> mBidError;
@@ -58,7 +62,9 @@ public class AdmostSingleTon {
         mBidCallbacks = new ConcurrentHashMap<>();
         mBidError = new ConcurrentHashMap<>();
         mBannerAds = new ConcurrentHashMap<>();
+        mReadyNativeAds = new CopyOnWriteArrayList<>();
         mAdListeners = new ConcurrentHashMap<>();
+        mNativeAdListeners = new ConcurrentHashMap<>();
     }
 
     public static AdmostSingleTon getInstance() {
@@ -66,18 +72,34 @@ public class AdmostSingleTon {
     }
 
     public void onResume() {
-        for (AdmostBannerAdsConfig config : mBannerAds.values()) {
-            if (config != null && config.getAdMostView() != null) {
-                config.getAdMostView().resume();
+        try {
+            for (AdmostBannerAdsConfig config : mBannerAds.values()) {
+                if (config != null && config.getAdMostView() != null) {
+                    config.getAdMostView().resume();
+                }
             }
+            for (AdmostBannerAdsConfig config : mReadyNativeAds) {
+                if (config != null && config.getAdMostView() != null) {
+                    config.getAdMostView().resume();
+                }
+            }
+        } catch (Exception ignored) {
         }
     }
 
     public void onPause() {
-        for (AdmostBannerAdsConfig config : mBannerAds.values()) {
-            if (config != null && config.getAdMostView() != null) {
-                config.getAdMostView().pause();
+        try {
+            for (AdmostBannerAdsConfig config : mBannerAds.values()) {
+                if (config != null && config.getAdMostView() != null) {
+                    config.getAdMostView().pause();
+                }
             }
+            for (AdmostBannerAdsConfig config : mReadyNativeAds) {
+                if (config != null && config.getAdMostView() != null) {
+                    config.getAdMostView().pause();
+                }
+            }
+        } catch (Exception ignored) {
         }
     }
 
@@ -298,7 +320,7 @@ public class AdmostSingleTon {
         public void onReady(String network, int ecpm) {
             AdLog.getSingleton().LogD(TAG, "AdMost onRewardedLoaded PlacementId : " + mAdUnitId);
             mRvAds.put(mAdUnitId, mRewarded);
-            bidSuccess(mAdUnitId, network, ecpm);
+            bidSuccess(mAdUnitId, network, ecpm, null);
         }
 
         @Override
@@ -365,7 +387,7 @@ public class AdmostSingleTon {
         public void onReady(String network, int ecpm) {
             AdLog.getSingleton().LogD(TAG, "AdMost InterstitialAd onInterstitialLoaded PlacementId : " + mAdUnitId);
             mIsAds.put(mAdUnitId, mInterstitialAd);
-            bidSuccess(mAdUnitId, network, ecpm);
+            bidSuccess(mAdUnitId, network, ecpm, null);
         }
 
         @Override
@@ -433,6 +455,17 @@ public class AdmostSingleTon {
         return mBannerAds.get(adUnitId);
     }
 
+    void addNativeAd(AdmostBannerAdsConfig config) {
+        if (!mReadyNativeAds.contains(config)) {
+            mReadyNativeAds.add(config);
+        }
+    }
+
+    void destroyNativeAd(AdmostBannerAdsConfig config) {
+        mReadyNativeAds.remove(config);
+        removeNativeAdListener(config);
+    }
+
     boolean isBannerAdAvailable(String adUnitId) {
         if (TextUtils.isEmpty(adUnitId) && !mBannerAds.containsKey(adUnitId)) {
             return false;
@@ -463,6 +496,18 @@ public class AdmostSingleTon {
     void removeBannerListener(String adUnitId) {
         if (!TextUtils.isEmpty(adUnitId)) {
             mAdListeners.remove(adUnitId);
+        }
+    }
+
+    void addNativeAdListener(AdmostBannerAdsConfig config, AdmostBannerCallback listener) {
+        if (config != null && listener != null) {
+            mNativeAdListeners.put(config, listener);
+        }
+    }
+
+    void removeNativeAdListener(AdmostBannerAdsConfig config) {
+        if (config != null) {
+            mNativeAdListeners.remove(config);
         }
     }
 
@@ -514,22 +559,10 @@ public class AdmostSingleTon {
                 }
                 binder = builder.build();
             }
-//            AdMostViewBinder.Builder builder = new AdMostViewBinder.Builder(R.layout.admost_custom_native_layout);
-//            AdMostViewBinder build = builder.iconImageId(R.id.ad_app_icon)
-//                    .titleId(R.id.ad_headline)
-//                    .callToActionId(R.id.ad_call_to_action)
-//                    .textId(R.id.ad_body)
-//                    .attributionId(R.id.ad_attribution)
-//                    .mainImageId(R.id.ad_image)
-//                    .backImageId(R.id.ad_back)
-//                    .privacyIconId(R.id.ad_privacy_icon)
-//                    .iconImageId(R.id.ad_app_icon)
-//                    .build();
-            InnerBannerAdListener listener = new InnerBannerAdListener();
+            InnerNativeAdListener listener = new InnerNativeAdListener();
             AdMostView nativeAd = new AdMostView(activity, adUnitId, listener, binder);
             AdmostBannerAdsConfig nativeConfig = new AdmostBannerAdsConfig();
             nativeConfig.setAdMostView(nativeAd);
-            mBannerAds.put(adUnitId, nativeConfig);
             listener.setParameters(adUnitId, nativeAd);
             nativeAd.load();
         } catch (Throwable e) {
@@ -558,7 +591,7 @@ public class AdmostSingleTon {
             config.setAdMostView(mBannerAdView);
             config.setAdView(adView);
             mBannerAds.put(mAdUnitId, config);
-            bidSuccess(mAdUnitId, network, ecpm);
+            bidSuccess(mAdUnitId, network, ecpm, adView);
         }
 
         @Override
@@ -578,9 +611,51 @@ public class AdmostSingleTon {
         }
     }
 
-    private void bidSuccess(String adUnitId, String network, int ecpm) {
+    private class InnerNativeAdListener implements AdMostViewListener {
+
+        AdMostView mBannerAdView;
+        String mAdUnitId;
+        AdmostBannerAdsConfig config = new AdmostBannerAdsConfig();
+        public InnerNativeAdListener() {
+        }
+
+        public void setParameters(String adUnitId, AdMostView adView) {
+            mBannerAdView = adView;
+            mAdUnitId = adUnitId;
+        }
+
+        @Override
+        public void onReady(String network, int ecpm, View adView) {
+            AdLog.getSingleton().LogD(TAG, "AdMost onAdLoaded network: " + network + ", ecpm: " + ecpm + ", adUnit: " + mAdUnitId);
+            config.setAdMostView(mBannerAdView);
+            config.setAdView(adView);
+            AdnAdInfo info = new AdnAdInfo();
+            info.setAdnNativeAd(config);
+            info.setType(MediationInfo.MEDIATION_ID_24);
+            info.setView(adView);
+            info.setTemplateRender(true);
+            bidSuccess(mAdUnitId, network, ecpm, info);
+        }
+
+        @Override
+        public void onFail(int errorCode) {
+            AdLog.getSingleton().LogE(TAG, "AdMost LoadFailed : " + errorCode);
+            bidFailed(mAdUnitId, "AdMost LoadFailed, adUnit: " + mAdUnitId + ", code: " + errorCode);
+        }
+
+        @Override
+        public void onClick(String network) {
+            AdLog.getSingleton().LogD(TAG, "AdMost onAdClick : " + mAdUnitId);
+            AdmostBannerCallback listener = mNativeAdListeners.get(config);
+            if (listener != null) {
+                listener.onBannerAdClick(mAdUnitId);
+            }
+        }
+    }
+
+    private void bidSuccess(String adUnitId, String network, int ecpm, Object object) {
         if (mBidCallbacks.containsKey(adUnitId)) {
-            mBidCallbacks.get(adUnitId).onBidSuccess(adUnitId, network, ecpm);
+            mBidCallbacks.get(adUnitId).onBidSuccess(adUnitId, network, ecpm, object);
         }
         mBidError.remove(adUnitId);
     }

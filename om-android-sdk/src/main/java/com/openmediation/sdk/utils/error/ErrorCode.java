@@ -11,7 +11,7 @@ public interface ErrorCode {
     String ERROR_NETWORK_NOT_AVAILABLE = "Network is not available,please check network";//network unavailable
     String ERROR_MISS_PERMISSION = "The required permission is not register on Manifest";// miss required permission
     String ERROR_MAIN_THREAD_REQUIRED = "Require on main thread"; //require a main thread
-    String ERROR_NOT_SURPPORT_WEBVIEW = "WebView is not supported";//not support webView
+    String ERROR_NOT_SUPPORT_WEBVIEW = "WebView is not supported";//not support webView
     String ERROR_NO_FILL = "No Fill";//no fill
     String ERROR_AD_RESOURCE_EMPTY = "Ad resource is empty";// ad resource empty
     String ERROR_PLACEMENT_ID = "Placement id is empty"; //placement id empty
@@ -26,7 +26,7 @@ public interface ErrorCode {
     String ERROR_DISPLAY_AD = "Display ad error, the ad is not ready";// display ad error, the ad is not ready or occurs something error
     String ERROR_INSTANCE_EMPTY = "Instances is empty, no instance to be load";
     String ERROR_CL = "Placement config error";//request cl error
-    String ERROR_CREATE_MEDATION_ADAPTER = "create mediation adapter failed";
+    String ERROR_CREATE_MEDIATION_ADAPTER = "create mediation adapter failed";
     String ERROR_ACTIVITY_EMPTY = "Activity is empty";
     String ERROR_INIT_IS_RUNNING = "Init is running";
     String ERROR_UI_THREAD = "Should be called on the main UI thread.";
@@ -50,7 +50,7 @@ public interface ErrorCode {
      *
      */
     int CODE_INIT_SERVER_ERROR = 131;
-    String MSG_INIT_SERVER_ERROR = "Init Server Error";
+    String MSG_INIT_SERVER_ERROR = "Init Server Error, Response Code: ";
     /**
      *
      */
@@ -60,7 +60,8 @@ public interface ErrorCode {
      *
      */
     int CODE_LOAD_INVALID_REQUEST = 211;
-    String MSG_LOAD_INVALID_REQUEST = "Load Invalid Request";
+    String MSG_LOAD_INVALID_LOADING = "Load Invalid Request, Placement is loading";
+    String MSG_LOAD_INVALID_SHOWING = "Load Invalid Request, Placement is showing";
     /**
      *
      */
@@ -187,5 +188,21 @@ public interface ErrorCode {
      *
      */
     int CODE_INTERNAL_UNKNOWN_OTHER = 10;
+
+    /**
+     * Init Error
+     */
+    int CODE_INIT_RESPONSE_CHECK_ERROR = 132;
+    String MSG_INIT_RESPONSE_CHECK_ERROR = "Init Error: Response data check error";
+    int CODE_INTERNAL_RESPONSE_CHECK_ERROR = 11;
+    int CODE_INIT_RESPONSE_PARSE_ERROR = 133;
+    String MSG_INIT_RESPONSE_PARSE_ERROR = "Init Error: Response data parse error";
+    int CODE_INTERNAL_INIT_RESPONSE_PARSE_ERROR = 12;
+    int CODE_INIT_EXCEPTION = 134;
+    String MSG_INIT_EXCEPTION = "Init Unknown Error: ";
+    int CODE_INTERNAL_INIT_EXCEPTION = 13;
+    int CODE_INIT_REQUEST_ERROR = 135;
+    String MSG_INIT_REQUEST_ERROR = "Init Request Error: ";
+    int CODE_INTERNAL_INIT_REQUEST_ERROR = 14;
 
 }

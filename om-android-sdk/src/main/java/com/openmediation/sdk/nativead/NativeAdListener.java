@@ -24,7 +24,14 @@ public interface NativeAdListener {
     void onNativeAdLoadFailed(String placementId, Error error);
 
     /**
+     * called when native ad is impression
+     *
+     * @param info An object {@link AdInfo}include base elements of ads {#title,#description,#CTA,#rate}
+     */
+    void onNativeAdImpression(String placementId, AdInfo info);
+
+    /**
      * called when native ad is clicked
      */
-    void onNativeAdClicked(String placementId);
+    void onNativeAdClicked(String placementId, AdInfo info);
 }

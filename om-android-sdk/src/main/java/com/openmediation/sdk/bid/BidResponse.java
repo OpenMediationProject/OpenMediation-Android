@@ -16,6 +16,11 @@ public class BidResponse {
     private long createTime;
     private boolean isNotified;
 
+    /**
+     * AdnAdInfo for NativeAd, View for BannerAd
+     */
+    private Object object;
+
     public BidResponse() {
         createTime = System.currentTimeMillis();
     }
@@ -101,5 +106,13 @@ public class BidResponse {
 
     public boolean isNotified() {
         return isNotified;
+    }
+
+    public Object getObject() {
+        return object;
+    }
+
+    public void setObject(Object object) {
+        this.object = object;
     }
 }

@@ -424,7 +424,7 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
             @Override
             public void adDisplayed(AppLovinAd appLovinAd) {
                 if (callback != null) {
-                    callback.onBannerAdAdClicked();
+                    callback.onBannerAdImpression();
                 }
             }
 

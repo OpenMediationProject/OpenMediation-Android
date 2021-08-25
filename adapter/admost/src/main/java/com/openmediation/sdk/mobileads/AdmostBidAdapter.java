@@ -95,17 +95,7 @@ public class AdmostBidAdapter extends BidAdapter implements AdmostBidCallback {
     }
 
     @Override
-    public void notifyWin(String placementId, Map<String, Object> dataMap) {
-        super.notifyWin(placementId, dataMap);
-    }
-
-    @Override
-    public void notifyLose(String placementId, Map<String, Object> dataMap) {
-        super.notifyLose(placementId, dataMap);
-    }
-
-    @Override
-    public void onBidSuccess(String adUnitId, String network, int ecpm) {
+    public void onBidSuccess(String adUnitId, String network, int ecpm, Object object) {
         AdmostSingleTon.getInstance().removeBidCallback(adUnitId);
         BidCallback callback = mBidCallbacks.get(adUnitId);
         if (callback == null) {
@@ -114,6 +104,7 @@ public class AdmostBidAdapter extends BidAdapter implements AdmostBidCallback {
         BidResponse bidResponse = new BidResponse();
         double price = ecpm / 100.0;
         bidResponse.setPrice(price);
+        bidResponse.setObject(object);
         callback.bidSuccess(bidResponse);
     }
 

@@ -1,0 +1,2 @@
+-keep public class com.flat.ad.forcocos.** { *; }
+-keep class com.flatads.sdk.response.* {*;}

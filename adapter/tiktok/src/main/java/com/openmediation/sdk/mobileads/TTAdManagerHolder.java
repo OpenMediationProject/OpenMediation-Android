@@ -98,7 +98,6 @@ public class TTAdManagerHolder {
     }
 
     private void onInitFinish() {
-        mInitState = InitState.INIT_SUCCESS;
         AdLog.getSingleton().LogD("TikTok SDK Init Success");
         mInitState = InitState.INIT_SUCCESS;
         for (InitCallback callback : mCallbacks) {

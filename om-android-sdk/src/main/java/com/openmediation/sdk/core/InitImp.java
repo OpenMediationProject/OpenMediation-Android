@@ -319,9 +319,10 @@ public final class InitImp {
         @Override
         public void onRequestSuccess(Response response) {
             try {
-                if (response.code() != HttpURLConnection.HTTP_OK) {
+                int code = response.code();
+                if (code != HttpURLConnection.HTTP_OK) {
                     Error error = new Error(ErrorCode.CODE_INIT_SERVER_ERROR
-                            , ErrorCode.MSG_INIT_SERVER_ERROR, ErrorCode.CODE_INTERNAL_SERVER_ERROR);
+                            , ErrorCode.MSG_INIT_SERVER_ERROR + code, ErrorCode.CODE_INTERNAL_SERVER_ERROR);
                     DeveloperLog.LogE(error.toString() + "Om init request config response code not 200 : " + response.code());
                     callbackInitErrorOnUIThread(error);
                     return;
@@ -329,8 +330,8 @@ public final class InitImp {
 
                 String requestData = new String(ConfigurationHelper.checkResponse(response), Charset.forName(CommonConstants.CHARTSET_UTF8));
                 if (TextUtils.isEmpty(requestData)) {
-                    Error error = new Error(ErrorCode.CODE_INIT_SERVER_ERROR
-                            , ErrorCode.MSG_INIT_SERVER_ERROR, ErrorCode.CODE_INTERNAL_SERVER_ERROR);
+                    Error error = new Error(ErrorCode.CODE_INIT_RESPONSE_CHECK_ERROR
+                            , ErrorCode.MSG_INIT_RESPONSE_CHECK_ERROR, ErrorCode.CODE_INTERNAL_RESPONSE_CHECK_ERROR);
                     DeveloperLog.LogE(error.toString() + ", Om init response data is null: " + requestData);
                     callbackInitErrorOnUIThread(error);
                     return;
@@ -349,15 +350,15 @@ public final class InitImp {
                     callbackInitSuccessOnUIThread();
                     doAfterGetConfig(appKey, config);
                 } else {
-                    Error error = new Error(ErrorCode.CODE_INIT_SERVER_ERROR
-                            , ErrorCode.MSG_INIT_SERVER_ERROR, ErrorCode.CODE_INTERNAL_SERVER_ERROR);
+                    Error error = new Error(ErrorCode.CODE_INIT_RESPONSE_PARSE_ERROR
+                            , ErrorCode.MSG_INIT_RESPONSE_PARSE_ERROR, ErrorCode.CODE_INTERNAL_INIT_RESPONSE_PARSE_ERROR);
                     DeveloperLog.LogE(error.toString() + ", Om init format config is null");
                     callbackInitErrorOnUIThread(error);
                 }
-            } catch(Exception e) {
+            } catch (Exception e) {
                 CrashUtil.getSingleton().saveException(e);
-                Error error = new Error(ErrorCode.CODE_INIT_SERVER_ERROR
-                        , ErrorCode.MSG_INIT_SERVER_ERROR, ErrorCode.CODE_INTERNAL_UNKNOWN_OTHER);
+                Error error = new Error(ErrorCode.CODE_INIT_EXCEPTION
+                        , ErrorCode.MSG_INIT_EXCEPTION + e.getMessage(), ErrorCode.CODE_INTERNAL_INIT_EXCEPTION);
                 DeveloperLog.LogE(error.toString() + ", request config exception:" + e);
                 callbackInitErrorOnUIThread(error);
             } finally {
@@ -367,8 +368,8 @@ public final class InitImp {
 
         @Override
         public void onRequestFailed(String error) {
-            Error result = new Error(ErrorCode.CODE_INIT_SERVER_ERROR
-                    , ErrorCode.MSG_INIT_SERVER_ERROR, ErrorCode.CODE_INTERNAL_SERVER_FAILED);
+            Error result = new Error(ErrorCode.CODE_INIT_REQUEST_ERROR
+                    , ErrorCode.MSG_INIT_REQUEST_ERROR + error, ErrorCode.CODE_INTERNAL_INIT_REQUEST_ERROR);
             DeveloperLog.LogE("request config failed : " + result + ", error:" + error);
             AdLog.getSingleton().LogE("Init Failed: " + error);
             callbackInitErrorOnUIThread(result);

@@ -14,10 +14,9 @@ import com.crosspromotion.sdk.utils.Cache;
 import com.crosspromotion.sdk.utils.ImageUtils;
 import com.crosspromotion.sdk.utils.ResDownloader;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
-import com.openmediation.sdk.mediation.MediationInfo;
+import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.mediation.NativeAdCallback;
 import com.openmediation.sdk.nativead.AdIconView;
-import com.openmediation.sdk.nativead.AdInfo;
 import com.openmediation.sdk.nativead.MediaView;
 import com.openmediation.sdk.nativead.NativeAdView;
 import com.openmediation.sdk.utils.AdLog;
@@ -30,6 +29,8 @@ import java.io.File;
 import java.util.Map;
 
 public class PubNativeNativeManager {
+
+    private static final String ADN_OBJECT = "AdnObject";
 
     private static class Holder {
         private static final PubNativeNativeManager INSTANCE = new PubNativeNativeManager();
@@ -63,8 +64,17 @@ public class PubNativeNativeManager {
     }
 
     public void loadAd(String adUnitId, Map<String, Object> extras, final NativeAdCallback callback) {
-        final NativeAd nativeAd = PubNativeSingleTon.getInstance().getNativeAd(adUnitId);
+        AdnAdInfo info = null;
+        NativeAd nativeAd = null;
+        if (extras.get(ADN_OBJECT) instanceof AdnAdInfo) {
+            info = (AdnAdInfo) extras.get(ADN_OBJECT);
+            if (info != null && info.getAdnNativeAd() instanceof NativeAd) {
+                nativeAd = (NativeAd) info.getAdnNativeAd();
+            }
+        }
+
         if (nativeAd == null) {
+            // TODO
             String error = PubNativeSingleTon.getInstance().getError(adUnitId);
             if (TextUtils.isEmpty(error)) {
                 error = "No Fill";
@@ -75,17 +85,23 @@ public class PubNativeNativeManager {
             }
             return;
         }
+        final NativeAd finalNativeAd = nativeAd;
+        final AdnAdInfo finalInfo = info;
         WorkExecutor.execute(new Runnable() {
             @Override
             public void run() {
-                downloadRes(nativeAd, callback);
+                downloadRes(finalInfo, finalNativeAd, callback);
             }
         });
     }
 
-    public void registerNativeView(String adUnitId, NativeAdView adView, final NativeAdCallback callback) {
+    public void registerNativeView(String adUnitId, NativeAdView adView, AdnAdInfo adInfo, final NativeAdCallback callback) {
         try {
-            final NativeAd nativeAd = PubNativeSingleTon.getInstance().getNativeAd(adUnitId);
+            if (adInfo == null || !(adInfo.getAdnNativeAd() instanceof NativeAd)) {
+                AdLog.getSingleton().LogE("PubNativeAdapter NativeAd not ready");
+                return;
+            }
+            final NativeAd nativeAd = (NativeAd) adInfo.getAdnNativeAd();
             if (nativeAd == null) {
                 return;
             }
@@ -118,7 +134,10 @@ public class PubNativeNativeManager {
             NativeAd.Listener listener = new NativeAd.Listener() {
                 @Override
                 public void onAdImpression(NativeAd ad, View view) {
-
+                    AdLog.getSingleton().LogD("PubNative NativeAd onAdImpression");
+                    if (callback != null) {
+                        callback.onNativeAdImpression();
+                    }
                 }
 
                 @Override
@@ -133,21 +152,29 @@ public class PubNativeNativeManager {
             } else {
                 nativeAd.startTracking(adView, listener);
             }
-        } catch(Throwable ignored) {
+        } catch (Throwable ignored) {
         }
     }
 
-    public void destroyAd(String adUnitId) {
-        PubNativeSingleTon.getInstance().destroyNativeAd(adUnitId);
+    public void destroyAd(String adUnitId, AdnAdInfo adInfo) {
+        try {
+            if (adInfo == null || !(adInfo.getAdnNativeAd() instanceof NativeAd)) {
+                AdLog.getSingleton().LogE("PubNativeAdapter NativeAd destroyAd failed");
+                return;
+            }
+            NativeAd nativeAd = (NativeAd) adInfo.getAdnNativeAd();
+            nativeAd.stopTracking();
+        } catch (Exception ignored) {
+        }
     }
 
-    private void downloadRes(NativeAd ad, NativeAdCallback callback) {
+    private void downloadRes(AdnAdInfo adInfo, NativeAd ad, NativeAdCallback callback) {
         try {
             if (!TextUtils.isEmpty(ad.getBannerUrl())) {
                 File file = ResDownloader.downloadFile(ad.getBannerUrl());
                 if (file == null || !file.exists()) {
                     if (callback != null) {
-                        callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
                                 AdapterErrorBuilder.AD_UNIT_NATIVE, "PubNativeAdapter", "NativeAd Load Failed"));
                     }
                     return;
@@ -158,23 +185,17 @@ public class PubNativeNativeManager {
                 File file = ResDownloader.downloadFile(ad.getIconUrl());
                 if (file == null || !file.exists()) {
                     if (callback != null) {
-                        callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
                                 AdapterErrorBuilder.AD_UNIT_NATIVE, "PubNativeAdapter", "NativeAd Load Failed"));
                     }
                     return;
                 }
                 AdLog.getSingleton().LogD("PubNativeNative", "Icon File = " + file);
             }
-            AdInfo adInfo = new AdInfo();
-            adInfo.setDesc(ad.getDescription());
-            adInfo.setType(MediationInfo.MEDIATION_ID_23);
-            adInfo.setTitle(ad.getTitle());
-            adInfo.setCallToActionText(ad.getCallToActionText());
-            adInfo.setStarRating(ad.getRating());
             if (callback != null) {
                 callback.onNativeAdLoadSuccess(adInfo);
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             if (callback != null) {
                 callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
                         AdapterErrorBuilder.AD_UNIT_NATIVE, "PubNativeAdapter", "NativeAd Load Failed: " + e.getMessage()));

@@ -21,6 +21,7 @@ import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.openmediation.sdk.mobileads.adcolony.BuildConfig;
+import com.openmediation.sdk.utils.AdLog;
 
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardListener {
+    private static final String TAG = "Om-AdColony: ";
     private boolean mDidInited = false;
     private final ConcurrentMap<String, RewardedVideoCallback> mRvCallback;
     private final ConcurrentHashMap<String, AdColonyInterstitial> mAdColonyAds;
@@ -120,7 +122,7 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
     public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
         if (isRewardedVideoAvailable(adUnitId)) {
-            AdColonyInterstitial ad = mAdColonyAds.get(adUnitId);
+            AdColonyInterstitial ad = mAdColonyAds.remove(adUnitId);
             if (ad != null) {
                 ad.show();
             } else {
@@ -213,7 +215,7 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
     public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
         if (isInterstitialAdAvailable(adUnitId)) {
-            AdColonyInterstitial ad = mIsAdColonyAds.get(adUnitId);
+            AdColonyInterstitial ad = mIsAdColonyAds.remove(adUnitId);
             if (ad != null) {
                 ad.show();
             } else {
@@ -278,8 +280,7 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
 
         @Override
         public void onExpiring(AdColonyInterstitial ad) {
-            //re-requests if expired
-            AdColony.requestInterstitial(ad.getZoneID(), this);
+            AdLog.getSingleton().LogD(TAG, "RewardedVideoAd onExpiring: " + ad.getZoneID());
         }
 
         @Override
@@ -294,6 +295,7 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
     private class AdIsColonyAdListener extends AdColonyInterstitialListener {
         @Override
         public void onRequestFilled(AdColonyInterstitial ad) {
+            AdLog.getSingleton().LogD(TAG, "InterstitialAd onRequestFilled: " + ad.getZoneID());
             mIsAdColonyAds.put(ad.getZoneID(), ad);
             InterstitialAdCallback callback = mIsCallback.get(ad.getZoneID());
             if (callback != null) {
@@ -303,6 +305,7 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
 
         @Override
         public void onRequestNotFilled(AdColonyZone zone) {
+            AdLog.getSingleton().LogD(TAG, "InterstitialAd onRequestNotFilled: " + zone.getZoneID());
             InterstitialAdCallback callback = mIsCallback.get(zone.getZoneID());
             if (callback != null) {
                 callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
@@ -312,6 +315,7 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
 
         @Override
         public void onOpened(AdColonyInterstitial ad) {
+            AdLog.getSingleton().LogD(TAG, "InterstitialAd onOpened: " + ad.getZoneID());
             InterstitialAdCallback callback = mIsCallback.get(ad.getZoneID());
             if (callback != null) {
                 callback.onInterstitialAdShowSuccess();
@@ -320,6 +324,7 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
 
         @Override
         public void onClosed(AdColonyInterstitial ad) {
+            AdLog.getSingleton().LogD(TAG, "InterstitialAd onClosed: " + ad.getZoneID());
             InterstitialAdCallback callback = mIsCallback.get(ad.getZoneID());
             if (callback != null) {
                 callback.onInterstitialAdClosed();
@@ -328,11 +333,12 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
 
         @Override
         public void onExpiring(AdColonyInterstitial ad) {
-            AdColony.requestInterstitial(ad.getZoneID(), this);
+            AdLog.getSingleton().LogD(TAG, "InterstitialAd onExpiring: " + ad.getZoneID());
         }
 
         @Override
         public void onClicked(AdColonyInterstitial ad) {
+            AdLog.getSingleton().LogD(TAG, "InterstitialAd onClicked: " + ad.getZoneID());
             InterstitialAdCallback callback = mIsCallback.get(ad.getZoneID());
             if (callback != null) {
                 callback.onInterstitialAdClicked();

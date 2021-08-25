@@ -113,15 +113,15 @@ public final class RvManager extends AbstractInventoryAds implements RvManagerLi
     }
 
     @Override
-    protected void callbackAvailableOnManual() {
-        super.callbackAvailableOnManual();
+    protected void callbackAvailableOnManual(BaseInstance instance) {
+        super.callbackAvailableOnManual(instance);
         mListenerWrapper.onRewardedVideoAvailabilityChanged(true);
         mListenerWrapper.onRewardedVideoLoadSuccess();
     }
 
     @Override
-    protected void callbackLoadSuccessOnManual() {
-        super.callbackLoadSuccessOnManual();
+    protected void callbackLoadSuccessOnManual(BaseInstance instance) {
+        super.callbackLoadSuccessOnManual(instance);
         mListenerWrapper.onRewardedVideoLoadSuccess();
     }
 
@@ -184,12 +184,12 @@ public final class RvManager extends AbstractInventoryAds implements RvManagerLi
 
     @Override
     public void onRewardedVideoLoadSuccess(RvInstance rvInstance) {
-        onInsLoadSuccess(rvInstance);
+        onInsLoadSuccess(rvInstance, false);
     }
 
     @Override
     public void onRewardedVideoLoadFailed(RvInstance rvInstance, AdapterError error) {
-        onInsLoadFailed(rvInstance, error);
+        onInsLoadFailed(rvInstance, error, false);
     }
 
     @Override

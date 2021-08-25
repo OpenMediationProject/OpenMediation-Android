@@ -95,6 +95,7 @@ public class PlacementUtils {
         extras.put("AuctionId", reqId);
         extras.put("AppKey", instance.getAppKey());
         extras.put("Bid", instance.getHb());
+        extras.put("AdnObject", instance.getObject());
         return extras;
     }
 
@@ -412,7 +413,6 @@ public class PlacementUtils {
     public static boolean isCacheAdsType(int adType) {
         switch (adType) {
             case CommonConstants.BANNER:
-            case CommonConstants.NATIVE:
             case CommonConstants.SPLASH:
                 return false;
             default:

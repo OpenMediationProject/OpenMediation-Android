@@ -12,8 +12,6 @@ import java.util.Map;
 
 public class VungleBidAdapter extends BidAdapter {
 
-    private static final int LIMITATION = 10;
-
     private String mAppKey;
 
     @Override
@@ -34,6 +32,6 @@ public class VungleBidAdapter extends BidAdapter {
         if (!Vungle.isInitialized()) {
             VungleSingleTon.getInstance().init(MediationUtil.getContext(), mAppKey, null);
         }
-        return Vungle.getAvailableBidTokens(MediationUtil.getContext(), LIMITATION);
+        return Vungle.getAvailableBidTokens(MediationUtil.getContext());
     }
 }

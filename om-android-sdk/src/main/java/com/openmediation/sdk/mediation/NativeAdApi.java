@@ -14,7 +14,13 @@ public interface NativeAdApi {
 
     void loadNativeAd(Activity activity, String placementId, Map<String, Object> extras, NativeAdCallback callback);
 
+    @Deprecated
     void registerNativeAdView(String placementId, NativeAdView adView, NativeAdCallback callback);
 
+    void registerNativeAdView(String placementId, NativeAdView adView, AdnAdInfo adnAdInfo, NativeAdCallback callback);
+
+    @Deprecated
     void destroyNativeAd(String placementId);
+
+    void destroyNativeAd(String placementId, AdnAdInfo adnAdInfo);
 }

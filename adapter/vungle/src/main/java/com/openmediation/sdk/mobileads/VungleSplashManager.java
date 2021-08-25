@@ -1,7 +1,6 @@
 package com.openmediation.sdk.mobileads;
 
 import android.text.TextUtils;
-import android.view.ViewGroup;
 
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.SplashAdCallback;
@@ -59,6 +58,11 @@ public class VungleSplashManager {
         }
 
         Vungle.playAd(adUnitId, null, new PlayAdCallback() {
+            @Override
+            public void creativeId(String creativeId) {
+
+            }
+
             @Override
             public void onAdStart(String id) {
                 AdLog.getSingleton().LogD("onAdStart");

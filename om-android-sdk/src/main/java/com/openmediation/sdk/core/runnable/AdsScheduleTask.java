@@ -30,6 +30,7 @@ public class AdsScheduleTask implements Runnable {
             int count = adsManager.getAllLoadFailedCount();
             Map<Integer, Integer> rfs = adsManager.getRfs();
             if (rfs == null || rfs.isEmpty()) {
+                execLoad(adsManager.getDefaultInterval(), count);
                 return;
             }
             Set<Integer> keys = rfs.keySet();
@@ -45,14 +46,18 @@ public class AdsScheduleTask implements Runnable {
                     }
                 }
             }
-            if (delay > 0) {
-                DeveloperLog.LogD("execute adsScheduleTask delay : " + delay + ", fail count = " + count);
-                WorkExecutor.execute(this, delay, TimeUnit.SECONDS);
-            } else {
-                DeveloperLog.LogD("can't execute adsScheduleTask delay : " + delay);
-            }
+            execLoad(delay, count);
         } catch (Exception e) {
             CrashUtil.getSingleton().saveException(e);
+        }
+    }
+
+    private void execLoad(int delay, int count) {
+        if (delay > 0) {
+            DeveloperLog.LogD("execute adsScheduleTask delay : " + delay + ", fail count = " + count);
+            WorkExecutor.execute(this, delay, TimeUnit.SECONDS);
+        } else {
+            DeveloperLog.LogD("can't execute adsScheduleTask delay : " + delay);
         }
     }
 }

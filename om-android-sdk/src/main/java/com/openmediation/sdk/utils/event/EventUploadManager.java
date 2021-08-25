@@ -309,7 +309,7 @@ public class EventUploadManager implements Request.OnRequestCallback {
         @Override
         public void run() {
             if (!mEvents.isEmpty()) {
-                DeveloperLog.LogD("update events by reached interval");
+                DeveloperLog.LogD("upload events by reached interval");
                 uploadEvents();
             }
         }

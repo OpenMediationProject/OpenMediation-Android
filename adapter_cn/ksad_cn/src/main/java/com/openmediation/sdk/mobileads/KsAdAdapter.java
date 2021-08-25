@@ -367,6 +367,11 @@ public class KsAdAdapter extends CustomAdsAdapter {
                 }
 
                 @Override
+                public void onVideoSkipToEnd(long l) {
+
+                }
+
+                @Override
                 public void onVideoPlayStart() {
                     AdLog.getSingleton().LogD(TAG + "RewardedVideo onVideoPlayStart.....");
                     if (callback != null) {

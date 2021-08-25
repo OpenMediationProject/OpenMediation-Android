@@ -16,6 +16,7 @@ import com.bytedance.sdk.openadsdk.TTAdSdk;
 import com.bytedance.sdk.openadsdk.TTFullScreenVideoAd;
 import com.bytedance.sdk.openadsdk.TTRewardVideoAd;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
@@ -291,7 +292,7 @@ public class TikTokAdapter extends CustomAdsAdapter {
     @Override
     public void loadBannerAd(Activity activity, String adUnitId, Map<String, Object> extras, BannerAdCallback callback) {
         super.loadBannerAd(activity, adUnitId, extras, callback);
-        String error = check(activity, adUnitId);
+        String error = check(adUnitId);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
@@ -299,7 +300,7 @@ public class TikTokAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        TikTokBannerManager.getInstance().loadAd(activity, adUnitId, extras, callback);
+        TikTokBannerManager.getInstance().loadAd(adUnitId, extras, callback);
     }
 
     @Override
@@ -330,7 +331,7 @@ public class TikTokAdapter extends CustomAdsAdapter {
     @Override
     public void loadNativeAd(Activity activity, String adUnitId, Map<String, Object> extras, NativeAdCallback callback) {
         super.loadNativeAd(activity, adUnitId, extras, callback);
-        String error = check(activity, adUnitId);
+        String error = check(adUnitId);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
@@ -342,15 +343,15 @@ public class TikTokAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void registerNativeAdView(String adUnitId, NativeAdView adView, NativeAdCallback callback) {
-        super.registerNativeAdView(adUnitId, adView, callback);
-        TikTokNativeManager.getInstance().registerView(adUnitId, adView, callback);
+    public void registerNativeAdView(String adUnitId, NativeAdView adView, AdnAdInfo adInfo, NativeAdCallback callback) {
+        super.registerNativeAdView(adUnitId, adView, adInfo, callback);
+        TikTokNativeManager.getInstance().registerView(adUnitId, adView, adInfo, callback);
     }
 
     @Override
-    public void destroyNativeAd(String adUnitId) {
-        super.destroyNativeAd(adUnitId);
-        TikTokNativeManager.getInstance().destroyAd(adUnitId);
+    public void destroyNativeAd(String adUnitId, AdnAdInfo adInfo) {
+        super.destroyNativeAd(adUnitId, adInfo);
+        TikTokNativeManager.getInstance().destroyAd(adUnitId, adInfo);
     }
 
     private void initSdk(TTAdManagerHolder.InitCallback callback) {
@@ -546,7 +547,7 @@ public class TikTokAdapter extends CustomAdsAdapter {
         }
 
         @Override
-        public void onRewardVerify(boolean rewardVerify, int rewardAmount, String rewardName) {
+        public void onRewardVerify(boolean rewardVerify, int rewardAmount, String rewardName, int errorCode, String errorMsg) {
             if (callback != null && rewardVerify) {
                 callback.onRewardedVideoAdRewarded();
             }
@@ -555,7 +556,6 @@ public class TikTokAdapter extends CustomAdsAdapter {
         @Override
         public void onSkippedVideo() {
         }
-
     }
 
 }

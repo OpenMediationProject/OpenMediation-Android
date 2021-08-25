@@ -34,11 +34,11 @@ public class ListenerWrapper {
     private Set<RewardedVideoListener> mRvListeners;
     private Set<InterstitialAdListener> mIsListeners;
     private Set<PromotionAdListener> mCpListeners;
+    private Set<NativeAdListener> mNaListeners;
     private SplashAdListener mSplashAdListener;
     private MediationRewardVideoListener mMediationRvListener;
     private MediationInterstitialListener mMediationIsListener;
     private BannerAdListener mBnListener;
-    private NativeAdListener mNaListener;
 
     private String mPlacementId;
 
@@ -46,6 +46,7 @@ public class ListenerWrapper {
         mRvListeners = new CopyOnWriteArraySet<>();
         mIsListeners = new CopyOnWriteArraySet<>();
         mCpListeners = new CopyOnWriteArraySet<>();
+        mNaListeners = new CopyOnWriteArraySet<>();
     }
 
     private boolean canSendCallback(Object listener) {
@@ -90,6 +91,14 @@ public class ListenerWrapper {
         mCpListeners.remove(listener);
     }
 
+    public void addNativeAdListener(NativeAdListener listener) {
+        mNaListeners.add(listener);
+    }
+
+    public void removeNativeAdListener(NativeAdListener listener) {
+        mNaListeners.remove(listener);
+    }
+
     public void setPlacementId(String placementId) {
         this.mPlacementId = placementId;
     }
@@ -108,10 +117,6 @@ public class ListenerWrapper {
 
     public void setBnListener(BannerAdListener listener) {
         this.mBnListener = listener;
-    }
-
-    public void setNaListener(NativeAdListener listener) {
-        this.mNaListener = listener;
     }
 
     public void onRewardedVideoAvailabilityChanged(final boolean available) {
@@ -735,12 +740,14 @@ public class ListenerWrapper {
 
     public void onNativeAdLoaded(final String placementId, final AdInfo info) {
         DeveloperLog.LogD("onNativeAdLoaded");
-        if (canSendCallback(mNaListener)) {
+        if (canSendListCallback(mNaListeners)) {
             sendCallback(new Runnable() {
 
                 @Override
                 public void run() {
-                    mNaListener.onNativeAdLoaded(placementId, info);
+                    for (NativeAdListener listener : mNaListeners) {
+                        listener.onNativeAdLoaded(placementId, info);
+                    }
                     AdsUtil.callbackActionReport(EventId.CALLBACK_LOAD_SUCCESS, placementId, null, null);
                 }
             });
@@ -749,26 +756,46 @@ public class ListenerWrapper {
 
     public void onNativeAdLoadFailed(final String placementId, final Error error) {
         DeveloperLog.LogD("onNativeAdLoadFailed");
-        if (canSendCallback(mNaListener)) {
+        if (canSendListCallback(mNaListeners)) {
             sendCallback(new Runnable() {
 
                 @Override
                 public void run() {
-                    mNaListener.onNativeAdLoadFailed(placementId, error);
+                    for (NativeAdListener listener : mNaListeners) {
+                        listener.onNativeAdLoadFailed(placementId, error);
+                    }
                     AdsUtil.callbackActionReport(EventId.CALLBACK_LOAD_ERROR, placementId, null, null);
                 }
             });
         }
     }
 
-    public void onNativeAdClicked(final String placementId) {
-        DeveloperLog.LogD("onNativeAdClicked");
-        if (canSendCallback(mNaListener)) {
+    public void onNativeAdImpression(final String placementId, final AdInfo info) {
+        DeveloperLog.LogD("onNativeAdImpression, placementId: " + placementId + ", AdInfo: " + info);
+        if (canSendListCallback(mNaListeners)) {
             sendCallback(new Runnable() {
 
                 @Override
                 public void run() {
-                    mNaListener.onNativeAdClicked(placementId);
+                    for (NativeAdListener listener : mNaListeners) {
+                        listener.onNativeAdImpression(placementId, info);
+                    }
+                    AdsUtil.callbackActionReport(EventId.CALLBACK_PRESENT_SCREEN, placementId, null, null);
+                }
+            });
+        }
+    }
+
+    public void onNativeAdClicked(final String placementId, final AdInfo info) {
+        DeveloperLog.LogD("onNativeAdClicked, placementId: " + placementId + ", AdInfo: " + info);
+        if (canSendListCallback(mNaListeners)) {
+            sendCallback(new Runnable() {
+
+                @Override
+                public void run() {
+                    for (NativeAdListener listener : mNaListeners) {
+                        listener.onNativeAdClicked(placementId, info);
+                    }
                     AdsUtil.callbackActionReport(EventId.CALLBACK_CLICK, placementId, null, null);
                 }
             });

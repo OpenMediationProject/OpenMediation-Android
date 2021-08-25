@@ -39,7 +39,6 @@ public class BnManager extends AbstractHybridAds implements BnManagerListener, V
     private FrameLayout mLytBanner;
     private HandlerUtil.HandlerHolder mRlwHandler;
     private RefreshTask mRefreshTask;
-    protected AdSize mAdSize;
 
     public BnManager(String placementId, BannerAdListener listener) {
         super(placementId);
@@ -180,17 +179,17 @@ public class BnManager extends AbstractHybridAds implements BnManagerListener, V
 
     @Override
     public void onBannerAdInitFailed(BnInstance instance, AdapterError error) {
-        onInsLoadFailed(instance, error);
+        onInsLoadFailed(instance, error, !isManualTriggered);
     }
 
     @Override
     public void onBannerAdLoadSuccess(BnInstance instance) {
-        onInsLoadSuccess(instance);
+        onInsLoadSuccess(instance, !isManualTriggered);
     }
 
     @Override
     public void onBannerAdLoadFailed(BnInstance instance, AdapterError error) {
-        onInsLoadFailed(instance, error);
+        onInsLoadFailed(instance, error, !isManualTriggered);
     }
 
     @Override

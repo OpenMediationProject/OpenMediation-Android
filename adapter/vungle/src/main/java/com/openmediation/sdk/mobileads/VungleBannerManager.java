@@ -111,6 +111,11 @@ public class VungleBannerManager {
         }
 
         @Override
+        public void creativeId(String creativeId) {
+
+        }
+
+        @Override
         public void onAdStart(String id) {
             if (mAdCallback != null) {
                 mAdCallback.onBannerAdImpression();
@@ -150,6 +155,9 @@ public class VungleBannerManager {
 
         @Override
         public void onAdViewed(String id) {
+            if (mAdCallback != null) {
+                mAdCallback.onBannerAdImpression();
+            }
         }
     }
 

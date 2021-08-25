@@ -17,7 +17,6 @@ import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.MediationUtil;
 
-import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -61,10 +60,10 @@ public class TikTokBannerManager {
         });
     }
 
-    public void loadAd(Activity activity, String adUnitId, Map<String, Object> extras, BannerAdCallback callback) {
-        int[] size = getAdSize(activity, extras);
+    public void loadAd(String adUnitId, Map<String, Object> extras, BannerAdCallback callback) {
+        int[] size = getAdSize(extras);
         int width = size[0], height = size[1];
-        loadBannerAd(activity, adUnitId, width, height, callback);
+        loadBannerAd(adUnitId, width, height, callback);
     }
 
     public boolean isAdAvailable(String adUnitId) {
@@ -79,10 +78,10 @@ public class TikTokBannerManager {
         }
     }
 
-    private void loadBannerAd(Activity activity, String adUnitId, int width, int height, BannerAdCallback callback) {
+    private void loadBannerAd(String adUnitId, int width, int height, BannerAdCallback callback) {
         try {
             if (mTTAdNative == null) {
-                mTTAdNative = TTAdManagerHolder.getInstance().getAdManager().createAdNative(activity);
+                mTTAdNative = TTAdManagerHolder.getInstance().getAdManager().createAdNative(MediationUtil.getContext());
             }
             AdSlot adSlot = new AdSlot.Builder()
                     .setCodeId(adUnitId)
@@ -90,8 +89,8 @@ public class TikTokBannerManager {
                     .setAdCount(1)
                     .setExpressViewAcceptedSize(width, height)
                     .build();
-            mTTAdNative.loadBannerExpressAd(adSlot, new InnerBannerAdListener(new WeakReference<>(activity), adUnitId, callback));
-        } catch(Exception e) {
+            mTTAdNative.loadBannerExpressAd(adSlot, new InnerBannerAdListener(adUnitId, callback));
+        } catch (Exception e) {
             if (callback != null) {
                 callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadError(
                         AdapterErrorBuilder.AD_UNIT_BANNER, "TikTokAdapter", "Unknown Error"));
@@ -103,19 +102,17 @@ public class TikTokBannerManager {
 
         private String mAdUnitId;
         private BannerAdCallback mAdCallback;
-        private WeakReference<Activity> weakReference;
 
-        private InnerBannerAdListener(WeakReference<Activity> weakReference, String adUnitId, BannerAdCallback callback) {
+        private InnerBannerAdListener(String adUnitId, BannerAdCallback callback) {
             this.mAdUnitId = adUnitId;
             this.mAdCallback = callback;
-            this.weakReference = weakReference;
         }
 
         @Override
-        public void onError(int i, String s) {
+        public void onError(int code, String msg) {
             if (mAdCallback != null) {
                 mAdCallback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                        AdapterErrorBuilder.AD_UNIT_BANNER, "TikTokAdapter", i, s));
+                        AdapterErrorBuilder.AD_UNIT_BANNER, "TikTokAdapter", code, msg));
             }
         }
 
@@ -129,9 +126,6 @@ public class TikTokBannerManager {
                 return;
             }
             TTNativeExpressAd ttNativeExpressAd = list.get(0);
-            if (weakReference != null && weakReference.get() != null && !weakReference.get().isFinishing()) {
-                bindDislike(weakReference.get(), mAdUnitId, ttNativeExpressAd);
-            }
             ttNativeExpressAd.setExpressInteractionListener(new InnerAdInteractionListener(mAdUnitId, mAdCallback));
             ttNativeExpressAd.render();
             mBannerAds.put(mAdUnitId, ttNativeExpressAd);
@@ -144,7 +138,7 @@ public class TikTokBannerManager {
         private String mAdUnitId;
 
         private InnerAdInteractionListener(String adUnit, BannerAdCallback callback) {
-            mAdUnitId = adUnit;
+            this.mAdUnitId = adUnit;
             this.mAdCallback = callback;
         }
 
@@ -157,6 +151,10 @@ public class TikTokBannerManager {
 
         @Override
         public void onAdShow(View view, int type) {
+            TTNativeExpressAd ad = mBannerAds.get(mAdUnitId);
+            if (ad != null) {
+                bindDislike(MediationUtil.getActivity(), mAdUnitId, ad);
+            }
             if (mAdCallback != null) {
                 mAdCallback.onBannerAdImpression();
             }
@@ -209,7 +207,7 @@ public class TikTokBannerManager {
         });
     }
 
-    private int[] getAdSize(Activity activity, Map<String, Object> config) {
+    private int[] getAdSize(Map<String, Object> config) {
         String desc = MediationUtil.getBannerDesc(config);
         int widthDp = 320;
         int heightDp = 50;
@@ -217,7 +215,10 @@ public class TikTokBannerManager {
         if (MediationUtil.DESC_RECTANGLE.equals(desc)) {
             widthDp = 300;
             heightDp = 250;
-        } else if (MediationUtil.DESC_SMART.equals(desc) && MediationUtil.isLargeScreen(activity)) {
+        } else if (MediationUtil.DESC_LEADERBOARD.equals(desc)) {
+            widthDp = 728;
+            heightDp = 90;
+        } else if (MediationUtil.DESC_SMART.equals(desc) && MediationUtil.isLargeScreen(MediationUtil.getContext())) {
             widthDp = 728;
             heightDp = 90;
         }

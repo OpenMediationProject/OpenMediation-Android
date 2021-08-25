@@ -43,6 +43,7 @@ import com.google.android.gms.ads.rewarded.RewardItem;
 import com.google.android.gms.ads.rewarded.RewardedAd;
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
@@ -51,7 +52,6 @@ import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.mediation.NativeAdCallback;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.openmediation.sdk.mediation.SplashAdCallback;
-import com.openmediation.sdk.nativead.AdInfo;
 import com.openmediation.sdk.nativead.NativeAdView;
 import com.openmediation.sdk.utils.AdLog;
 
@@ -64,7 +64,6 @@ public class AdMobAdapter extends CustomAdsAdapter {
     private final ConcurrentMap<String, RewardedAd> mRewardedAds;
     private final ConcurrentMap<String, InterstitialAd> mInterstitialAds;
     private final ConcurrentMap<String, AdView> mBannerAds;
-    private final ConcurrentMap<String, AdMobNativeAdsConfig> mNativeAds;
     private final ConcurrentMap<String, RewardedVideoCallback> mRvInitCallbacks;
     private final ConcurrentMap<String, InterstitialAdCallback> mIsInitCallbacks;
     private final ConcurrentMap<String, BannerAdCallback> mBnInitCallbacks;
@@ -75,7 +74,6 @@ public class AdMobAdapter extends CustomAdsAdapter {
         mRewardedAds = new ConcurrentHashMap<>();
         mInterstitialAds = new ConcurrentHashMap<>();
         mBannerAds = new ConcurrentHashMap<>();
-        mNativeAds = new ConcurrentHashMap<>();
         mRvInitCallbacks = new ConcurrentHashMap<>();
         mIsInitCallbacks = new ConcurrentHashMap<>();
         mBnInitCallbacks = new ConcurrentHashMap<>();
@@ -146,7 +144,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                             PackageManager.GET_META_DATA);
             Bundle bundle = appInfo.metaData;
             adMobAppKey = bundle.getString("com.google.android.gms.ads.APPLICATION_ID");
-        } catch(Throwable e) {
+        } catch (Throwable e) {
             AdLog.getSingleton().LogE("AdMob can't find APPLICATION_ID in manifest.xml ");
         }
 
@@ -225,7 +223,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                                     AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
                         }
                     }
-                } catch(Throwable e) {
+                } catch (Throwable e) {
                     if (callback != null) {
                         callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
                                 AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Init Failed: Unknown Error"));
@@ -255,7 +253,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                         return;
                     }
                     RewardedAd.load(MediationUtil.getContext(), adUnitId, createAdRequest(), createRvLoadListener(adUnitId, callback));
-                } catch(Throwable e) {
+                } catch (Throwable e) {
                     if (callback != null) {
                         callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
                                 AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, e.getMessage()));
@@ -273,7 +271,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
             public void run() {
                 try {
                     showAdMobVideo(activity, adUnitId, callback);
-                } catch(Throwable e) {
+                } catch (Throwable e) {
                     if (callback != null) {
                         callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
                                 AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error"));
@@ -420,7 +418,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                                     AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
                         }
                     }
-                } catch(Throwable e) {
+                } catch (Throwable e) {
                     if (callback != null) {
                         callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
                                 AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error"));
@@ -452,7 +450,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                         return;
                     }
                     InterstitialAd.load(MediationUtil.getContext(), adUnitId, createAdRequest(), createInterstitialListener(adUnitId, callback));
-                } catch(Throwable e) {
+                } catch (Throwable e) {
                     if (callback != null) {
                         callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
                                 AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, e.getMessage()));
@@ -470,7 +468,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
             public void run() {
                 try {
                     showAdMobInterstitial(activity, adUnitId, callback);
-                } catch(Throwable e) {
+                } catch (Throwable e) {
                     if (callback != null) {
                         callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
                                 AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error"));
@@ -547,7 +545,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                                     AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error));
                         }
                     }
-                } catch(Throwable e) {
+                } catch (Throwable e) {
                     if (callback != null) {
                         callback.onBannerAdInitFailed(AdapterErrorBuilder.buildInitError(
                                 AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, "Unknown Error"));
@@ -581,7 +579,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                     adView.setAdListener(createBannerAdListener(adView, callback));
                     mBannerAds.put(adUnitId, adView);
                     adView.loadAd(createAdRequest());
-                } catch(Throwable e) {
+                } catch (Throwable e) {
                     if (callback != null) {
                         callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadError(
                                 AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, e.getMessage()));
@@ -638,7 +636,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                                     AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, error));
                         }
                     }
-                } catch(Throwable e) {
+                } catch (Throwable e) {
                     if (callback != null) {
                         callback.onNativeAdInitFailed(AdapterErrorBuilder.buildInitError(
                                 AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, "Unknown Error"));
@@ -670,8 +668,8 @@ public class AdMobAdapter extends CustomAdsAdapter {
                         public void onNativeAdLoaded(NativeAd nativeAd) {
                             try {
                                 config.setAdMobNativeAd(nativeAd);
-                                mNativeAds.put(adUnitId, config);
-                                AdInfo info = new AdInfo();
+                                AdnAdInfo info = new AdnAdInfo();
+                                info.setAdnNativeAd(config);
                                 info.setType(getAdNetworkId());
                                 info.setTitle(nativeAd.getHeadline());
                                 info.setDesc(nativeAd.getBody());
@@ -693,9 +691,8 @@ public class AdMobAdapter extends CustomAdsAdapter {
                     AdLoader loader = builder.withNativeAdOptions(nativeAdOptionsBuilder.build())
                             .withAdListener(createNativeAdListener(callback)).build();
                     config.setAdLoader(loader);
-                    mNativeAds.put(adUnitId, config);
                     loader.loadAd(createAdRequest());
-                } catch(Throwable e) {
+                } catch (Throwable e) {
                     if (callback != null) {
                         callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
                                 AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, e.getMessage()));
@@ -706,12 +703,12 @@ public class AdMobAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void destroyNativeAd(String adUnitId) {
-        super.destroyNativeAd(adUnitId);
-        if (!mNativeAds.containsKey(adUnitId)) {
+    public void destroyNativeAd(String adUnitId, AdnAdInfo adnAdInfo) {
+        super.destroyNativeAd(adUnitId, adnAdInfo);
+        if (adnAdInfo == null || !(adnAdInfo.getAdnNativeAd() instanceof AdMobNativeAdsConfig)) {
             return;
         }
-        AdMobNativeAdsConfig config = mNativeAds.remove(adUnitId);
+        AdMobNativeAdsConfig config = (AdMobNativeAdsConfig) adnAdInfo.getAdnNativeAd();
         if (config == null) {
             return;
         }
@@ -725,12 +722,15 @@ public class AdMobAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void registerNativeAdView(String adUnitId, NativeAdView adView, NativeAdCallback callback) {
-        super.registerNativeAdView(adUnitId, adView, callback);
-        if (!mNativeAds.containsKey(adUnitId)) {
+    public void registerNativeAdView(String adUnitId, NativeAdView adView, AdnAdInfo adnAdInfo, NativeAdCallback callback) {
+        super.registerNativeAdView(adUnitId, adView, adnAdInfo, callback);
+        if (adnAdInfo == null || !(adnAdInfo.getAdnNativeAd() instanceof AdMobNativeAdsConfig)) {
             return;
         }
-        AdMobNativeAdsConfig config = mNativeAds.get(adUnitId);
+        AdMobNativeAdsConfig config = (AdMobNativeAdsConfig) adnAdInfo.getAdnNativeAd();
+        if (config == null) {
+            return;
+        }
         RelativeLayout relativeLayout = new RelativeLayout(adView.getContext());
         if (config.getAdMobNativeAd() == null) {
             return;
@@ -853,7 +853,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                                     AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, error));
                         }
                     }
-                } catch(Throwable e) {
+                } catch (Throwable e) {
                     if (callback != null) {
                         callback.onSplashAdInitFailed(AdapterErrorBuilder.buildInitError(
                                 AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, "Unknown Error"));
@@ -1028,6 +1028,14 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 super.onAdOpened();
                 if (callback != null) {
                     callback.onNativeAdAdClicked();
+                }
+            }
+
+            @Override
+            public void onAdImpression() {
+                super.onAdImpression();
+                if (callback != null) {
+                    callback.onNativeAdImpression();
                 }
             }
         };

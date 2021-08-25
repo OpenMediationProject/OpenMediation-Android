@@ -40,6 +40,7 @@ import java.util.Map;
 import javax.net.ssl.HttpsURLConnection;
 
 public abstract class AbstractAdsManager implements Request.OnRequestCallback {
+    private static final String TAG = "CrossPromotionManager";
     protected Context mContext;
     protected AdBean mAdBean;
     protected String mPlacementId;
@@ -230,8 +231,8 @@ public abstract class AbstractAdsManager implements Request.OnRequestCallback {
 
     public void onAdsShowed() {
         DeveloperLog.LogD("onAdsShowed : " + mPlacementId);
+        DeveloperLog.LogD(TAG, "onAdsShowed : " + mPlacementId + ", this: " + this);
         isInShowingProgress = true;
-        // TODO
 //        AdRateUtil.onPlacementShowed(mPlacementId);
         AdReport.impReport(mContext, mPlacementId, mAdBean);
         callbackAdsShowed();
@@ -239,12 +240,14 @@ public abstract class AbstractAdsManager implements Request.OnRequestCallback {
 
     protected void onAdsShowFailed(Error error) {
         DeveloperLog.LogD("onAdsShowFailed : " + mPlacementId);
+        DeveloperLog.LogD(TAG, "onAdsShowFailed : " + mPlacementId);
         isInShowingProgress = false;
         callbackAdsShowFailed(error);
     }
 
     public void onAdsClicked() {
         DeveloperLog.LogD("onAdsClicked : " + mPlacementId);
+        DeveloperLog.LogD(TAG, "onAdsClicked : " + mPlacementId);
         callbackAdsClicked();
     }
 
@@ -253,6 +256,7 @@ public abstract class AbstractAdsManager implements Request.OnRequestCallback {
      */
     protected void onAdsClosed() {
         DeveloperLog.LogD("onAdsClosed : " + mPlacementId);
+        DeveloperLog.LogD(TAG, "onAdsClosed : " + mPlacementId);
         isInShowingProgress = false;
         mAdBean = null;
         callbackAdsClosed();

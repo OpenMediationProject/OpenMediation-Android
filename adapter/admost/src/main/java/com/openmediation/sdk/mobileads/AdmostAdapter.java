@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.text.TextUtils;
 
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
@@ -274,15 +275,15 @@ public class AdmostAdapter extends CustomAdsAdapter implements AdmostInterstitia
     }
 
     @Override
-    public void registerNativeAdView(String adUnitId, NativeAdView adView, NativeAdCallback callback) {
-        super.registerNativeAdView(adUnitId, adView, callback);
-        AdmostNativeManager.getInstance().registerView(adUnitId, adView, callback);
+    public void registerNativeAdView(String adUnitId, NativeAdView adView, AdnAdInfo adInfo, NativeAdCallback callback) {
+        super.registerNativeAdView(adUnitId, adView, adInfo, callback);
+        AdmostNativeManager.getInstance().registerView(adUnitId, adView, adInfo, callback);
     }
 
     @Override
-    public void destroyNativeAd(String adUnitId) {
-        super.destroyNativeAd(adUnitId);
-        AdmostSingleTon.getInstance().destroyBannerAd(adUnitId);
+    public void destroyNativeAd(String adUnitId, AdnAdInfo adInfo) {
+        super.destroyNativeAd(adUnitId, adInfo);
+        AdmostNativeManager.getInstance().destroyNativeAd(adUnitId, adInfo);
     }
 
     private synchronized void init(Activity activity, String appKey, AdmostSingleTon.InitListener listener) {
