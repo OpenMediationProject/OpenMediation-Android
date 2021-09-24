@@ -101,7 +101,14 @@ public class SigmobAdapter extends CustomAdsAdapter implements WindRewardedVideo
             }
             return;
         }
-        realLoadRvAd(activity, adUnitId, callback);
+        try {
+            realLoadRvAd(activity, adUnitId, callback);
+        } catch (Throwable e) {
+            if (callback != null) {
+                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
+            }
+        }
     }
 
     @Override
@@ -121,10 +128,10 @@ public class SigmobAdapter extends CustomAdsAdapter implements WindRewardedVideo
                     mRvCallbacks.put(adUnitId, callback);
                 }
                 mRvAds.remove(adUnitId).show(activity, null);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 if (callback != null) {
                     callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, e.getMessage()));
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
                 }
             }
             return;
@@ -182,7 +189,14 @@ public class SigmobAdapter extends CustomAdsAdapter implements WindRewardedVideo
             }
             return;
         }
-        realLoadFullScreenVideoAd(activity, adUnitId, callback);
+        try {
+            realLoadFullScreenVideoAd(activity, adUnitId, callback);
+        } catch (Throwable e) {
+            if (callback != null) {
+                callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
+            }
+        }
     }
 
     @Override
@@ -203,10 +217,10 @@ public class SigmobAdapter extends CustomAdsAdapter implements WindRewardedVideo
                     mFvCallbacks.put(adUnitId, callback);
                 }
                 mFvAds.remove(adUnitId).show(activity, null);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 if (callback != null) {
                     callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, e.getMessage()));
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
                 }
             }
             return;
@@ -227,9 +241,12 @@ public class SigmobAdapter extends CustomAdsAdapter implements WindRewardedVideo
     }
 
     private void initSdk(final Activity activity) {
-        String[] tmp = mAppKey.split("#");
-        WindAds ads = WindAds.sharedAds();
-        ads.startWithOptions(activity, new WindAdOptions(tmp[0], tmp[1], false));
+        try {
+            String[] tmp = mAppKey.split("#");
+            WindAds ads = WindAds.sharedAds();
+            ads.startWithOptions(activity, new WindAdOptions(tmp[0], tmp[1], false));
+        } catch (Throwable ignored) {
+        }
     }
 
     private void realLoadRvAd(final Activity activity, final String placementId, final RewardedVideoCallback rvCallback) {

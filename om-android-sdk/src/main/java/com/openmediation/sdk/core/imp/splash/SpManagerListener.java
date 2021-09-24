@@ -3,9 +3,10 @@
 
 package com.openmediation.sdk.core.imp.splash;
 
+import com.openmediation.sdk.core.BaseInsBidCallback;
 import com.openmediation.sdk.mediation.AdapterError;
 
-public interface SpManagerListener {
+public interface SpManagerListener extends BaseInsBidCallback {
     void onSplashAdInitSuccess(SpInstance instance);
 
     void onSplashAdInitFailed(SpInstance instance, AdapterError error);

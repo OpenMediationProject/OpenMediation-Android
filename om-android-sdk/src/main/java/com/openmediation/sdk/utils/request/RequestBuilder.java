@@ -211,7 +211,7 @@ public class RequestBuilder {
      */
     public static String buildWfUrl(String url) {
         return url.concat("?").concat(new RequestBuilder()
-                .p(KeyConstants.Request.KEY_API_VERSION, CommonConstants.API_VERSION_V3)
+                .p(KeyConstants.Request.KEY_API_VERSION, CommonConstants.API_VERSION_V4)
                 .p(KeyConstants.Request.KEY_PLATFORM, CommonConstants.PLAT_FORM_ANDROID)
                 .p(KeyConstants.Request.KEY_SDK_VERSION, CommonConstants.SDK_VERSION_NAME)
                 .format());
@@ -306,6 +306,7 @@ public class RequestBuilder {
         if (extras[7] == 1) {
             JsonUtil.put(jsonObject, KeyConstants.RequestBody.KEY_BID, extras[7]);
         }
+        JsonUtil.put(jsonObject, "abtId", extras[8]);
         DeveloperLog.LogD("lr params:" + jsonObject.toString());
         return Gzip.inGZip(jsonObject.toString().getBytes(Charset.forName(CommonConstants.CHARTSET_UTF8)));
     }
@@ -398,6 +399,7 @@ public class RequestBuilder {
         body.put(KeyConstants.RequestBody.KEY_CHANNEL, channel);
         body.put(KeyConstants.RequestBody.KEY_CDID, OmManager.getInstance().getUserId());
         body.put(KeyConstants.RequestBody.KEY_TAGS, OmManager.getInstance().getTagsObject());
+        body.put(KeyConstants.RequestBody.KEY_GCY, DeviceUtil.getNetworkCountryIso(context));
         appendRegsObject(body, OmManager.getInstance().getMetaData());
         return body;
     }

@@ -5,7 +5,7 @@ package com.openmediation.sdk.mediation;
 
 import android.view.View;
 
-public interface BannerAdCallback {
+public interface BannerAdCallback extends BidCallback {
 
     /**
      * called when third-party ad network ads init success

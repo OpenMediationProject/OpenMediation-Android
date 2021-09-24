@@ -66,32 +66,39 @@ public class IronSourceAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public boolean isAdNetworkInit() {
-        return IronSourceBannerManager.getInstance().isInit();
-    }
-
-    @Override
     public void setGDPRConsent(Context context, boolean consent) {
         super.setGDPRConsent(context, consent);
-        IronSource.setConsent(consent);
+        try {
+            IronSource.setConsent(consent);
+        } catch (Throwable ignored) {
+        }
     }
 
     @Override
     public void setUSPrivacyLimit(Context context, boolean value) {
         super.setUSPrivacyLimit(context, value);
-        String sell = value ? "true" : "false";
-        IronSource.setMetaData("do_not_sell", sell);
+        try {
+            String sell = value ? "true" : "false";
+            IronSource.setMetaData("do_not_sell", sell);
+        } catch (Throwable ignored) {
+        }
     }
 
     @Override
     public void onResume(Activity activity) {
         super.onResume(activity);
-        IronSource.onResume(activity);
+        try {
+            IronSource.onResume(activity);
+        } catch (Throwable ignored) {
+        }
     }
 
     @Override
     public void onPause(Activity activity) {
-        IronSource.onPause(activity);
+        try {
+            IronSource.onPause(activity);
+        } catch (Throwable ignored) {
+        }
         super.onPause(activity);
     }
 
@@ -106,11 +113,18 @@ public class IronSourceAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        if (!mDidInitRewardedVideo.getAndSet(true)) {
-            IronSourceManager.getInstance().initIronSourceSDK(activity, mAppKey, mRvAdUnitsToInit);
-        }
-        if (callback != null) {
-            callback.onRewardedVideoInitSuccess();
+        try {
+            if (!mDidInitRewardedVideo.getAndSet(true)) {
+                IronSourceManager.getInstance().initIronSourceSDK(activity, mAppKey, mRvAdUnitsToInit);
+            }
+            if (callback != null) {
+                callback.onRewardedVideoInitSuccess();
+            }
+        } catch (Throwable e) {
+            if (callback != null) {
+                callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
+            }
         }
     }
 
@@ -123,10 +137,17 @@ public class IronSourceAdapter extends CustomAdsAdapter {
                 callback.onRewardedVideoLoadSuccess();
                 return;
             }
-            if (callback != null) {
-                mRvCallbacks.put(adUnitId, callback);
+            try {
+                if (callback != null) {
+                    mRvCallbacks.put(adUnitId, callback);
+                }
+                IronSourceManager.getInstance().loadRewardedVideo(activity, adUnitId, new WeakReference<>(IronSourceAdapter.this));
+            } catch (Throwable e) {
+                if (callback != null) {
+                    callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
+                }
             }
-            IronSourceManager.getInstance().loadRewardedVideo(activity, adUnitId, new WeakReference<>(IronSourceAdapter.this));
         } else {
             if (callback != null) {
                 callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
@@ -140,10 +161,17 @@ public class IronSourceAdapter extends CustomAdsAdapter {
         super.showRewardedVideo(activity, adUnitId, callback);
         String checkError = check(adUnitId);
         if (TextUtils.isEmpty(checkError)) {
-            if (callback != null) {
-                mRvCallbacks.put(adUnitId, callback);
+            try {
+                if (callback != null) {
+                    mRvCallbacks.put(adUnitId, callback);
+                }
+                IronSourceManager.getInstance().showRewardedVideo(adUnitId);
+            } catch (Throwable e) {
+                if (callback != null) {
+                    callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
+                }
             }
-            IronSourceManager.getInstance().showRewardedVideo(adUnitId);
         } else {
             if (callback != null) {
                 callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
@@ -168,11 +196,18 @@ public class IronSourceAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        if (!mDidInitInterstitial.getAndSet(true)) {
-            IronSourceManager.getInstance().initIronSourceSDK(activity, mAppKey, mIsAdUnitsToInit);
-        }
-        if (callback != null) {
-            callback.onInterstitialAdInitSuccess();
+        try {
+            if (!mDidInitInterstitial.getAndSet(true)) {
+                IronSourceManager.getInstance().initIronSourceSDK(activity, mAppKey, mIsAdUnitsToInit);
+            }
+            if (callback != null) {
+                callback.onInterstitialAdInitSuccess();
+            }
+        } catch (Throwable e) {
+            if (callback != null) {
+                callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
+            }
         }
     }
 
@@ -185,10 +220,17 @@ public class IronSourceAdapter extends CustomAdsAdapter {
                 callback.onInterstitialAdLoadSuccess();
                 return;
             }
-            if (callback != null) {
-                mIsCallbacks.put(adUnitId, callback);
+            try {
+                if (callback != null) {
+                    mIsCallbacks.put(adUnitId, callback);
+                }
+                IronSourceManager.getInstance().loadInterstitial(activity, adUnitId, new WeakReference<>(IronSourceAdapter.this));
+            } catch (Throwable e) {
+                if (callback != null) {
+                    callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
+                }
             }
-            IronSourceManager.getInstance().loadInterstitial(activity, adUnitId, new WeakReference<>(IronSourceAdapter.this));
         } else {
             if (callback != null) {
                 callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
@@ -202,10 +244,17 @@ public class IronSourceAdapter extends CustomAdsAdapter {
         super.showInterstitialAd(activity, adUnitId, callback);
         String checkError = check(adUnitId);
         if (TextUtils.isEmpty(checkError)) {
-            if (callback != null) {
-                mIsCallbacks.put(adUnitId, callback);
+            try {
+                if (callback != null) {
+                    mIsCallbacks.put(adUnitId, callback);
+                }
+                IronSourceManager.getInstance().showInterstitial(adUnitId);
+            } catch (Throwable e) {
+                if (callback != null) {
+                    callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
+                }
             }
-            IronSourceManager.getInstance().showInterstitial(adUnitId);
         } else {
             if (callback != null) {
                 callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
@@ -244,7 +293,14 @@ public class IronSourceAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        IronSourceBannerManager.getInstance().loadAd(activity, adUnitId, extras, callback);
+        try {
+            IronSourceBannerManager.getInstance().loadAd(activity, adUnitId, extras, callback);
+        } catch (Throwable e) {
+            if (callback != null) {
+                callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, "Unknown Error, " + e.getMessage()));
+            }
+        }
     }
 
     @Override
@@ -255,7 +311,10 @@ public class IronSourceAdapter extends CustomAdsAdapter {
     @Override
     public void destroyBannerAd(String adUnitId) {
         super.destroyBannerAd(adUnitId);
-        IronSourceBannerManager.getInstance().destroyAd(adUnitId);
+        try {
+            IronSourceBannerManager.getInstance().destroyAd(adUnitId);
+        } catch (Throwable ignored) {
+        }
     }
 
     //region ISDemandOnlyInterstitialListener implementation.

@@ -7,11 +7,11 @@ interface FlatAdsVideoCallback {
 
     void onRewardedOpened(String adUnitId);
 
+    void onRewardedShowFailed(String adUnitId, String error);
+
     void onRewardedClosed(String adUnitId);
 
     void onRewardedReward(String adUnitId);
-
-    void onRewardedShowFailed(String adUnitId);
 
     void onRewardedClicked(String adUnitId);
 }

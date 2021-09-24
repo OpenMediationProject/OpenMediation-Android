@@ -224,16 +224,13 @@ public class ConfigurationHelper {
         int len = insArray.length();
         for (int i = 0; i < len; i++) {
             JSONObject insObject = insArray.optJSONObject(i);
-            BaseInstance instance = createInstance(adType);
             int instancesId = insObject.optInt("id");
             int mediationId = insObject.optInt("m");
             Mediation mediation = mapps.get(mediationId);
             if (mediation == null) {
                 continue;
             }
-            if (adType == CommonConstants.BANNER || adType == CommonConstants.NATIVE || adType == CommonConstants.SPLASH) {
-                instance.setPath(AdapterUtil.getAdapterPathWithType(adType, mediation.getId()));
-            }
+            BaseInstance instance = createInstance(adType);
             instance.setAppKey(mediation.getK());
 
             String key = insObject.optString("k");
@@ -251,6 +248,8 @@ public class ConfigurationHelper {
                 hbt = CommonConstants.HEAD_BIDDING_TIMEOUT;
             }
             instance.setHbt(hbt);
+
+            instance.setExpiredTime(mediation.getEt());
             instanceSparseArray.put(instancesId, instance);
         }
         return instanceSparseArray;
@@ -303,6 +302,7 @@ public class ConfigurationHelper {
             mediation.setId(id);
             mediation.setN(name);
             mediation.setNn(mediationObject.optString("nn"));
+            mediation.setEt(mediationObject.optLong("et"));
             mediationSparseArray.put(id, mediation);
         }
         return mediationSparseArray;

@@ -43,6 +43,7 @@ public class Placement extends Frequency {
     private boolean hasHb;
     private int hbAbt;
     private int wfAbt;
+    private int wfAbtId;
 
     public String getName() {
         return name;
@@ -66,6 +67,14 @@ public class Placement extends Frequency {
 
     public int getWfAbt() {
         return wfAbt;
+    }
+
+    public void setWfAbtId(int wfAbtId) {
+        this.wfAbtId = wfAbtId;
+    }
+
+    public int getWfAbtId() {
+        return wfAbtId;
     }
 
     public void setOriData(String oriData) {

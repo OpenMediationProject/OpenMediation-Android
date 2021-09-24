@@ -24,23 +24,30 @@ import com.openmediation.sdk.utils.request.network.Headers;
  */
 public final class LrReportHelper {
 
-    public static void report(String reqId, int ruleId, String placementId, int loadType, int abt, int reportType, int bid) {
-        report(reqId, ruleId, null, placementId, -1, loadType, -1, -1, abt, reportType, bid);
+    public static void report(String reqId, int ruleId, String placementId, int loadType, int abt,
+                              int abtId, int reportType, int bid) {
+        report(reqId, ruleId, null, placementId, -1, loadType, -1,
+                -1, abt, abtId, reportType, bid);
     }
 
-    public static void report(BaseInstance instance, int loadType, int abt, int reportType, int bid) {
-        report(instance, -1, loadType, abt, reportType, bid);
+    public static void report(BaseInstance instance, int loadType, int abt, int abtId,
+                              int reportType, int bid) {
+        report(instance, -1, loadType, abt, abtId, reportType, bid);
     }
 
-    public static void report(BaseInstance instance, int sceneId, int loadType, int abt, int reportType, int bid) {
+    public static void report(BaseInstance instance, int sceneId, int loadType, int abt, int abtId,
+                              int reportType, int bid) {
         if (instance == null) {
             return;
         }
-        report("", -1, instance, instance.getPlacementId(), sceneId, loadType, instance.getId(), instance.getMediationId(), abt, reportType, bid);
+        report("", -1, instance, instance.getPlacementId(), sceneId, loadType,
+                instance.getId(), instance.getMediationId(), abt, abtId, reportType, bid);
     }
 
-    private static void report(final String reqId, final int ruleId, final BaseInstance instance, final String placementId, final int sceneId, final int loadType,
-                               final int instanceId, final int mediationId, final int abt, final int reportType, final int bid) {
+    private static void report(final String reqId, final int ruleId, final BaseInstance instance,
+                               final String placementId, final int sceneId, final int loadType,
+                               final int instanceId, final int mediationId, final int abt,
+                               final int abtId, final int reportType, final int bid) {
         WorkExecutor.execute(new Runnable() {
             @Override
             public void run() {
@@ -70,7 +77,8 @@ public final class LrReportHelper {
                                     instanceId,
                                     abt,
                                     reportType,
-                                    bid)
+                                    bid,
+                                    abtId)
                             ))
                             .connectTimeout(30000)
                             .readTimeout(60000)

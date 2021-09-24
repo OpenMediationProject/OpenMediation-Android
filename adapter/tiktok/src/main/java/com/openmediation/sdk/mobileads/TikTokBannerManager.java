@@ -85,15 +85,14 @@ public class TikTokBannerManager {
             }
             AdSlot adSlot = new AdSlot.Builder()
                     .setCodeId(adUnitId)
-                    .setSupportDeepLink(true)
                     .setAdCount(1)
                     .setExpressViewAcceptedSize(width, height)
                     .build();
             mTTAdNative.loadBannerExpressAd(adSlot, new InnerBannerAdListener(adUnitId, callback));
-        } catch (Exception e) {
+        } catch (Throwable e) {
             if (callback != null) {
                 callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                        AdapterErrorBuilder.AD_UNIT_BANNER, "TikTokAdapter", "Unknown Error"));
+                        AdapterErrorBuilder.AD_UNIT_BANNER, "TikTokAdapter", "Unknown Error, " + e.getMessage()));
             }
         }
     }

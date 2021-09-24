@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="Gradle: com.mopub:libAvid-mopub:3.6.4@jar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.mopub/libAvid-mopub/3.6.4/2e93ce7b7046cdda7948ceab58c1ee9f1cb52bf1/libAvid-mopub-3.6.4.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.mopub/libAvid-mopub/3.6.4/2c82c4c202ec3b2ecf0027afb2e64803fa8e1893/libAvid-mopub-3.6.4-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

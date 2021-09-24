@@ -3,7 +3,7 @@
 
 package com.openmediation.sdk.mediation;
 
-public interface NativeAdCallback {
+public interface NativeAdCallback extends BidCallback, OnAdExpiredCallback {
     /**
      * called when third-party ad network ads init success
      */

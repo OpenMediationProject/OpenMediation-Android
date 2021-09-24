@@ -31,9 +31,11 @@ public class Event {
     private double price = -1;
     private String cur;
     private int abt = -1;
+    private int abtId = -1;
 
     private String reqId; // AuctionID
     private int ruleId; // Mediation Rule ID
+    private JSONObject data;
 
     Event() throws Exception {
         this((String) null);
@@ -70,12 +72,14 @@ public class Event {
             priority = jsonObject.optInt("priority", -1);
             cs = jsonObject.optInt("cs", -1);
             abt = jsonObject.optInt("abt", -1);
+            abtId = jsonObject.optInt("abtId", -1);
             code = jsonObject.optString("code");
             bid = jsonObject.optInt("bid", -1);
             price = jsonObject.optDouble("price", -1);
             cur = jsonObject.optString("cur");
             reqId = jsonObject.optString("reqId");
             ruleId = jsonObject.optInt("ruleId", -1);
+            data = jsonObject.optJSONObject("data");
         } catch (Exception e) {
             DeveloperLog.LogD("parse Event from json ", e);
         }
@@ -98,12 +102,14 @@ public class Event {
             JsonUtil.put(jsonObject, "priority", priority);
             JsonUtil.put(jsonObject, "cs", cs);
             JsonUtil.put(jsonObject, "abt", abt);
+            JsonUtil.put(jsonObject, "abtId", abtId);
             JsonUtil.put(jsonObject, "code", code);
             JsonUtil.put(jsonObject, "bid", bid);
             JsonUtil.put(jsonObject, "price", price);
             JsonUtil.put(jsonObject, "cur", cur);
             JsonUtil.put(jsonObject, "reqId", reqId);
             JsonUtil.put(jsonObject, "ruleId", ruleId);
+            JsonUtil.put(jsonObject, "data", data);
         } catch (Exception e) {
             DeveloperLog.LogD("Event to json ", e);
         }
@@ -261,5 +267,21 @@ public class Event {
 
     public int getAbt() {
         return abt;
+    }
+
+    public void setAbtId(int abtId) {
+        this.abtId = abtId;
+    }
+
+    public int getAbtId() {
+        return abtId;
+    }
+
+    public void setData(JSONObject data) {
+        this.data = data;
+    }
+
+    public JSONObject getData() {
+        return data;
     }
 }

@@ -47,7 +47,7 @@ public class IronSourceBannerManager {
             if (callback != null) {
                 callback.onBannerAdInitSuccess();
             }
-        } catch(Exception e) {
+        } catch (Throwable e) {
             if (callback != null) {
                 callback.onBannerAdInitFailed(AdapterErrorBuilder.buildInitError(
                         AdapterErrorBuilder.AD_UNIT_BANNER, "IronSourceAdapter", e.getLocalizedMessage()));

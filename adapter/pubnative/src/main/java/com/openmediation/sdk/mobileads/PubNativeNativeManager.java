@@ -12,7 +12,6 @@ import android.widget.RelativeLayout;
 
 import com.crosspromotion.sdk.utils.Cache;
 import com.crosspromotion.sdk.utils.ImageUtils;
-import com.crosspromotion.sdk.utils.ResDownloader;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.mediation.NativeAdCallback;
@@ -21,11 +20,9 @@ import com.openmediation.sdk.nativead.MediaView;
 import com.openmediation.sdk.nativead.NativeAdView;
 import com.openmediation.sdk.utils.AdLog;
 import com.openmediation.sdk.utils.IOUtil;
-import com.openmediation.sdk.utils.WorkExecutor;
 
 import net.pubnative.lite.sdk.models.NativeAd;
 
-import java.io.File;
 import java.util.Map;
 
 public class PubNativeNativeManager {
@@ -72,27 +69,11 @@ public class PubNativeNativeManager {
                 nativeAd = (NativeAd) info.getAdnNativeAd();
             }
         }
-
-        if (nativeAd == null) {
-            // TODO
-            String error = PubNativeSingleTon.getInstance().getError(adUnitId);
-            if (TextUtils.isEmpty(error)) {
-                error = "No Fill";
-            }
-            if (callback != null) {
-                callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                        AdapterErrorBuilder.AD_UNIT_NATIVE, "PubNativeAdapter", error));
-            }
+        if (nativeAd != null) {
+            PubNativeSingleTon.getInstance().downloadRes(info, nativeAd, callback);
             return;
         }
-        final NativeAd finalNativeAd = nativeAd;
-        final AdnAdInfo finalInfo = info;
-        WorkExecutor.execute(new Runnable() {
-            @Override
-            public void run() {
-                downloadRes(finalInfo, finalNativeAd, callback);
-            }
-        });
+        PubNativeSingleTon.getInstance().loadNative(adUnitId, callback, null);
     }
 
     public void registerNativeView(String adUnitId, NativeAdView adView, AdnAdInfo adInfo, final NativeAdCallback callback) {
@@ -142,6 +123,7 @@ public class PubNativeNativeManager {
 
                 @Override
                 public void onAdClick(NativeAd ad, View view) {
+                    AdLog.getSingleton().LogD("PubNative NativeAd onAdClick");
                     if (callback != null) {
                         callback.onNativeAdAdClicked();
                     }
@@ -164,42 +146,7 @@ public class PubNativeNativeManager {
             }
             NativeAd nativeAd = (NativeAd) adInfo.getAdnNativeAd();
             nativeAd.stopTracking();
-        } catch (Exception ignored) {
-        }
-    }
-
-    private void downloadRes(AdnAdInfo adInfo, NativeAd ad, NativeAdCallback callback) {
-        try {
-            if (!TextUtils.isEmpty(ad.getBannerUrl())) {
-                File file = ResDownloader.downloadFile(ad.getBannerUrl());
-                if (file == null || !file.exists()) {
-                    if (callback != null) {
-                        callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                                AdapterErrorBuilder.AD_UNIT_NATIVE, "PubNativeAdapter", "NativeAd Load Failed"));
-                    }
-                    return;
-                }
-                AdLog.getSingleton().LogD("PubNativeNative", "Content File = " + file);
-            }
-            if (!TextUtils.isEmpty(ad.getIconUrl())) {
-                File file = ResDownloader.downloadFile(ad.getIconUrl());
-                if (file == null || !file.exists()) {
-                    if (callback != null) {
-                        callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                                AdapterErrorBuilder.AD_UNIT_NATIVE, "PubNativeAdapter", "NativeAd Load Failed"));
-                    }
-                    return;
-                }
-                AdLog.getSingleton().LogD("PubNativeNative", "Icon File = " + file);
-            }
-            if (callback != null) {
-                callback.onNativeAdLoadSuccess(adInfo);
-            }
-        } catch (Exception e) {
-            if (callback != null) {
-                callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                        AdapterErrorBuilder.AD_UNIT_NATIVE, "PubNativeAdapter", "NativeAd Load Failed: " + e.getMessage()));
-            }
+        } catch (Throwable ignored) {
         }
     }
 

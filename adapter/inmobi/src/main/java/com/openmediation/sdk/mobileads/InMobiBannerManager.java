@@ -52,15 +52,7 @@ public class InMobiBannerManager {
         MediationUtil.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                InMobiBanner banner = InMobiSingleTon.getInstance().getBannerAd(adUnitId);
-                if (banner == null) {
-                    String error = InMobiSingleTon.getInstance().getError(adUnitId);
-                    if (callback != null) {
-                        callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                                AdapterErrorBuilder.AD_UNIT_BANNER, "AdmostAdapter", error));
-                    }
-                    return;
-                }
+                InMobiSingleTon.getInstance().removeBannerListener(adUnitId);
                 InMobiSingleTon.getInstance().addBannerListener(adUnitId, new InMobiBannerCallback() {
 
                     @Override
@@ -77,9 +69,16 @@ public class InMobiBannerManager {
                         }
                     }
                 });
-                if (callback != null) {
-                    callback.onBannerAdLoadSuccess(banner);
+                InMobiBanner banner = InMobiSingleTon.getInstance().removeBannerAd(adUnitId);
+                if (banner != null) {
+                    if (callback != null) {
+                        callback.onBannerAdLoadSuccess(banner);
+                    }
+                    return;
                 }
+
+                int size[] = InMobiSingleTon.getInstance().getAdSize(MediationUtil.getBannerDesc(extras));
+                InMobiSingleTon.getInstance().loadBanner(adUnitId, size, callback, null);
             }
         });
     }

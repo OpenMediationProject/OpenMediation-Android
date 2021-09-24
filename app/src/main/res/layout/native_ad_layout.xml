@@ -2,48 +2,51 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#B9BEB9">
-
-
-    <com.openmediation.sdk.nativead.MediaView
-        android:id="@+id/ad_media"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:layout_centerHorizontal="true" />
-
-    <com.openmediation.sdk.nativead.AdIconView
-        android:id="@+id/ad_icon_media"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_below="@id/ad_media"
-        android:layout_alignParentLeft="true" />
+    android:background="@color/color_ad_bg">
 
     <TextView
         android:id="@+id/ad_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/ad_media"
-        android:layout_toRightOf="@id/ad_icon_media"
-        android:text="title"
+        android:layout_alignParentTop="true"
+        android:layout_centerInParent="true"
+        android:padding="10dp"
+        android:text="广告标题测试"
         android:textColor="@android:color/white" />
 
-    <TextView
-        android:id="@+id/ad_desc"
+    <com.aiming.mdt.nativead.AdIconView
+        android:id="@+id/ad_icon_media"
         android:layout_width="250dp"
-        android:layout_height="wrap_content"
+        android:layout_height="175dp"
         android:layout_below="@id/ad_title"
-        android:layout_marginTop="5dp"
-        android:layout_toRightOf="@id/ad_icon_media"
-        android:text="desc" />
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:id="@+id/ad_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:padding="10dp"
+        android:text="广告标题测试"
+        android:textColor="@android:color/white"
+        android:layout_below="@id/ad_icon_media"
+        />
+
+
+    <com.aiming.mdt.nativead.MediaView
+        android:id="@+id/ad_media"
+        android:layout_width="250dp"
+        android:layout_height="175dp"
+        android:layout_below="@id/ad_text"
+        android:layout_centerHorizontal="true" />
 
     <Button
         android:id="@+id/ad_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/ad_media"
-        android:layout_alignParentRight="true"
+        android:layout_centerInParent="true"
         android:padding="10dp"
-        android:text="calltoaction"
+        android:text="按钮"
         android:textAllCaps="false" />
 </RelativeLayout>
-

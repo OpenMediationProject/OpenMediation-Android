@@ -5,6 +5,7 @@ package com.openmediation.sdk.core.imp.promotion;
 
 import android.app.Activity;
 
+import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.core.InsManager;
 import com.openmediation.sdk.core.runnable.LoadTimeoutRunnable;
 import com.openmediation.sdk.mediation.AdapterError;
@@ -32,7 +33,6 @@ public class CpInstance extends BaseInstance implements PromotionAdCallback, Loa
         setMediationState(MEDIATION_STATE.INIT_PENDING);
         if (mAdapter != null) {
             mAdapter.initPromotionAd(activity, InsManager.getInitDataMap(this), this);
-            InsManager.onInsInitStart(this);
         }
     }
 
@@ -41,7 +41,6 @@ public class CpInstance extends BaseInstance implements PromotionAdCallback, Loa
         if (mAdapter != null) {
             DeveloperLog.LogD("load PromotionAd : " + getMediationId() + " key : " + getKey());
             InsManager.startInsLoadTimer(this, this);
-            mLoadStart = System.currentTimeMillis();
             mAdapter.loadPromotionAd(activity, getKey(), extras, this);
         }
     }
@@ -60,8 +59,8 @@ public class CpInstance extends BaseInstance implements PromotionAdCallback, Loa
     }
 
     boolean isCpAvailable() {
-        return mAdapter != null && mAdapter.isPromotionAdAvailable(getKey())
-                && getMediationState() == MEDIATION_STATE.AVAILABLE;
+        return getMediationState() == MEDIATION_STATE.AVAILABLE &&
+                mAdapter != null && mAdapter.isPromotionAdAvailable(getKey());
     }
 
     void setCpManagerListener(CpManagerListener listener) {
@@ -121,5 +120,20 @@ public class CpInstance extends BaseInstance implements PromotionAdCallback, Loa
     public void onLoadTimeout() {
         onPromotionAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
                 AdapterErrorBuilder.AD_UNIT_PROMOTION, mAdapter == null ? "" : mAdapter.getClass().getSimpleName(), ErrorCode.ERROR_TIMEOUT));
+    }
+
+    @Override
+    public void onBidSuccess(BidResponse response) {
+        mListener.onBidSuccess(this, response);
+    }
+
+    @Override
+    public void onBidFailed(String error) {
+        mListener.onBidFailed(this, error);
+    }
+
+    @Override
+    public void onAdExpired() {
+        mListener.onAdExpired(this);
     }
 }

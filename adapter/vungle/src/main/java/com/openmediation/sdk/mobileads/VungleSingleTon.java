@@ -34,7 +34,7 @@ public class VungleSingleTon {
     public synchronized void init(final Context context, String appKey, final InitCallback listener) {
         if (context == null || TextUtils.isEmpty(appKey)) {
             if (listener != null) {
-                listener.onError(new VungleException(VungleException.APPLICATION_CONTEXT_REQUIRED));
+                listener.onError(new VungleException(VungleException.CONFIGURATION_ERROR));
             }
             return;
         }
@@ -83,7 +83,7 @@ public class VungleSingleTon {
 
                 }
             });
-        } catch (Exception e) {
+        } catch (Throwable e) {
             mInitState = InitState.NOT_INIT;
             if (listener != null) {
                 listener.onError(new VungleException(VungleException.UNKNOWN_ERROR));

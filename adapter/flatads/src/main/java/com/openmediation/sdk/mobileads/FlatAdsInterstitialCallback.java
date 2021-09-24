@@ -7,6 +7,8 @@ interface FlatAdsInterstitialCallback {
 
     void onInterstitialOpened(String adUnitId);
 
+    void onInterstitialShowFailed(String adUnitId, String error);
+
     void onInterstitialDismissed(String adUnitId);
 
     void onInterstitialClick(String adUnitId);

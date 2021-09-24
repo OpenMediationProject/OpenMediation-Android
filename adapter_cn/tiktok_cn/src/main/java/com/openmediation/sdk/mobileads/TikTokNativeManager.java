@@ -83,19 +83,22 @@ public class TikTokNativeManager {
                     .setExpressViewAcceptedSize(width, height) // dp
                     .build();
             mTTAdNative.loadNativeExpressAd(adSlot, new InnerAdListener(adUnitId, callback));
-        } catch (Exception e) {
+        } catch (Throwable e) {
             if (callback != null) {
                 callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                        AdapterErrorBuilder.AD_UNIT_NATIVE, "TikTokAdapter", "Unknown Error"));
+                        AdapterErrorBuilder.AD_UNIT_NATIVE, "TikTokAdapter", "Unknown Error, " + e.getMessage()));
             }
         }
     }
 
     public void destroyAd(String adUnitId, AdnAdInfo adInfo) {
-        if (adInfo != null && adInfo.getAdnNativeAd() instanceof TTNativeExpressAd) {
-            TTNativeExpressAd ad = (TTNativeExpressAd) adInfo.getAdnNativeAd();
-            ad.destroy();
-            mNativeView.remove(ad);
+        try {
+            if (adInfo != null && adInfo.getAdnNativeAd() instanceof TTNativeExpressAd) {
+                TTNativeExpressAd ad = (TTNativeExpressAd) adInfo.getAdnNativeAd();
+                ad.destroy();
+                mNativeView.remove(ad);
+            }
+        } catch (Throwable ignored) {
         }
     }
 

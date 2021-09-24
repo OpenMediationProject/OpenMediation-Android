@@ -18,7 +18,7 @@ public class AFManager {
         }
         try {
             Class.forName("com.appsflyer.AppsFlyerLib");
-        } catch (Exception e) {
+        } catch (Throwable e) {
             return null;
         }
         return com.appsflyer.AppsFlyerLib.getInstance().getAppsFlyerUID(context);

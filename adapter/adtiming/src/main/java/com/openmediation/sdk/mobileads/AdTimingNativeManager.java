@@ -134,7 +134,7 @@ public class AdTimingNativeManager {
         }
 
         @Override
-        public void onNativeAdReady(String s, Ad ad) {
+        public void onNativeAdReady(String placementId, Ad ad) {
             if (ad == null) {
                 if (mAdCallback != null) {
                     mAdCallback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
@@ -154,20 +154,27 @@ public class AdTimingNativeManager {
         }
 
         @Override
-        public void onNativeAdFailed(String s, AdTimingError error) {
+        public void onNativeAdFailed(String placementId, AdTimingError error) {
             mAdCallback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
                     AdapterErrorBuilder.AD_UNIT_NATIVE, "AdTimingAdapter", error.getCode(), error.getMessage()));
         }
 
         @Override
-        public void onNativeAdClicked(String s) {
+        public void onNativeAdClicked(String placementId) {
             if (mAdCallback != null) {
                 mAdCallback.onNativeAdAdClicked();
             }
         }
 
         @Override
-        public void onNativeAdShowFailed(String s, AdTimingError adTimingError) {
+        public void onNativeAdShowed(String placementId) {
+            if (mAdCallback != null) {
+                mAdCallback.onNativeAdImpression();
+            }
+        }
+
+        @Override
+        public void onNativeAdShowFailed(String placementId, AdTimingError adTimingError) {
 
         }
     }

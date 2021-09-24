@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="Gradle: :AppLovinModel-release:@aar">
+    <CLASSES>
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/AppLovinModel-release.aar/f57b2ac77272099b7228cc74fec9e2a4/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/AppLovinModel-release.aar/f57b2ac77272099b7228cc74fec9e2a4/jars/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

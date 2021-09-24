@@ -1,8 +1,8 @@
 package com.openmediation.sdk.core;
 
-import com.openmediation.sdk.bid.AuctionUtil;
 import com.openmediation.sdk.bid.BidLoseReason;
 import com.openmediation.sdk.bid.BidResponse;
+import com.openmediation.sdk.bid.BidUtil;
 import com.openmediation.sdk.core.runnable.AdsScheduleTask;
 import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
@@ -22,6 +22,7 @@ import com.openmediation.sdk.utils.constant.KeyConstants;
 import com.openmediation.sdk.utils.error.Error;
 import com.openmediation.sdk.utils.error.ErrorBuilder;
 import com.openmediation.sdk.utils.error.ErrorCode;
+import com.openmediation.sdk.utils.event.AdvanceEventId;
 import com.openmediation.sdk.utils.event.EventId;
 import com.openmediation.sdk.utils.event.EventUploadManager;
 import com.openmediation.sdk.utils.helper.LrReportHelper;
@@ -37,7 +38,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -74,12 +74,16 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
         return true;
     }
 
+    @Override
+    protected boolean isReload() {
+        return false;
+    }
+
     /**
      * Ends this loading
      */
     @Override
     protected void callbackLoadError(Error error) {
-        isInLoadingProgress = false;
 //        isManualTriggered = false;
         AdLog.getSingleton().LogE("Ad load failed placementId: " + mPlacementId + ", " + error);
     }
@@ -118,6 +122,7 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
         if (type == OmManager.LOAD_TYPE.MANUAL) {
             isManualTriggered = true;
             checkScheduleTaskStarted();
+            checkHasExpiredInstance();
             int availableCount = InsManager.instanceCount(mTotalIns, BaseInstance.MEDIATION_STATE.AVAILABLE);
             if (availableCount > 0) {
                 callbackAvailableOnManual(InsManager.getFirstAvailableIns(mTotalIns));
@@ -130,8 +135,10 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
             DeveloperLog.LogE("load ad for placement : " +
                     (Preconditions.checkNotNull(mPlacement) ? mPlacement.getId() : "") + " failed cause : " + error);
             AdsUtil.loadBlockedReport(Preconditions.checkNotNull(mPlacement) ? mPlacement.getId() : "", error);
+//            callbackLoadError(error);
             return true;
-        } else if (isInShowingProgress) {
+        }
+        if (isInShowingProgress) {
             Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
                     , ErrorCode.MSG_LOAD_INVALID_SHOWING, ErrorCode.CODE_INTERNAL_REQUEST_PLACEMENTID);
             DeveloperLog.LogE("load ad for placement : " +
@@ -145,6 +152,7 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
 
     @Override
     protected boolean shouldReplenishInventory(OmManager.LOAD_TYPE type) {
+        checkHasExpiredInstance();
         int availableCount = InsManager.instanceCount(mTotalIns, BaseInstance.MEDIATION_STATE.AVAILABLE);
 
         if (type != OmManager.LOAD_TYPE.MANUAL) {
@@ -191,36 +199,21 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
             if (availableCount > 0) {
                 isAReadyReported.set(true);
                 LrReportHelper.report(mReqId, mRuleId, mPlacement.getId(), mLoadType.getValue(), mPlacement.getWfAbt(),
+                        mPlacement.getWfAbtId(),
                         CommonConstants.WATERFALL_READY, 0);
             }
         }
     }
 
     @Override
-    protected void startLoadAds(JSONObject clInfo, List<BaseInstance> instances) {
-        List<BaseInstance> wfInstances = InsManager.getListInsResult(mReqId, clInfo, mPlacement);
-        DeveloperLog.LogD("AbstractInventoryAds startLoadAd wfInstances : " + wfInstances);
-        List<BaseInstance> totalIns = InsManager.sort(wfInstances, instances);
-        DeveloperLog.LogD("AbstractInventoryAds after instances sort: " + totalIns);
-        startLoadAdsImpl(clInfo, totalIns);
+    protected void finishLoad() {
+        super.finishLoad();
+        isInLoadingProgress = false;
     }
 
     @Override
     protected void startLoadAdsImpl(JSONObject clInfo, List<BaseInstance> totalIns) {
         List<BaseInstance> lastAvailableIns = InsManager.getInsWithStatus(mTotalIns, BaseInstance.MEDIATION_STATE.AVAILABLE);
-        if (totalIns == null || totalIns.isEmpty()) {
-            if (lastAvailableIns == null || lastAvailableIns.isEmpty()) {
-                Error error = new Error(ErrorCode.CODE_LOAD_NO_AVAILABLE_AD
-                        , ErrorCode.MSG_LOAD_NO_AVAILABLE_AD, ErrorCode.CODE_INTERNAL_SERVER_ERROR);
-                DeveloperLog.LogE(error.toString() + ", tmp:" + totalIns + ", last:" + lastAvailableIns);
-                whenAllLoadFailed();
-                callbackLoadError(error);
-            } else {
-                DeveloperLog.LogD("request cl success, but ins[] is empty, but has history");
-                isInLoadingProgress = false;
-            }
-            return;
-        }
         if (lastAvailableIns != null && !lastAvailableIns.isEmpty()) {
             InsManager.reOrderIns(lastAvailableIns, totalIns);
         }
@@ -228,24 +221,17 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
         mTotalIns.addAll(totalIns);
         InsManager.resetInsStateOnClResponse(mTotalIns);
         DeveloperLog.LogD("TotalIns is : " + mTotalIns.toString());
-        int availableCount = InsManager.instanceCount(mTotalIns, BaseInstance.MEDIATION_STATE.AVAILABLE);
         reSizeInventorySize();
         DeveloperLog.LogD("after cl, Inventory size is : " + mInventorySize);
-        //if availableCount == mCacheSize, do not load any new instance
-        if (availableCount == mInventorySize) {
-            DeveloperLog.LogD("no new ins should be loaded, current load progress finishes");
-            isInLoadingProgress = false;
-        } else {
-            if (mPlacement != null) {
-                WaterFallHelper.getS2sBidResponse(mPlacement, clInfo);
-            }
-            HandlerUtil.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    initOrFetchNextAdapter();
-                }
-            });
+        if (mPlacement != null) {
+            WaterFallHelper.getS2sBidResponse(mPlacement, clInfo);
         }
+        HandlerUtil.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                initOrFetchNextAdapter();
+            }
+        });
     }
 
     @Override
@@ -278,6 +264,7 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
             notifyInsBidWin(in);
             DataCache.getInstance().setMEM(in.getKey() + KeyConstants.KEY_DISPLAY_SCENE, mScene.getN());
             DataCache.getInstance().setMEM(in.getKey() + KeyConstants.KEY_DISPLAY_ABT, mPlacement.getWfAbt());
+            DataCache.getInstance().setMEM(in.getKey() + KeyConstants.KEY_DISPLAY_ABT_ID, mPlacement.getWfAbtId());
             //if availability changed from false to true
             if (shouldNotifyAvailableChanged(false)) {
                 onAvailabilityChanged(false, null);
@@ -305,26 +292,6 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
         return false;
     }
 
-    @Override
-    protected void loadInsAndSendEvent(BaseInstance instance) {
-        super.loadInsAndSendEvent(instance);
-        if (AdRateUtil.shouldBlockInstance(Preconditions.checkNotNull(mPlacement) ?
-                mPlacement.getId() : "" + instance.getKey(), instance)) {
-            instance.setMediationState(BaseInstance.MEDIATION_STATE.CAPPED);
-            onInsCapped(PlacementUtils.getPlacementType(getPlacementType()), instance, false);
-            return;
-        }
-
-        if (instance.getHb() == 1) {
-            InsManager.reportInsLoad(instance, EventId.INSTANCE_PAYLOAD_REQUEST);
-            insLoad(instance, PlacementUtils.getLoadExtrasMap(mReqId, instance, instance.getBidResponse()));
-        } else {
-            InsManager.reportInsLoad(instance, EventId.INSTANCE_LOAD);
-            LrReportHelper.report(instance, mLoadType.getValue(), mPlacement.getWfAbt(), CommonConstants.INSTANCE_LOAD, 0);
-            insLoad(instance, PlacementUtils.getLoadExtrasMap(mReqId, instance, null));
-        }
-    }
-
     /**
      * On ins init failed.
      *
@@ -335,11 +302,11 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
         notifyLoadFailedInsBidLose(instance);
         if (shouldFinishLoad()) {
             boolean hasInventory = hasAvailableInventory();
-            if (isManualTriggered && !hasInventory) {
-                callbackLoadFailedOnManual(error);
-            }
             if (!hasInventory) {
-                whenAllLoadFailed();
+                onAllLoadFailed();
+                if (isManualTriggered) {
+                    callbackLoadFailedOnManual(error);
+                }
             }
             if (shouldNotifyAvailableChanged(hasInventory)) {
                 onAvailabilityChanged(hasInventory, error);
@@ -348,6 +315,14 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
         } else {
             initOrFetchNextAdapter();
         }
+    }
+
+    @Override
+    public void onInsC2SBidSuccess(BaseInstance bidInstance, BidResponse response) {
+        super.onInsC2SBidSuccess(bidInstance, response);
+        DeveloperLog.LogD("AbstractInventoryAds before onInsC2SBidSuccess TotalIns: " + mTotalIns);
+        InsManager.sort(mTotalIns, bidInstance);
+        DeveloperLog.LogD("AbstractInventoryAds after onInsC2SBidSuccess sort TotalIns: " + mTotalIns);
     }
 
     /**
@@ -367,7 +342,8 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
         if (shouldNotifyAvailableChanged(true)) {
             if (!isAReadyReported.get()) {
                 isAReadyReported.set(true);
-                LrReportHelper.report(instance.getReqId(), mRuleId, instance.getPlacementId(), mLoadType.getValue(), mPlacement.getWfAbt(),
+                LrReportHelper.report(instance.getReqId(), mRuleId, instance.getPlacementId(),
+                        mLoadType.getValue(), mPlacement.getWfAbt(), mPlacement.getWfAbtId(),
                         CommonConstants.WATERFALL_READY, 0);
             }
             onAvailabilityChanged(true, null);
@@ -387,14 +363,15 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
     @Override
     protected synchronized void onInsLoadFailed(BaseInstance instance, AdapterError error, boolean reload) {
         super.onInsLoadFailed(instance, error, reload);
-        Error errorResult = new Error(ErrorCode.CODE_LOAD_FAILED_IN_ADAPTER, error.toString(), -1);
         if (shouldFinishLoad()) {
+            Error errorResult = new Error(ErrorCode.CODE_LOAD_NO_AVAILABLE_AD, ErrorCode.MSG_LOAD_NO_AVAILABLE_AD + "All ins load failed, PlacementId: " + mPlacementId, -1);
+            DeveloperLog.LogE(errorResult.toString());
             boolean hasInventory = hasAvailableInventory();
-            if (isManualTriggered && !hasInventory) {
-                callbackLoadFailedOnManual(errorResult);
-            }
             if (!hasInventory) {
-                whenAllLoadFailed();
+                onAllLoadFailed();
+                if (isManualTriggered) {
+                    callbackLoadFailedOnManual(errorResult);
+                }
             }
             if (shouldNotifyAvailableChanged(hasInventory)) {
                 DeveloperLog.LogD("onInsLoadFailed shouldFinishLoad shouldNotifyAvailableChanged " + hasInventory);
@@ -454,6 +431,7 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
 
     /**
      * The default load interval
+     *
      * @return interval sec
      */
     public int getDefaultInterval() {
@@ -463,6 +441,23 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
     protected void checkScheduleTaskStarted() {
         if (!mDidScheduleTaskStarted.get()) {
             scheduleLoadAdTask();
+        }
+    }
+
+    /**
+     * Check whether the instance has expired
+     */
+    private void checkHasExpiredInstance() {
+        if (mTotalIns == null || mTotalIns.isEmpty()) {
+            return;
+        }
+        for (BaseInstance instance : mTotalIns) {
+            if (instance == null || instance.getMediationState() != BaseInstance.MEDIATION_STATE.AVAILABLE) {
+                continue;
+            }
+            if (instance.isExpired() || !isInsAvailable(instance)) {
+                resetMediationStateAndNotifyLose(instance);
+            }
         }
     }
 
@@ -496,7 +491,7 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
         if (readyCount >= mInventorySize || allLoadedCount == mTotalIns.size()) {
             DeveloperLog.LogD("full of cache or loaded all ins, current load is finished : " +
                     readyCount);
-            isInLoadingProgress = false;
+            finishLoad();
             return true;
         }
         return false;
@@ -505,9 +500,10 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
     /**
      * when all ins load failed and no cache, recoder failed load count, report event
      */
-    private void whenAllLoadFailed() {
+    @Override
+    protected void onAllLoadFailed() {
         mAllLoadFailedCount.incrementAndGet();
-        reportEvent(EventId.NO_MORE_OFFERS, AdsUtil.buildAbtReportData(mPlacement.getWfAbt(),
+        reportEvent(EventId.NO_MORE_OFFERS, AdsUtil.buildAbtReportData(mPlacement.getWfAbt(), mPlacement.getWfAbtId(),
                 PlacementUtils.placementEventParams(mPlacement != null ? mPlacement.getId() : "")));
     }
 
@@ -592,28 +588,29 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
                 loadInsAndSendEvent(instance);
             }
 
-            if (canLoadCount >= getLoadLimit()) {
+            int limit = getLoadLimit();
+            if (canLoadCount >= limit) {
+                AdsUtil.advanceEventReport(mPlacementId, AdvanceEventId.CODE_INS_LOAD_LIMIT,
+                        AdvanceEventId.MSG_INS_LOAD_LIMIT + "canLoadCount = " + canLoadCount + ", getLoadLimit() = " + limit);
                 return;
             }
         }
-        //
         if (canLoadCount == 0) {
             Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_NO_AVAILABLE_AD
-                    , ErrorCode.MSG_LOAD_NO_AVAILABLE_AD, -1);
+                    , ErrorCode.MSG_LOAD_NO_AVAILABLE_AD + "no can load ins", -1);
             DeveloperLog.LogE(error.toString());
             boolean hasCache = hasAvailableInventory();
             if (hasCache) {
-                if (shouldNotifyAvailableChanged(hasCache)) {
-                    onAvailabilityChanged(hasCache, error);
+                if (shouldNotifyAvailableChanged(true)) {
+                    onAvailabilityChanged(true, error);
                 }
             } else {
                 callbackLoadError(error);
+                finishLoad();
             }
+            AdsUtil.advanceEventReport(mPlacementId, AdvanceEventId.CODE_CAN_NOT_LOAD,
+                    AdvanceEventId.MSG_CAN_NOT_LOAD);
         }
-    }
-
-    protected boolean hasAvailableInventory() {
-        return InsManager.instanceCount(mTotalIns, BaseInstance.MEDIATION_STATE.AVAILABLE) > 0;
     }
 
     /**
@@ -644,28 +641,20 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
         for (BaseInstance instance : availableIns) {
             BidResponse bidResponse = instance.getBidResponse();
             if (bidResponse != null && bidResponse.isExpired()) {
+                AdsUtil.advanceEventReport(instance, AdvanceEventId.CODE_BID_RESPONSE_EXPIRED,
+                        AdvanceEventId.MSG_BID_RESPONSE_EXPIRED);
                 resetMediationStateAndNotifyLose(instance);
             }
         }
     }
 
-    private void resetMediationStateAndNotifyLose(BaseInstance instance) {
+    protected void resetMediationStateAndNotifyLose(BaseInstance instance) {
         if (instance.getMediationState() == BaseInstance.MEDIATION_STATE.AVAILABLE) {
             instance.setMediationState(BaseInstance.MEDIATION_STATE.NOT_AVAILABLE);
+            AdsUtil.advanceEventReport(instance, AdvanceEventId.CODE_AD_EXPIRED,
+                    AdvanceEventId.MSG_AD_EXPIRED);
         }
-        notifyUnShowedBidLose(instance);
-    }
-
-    private void notifyUnShowedBidLose(BaseInstance instance) {
-        if (instance == null) {
-            return;
-        }
-        BidResponse bidResponse = instance.getBidResponse();
-        if (bidResponse == null) {
-            return;
-        }
-        AuctionUtil.notifyLose(instance, bidResponse, BidLoseReason.INVENTORY_DID_NOT_MATERIALISE.getValue());
-        instance.setBidResponse(null);
+        BidUtil.notifyLose(instance, BidLoseReason.INVENTORY_DID_NOT_MATERIALISE.getValue());
     }
 
     @Override
@@ -679,12 +668,7 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
             }
             if ((in.getMediationState() == BaseInstance.MEDIATION_STATE.NOT_INITIATED ||
                     in.getMediationState() == BaseInstance.MEDIATION_STATE.NOT_AVAILABLE)) {
-                BidResponse bidResponse = in.getBidResponse();
-                if (bidResponse == null) {
-                    continue;
-                }
-                AuctionUtil.notifyLose(in, bidResponse, BidLoseReason.LOST_TO_HIGHER_BIDDER.getValue());
-                in.setBidResponse(null);
+                BidUtil.notifyLose(in, BidLoseReason.LOST_TO_HIGHER_BIDDER.getValue());
             }
         }
     }
@@ -713,7 +697,7 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
         if (!Preconditions.checkNotNull(mPlacement)) {
             DeveloperLog.LogD("placement is null");
             return ErrorBuilder.build(ErrorCode.CODE_SHOW_INVALID_ARGUMENT
-                    , ErrorCode.MSG_SHOW_INVALID_ARGUMENT, ErrorCode.CODE_INTERNAL_REQUEST_PLACEMENTID);
+                    , ErrorCode.MSG_SHOW_INVALID_ARGUMENT + "Placement not found", ErrorCode.CODE_INTERNAL_REQUEST_PLACEMENTID);
         }
         mScene = SceneUtil.getScene(mPlacement, scene);
         if (!Preconditions.checkNotNull(mScene)) {

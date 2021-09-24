@@ -5,9 +5,10 @@ package com.openmediation.sdk.core.imp.splash;
 
 import android.view.ViewGroup;
 
-import com.openmediation.sdk.core.AbstractHybridAds;
+import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.core.InsManager;
 import com.openmediation.sdk.core.OmManager;
+import com.openmediation.sdk.core.imp.HybridCacheManager;
 import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.splash.SplashAdListener;
 import com.openmediation.sdk.utils.error.Error;
@@ -17,7 +18,7 @@ import com.openmediation.sdk.utils.model.PlacementInfo;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SpManager extends AbstractHybridAds implements SpManagerListener {
+public class SpManager extends HybridCacheManager implements SpManagerListener {
 
     private long mLoadTimeout;
 
@@ -60,11 +61,12 @@ public class SpManager extends AbstractHybridAds implements SpManagerListener {
     }
 
     @Override
-    protected void insInit(BaseInstance instance, Map<String, Object> extras) {
+    protected void initInsAndSendEvent(BaseInstance instance) {
+        super.initInsAndSendEvent(instance);
         if (instance instanceof SpInstance) {
             SpInstance splashInstance = (SpInstance) instance;
             splashInstance.setSplashManagerListener(this);
-            splashInstance.initSplashAd(mActRefs.get(), extras);
+            splashInstance.initSplashAd(mActRefs.get());
         }
     }
 
@@ -163,11 +165,6 @@ public class SpManager extends AbstractHybridAds implements SpManagerListener {
         mListenerWrapper.onSplashAdLoad(mPlacementId);
     }
 
-//    @Override
-//    protected void onAdClickCallback() {
-//        mListenerWrapper.onSplashAdClicked(mPlacementId);
-//    }
-
     @Override
     protected void onAdShowedCallback() {
         super.onAdShowedCallback();
@@ -178,5 +175,15 @@ public class SpManager extends AbstractHybridAds implements SpManagerListener {
     protected void onAdShowFailedCallback(Error error) {
         super.onAdShowFailedCallback(error);
         mListenerWrapper.onSplashAdShowFailed(mPlacementId, error);
+    }
+
+    @Override
+    public void onBidSuccess(BaseInstance instance, BidResponse response) {
+        onInsC2SBidSuccess(instance, response);
+    }
+
+    @Override
+    public void onBidFailed(BaseInstance instance, String error) {
+        onInsC2SBidFailed(instance, error);
     }
 }

@@ -58,17 +58,15 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
     }
 
     @Override
-    public boolean isAdNetworkInit() {
-        return UnitySingleTon.getInstance().isInit();
-    }
-
-    @Override
     public void setGDPRConsent(Context context, boolean consent) {
         super.setGDPRConsent(context, consent);
         if (context != null) {
-            MetaData gdprMetaData = new MetaData(context);
-            gdprMetaData.set("gdpr.consent", consent);
-            gdprMetaData.commit();
+            try {
+                MetaData gdprMetaData = new MetaData(context);
+                gdprMetaData.set("gdpr.consent", consent);
+                gdprMetaData.commit();
+            } catch (Throwable ignored) {
+            }
         }
     }
 
@@ -76,9 +74,12 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
     public void setAgeRestricted(Context context, boolean restricted) {
         super.setAgeRestricted(context, restricted);
         if (context != null) {
-            MetaData ageGateMetaData = new MetaData(context);
-            ageGateMetaData.set("privacy.useroveragelimit", restricted);
-            ageGateMetaData.commit();
+            try {
+                MetaData ageGateMetaData = new MetaData(context);
+                ageGateMetaData.set("privacy.useroveragelimit", restricted);
+                ageGateMetaData.commit();
+            } catch (Throwable ignored) {
+            }
         }
     }
 
@@ -86,9 +87,12 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
     public void setUSPrivacyLimit(Context context, boolean value) {
         super.setUSPrivacyLimit(context, value);
         if (context != null) {
-            MetaData privacyMetaData = new MetaData(context);
-            privacyMetaData.set("privacy.consent", !value);
-            privacyMetaData.commit();
+            try {
+                MetaData privacyMetaData = new MetaData(context);
+                privacyMetaData.set("privacy.consent", !value);
+                privacyMetaData.commit();
+            } catch (Throwable ignored) {
+            }
         }
     }
 
@@ -162,45 +166,50 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
             return;
         }
         if (isRewardedVideoAvailable(adUnitId)) {
-            UnityAds.show(activity, adUnitId, new IUnityAdsShowListener() {
-                @Override
-                public void onUnityAdsShowFailure(String placementId, UnityAds.UnityAdsShowError error, String message) {
-                    AdLog.getSingleton().LogD(TAG, "RewardedVideoAd onUnityAdsShowFailure : " + placementId);
-                    if (callback != null) {
-                        callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error.name() + ", " + message));
-                    }
-                }
-
-                @Override
-                public void onUnityAdsShowStart(String placementId) {
-                    AdLog.getSingleton().LogD(TAG, "RewardedVideoAd onUnityAdsShowStart : " + placementId);
-                    if (callback != null) {
-                        callback.onRewardedVideoAdShowSuccess();
-                        callback.onRewardedVideoAdStarted();
-                    }
-                }
-
-                @Override
-                public void onUnityAdsShowClick(String placementId) {
-                    AdLog.getSingleton().LogD(TAG, "RewardedVideoAd onUnityAdsShowClick : " + placementId);
-                    if (callback != null) {
-                        callback.onRewardedVideoAdClicked();
-                    }
-                }
-
-                @Override
-                public void onUnityAdsShowComplete(String placementId, UnityAds.UnityAdsShowCompletionState state) {
-                    AdLog.getSingleton().LogD(TAG, "RewardedVideoAd onUnityAdsShowComplete : " + placementId);
-                    if (callback != null) {
-                        if (state.equals(UnityAds.UnityAdsShowCompletionState.COMPLETED)) {
-                            callback.onRewardedVideoAdEnded();
-                            callback.onRewardedVideoAdRewarded();
+            try {
+                UnityAds.show(activity, adUnitId, new IUnityAdsShowListener() {
+                    @Override
+                    public void onUnityAdsShowFailure(String placementId, UnityAds.UnityAdsShowError error, String message) {
+                        AdLog.getSingleton().LogD(TAG, "RewardedVideoAd onUnityAdsShowFailure : " + placementId);
+                        if (callback != null) {
+                            callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error.name() + ", " + message));
                         }
-                        callback.onRewardedVideoAdClosed();
                     }
-                }
-            });
+
+                    @Override
+                    public void onUnityAdsShowStart(String placementId) {
+                        AdLog.getSingleton().LogD(TAG, "RewardedVideoAd onUnityAdsShowStart : " + placementId);
+                        if (callback != null) {
+                            callback.onRewardedVideoAdShowSuccess();
+                            callback.onRewardedVideoAdStarted();
+                        }
+                    }
+
+                    @Override
+                    public void onUnityAdsShowClick(String placementId) {
+                        AdLog.getSingleton().LogD(TAG, "RewardedVideoAd onUnityAdsShowClick : " + placementId);
+                        if (callback != null) {
+                            callback.onRewardedVideoAdClicked();
+                        }
+                    }
+
+                    @Override
+                    public void onUnityAdsShowComplete(String placementId, UnityAds.UnityAdsShowCompletionState state) {
+                        AdLog.getSingleton().LogD(TAG, "RewardedVideoAd onUnityAdsShowComplete : " + placementId);
+                        if (callback != null) {
+                            if (state.equals(UnityAds.UnityAdsShowCompletionState.COMPLETED)) {
+                                callback.onRewardedVideoAdEnded();
+                                callback.onRewardedVideoAdRewarded();
+                            }
+                            callback.onRewardedVideoAdClosed();
+                        }
+                    }
+                });
+            } catch (Throwable e) {
+                callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
+            }
         } else {
             if (callback != null) {
                 callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
@@ -282,40 +291,47 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
             }
             return;
         }
-        UnityAds.show(activity, adUnitId, new IUnityAdsShowListener() {
-            @Override
-            public void onUnityAdsShowFailure(String placementId, UnityAds.UnityAdsShowError error, String message) {
-                AdLog.getSingleton().LogD(TAG, "InterstitialAd onUnityAdsShowFailure : " + placementId);
-                if (callback != null) {
-                    callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error.name() + ", " + message));
+        try {
+            UnityAds.show(activity, adUnitId, new IUnityAdsShowListener() {
+                @Override
+                public void onUnityAdsShowFailure(String placementId, UnityAds.UnityAdsShowError error, String message) {
+                    AdLog.getSingleton().LogD(TAG, "InterstitialAd onUnityAdsShowFailure : " + placementId);
+                    if (callback != null) {
+                        callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error.name() + ", " + message));
+                    }
                 }
-            }
 
-            @Override
-            public void onUnityAdsShowStart(String placementId) {
-                AdLog.getSingleton().LogD(TAG, "InterstitialAd onUnityAdsShowStart : " + placementId);
-                if (callback != null) {
-                    callback.onInterstitialAdShowSuccess();
+                @Override
+                public void onUnityAdsShowStart(String placementId) {
+                    AdLog.getSingleton().LogD(TAG, "InterstitialAd onUnityAdsShowStart : " + placementId);
+                    if (callback != null) {
+                        callback.onInterstitialAdShowSuccess();
+                    }
                 }
-            }
 
-            @Override
-            public void onUnityAdsShowClick(String placementId) {
-                AdLog.getSingleton().LogD(TAG, "InterstitialAd onUnityAdsShowClick : " + placementId);
-                if (callback != null) {
-                    callback.onInterstitialAdClicked();
+                @Override
+                public void onUnityAdsShowClick(String placementId) {
+                    AdLog.getSingleton().LogD(TAG, "InterstitialAd onUnityAdsShowClick : " + placementId);
+                    if (callback != null) {
+                        callback.onInterstitialAdClicked();
+                    }
                 }
-            }
 
-            @Override
-            public void onUnityAdsShowComplete(String placementId, UnityAds.UnityAdsShowCompletionState state) {
-                AdLog.getSingleton().LogD(TAG, "InterstitialAd onUnityAdsShowComplete : " + placementId);
-                if (callback != null) {
-                    callback.onInterstitialAdClosed();
+                @Override
+                public void onUnityAdsShowComplete(String placementId, UnityAds.UnityAdsShowCompletionState state) {
+                    AdLog.getSingleton().LogD(TAG, "InterstitialAd onUnityAdsShowComplete : " + placementId);
+                    if (callback != null) {
+                        callback.onInterstitialAdClosed();
+                    }
                 }
+            });
+        } catch (Throwable e) {
+            if (callback != null) {
+                callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
             }
-        });
+        }
     }
 
     @Override
@@ -343,7 +359,14 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
             }
             return;
         }
-        UnityBannerManager.getInstance().loadAd(activity, adUnitId, extras, callback);
+        try {
+            UnityBannerManager.getInstance().loadAd(activity, adUnitId, extras, callback);
+        } catch (Throwable e) {
+            if (callback != null) {
+                callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, "Unknown Error, " + e.getMessage()));
+            }
+        }
     }
 
     @Override
@@ -354,23 +377,14 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
     @Override
     public void destroyBannerAd(String adUnitId) {
         super.destroyBannerAd(adUnitId);
-        UnityBannerManager.getInstance().destroyAd(adUnitId);
+        try {
+            UnityBannerManager.getInstance().destroyAd(adUnitId);
+        } catch (Throwable ignored) {
+        }
     }
 
     @Override
     public void onUnityAdsClick(String placementId) {
-//        AdLog.getSingleton().LogD(TAG, "onUnityAdsClick : " + placementId);
-//        if (!TextUtils.isEmpty(placementId)) {
-//            RewardedVideoCallback rvCallback = mRvCallbacks.get(placementId);
-//            if (rvCallback != null) {
-//                rvCallback.onRewardedVideoAdClicked();
-//            } else {
-//                InterstitialAdCallback isCallback = mIsCallbacks.get(placementId);
-//                if (isCallback != null) {
-//                    isCallback.onInterstitialAdClick();
-//                }
-//            }
-//        }
     }
 
     @Override
@@ -416,43 +430,13 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
 
     @Override
     public void onUnityAdsStart(String placementId) {
-//        AdLog.getSingleton().LogD(TAG, "onUnityAdsStart : " + placementId);
-//        if (!TextUtils.isEmpty(placementId)) {
-//            RewardedVideoCallback rvCallback = mRvCallbacks.get(placementId);
-//            if (rvCallback != null) {
-//                rvCallback.onRewardedVideoAdShowSuccess();
-//                rvCallback.onRewardedVideoAdStarted();
-//            } else {
-//                InterstitialAdCallback isCallback = mIsCallbacks.get(placementId);
-//                if (isCallback != null) {
-//                    isCallback.onInterstitialAdShowSuccess();
-//                }
-//            }
-//        }
     }
 
     @Override
     public void onUnityAdsFinish(String placementId, UnityAds.FinishState result) {
-//        AdLog.getSingleton().LogD(TAG, "onUnityAdsFinish : " + placementId + " result : " + result.name());
-//        if (!TextUtils.isEmpty(placementId)) {
-//            RewardedVideoCallback rvCallback = mRvCallbacks.get(placementId);
-//            if (rvCallback != null) {
-//                if (result.equals(UnityAds.FinishState.COMPLETED)) {
-//                    rvCallback.onRewardedVideoAdEnded();
-//                    rvCallback.onRewardedVideoAdRewarded();
-//                }
-//                rvCallback.onRewardedVideoAdClosed();
-//            } else {
-//                InterstitialAdCallback isCallback = mIsCallbacks.get(placementId);
-//                if (isCallback != null) {
-//                    isCallback.onInterstitialAdClosed();
-//                }
-//            }
-//        }
     }
 
     @Override
     public void onUnityAdsError(UnityAds.UnityAdsError error, String message) {
-
     }
 }

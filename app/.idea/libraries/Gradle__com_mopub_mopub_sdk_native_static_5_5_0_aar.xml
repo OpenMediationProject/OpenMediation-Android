@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="Gradle: com.mopub:mopub-sdk-native-static:5.5.0@aar">
+    <CLASSES>
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/mopub-sdk-native-static-5.5.0.aar/5670f79592a185db5ad1d2dbd25580b8/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/mopub-sdk-native-static-5.5.0.aar/5670f79592a185db5ad1d2dbd25580b8/jars/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.mopub/mopub-sdk-native-static/5.5.0/1720fc6cf503d0c0738497e93ca48a89b5a6a127/mopub-sdk-native-static-5.5.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

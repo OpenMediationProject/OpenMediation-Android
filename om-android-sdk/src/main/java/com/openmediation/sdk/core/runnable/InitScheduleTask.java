@@ -11,13 +11,21 @@ import com.openmediation.sdk.utils.model.Configurations;
 import java.util.concurrent.TimeUnit;
 
 public class InitScheduleTask implements Runnable {
+
+    static InitScheduleTask mTask;
+
     public static void startTask(Configurations config) {
+        if (mTask != null) {
+            WorkExecutor.remove(mTask);
+            mTask = null;
+        }
         if (config == null || config.getRi() <= 0) {
             return;
         }
         int delay = config.getRi();
         DeveloperLog.LogD("Execute Re Init SDK Delay : " + delay + " min");
-        WorkExecutor.execute(new InitScheduleTask(), delay, TimeUnit.MINUTES);
+        mTask = new InitScheduleTask();
+        WorkExecutor.execute(mTask, delay, TimeUnit.MINUTES);
     }
 
     public InitScheduleTask() {
@@ -31,14 +39,16 @@ public class InitScheduleTask implements Runnable {
                 @Override
                 public void onSuccess() {
                     DeveloperLog.LogD("Execute Re Init SDK Success");
+                    mTask = null;
                 }
 
                 @Override
                 public void onError(Error result) {
                     DeveloperLog.LogD("Execute Re Init SDK Task Failed: " + result);
+                    mTask = null;
                 }
             });
-        } catch(Exception e) {
+        } catch (Exception e) {
             CrashUtil.getSingleton().saveException(e);
         }
     }

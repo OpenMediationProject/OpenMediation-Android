@@ -4,8 +4,11 @@
 package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 
+import com.openmediation.sdk.mediation.BidCallback;
+import com.openmediation.sdk.bid.BidConstance;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.mediation.BannerAdCallback;
@@ -28,7 +31,7 @@ public class FlatAdsAdapter extends CustomAdsAdapter {
 
     @Override
     public String getMediationVersion() {
-        return "";
+        return com.flatads.sdk.BuildConfig.VERSION_NAME;
     }
 
     @Override
@@ -39,6 +42,18 @@ public class FlatAdsAdapter extends CustomAdsAdapter {
     @Override
     public int getAdNetworkId() {
         return MediationInfo.MEDIATION_ID_25;
+    }
+
+    @Override
+    public boolean needPayload() {
+        return true;
+    }
+
+    @Override
+    public void initBid(Context context, Map<String, Object> dataMap) {
+        super.initBid(context, dataMap);
+        FlatAdsSingleTon.getInstance().init(
+                String.valueOf(dataMap.get(BidConstance.BID_APP_KEY)), null);
     }
 
     @Override
@@ -53,11 +68,6 @@ public class FlatAdsAdapter extends CustomAdsAdapter {
         super.onPause(activity);
         FlatAdsSingleTon.getInstance().onPause();
         FlatAdsNativeManager.getInstance().onPause();
-    }
-
-    @Override
-    public boolean isAdNetworkInit() {
-        return FlatAdsSingleTon.getInstance().isInit();
     }
 
     @Override
@@ -264,6 +274,14 @@ public class FlatAdsAdapter extends CustomAdsAdapter {
         }
 
         @Override
+        public void onInterstitialShowFailed(String adUnitId, String error) {
+            if (mCallback != null) {
+                mCallback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
+            }
+        }
+
+        @Override
         public void onInterstitialDismissed(String adUnitId) {
             if (mCallback != null) {
                 mCallback.onInterstitialAdClosed();
@@ -310,10 +328,10 @@ public class FlatAdsAdapter extends CustomAdsAdapter {
         }
 
         @Override
-        public void onRewardedShowFailed(String adUnitId) {
+        public void onRewardedShowFailed(String adUnitId, String error) {
             if (mCallback != null) {
                 mCallback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Show Failed"));
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
             }
         }
 
@@ -323,5 +341,11 @@ public class FlatAdsAdapter extends CustomAdsAdapter {
                 mCallback.onRewardedVideoAdClicked();
             }
         }
+    }
+
+    @Override
+    public void getBidResponse(Context context, Map<String, Object> dataMap, BidCallback callback) {
+        super.getBidResponse(context, dataMap, callback);
+        FlatAdsSingleTon.getInstance().getBidResponse(dataMap, callback);
     }
 }

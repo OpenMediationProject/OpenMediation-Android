@@ -21,7 +21,7 @@ public class OaidHelper {
         isCallback.set(false);
         try {
             Class.forName("com.bun.miitmdid.core.MdidSdkHelper");
-        } catch (ClassNotFoundException e) {
+        } catch (Throwable e) {
             if (listener != null) {
                 listener.onGetOaid("");
                 isCallback.set(true);
@@ -49,7 +49,7 @@ public class OaidHelper {
                 default:
                     break;
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             if (listener != null) {
                 listener.onGetOaid("");
                 isCallback.set(true);

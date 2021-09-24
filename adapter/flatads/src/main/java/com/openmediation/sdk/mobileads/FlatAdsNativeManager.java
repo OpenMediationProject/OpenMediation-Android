@@ -3,7 +3,6 @@
 
 package com.openmediation.sdk.mobileads;
 
-import android.text.TextUtils;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -25,7 +24,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import static com.openmediation.sdk.mobileads.FlatAdsAdapter.BID;
 
 public class FlatAdsNativeManager {
-    private static final String TAG = "FlatAdsNativeManager";
     private static final String ADN_OBJECT = "AdnObject";
     private final ConcurrentHashMap<FlatAdsNativeAdsConfig, NativeAdLayout> mNativeAdLayoutMap;
 
@@ -76,13 +74,9 @@ public class FlatAdsNativeManager {
                 }
             }
             if (config == null || config.getNativeAd() == null) {
-                String error = FlatAdsSingleTon.getInstance().getError(adUnitId);
-                if (TextUtils.isEmpty(error)) {
-                    error = "No Fill";
-                }
                 if (callback != null) {
                     callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                            AdapterErrorBuilder.AD_UNIT_NATIVE, "FlatAdsAdapter", error));
+                            AdapterErrorBuilder.AD_UNIT_NATIVE, "FlatAdsAdapter", "No Fill"));
                 }
                 return;
             }

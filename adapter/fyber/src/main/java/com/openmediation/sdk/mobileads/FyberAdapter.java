@@ -51,11 +51,6 @@ public class FyberAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public boolean isAdNetworkInit() {
-        return InneractiveAdManager.wasInitialized();
-    }
-
-    @Override
     public void initBannerAd(Activity activity, Map<String, Object> extras, BannerAdCallback callback) {
         super.initBannerAd(activity, extras, callback);
         String error = check();
@@ -83,7 +78,14 @@ public class FyberAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        FyberBannerManager.getInstance().loadAd(MediationUtil.getContext(), adUnitId, extras, creteRequest(adUnitId), callback);
+        try {
+            FyberBannerManager.getInstance().loadAd(MediationUtil.getContext(), adUnitId, extras, creteRequest(adUnitId), callback);
+        } catch (Throwable e) {
+            if (callback != null) {
+                callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, "Unknown Error, " + e.getMessage()));
+            }
+        }
     }
 
     @Override
@@ -94,7 +96,10 @@ public class FyberAdapter extends CustomAdsAdapter {
     @Override
     public void destroyBannerAd(String adUnitId) {
         super.destroyBannerAd(adUnitId);
-        FyberBannerManager.getInstance().destroyAd(adUnitId);
+        try {
+            FyberBannerManager.getInstance().destroyAd(adUnitId);
+        } catch (Throwable ignored) {
+        }
     }
 
     private void initSDK() {

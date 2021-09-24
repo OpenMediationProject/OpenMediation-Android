@@ -4,6 +4,7 @@
 package com.openmediation.sdk.core;
 
 import android.app.Activity;
+import android.content.IntentFilter;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -17,6 +18,7 @@ import com.openmediation.sdk.core.imp.splash.SpAdManager;
 import com.openmediation.sdk.interstitial.InterstitialAdListener;
 import com.openmediation.sdk.mediation.MediationInterstitialListener;
 import com.openmediation.sdk.mediation.MediationRewardVideoListener;
+import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.nativead.AdInfo;
 import com.openmediation.sdk.nativead.NativeAdListener;
 import com.openmediation.sdk.nativead.NativeAdView;
@@ -29,6 +31,7 @@ import com.openmediation.sdk.utils.JsonUtil;
 import com.openmediation.sdk.utils.PlacementUtils;
 import com.openmediation.sdk.utils.Preconditions;
 import com.openmediation.sdk.utils.SceneUtil;
+import com.openmediation.sdk.utils.WorkExecutor;
 import com.openmediation.sdk.utils.cache.DataCache;
 import com.openmediation.sdk.utils.constant.CommonConstants;
 import com.openmediation.sdk.utils.constant.KeyConstants;
@@ -40,7 +43,7 @@ import com.openmediation.sdk.utils.helper.IapHelper;
 import com.openmediation.sdk.utils.lifecycle.ActLifecycle;
 import com.openmediation.sdk.utils.model.Configurations;
 import com.openmediation.sdk.utils.model.Placement;
-import com.openmediation.sdk.utils.model.Scene;
+import com.openmediation.sdk.utils.request.network.util.NetworkChecker;
 import com.openmediation.sdk.video.RewardedVideoListener;
 
 import org.json.JSONObject;
@@ -54,7 +57,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.openmediation.sdk.OmAds.AD_TYPE;
 
@@ -86,9 +91,19 @@ public final class OmManager implements InitCallback {
     private final AtomicBoolean mDidNaInit = new AtomicBoolean(false);
     private boolean mIsInForeground = true;
     private String mUserId = null;
-    private static final ConcurrentLinkedQueue<InitCallback> mInitCallbacks = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<InitCallback> mInitCallbacks = new ConcurrentLinkedQueue<>();
 
     private Map<String, Object> mTagsMap;
+    private boolean mAutoLoadLimit;
+
+    private final AtomicBoolean mReInit = new AtomicBoolean(false);
+    /**
+     * max retry init count
+     */
+    private static final int MAX_INIT_COUNT = 10;
+    private final AtomicInteger mReInitCount = new AtomicInteger(0);
+
+    private NetworkReceiver mNetworkReceiver;
 
     private static final class OmHolder {
         private static final OmManager INSTANCE = new OmManager();
@@ -1082,20 +1097,71 @@ public final class OmManager implements InitCallback {
 
     @Override
     public void onSuccess() {
+        unregisterNetworkReceiver();
         initManagerWithDefaultPlacementId();
         setListeners();
         checkHasLoadWhileInInitProgress();
         preloadAdWithAdType();
-        if (mInitCallbacks != null) {
-            for (InitCallback callback : mInitCallbacks) {
-                if (callback == null) {
-                    continue;
+
+        if (!mReInit.get()) {
+            if (mInitCallbacks != null) {
+                for (InitCallback callback : mInitCallbacks) {
+                    if (callback == null) {
+                        continue;
+                    }
+                    callback.onSuccess();
                 }
-                callback.onSuccess();
+                mInitCallbacks.clear();
             }
-            mInitCallbacks.clear();
         }
         startScheduleTaskWithPreloadType();
+    }
+
+    @Override
+    public void onError(Error result) {
+        if (!mReInit.get()) {
+            callbackErrorWhileLoadBeforeInit(result);
+            if (mInitCallbacks != null) {
+                for (InitCallback callback : mInitCallbacks) {
+                    if (callback == null) {
+                        AdLog.getSingleton().LogE(ErrorCode.ERROR_INIT_FAILED + " " + result);
+                        continue;
+                    }
+                    callback.onError(result);
+                }
+                mInitCallbacks.clear();
+            }
+            // TODO
+//            clearCacheListeners();
+        }
+        startReInitTask(false);
+    }
+
+    /**
+     * ReInit SDK
+     */
+    public void startReInitTask(final boolean force) {
+        if (!force && mReInitCount.get() >= MAX_INIT_COUNT) {
+            return;
+        }
+        WorkExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                if (!NetworkChecker.isAvailable(MediationUtil.getContext())) {
+                    DeveloperLog.d("Stop Re Init SDK: Network Unknown");
+                    return;
+                }
+                if (force) {
+                    InitImp.startReInitSDK(OmManager.this);
+                    return;
+                }
+                registerNetworkReceiver();
+                DeveloperLog.d("Init Error Execute Re Init SDK Delay : 3 seconds, retry count: " + mReInitCount.get());
+                mReInit.set(true);
+                mReInitCount.incrementAndGet();
+                InitImp.startReInitSDK(OmManager.this);
+            }
+        }, 3, TimeUnit.SECONDS);
     }
 
     private void setListeners() {
@@ -1168,22 +1234,6 @@ public final class OmManager implements InitCallback {
             }
             mMediationIsListeners.clear();
         }
-    }
-
-    @Override
-    public void onError(Error result) {
-        callbackErrorWhileLoadBeforeInit(result);
-        if (mInitCallbacks != null) {
-            for (InitCallback callback : mInitCallbacks) {
-                if (callback == null) {
-                    AdLog.getSingleton().LogE(ErrorCode.ERROR_INIT_FAILED + " " + result);
-                    continue;
-                }
-                callback.onError(result);
-            }
-            mInitCallbacks.clear();
-        }
-        clearCacheListeners();
     }
 
     private void clearCacheListeners() {
@@ -1690,5 +1740,45 @@ public final class OmManager implements InitCallback {
 
     public MetaData getMetaData() {
         return AdapterRepository.getInstance().getMetaData();
+    }
+
+    /**
+     * Pause AD auto-loading
+     * @param limit limit
+     */
+    public void setAutoLoadLimit(boolean limit) {
+        mAutoLoadLimit = limit;
+    }
+
+    public boolean getAutoLoadLimit() {
+        return mAutoLoadLimit;
+    }
+
+    public void onNetworkChanged() {
+        DeveloperLog.d("Start Re Init SDK: Network Changed");
+        startReInitTask(true);
+    }
+
+    public synchronized void registerNetworkReceiver() {
+        try {
+            if (mNetworkReceiver != null) {
+                return;
+            }
+            mNetworkReceiver = new NetworkReceiver();
+            IntentFilter intentFilter = new IntentFilter(NetworkReceiver.ACTION);
+            MediationUtil.getContext().registerReceiver(mNetworkReceiver, intentFilter);
+        } catch (Throwable e) {
+        }
+    }
+
+    public synchronized void unregisterNetworkReceiver() {
+        try {
+            if (mNetworkReceiver == null) {
+                return;
+            }
+            MediationUtil.getContext().unregisterReceiver(mNetworkReceiver);
+            mNetworkReceiver = null;
+        } catch (Throwable e) {
+        }
     }
 }

@@ -21,7 +21,7 @@ final class MoPubUtil {
             Request<Bitmap> request = new ImageRequest(url, listener, 0, 0,
                     ImageView.ScaleType.CENTER_INSIDE, Bitmap.Config.RGB_565, errorListener);
             Volley.newRequestQueue(context,null).add(request);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             errorListener.onErrorResponse(new VolleyError(e.getMessage()));
         }
     }

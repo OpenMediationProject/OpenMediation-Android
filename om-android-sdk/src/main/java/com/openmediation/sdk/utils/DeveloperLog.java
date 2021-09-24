@@ -33,6 +33,10 @@ public class DeveloperLog {
         Log.d(TAG + ":" + tag, info);
     }
 
+    public static void d(String info) {
+        Log.d(TAG, info);
+    }
+
     public static void LogD(String info, Throwable t) {
         if (!debug) {
             return;

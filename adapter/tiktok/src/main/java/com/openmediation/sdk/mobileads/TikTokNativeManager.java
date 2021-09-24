@@ -79,7 +79,7 @@ public class TikTokNativeManager {
                     .setAdCount(1) //ad count from 1 to 3
                     .build();
             mTTAdNative.loadFeedAd(adSlot, new InnerAdListener(adUnitId, callback));
-        } catch(Exception e) {
+        } catch(Throwable e) {
             if (callback != null) {
                 callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
                         AdapterErrorBuilder.AD_UNIT_NATIVE, "TikTokAdapter", "Unknown Error"));
@@ -222,11 +222,10 @@ public class TikTokNativeManager {
             adInfo.setType(MediationInfo.MEDIATION_ID_13);
             adInfo.setTitle(ad.getTitle());
             adInfo.setCallToActionText(ad.getButtonText());
-            adInfo.setStarRating(ad.getAppScore());
             if (callback != null) {
                 callback.onNativeAdLoadSuccess(adInfo);
             }
-        } catch(Exception e) {
+        } catch(Throwable e) {
             if (callback != null) {
                 callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
                         AdapterErrorBuilder.AD_UNIT_NATIVE, "TikTokAdapter", "NativeAd Load Failed: " + e.getMessage()));

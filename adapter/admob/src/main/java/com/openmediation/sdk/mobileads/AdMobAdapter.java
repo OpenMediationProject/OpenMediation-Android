@@ -99,11 +99,6 @@ public class AdMobAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public boolean isAdNetworkInit() {
-        return InitState.INIT_SUCCESS == mInitState;
-    }
-
-    @Override
     public void setAgeRestricted(Context context, boolean restricted) {
         super.setAgeRestricted(context, restricted);
         int value = restricted ? MediationAdConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE : MediationAdConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE;
@@ -226,7 +221,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 } catch (Throwable e) {
                     if (callback != null) {
                         callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
-                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Init Failed: Unknown Error"));
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Init Failed: Unknown Error, " + e.getMessage()));
                     }
                 }
             }
@@ -255,8 +250,8 @@ public class AdMobAdapter extends CustomAdsAdapter {
                     RewardedAd.load(MediationUtil.getContext(), adUnitId, createAdRequest(), createRvLoadListener(adUnitId, callback));
                 } catch (Throwable e) {
                     if (callback != null) {
-                        callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
-                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, e.getMessage()));
+                        callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
                     }
                 }
             }
@@ -274,7 +269,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 } catch (Throwable e) {
                     if (callback != null) {
                         callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error"));
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
                     }
                 }
             }
@@ -421,7 +416,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 } catch (Throwable e) {
                     if (callback != null) {
                         callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
-                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error"));
+                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
                     }
                 }
             }
@@ -453,7 +448,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 } catch (Throwable e) {
                     if (callback != null) {
                         callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
-                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, e.getMessage()));
+                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
                     }
                 }
             }
@@ -471,7 +466,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 } catch (Throwable e) {
                     if (callback != null) {
                         callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error"));
+                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
                     }
                 }
             }
@@ -548,7 +543,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 } catch (Throwable e) {
                     if (callback != null) {
                         callback.onBannerAdInitFailed(AdapterErrorBuilder.buildInitError(
-                                AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, "Unknown Error"));
+                                AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, "Unknown Error, " + e.getMessage()));
                     }
                 }
             }
@@ -582,7 +577,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 } catch (Throwable e) {
                     if (callback != null) {
                         callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                                AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, e.getMessage()));
+                                AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, "Unknown Error, " + e.getMessage()));
                     }
                 }
             }
@@ -595,9 +590,12 @@ public class AdMobAdapter extends CustomAdsAdapter {
         if (!mBannerAds.containsKey(adUnitId)) {
             return;
         }
-        AdView view = mBannerAds.remove(adUnitId);
-        if (view != null) {
-            view.destroy();
+        try {
+            AdView view = mBannerAds.remove(adUnitId);
+            if (view != null) {
+                view.destroy();
+            }
+        } catch (Throwable e) {
         }
     }
 
@@ -639,7 +637,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 } catch (Throwable e) {
                     if (callback != null) {
                         callback.onNativeAdInitFailed(AdapterErrorBuilder.buildInitError(
-                                AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, "Unknown Error"));
+                                AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, "Unknown Error, " + e.getMessage()));
                     }
                 }
             }
@@ -695,7 +693,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 } catch (Throwable e) {
                     if (callback != null) {
                         callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                                AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, e.getMessage()));
+                                AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, "Unknown Error, " + e.getMessage()));
                     }
                 }
             }
@@ -856,7 +854,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 } catch (Throwable e) {
                     if (callback != null) {
                         callback.onSplashAdInitFailed(AdapterErrorBuilder.buildInitError(
-                                AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, "Unknown Error"));
+                                AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, "Unknown Error, " + e.getMessage()));
                     }
                 }
             }

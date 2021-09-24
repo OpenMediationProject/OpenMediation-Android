@@ -58,11 +58,6 @@ public class TikTokAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public boolean isAdNetworkInit() {
-        return TTAdManagerHolder.getInstance().isInit();
-    }
-
-    @Override
     public void initRewardedVideo(Activity activity, Map<String, Object> dataMap, final RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
         String error = check();
@@ -97,10 +92,10 @@ public class TikTokAdapter extends CustomAdsAdapter {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
         try {
             loadRvAd(adUnitId, callback);
-        } catch(Exception e) {
+        } catch(Throwable e) {
             if (callback != null) {
-                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
-                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error"));
+                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
             }
         }
     }
@@ -151,10 +146,10 @@ public class TikTokAdapter extends CustomAdsAdapter {
                                     AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "TikTok RewardedVideo is not ready"));
                         }
                     }
-                } catch(Exception e) {
+                } catch(Throwable e) {
                     if (callback != null) {
                         callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "TikTok RewardedVideo is not ready"));
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
                     }
                 }
             }
@@ -204,10 +199,10 @@ public class TikTokAdapter extends CustomAdsAdapter {
         super.loadInterstitialAd(activity, adUnitId, extras, callback);
         try {
             loadInterstitial(MediationUtil.getContext(), adUnitId, callback);
-        } catch(Exception e) {
+        } catch(Throwable e) {
             if (callback != null) {
-                callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
-                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error"));
+                callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
             }
         }
     }
@@ -257,10 +252,10 @@ public class TikTokAdapter extends CustomAdsAdapter {
                                     AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "TikTok InterstitialAd is not ready"));
                         }
                     }
-                } catch(Exception e) {
+                } catch(Throwable e) {
                     if (callback != null) {
                         callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, e.getMessage()));
+                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
                     }
                 }
             }
@@ -455,7 +450,6 @@ public class TikTokAdapter extends CustomAdsAdapter {
         int[] screenPx = TTAdManagerHolder.getScreenPx(context);
         return new AdSlot.Builder()
                 .setCodeId(adUnitId)
-                .setSupportDeepLink(true)
                 .setImageAcceptedSize(screenPx[0], screenPx[1])
                 .setOrientation(orientation)
                 .build();

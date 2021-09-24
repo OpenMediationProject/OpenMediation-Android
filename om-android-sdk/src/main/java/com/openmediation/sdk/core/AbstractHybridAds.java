@@ -3,15 +3,15 @@ package com.openmediation.sdk.core;
 import android.os.Looper;
 import android.text.TextUtils;
 
-import com.openmediation.sdk.bid.AuctionUtil;
 import com.openmediation.sdk.bid.BidLoseReason;
-import com.openmediation.sdk.bid.BidResponse;
+import com.openmediation.sdk.bid.BidUtil;
 import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.utils.AdLog;
 import com.openmediation.sdk.utils.AdRateUtil;
 import com.openmediation.sdk.utils.AdapterUtil;
+import com.openmediation.sdk.utils.AdsUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.HandlerUtil;
 import com.openmediation.sdk.utils.PlacementUtils;
@@ -19,6 +19,7 @@ import com.openmediation.sdk.utils.constant.CommonConstants;
 import com.openmediation.sdk.utils.crash.CrashUtil;
 import com.openmediation.sdk.utils.error.Error;
 import com.openmediation.sdk.utils.error.ErrorCode;
+import com.openmediation.sdk.utils.event.AdvanceEventId;
 import com.openmediation.sdk.utils.event.EventId;
 import com.openmediation.sdk.utils.event.EventUploadManager;
 import com.openmediation.sdk.utils.helper.LrReportHelper;
@@ -28,15 +29,12 @@ import com.openmediation.sdk.utils.model.Scene;
 
 import org.json.JSONObject;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class AbstractHybridAds extends AbstractAdsApi {
-    /**
-     * The Is destroyed.
-     */
-    protected boolean isDestroyed;
     /**
      * The M load ts.
      */
@@ -68,6 +66,8 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
     private final HandlerUtil.HandlerHolder mHandler;
     private int mLoadedInsIndex = 0;
     private int mCanCallbackIndex;//index of current callback
+    private int mCurrentLoadGroupIndex = -1;
+    private Map<Integer, TimeoutRunnable> mTimeouts = new HashMap<>();
 
     public AbstractHybridAds(String placementId) {
         super();
@@ -88,20 +88,9 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
      */
     protected abstract void onAdReadyCallback();
 
-    /**
-     * On ad click callback.
-     */
-//    protected abstract void onAdClickCallback();
-
-    /**
-     * Instance Init
-     *
-     * @param instance the instance to load ads
-     * @param extras   the extras
-     */
-    protected abstract void insInit(BaseInstance instance, Map<String, Object> extras);
-
-    protected void destroyAdEvent(BaseInstance instances) {
+    protected void destroyAdEvent(BaseInstance instance) {
+        AdsUtil.advanceEventReport(instance, AdvanceEventId.CODE_INS_DESTROY,
+                AdvanceEventId.MSG_INS_DESTROY);
     }
 
     /**
@@ -153,10 +142,17 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
     }
 
     @Override
+    protected boolean isReload() {
+        return !isManualTriggered;
+    }
+
+    @Override
     protected void resetBeforeGetInsOrder() {
         mLoadTs = System.currentTimeMillis();
         mCanCallbackIndex = 0;
         mLoadedInsIndex = 0;
+        mCurrentLoadGroupIndex = -1;
+        mTimeouts.clear();
         mBs = mPlacement.getBs();
         mPt = mPlacement.getPt();
         isFo = mPlacement.getFo() == 1;
@@ -166,67 +162,19 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
     }
 
     @Override
-    protected void startLoadAds(JSONObject clInfo, List<BaseInstance> instances) {
-        List<BaseInstance> wfInstances = InsManager.getListInsResult(mReqId, clInfo, mPlacement, mBs);
-        DeveloperLog.LogD("AbstractHybridAds startLoadAd wfInstances : " + wfInstances);
-        List<BaseInstance> totalIns = InsManager.sort(wfInstances, instances);
-        DeveloperLog.LogD("AbstractHybridAds after instances sort: " + totalIns);
-        List<BaseInstance> finalTotalIns = InsManager.splitInsByBs(totalIns, mBs);
-        DeveloperLog.LogD("AbstractHybridAds after splitInsByBs ins: " + finalTotalIns);
-        if (finalTotalIns == null || finalTotalIns.isEmpty()) {
-            DeveloperLog.LogD("Ad", "request cl success, but ins[] is empty" + mPlacement);
-            Error error = new Error(ErrorCode.CODE_LOAD_NO_AVAILABLE_AD
-                    , ErrorCode.MSG_LOAD_NO_AVAILABLE_AD, ErrorCode.CODE_INTERNAL_SERVER_ERROR);
-            callbackLoadError(error);
-        } else {
-            mTotalIns.clear();
-            mTotalIns.addAll(finalTotalIns);
-            InsManager.resetInsStateOnClResponse(mTotalIns);
-            if (mPlacement != null) {
-                WaterFallHelper.getS2sBidResponse(mPlacement, clInfo);
+    protected void startLoadAdsImpl(JSONObject clInfo, List<BaseInstance> totalIns) {
+        mTotalIns.clear();
+        mTotalIns.addAll(totalIns);
+        InsManager.resetInsStateOnClResponse(mTotalIns);
+        if (mPlacement != null) {
+            WaterFallHelper.getS2sBidResponse(mPlacement, clInfo);
+        }
+        HandlerUtil.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                startNextInstance(0);
             }
-            HandlerUtil.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    // resetFields();
-                    // mCanCallbackIndex = 0;
-                    // mLoadedInsIndex = 0;
-                    startNextInstance(0);
-                }
-            });
-        }
-    }
-
-    @Override
-    protected void loadInsAndSendEvent(BaseInstance instance) {
-        super.loadInsAndSendEvent(instance);
-//        if (!checkActRef()) {
-//            onInsError(instance, ErrorCode.ERROR_ACTIVITY);
-//            return;
-//        }
-        if (TextUtils.isEmpty(instance.getKey())) {
-            onInsError(instance, ErrorCode.ERROR_EMPTY_INSTANCE_KEY);
-            return;
-        }
-        CustomAdsAdapter adsAdapter = AdapterUtil.getCustomAdsAdapter(instance.getMediationId());
-        if (adsAdapter == null) {
-            onInsError(instance, ErrorCode.ERROR_CREATE_MEDIATION_ADAPTER);
-            return;
-        }
-        instance.setAdapter(adsAdapter);
-        if (!adsAdapter.isAdNetworkInit()) {
-            Map<String, Object> initDataMap = InsManager.getInitDataMap(instance);
-            insInit(instance, initDataMap);
-        } else {
-            if (instance.getHb() == 1) {
-                InsManager.reportInsLoad(instance, EventId.INSTANCE_PAYLOAD_REQUEST);
-            } else {
-                InsManager.reportInsLoad(instance, EventId.INSTANCE_LOAD);
-                iLoadReport(instance);
-            }
-            Map<String, Object> placementInfo = PlacementUtils.getLoadExtrasMap(mReqId, instance, instance.getBidResponse());
-            insLoad(instance, placementInfo);
-        }
+        });
     }
 
     /**
@@ -254,12 +202,6 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
         }
     }
 
-//    @Override
-//    protected void onInsClicked(BaseInstance instance, Scene scene) {
-//        super.onInsClicked(instance, scene);
-//        callbackAdClickOnUiThread();
-//    }
-
     /**
      * Instance-level show success
      *
@@ -280,15 +222,6 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
         callbackAdShowFailedOnUiThread(errorResult);
     }
 
-//    @Override
-//    protected void onInsClosed(BaseInstance instance, Scene scene) {
-//        super.onInsClosed(instance, scene);
-//        destroyAdEvent(instance);
-//        if (mBidResponses != null) {
-//            mBidResponses.remove(instance.getId());
-//        }
-//    }
-
     /**
      * Ad open callback
      */
@@ -299,19 +232,8 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
         onAdShowedCallback();
     }
 
-
     /**
-     * Ad click callback
-     */
-//    void callbackAdClickOnUiThread() {
-//        if (isDestroyed) {
-//            return;
-//        }
-//        onAdClickCallback();
-//    }
-
-    /**
-     * Ad open callback
+     * Ad open failed callback
      */
     void callbackAdShowFailedOnUiThread(final Error error) {
         if (isDestroyed) {
@@ -356,7 +278,6 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
     protected void onInsLoadFailed(BaseInstance instance, AdapterError error, boolean reload) {
         super.onInsLoadFailed(instance, error, reload);
 
-//        testNotifyInsFailed(instance);
         //MoPubBanner registered a receiver, we need to take care of it
         destroyAdEvent(instance);
         DeveloperLog.LogD("load ins : " + instance.toString() + " error : " + error);
@@ -365,11 +286,15 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
         int allFailedCount = InsManager.instanceCount(mTotalIns, BaseInstance.MEDIATION_STATE.LOAD_FAILED);
         boolean allInstanceGroupIsFailed = allFailedCount == mTotalIns.size();
 
-        //gives no_fill  call back if allInstanceGroupIsNull
+        //gives no_fill call back if allInstanceGroupIsNull
         if (allInstanceGroupIsFailed && !hasCallbackToUser()) {
-            Error errorResult = new Error(ErrorCode.CODE_LOAD_FAILED_IN_ADAPTER, ErrorCode.ERROR_NO_FILL, -1);
+            Error errorResult = new Error(ErrorCode.CODE_LOAD_NO_AVAILABLE_AD, ErrorCode.MSG_LOAD_NO_AVAILABLE_AD + "All ins load failed, PlacementId: " + mPlacementId, -1);
+            DeveloperLog.LogE(errorResult.toString());
             callbackLoadError(errorResult);
-            cancelTimeout();
+            finishLoad();
+            cancelTimeout(true, -1);
+            AdsUtil.advanceEventReport(mPlacementId, AdvanceEventId.CODE_INS_GROUP_LOAD_FAILED,
+                    AdvanceEventId.MSG_INS_GROUP_LOAD_FAILED);
             return;
         }
 
@@ -386,9 +311,11 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
         boolean allInstanceIsFailedAtGroup = groupFailedCount == groupInsList.size();
 
         if (allInstanceIsFailedAtGroup) {//only this group
-            cancelTimeout();
+            cancelTimeout(false, groupIndex);
             //loads the next group
-            startNextInstance((groupIndex + 1) * mBs);
+            if (groupIndex == mCurrentLoadGroupIndex) {
+                startNextInstance((groupIndex + 1) * mBs);
+            }
             return;
         }
 
@@ -414,14 +341,20 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
         boolean result = checkReadyInstance();
         if (result) {
             DeveloperLog.LogD("Ad is prepared for : " + mPlacementId + " callbackIndex is : " + mCanCallbackIndex);
+            AdsUtil.advanceEventReport(mPlacementId, AdvanceEventId.CODE_HAS_READY_INSTANCE,
+                    AdvanceEventId.MSG_HAS_READY_INSTANCE);
             return;
         }
 
         try {
             int size = mTotalIns.size();
             if (mBs <= 0 || size <= instanceIndex) {
-                Error errorResult = new Error(ErrorCode.CODE_LOAD_FAILED_IN_ADAPTER, ErrorCode.ERROR_NO_FILL, -1);
+                Error errorResult = new Error(ErrorCode.CODE_LOAD_NO_AVAILABLE_AD, ErrorCode.ERROR_NO_FILL + "No available instance", -1);
                 callbackLoadError(errorResult);
+                finishLoad();
+                DeveloperLog.LogE(errorResult.toString());
+                AdsUtil.advanceEventReport(mPlacementId, AdvanceEventId.CODE_LOAD_INS_INDEX_OOB,
+                        AdvanceEventId.MSG_LOAD_INS_INDEX_OOB + "bs = " + mBs + ", size = " + size + ", loadIndex = " + instanceIndex);
                 return;
             }
 
@@ -429,53 +362,53 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
             int pendingLoadInstanceCount = mBs;
             int groupLoadCount = 0;
             while (!hasCallbackToUser() && size > instanceIndex && pendingLoadInstanceCount > 0) {
-                final BaseInstance i = mTotalIns.get(instanceIndex);
+                final BaseInstance instance = mTotalIns.get(instanceIndex);
                 instanceIndex++;
                 pendingLoadInstanceCount--;
                 mLoadedInsIndex++;
 
-                if (i == null) {
+                if (instance == null) {
                     continue;
                 }
 
-                BaseInstance.MEDIATION_STATE state = i.getMediationState();
-                if (state == BaseInstance.MEDIATION_STATE.INIT_PENDING
-                        || state == BaseInstance.MEDIATION_STATE.INIT_FAILED
-                        || state == BaseInstance.MEDIATION_STATE.LOAD_FAILED) {
+                mCurrentLoadGroupIndex = instance.getGrpIndex();
+                instance.setReqId(mReqId);
+                CustomAdsAdapter adapter = AdapterUtil.getCustomAdsAdapter(instance.getMediationId());
+                if (adapter == null) {
+                    onInsError(instance, ErrorCode.ERROR_CREATE_MEDIATION_ADAPTER);
                     continue;
                 }
+                instance.setAdapter(adapter);
 
-                // destroy loading instance
-                if (state == BaseInstance.MEDIATION_STATE.LOAD_PENDING) {
-                    destroyAdEvent(i);
-                }
-
-                //blocked?
-                if (AdRateUtil.shouldBlockInstance(mPlacementId + i.getKey(), i)) {
-                    onInsCapped(PlacementUtils.getPlacementType(getPlacementType()), i, !isManualTriggered);
+                groupLoadCount++;
+                BaseInstance.MEDIATION_STATE state = instance.getMediationState();
+                if (state == BaseInstance.MEDIATION_STATE.NOT_INITIATED) {
+                    initInsAndSendEvent(instance);
                     continue;
                 }
 
                 try {
-                    i.setReqId(mReqId);
-                    groupLoadCount++;
-                    i.setMediationState(BaseInstance.MEDIATION_STATE.LOAD_PENDING);
-                    loadInsAndSendEvent(i);
+                    instance.setMediationState(BaseInstance.MEDIATION_STATE.LOAD_PENDING);
+                    loadInsAndSendEvent(instance);
                 } catch (Throwable e) {
-                    onInsError(i, e.getMessage());
-                    DeveloperLog.LogD("load ins : " + i.toString() + " error ", e);
+                    onInsError(instance, e.getMessage());
+                    DeveloperLog.LogD("load ins : " + instance.toString() + " error ", e);
                     CrashUtil.getSingleton().saveException(e);
+                    AdsUtil.advanceEventReport(mPlacementId, AdvanceEventId.CODE_INS_LOAD_EXP,
+                            AdvanceEventId.MSG_INS_LOAD_EXP + e.getMessage());
                 }
             }
 
-            DeveloperLog.LogD("AbstractHybridAds", "startNextInstance, groupIndex: " + instanceIndex + ", groupLoadCount : " + groupLoadCount);
+            DeveloperLog.LogD("AbstractHybridAds", "startNextInstance, instance index: " + instanceIndex + ", groupLoadCount : " + groupLoadCount);
             //no need to time out if a callback was given
             if (!hasCallbackToUser() && groupLoadCount > 0) {
                 //times out with the index of currently loaded instance
                 startTimeout(instanceIndex);
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             DeveloperLog.LogD("startNextInstance error", e);
+            AdsUtil.advanceEventReport(mPlacementId, AdvanceEventId.CODE_NEXT_INS_LOAD_EXP,
+                    AdvanceEventId.MSG_NEXT_INS_LOAD_EXP + e.getMessage());
         }
     }
 
@@ -489,23 +422,8 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
 
         LrReportHelper.report(mReqId, mRuleId, mPlacementId,
                 isManualTriggered ? OmManager.LOAD_TYPE.MANUAL.getValue() : OmManager.LOAD_TYPE.INTERVAL.getValue(),
-                mPlacement.getWfAbt(),
+                mPlacement.getWfAbt(),mPlacement.getWfAbtId(),
                 CommonConstants.WATERFALL_READY, 0);
-    }
-
-    /**
-     * Instance-level load reporting
-     *
-     * @param instance the instance
-     */
-    protected void iLoadReport(BaseInstance instance) {
-        if (isDestroyed) {
-            return;
-        }
-        LrReportHelper.report(instance,
-                isManualTriggered ? OmManager.LOAD_TYPE.MANUAL.getValue() : OmManager.LOAD_TYPE.INTERVAL.getValue(),
-                mPlacement.getWfAbt(),
-                CommonConstants.INSTANCE_LOAD, 0);
     }
 
     /**
@@ -547,7 +465,7 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
             return;
         }
         mCurrentIns = ins;
-        cancelTimeout();
+        cancelTimeout(true, -1);
         aReadyReport();
         notifyUnLoadInsBidLose();
         callbackAdReady();
@@ -564,27 +482,28 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
         }
         for (int i = mLoadedInsIndex; i < len; i++) {
             BaseInstance instance = mTotalIns.get(i);
-            if (instance == null) {
-                continue;
-            }
-
-            BidResponse bidResponse = instance.getBidResponse();
-            if (bidResponse == null) {
-                continue;
-            }
-            AuctionUtil.notifyLose(instance, bidResponse, BidLoseReason.LOST_TO_HIGHER_BIDDER.getValue());
-            instance.setBidResponse(null);
+            BidUtil.notifyLose(instance, BidLoseReason.LOST_TO_HIGHER_BIDDER.getValue());
         }
     }
 
     private void startTimeout(int insIndex) {
         TimeoutRunnable timeout = new TimeoutRunnable(insIndex);
+        mTimeouts.put(mCurrentLoadGroupIndex, timeout);
         mHandler.postDelayed(timeout, mPt * 1000L);
     }
 
-    protected void cancelTimeout() {
+    protected void cancelTimeout(boolean all, int grpIndex) {
         if (mHandler != null) {
-            mHandler.removeCallbacksAndMessages(null);
+            if (all) {
+                mHandler.removeCallbacksAndMessages(null);
+                mTimeouts.clear();
+            } else {
+                TimeoutRunnable timeout = mTimeouts.get(grpIndex);
+                if (timeout != null) {
+                    mHandler.removeCallbacks(timeout);
+                    mTimeouts.remove(grpIndex);
+                }
+            }
         }
     }
 
@@ -600,6 +519,8 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
         public void run() {
             DeveloperLog.LogD("timeout startNextInstance : " + insIndex);
             startNextInstance(insIndex);
+            AdsUtil.advanceEventReport(mPlacementId, AdvanceEventId.CODE_INS_GROUP_LOAD_TIMEOUT,
+                    AdvanceEventId.MSG_INS_GROUP_LOAD_TIMEOUT + "startNextInstance : " + insIndex);
         }
     }
 

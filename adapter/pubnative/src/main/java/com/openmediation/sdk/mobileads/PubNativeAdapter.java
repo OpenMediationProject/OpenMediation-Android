@@ -7,9 +7,11 @@ import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 
+import com.openmediation.sdk.bid.BidConstance;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.mediation.BannerAdCallback;
+import com.openmediation.sdk.mediation.BidCallback;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
@@ -49,11 +51,6 @@ public class PubNativeAdapter extends CustomAdsAdapter implements PubNativeVideo
     }
 
     @Override
-    public boolean isAdNetworkInit() {
-        return PubNativeSingleTon.getInstance().isInit();
-    }
-
-    @Override
     public void setAgeRestricted(Context context, boolean restricted) {
         super.setAgeRestricted(context, restricted);
         HyBid.setCoppaEnabled(restricted);
@@ -69,6 +66,16 @@ public class PubNativeAdapter extends CustomAdsAdapter implements PubNativeVideo
     public void setUserGender(Context context, String gender) {
         super.setUserGender(context, gender);
         HyBid.setGender(gender);
+    }
+
+    @Override
+    public void initBid(Context context, Map<String, Object> dataMap) {
+        super.initBid(context, dataMap);
+        if (MediationUtil.getApplication() == null) {
+            return;
+        }
+        PubNativeSingleTon.getInstance().init(MediationUtil.getApplication(),
+                String.valueOf(dataMap.get(BidConstance.BID_APP_KEY)), null);
     }
 
     private synchronized void initSDK(String appKey, PubNativeSingleTon.InitListener listener) {
@@ -122,14 +129,7 @@ public class PubNativeAdapter extends CustomAdsAdapter implements PubNativeVideo
             }
             return;
         }
-        if (callback != null) {
-            String error = PubNativeSingleTon.getInstance().getError(adUnitId);
-            if (TextUtils.isEmpty(error)) {
-                error = "No Fill";
-            }
-            callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
-                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
-        }
+        PubNativeSingleTon.getInstance().loadRewardedVideo(adUnitId, callback, null);
     }
 
     @Override
@@ -143,16 +143,23 @@ public class PubNativeAdapter extends CustomAdsAdapter implements PubNativeVideo
             }
             return;
         }
-        if (isRewardedVideoAvailable(adUnitId)) {
-            if (callback != null) {
-                mRvCallbacks.put(adUnitId, callback);
+        try {
+            if (isRewardedVideoAvailable(adUnitId)) {
+                if (callback != null) {
+                    mRvCallbacks.put(adUnitId, callback);
+                }
+                PubNativeSingleTon.getInstance().setVideoAdCallback(this);
+                PubNativeSingleTon.getInstance().showRewardedVideo(adUnitId);
+            } else {
+                if (callback != null) {
+                    callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Not Ready"));
+                }
             }
-            PubNativeSingleTon.getInstance().setVideoAdCallback(this);
-            PubNativeSingleTon.getInstance().showRewardedVideo(adUnitId);
-        } else {
+        } catch (Throwable e) {
             if (callback != null) {
                 callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Not Ready"));
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
             }
         }
     }
@@ -209,14 +216,7 @@ public class PubNativeAdapter extends CustomAdsAdapter implements PubNativeVideo
             }
             return;
         }
-        if (callback != null) {
-            String error = PubNativeSingleTon.getInstance().getError(adUnitId);
-            if (TextUtils.isEmpty(error)) {
-                error = "No Fill";
-            }
-            callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
-        }
+        PubNativeSingleTon.getInstance().loadInterstitial(adUnitId, callback, null);
     }
 
     @Override
@@ -235,16 +235,23 @@ public class PubNativeAdapter extends CustomAdsAdapter implements PubNativeVideo
             }
             return;
         }
-        if (isInterstitialAdAvailable(adUnitId)) {
-            if (callback != null) {
-                mIsCallbacks.put(adUnitId, callback);
+        try {
+            if (isInterstitialAdAvailable(adUnitId)) {
+                if (callback != null) {
+                    mIsCallbacks.put(adUnitId, callback);
+                }
+                PubNativeSingleTon.getInstance().setInterstitialAdCallback(this);
+                PubNativeSingleTon.getInstance().showInterstitial(adUnitId);
+            } else {
+                if (callback != null) {
+                    callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Not Ready"));
+                }
             }
-            PubNativeSingleTon.getInstance().setInterstitialAdCallback(this);
-            PubNativeSingleTon.getInstance().showInterstitial(adUnitId);
-        } else {
+        } catch (Throwable e) {
             if (callback != null) {
                 callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "ad not ready"));
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
             }
         }
     }
@@ -386,4 +393,9 @@ public class PubNativeAdapter extends CustomAdsAdapter implements PubNativeVideo
         }
     }
 
+    @Override
+    public void getBidResponse(Context context, Map<String, Object> dataMap, BidCallback callback) {
+        super.getBidResponse(context, dataMap, callback);
+        PubNativeSingleTon.getInstance().getBidResponse(dataMap, callback);
+    }
 }

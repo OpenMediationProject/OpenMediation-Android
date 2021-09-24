@@ -24,6 +24,7 @@ public class AdmostNativeManager {
 
     private static final String TAG = "OM-AdMost: ";
     private static final String ADN_OBJECT = "AdnObject";
+    private static final String OM_PLACEMENT_ID = "PlacementId";
 
     private static class Holder {
         private static final AdmostNativeManager INSTANCE = new AdmostNativeManager();
@@ -57,42 +58,45 @@ public class AdmostNativeManager {
 
     public void loadAd(String adUnitId, Map<String, Object> extras, NativeAdCallback callback) {
         try {
-            AdnAdInfo info = null;
             AdmostBannerAdsConfig config = null;
             if (extras != null && extras.get(ADN_OBJECT) instanceof AdnAdInfo) {
-                info = (AdnAdInfo) extras.get(ADN_OBJECT);
+                AdnAdInfo info = (AdnAdInfo) extras.get(ADN_OBJECT);
                 if (info.getAdnNativeAd() instanceof AdmostBannerAdsConfig) {
                     config = (AdmostBannerAdsConfig) info.getAdnNativeAd();
                 }
-            }
-            if (config == null || config.getAdMostView() == null || config.getAdView() == null) {
+                if (config == null || config.getAdMostView() == null || config.getAdView() == null) {
+                    if (callback != null) {
+                        callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                                AdapterErrorBuilder.AD_UNIT_NATIVE, "AdmostAdapter", "No Fill"));
+                    }
+                    return;
+                }
+                AdmostSingleTon.getInstance().addNativeAd(config);
+                AdmostSingleTon.getInstance().addNativeAdListener(config, new AdmostBannerCallback() {
+
+                    @Override
+                    public void onBannerAdClick(String adUnitId) {
+                        if (callback != null) {
+                            callback.onNativeAdAdClicked();
+                        }
+                    }
+                });
                 if (callback != null) {
-                    callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                            AdapterErrorBuilder.AD_UNIT_NATIVE, "AdmostAdapter", "No Fill"));
+                    callback.onNativeAdLoadSuccess(info);
                 }
                 return;
             }
-            AdmostSingleTon.getInstance().addNativeAd(config);
-            AdmostSingleTon.getInstance().addNativeAdListener(config, new AdmostBannerCallback() {
 
-                @Override
-                public void onBannerAdClick(String adUnitId) {
-                    if (callback != null) {
-                        callback.onNativeAdAdClicked();
-                    }
-                }
-            });
-//            info.setAdnNativeAd(config);
-//            info.setType(MediationInfo.MEDIATION_ID_24);
-//            info.setView(config.getAdView());
-//            info.setTemplateRender(true);
-            if (callback != null) {
-                callback.onNativeAdLoadSuccess(info);
+            // Load NativeAd
+            String pid = "";
+            if (extras.get(OM_PLACEMENT_ID) != null) {
+                pid = extras.get(OM_PLACEMENT_ID).toString();
             }
-        } catch (Exception e) {
+            AdmostSingleTon.getInstance().loadNative(pid, adUnitId, callback, null);
+        } catch (Throwable e) {
             if (callback != null) {
                 callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                        AdapterErrorBuilder.AD_UNIT_NATIVE, "AdmostAdapter", e.getMessage()));
+                        AdapterErrorBuilder.AD_UNIT_NATIVE, "AdmostAdapter", "Unknown Error, " + e.getMessage()));
             }
         }
     }

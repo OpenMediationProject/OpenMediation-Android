@@ -11,9 +11,10 @@ import android.widget.FrameLayout;
 
 import com.openmediation.sdk.banner.AdSize;
 import com.openmediation.sdk.banner.BannerAdListener;
-import com.openmediation.sdk.core.AbstractHybridAds;
+import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.core.InsManager;
 import com.openmediation.sdk.core.OmManager;
+import com.openmediation.sdk.core.imp.HybridCacheManager;
 import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.utils.AdsUtil;
@@ -34,7 +35,7 @@ import com.openmediation.sdk.utils.model.PlacementInfo;
 
 import java.util.Map;
 
-public class BnManager extends AbstractHybridAds implements BnManagerListener, View.OnAttachStateChangeListener {
+public class BnManager extends HybridCacheManager implements BnManagerListener, View.OnAttachStateChangeListener {
 
     private FrameLayout mLytBanner;
     private HandlerUtil.HandlerHolder mRlwHandler;
@@ -109,14 +110,14 @@ public class BnManager extends AbstractHybridAds implements BnManagerListener, V
                 } else {
                     if (isManualTriggered) {
                         Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_NO_AVAILABLE_AD,
-                                ErrorCode.MSG_LOAD_NO_AVAILABLE_AD, ErrorCode.CODE_LOAD_UNKNOWN_INTERNAL_ERROR);
+                                ErrorCode.MSG_LOAD_NO_AVAILABLE_AD + "Banner Load Error", -1);
                         mListenerWrapper.onBannerAdLoadFailed(mPlacementId, error);
                     }
                 }
             } else {
                 if (isManualTriggered) {
                     Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_NO_AVAILABLE_AD,
-                            ErrorCode.MSG_LOAD_NO_AVAILABLE_AD, ErrorCode.CODE_LOAD_UNKNOWN_INTERNAL_ERROR);
+                            ErrorCode.MSG_LOAD_NO_AVAILABLE_AD + "CurrentIns is null", -1);
                     mListenerWrapper.onBannerAdLoadFailed(mPlacementId, error);
                 }
             }
@@ -124,7 +125,7 @@ public class BnManager extends AbstractHybridAds implements BnManagerListener, V
         } catch (Exception e) {
             if (isManualTriggered) {
                 Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_NO_AVAILABLE_AD,
-                        ErrorCode.MSG_LOAD_NO_AVAILABLE_AD, ErrorCode.CODE_LOAD_UNKNOWN_INTERNAL_ERROR);
+                        ErrorCode.MSG_LOAD_NO_AVAILABLE_AD + e.getMessage(), ErrorCode.CODE_INTERNAL_UNKNOWN_OTHER);
                 mListenerWrapper.onBannerAdLoadFailed(mPlacementId, error);
             }
             CrashUtil.getSingleton().saveException(e);
@@ -142,12 +143,17 @@ public class BnManager extends AbstractHybridAds implements BnManagerListener, V
     }
 
     @Override
-    protected void insInit(BaseInstance instance, Map<String, Object> extras) {
-        if (instance instanceof BnInstance) {
-            BnInstance bnInstance = (BnInstance) instance;
-            bnInstance.setBnManagerListener(this);
-            bnInstance.initBn(mActRefs.get(), extras);
+    protected void initInsAndSendEvent(BaseInstance instance) {
+        super.initInsAndSendEvent(instance);
+        if (!(instance instanceof BnInstance)) {
+            instance.setMediationState(BaseInstance.MEDIATION_STATE.INIT_FAILED);
+            onInsLoadFailed(instance, new AdapterError(ErrorCode.CODE_LOAD_UNKNOWN_ERROR,
+                    "current is not an Banner adUnit"), !isManualTriggered);
+            return;
         }
+        BnInstance bnInstance = (BnInstance) instance;
+        bnInstance.setBnManagerListener(this);
+        bnInstance.initBn(mActRefs.get());
     }
 
     @Override
@@ -161,6 +167,7 @@ public class BnManager extends AbstractHybridAds implements BnManagerListener, V
             extras.put("description", mAdSize.getDescription());
         }
         DataCache.getInstance().setMEM(instance.getKey() + KeyConstants.KEY_DISPLAY_ABT, mPlacement.getWfAbt());
+        DataCache.getInstance().setMEM(instance.getKey() + KeyConstants.KEY_DISPLAY_ABT_ID, mPlacement.getWfAbtId());
         BnInstance bnInstance = (BnInstance) instance;
         bnInstance.setBnManagerListener(this);
         bnInstance.loadBn(mActRefs.get(), extras);
@@ -261,6 +268,16 @@ public class BnManager extends AbstractHybridAds implements BnManagerListener, V
         } catch (Throwable e) {
             DeveloperLog.LogE("BnManager, startRefreshTask error: " + e.getMessage());
         }
+    }
+
+    @Override
+    public void onBidSuccess(BaseInstance instance, BidResponse response) {
+        onInsC2SBidSuccess(instance, response);
+    }
+
+    @Override
+    public void onBidFailed(BaseInstance instance, String error) {
+        onInsC2SBidFailed(instance, error);
     }
 
     private class RefreshTask implements Runnable {

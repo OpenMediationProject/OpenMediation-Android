@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
  * The type Sdk util.
  */
 public class SdkUtil {
-    private static String[] ADT_PERMISSIONS = new String[]{Manifest.permission.INTERNET, Manifest.permission.ACCESS_NETWORK_STATE};
+    private static String[] OM_PERMISSIONS = new String[]{Manifest.permission.INTERNET, Manifest.permission.ACCESS_NETWORK_STATE};
     private static final Pattern ACCEPTED_URI_SCHEME = Pattern.compile("(?i)"
             + // switch on case insensitive matching
             '('
@@ -38,14 +38,14 @@ public class SdkUtil {
         Error error;
         if (TextUtils.isEmpty(appKey)) {
             error = new Error(ErrorCode.CODE_INIT_INVALID_REQUEST
-                    , ErrorCode.MSG_INIT_INVALID_REQUEST, ErrorCode.CODE_INTERNAL_REQUEST_APPKEY);
+                    , ErrorCode.MSG_INIT_INVALID_REQUEST + "AppKey is empty", ErrorCode.CODE_INTERNAL_REQUEST_APPKEY);
             //init error appKey is empty
             DeveloperLog.LogE(error.toString());
             return error;
         }
-        if (!PermissionUtil.isGranted(context, ADT_PERMISSIONS)) {
+        if (!PermissionUtil.isGranted(context, OM_PERMISSIONS)) {
             error = new Error(ErrorCode.CODE_INIT_INVALID_REQUEST
-                    , ErrorCode.MSG_INIT_INVALID_REQUEST, ErrorCode.CODE_INTERNAL_REQUEST_PERMISSION);
+                    , ErrorCode.MSG_INIT_INVALID_REQUEST + "Internet permission has not granted", ErrorCode.CODE_INTERNAL_REQUEST_PERMISSION);
             //init error permission is not granted
             DeveloperLog.LogE("Permission Error: " + error.toString());
             return error;

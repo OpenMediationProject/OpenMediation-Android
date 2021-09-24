@@ -36,20 +36,27 @@ public class OguryBannerManager {
     }
 
     public void loadAd(Context context, String adUnitId, Map<String, Object> extras, final BannerAdCallback callback) {
-        OguryBannerAdSize size = getAdSize(extras);
-        if (size == null) {
+        try {
+            OguryBannerAdSize size = getAdSize(extras);
+            if (size == null) {
+                if (callback != null) {
+                    callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                            AdapterErrorBuilder.AD_UNIT_BANNER, "OguryAdapter", "Unsupported Banner Size: " + MediationUtil.getBannerDesc(extras)));
+                }
+                return;
+            }
+            OguryBannerAdView bannerAdView = new OguryBannerAdView(context);
+            bannerAdView.setAdUnit(adUnitId);
+            bannerAdView.setAdSize(OguryBannerAdSize.SMALL_BANNER_320x50);
+            InnerBannerAdListener listener = new InnerBannerAdListener(bannerAdView, adUnitId, callback);
+            bannerAdView.setListener(listener);
+            bannerAdView.loadAd();
+        } catch (Throwable e) {
             if (callback != null) {
                 callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                        AdapterErrorBuilder.AD_UNIT_BANNER, "OguryAdapter", "Unsupported Banner Size: " + MediationUtil.getBannerDesc(extras)));
+                        AdapterErrorBuilder.AD_UNIT_BANNER, "OguryAdapter", "Unknown Error, " + e.getMessage()));
             }
-            return;
         }
-        OguryBannerAdView bannerAdView = new OguryBannerAdView(context);
-        bannerAdView.setAdUnit(adUnitId);
-        bannerAdView.setAdSize(OguryBannerAdSize.SMALL_BANNER_320x50);
-        InnerBannerAdListener listener = new InnerBannerAdListener(bannerAdView, adUnitId, callback);
-        bannerAdView.setListener(listener);
-        bannerAdView.loadAd();
     }
 
     public boolean isAdAvailable(String adUnitId) {

@@ -17,6 +17,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
 import android.os.SystemClock;
+import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.webkit.WebSettings;
@@ -110,7 +111,7 @@ public class DeviceUtil {
             if (result != null) {
                 return result.toString();
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             DeveloperLog.LogD("DeviceUtil", e);
             CrashUtil.getSingleton().saveException(e);
         }
@@ -515,5 +516,21 @@ public class DeviceUtil {
         float dpHeight = displayMetrics.heightPixels / displayMetrics.density;
         float dpWidth = displayMetrics.widthPixels / displayMetrics.density;
         return (dpHeight > 720.0F && dpWidth >= 728.0F);
+    }
+
+    public static String getNetworkCountryIso(Context context) {
+        try {
+            TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+            if (telephonyManager == null) {
+                return "";
+            }
+            String simCountryIso = telephonyManager.getSimCountryIso();
+            if (!TextUtils.isEmpty(simCountryIso)) {
+                return simCountryIso;
+            }
+            return telephonyManager.getNetworkCountryIso();
+        } catch (Throwable e) {
+            return "";
+        }
     }
 }
