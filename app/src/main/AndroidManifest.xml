@@ -1,21 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.aiming.mdt.sdk.demo">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.openmediation.sdk.demo">
 
     <application
+        android:hardwareAccelerated="true"
+        android:name="com.openmediation.sdk.demo.AppApplication"
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_adtiming"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:networkSecurityConfig="@xml/app_network_security_config"
+        android:roundIcon="@mipmap/ic_adtiming"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        android:theme="@style/AppTheme"
+        tools:replace="android:networkSecurityConfig">
+        <activity android:name="com.openmediation.sdk.demo.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name="com.openmediation.sdk.demo.SplashAdActivity"
+            android:configChanges="keyboardHidden|screenSize|orientation"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.DeviceDefault.NoActionBar" />
+        <activity
+            android:name="com.openmediation.sdk.demo.NativeRecyclerActivity"
+            android:configChanges="keyboardHidden|screenSize|orientation"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.DeviceDefault.NoActionBar" />
+
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-8244307161105625~9398130412" />
+
+        <meta-data android:name="com.san.APP_KEY"
+            android:value="a05fe3ad-f16f-47d8-936f-612c29dddc6c"/>
+
     </application>
 
 </manifest>

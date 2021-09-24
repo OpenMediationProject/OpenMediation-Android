@@ -1,69 +1,179 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.google.gms.google-services'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion rootProject.ext.version.compileSdkVersion
+
+
     defaultConfig {
-        applicationId "com.aiming.mdt.sdk.demo"
-        minSdkVersion 16
+        applicationId "com.openmediation.sdk.demo"
+        minSdkVersion 21
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
+        multiDexEnabled true
+
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
     }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    compileOptions {
+        sourceCompatibility = rootProject.ext.compileOptions.sourceCompatibility
+        targetCompatibility = rootProject.ext.compileOptions.targetCompatibility
+    }
+
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-
     //fb
-    implementation('com.facebook.android:audience-network-sdk:5.2.1') {
+    implementation(rootProject.ext.dependencies.facebook) {
         exclude group: 'com.google.android.gms', module: 'play-services-ads'
     }
     //admob
-    implementation 'com.google.android.gms:play-services-ads:17.1.2'
-    //unity
-    implementation project(':unity-ads')
+    implementation rootProject.ext.dependencies.admob
+    implementation rootProject.ext.dependencies.admob_facebook_adapter
     //vungle
-    implementation 'com.github.vungle:vungle-android-sdk:6.3.24'
+    implementation rootProject.ext.dependencies.vungle
+    implementation rootProject.ext.dependencies.vungle_androidx
+    implementation rootProject.ext.dependencies.vungle_localbroadcast
     //AdColony
-    implementation 'com.adcolony:sdk:3.3.8'
+    implementation rootProject.ext.dependencies.adcolony
     //Applovin
-    implementation 'com.applovin:applovin-sdk:9.4.0'
+    implementation rootProject.ext.dependencies.applovin
     //MoPub
-    implementation('com.mopub:mopub-sdk-banner:5.5.0@aar') { transitive = true }
-    implementation('com.mopub:mopub-sdk-interstitial:5.5.0@aar') { transitive = true }
-    implementation('com.mopub:mopub-sdk-rewardedvideo:5.5.0@aar') { transitive = true }
-    implementation('com.mopub:mopub-sdk-native-static:5.5.0@aar') {
-        transitive = true
-        exclude group: 'com.android.support', module: 'recyclerview-v7'
-    }
+    implementation(rootProject.ext.dependencies.mopub) { transitive = true }
+    implementation rootProject.ext.dependencies.mopub_volley
     //TapJoy
-    implementation 'com.tapjoy:tapjoy-android-sdk:12.2.1@aar'
-    //chartoost
-    implementation project(':sdk.chartboost')
-    implementation 'com.google.android.gms:play-services-base:16.0.1'
-    implementation 'com.google.android.gms:play-services-ads-identifier:16.0.0'
+    implementation rootProject.ext.dependencies.tapjoy
+    implementation rootProject.ext.dependencies.play_service_base
+    implementation rootProject.ext.dependencies.play_service_ads_identifier
+    //chartboost
+    implementation rootProject.ext.dependencies.chartboost
+    implementation rootProject.ext.dependencies.play_service_base
+    implementation rootProject.ext.dependencies.play_service_ads_identifier
+    //unity
+    implementation rootProject.ext.dependencies.unity
 
-    implementation(name: 'Adtiming-release', ext: 'aar')
-    implementation(name: 'AdColonyModel-release', ext: 'aar')
-    implementation(name: 'AppLovinModel-release', ext: 'aar')
-    implementation(name: 'ChartboostModel-release', ext: 'aar')
-    implementation(name: 'FacebookModel-release', ext: 'aar')
-    implementation(name: 'MopubModel-release', ext: 'aar')
-    implementation(name: 'TapjoyModel-release', ext: 'aar')
-    implementation(name: 'UnityModel-release', ext: 'aar')
-    implementation(name: 'VungleModel-release', ext: 'aar')
-    implementation(name: 'AdmobModel-release', ext: 'aar')
+    // AdTiming
+    implementation rootProject.ext.dependencies.adtiming
+    // Mintegral
+    implementation project(path: ':adapter:mintegral')
+    implementation 'com.mbridge.msdk.oversea:videojs:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mbridge.msdk.oversea:mbjscommon:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mbridge.msdk.oversea:playercommon:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mbridge.msdk.oversea:reward:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mbridge.msdk.oversea:videocommon:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mbridge.msdk.oversea:same:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mbridge.msdk.oversea:interstitialvideo:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mbridge.msdk.oversea:mbbanner:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mbridge.msdk.oversea:mbbid:' + rootProject.ext.dependencies.mtg_version
 
+    // ironSource
+    implementation rootProject.ext.dependencies.ironsource
+    implementation rootProject.ext.dependencies.play_service_ads_identifier
+    implementation 'com.google.android.gms:play-services-basement:17.6.0'
+
+    // Fyber
+    implementation "com.fyber.vamp:core-sdk:${rootProject.ext.dependencies.fyber}"
+    implementation "com.fyber.vamp:video-kit:${rootProject.ext.dependencies.fyber}"
+    implementation "com.fyber.vamp:mraid-kit:${rootProject.ext.dependencies.fyber}"
+
+    // Helium
+    implementation rootProject.ext.dependencies.helium
+    implementation rootProject.ext.dependencies.helium_facebook_adapter
+    implementation rootProject.ext.dependencies.eventbus
+    implementation rootProject.ext.dependencies.play_service_base
+    implementation rootProject.ext.dependencies.play_service_ads_identifier
+
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
+    implementation project(path: ':adapter:admob')
+    implementation project(path: ':adapter:adtiming')
+    implementation project(path: ':adapter:unity')
+    implementation project(path: ':adapter:vungle')
+    implementation project(path: ':om-android-sdk')
+    implementation project(path: ':adapter:mopub')
+    implementation project(path: ':adapter:adcolony')
+    implementation project(path: ':adapter:applovin')
+    implementation project(path: ':adapter:facebook')
+    implementation project(path: ':adapter:chartboost')
+    implementation project(path: ':adapter:helium')
+    implementation project(path: ':adapter:tapjoy')
+
+//    implementation rootProject.ext.dependencies.pangle
+//    implementation rootProject.ext.dependencies.play_service_ads_identifier
+//    implementation project(path: ':adapter:tiktok')
+    implementation project(path: ':adapter:ironsource')
+    implementation project(path: ':adapter:fyber')
+
+    implementation rootProject.ext.dependencies.ogury
+    implementation project(path: ':adapter:ogury')
+
+    implementation rootProject.ext.dependencies.pubnative
+    implementation project(path: ':adapter:pubnative')
+
+    implementation 'com.appsflyer:af-android-sdk:6.3.0'
+
+    // 国内版
+    // OAID
+    implementation project(path: ':miit_mdid_1.0.10')
+    // TikTok
+    implementation(name: 'open_ad_sdk_4.0.0.0', ext: 'aar')
+    implementation project(path: ':adapter_cn:tiktok_cn')
+
+    // TencentAds
+    implementation rootProject.ext.dependencies.tencentad
+    implementation project(path: ':adapter_cn:tencentad_cn')
+
+    // Mintegral
+//    implementation 'com.mbridge.msdk.china:videojs:' + rootProject.ext.dependencies.mtg_china_version
+//    implementation 'com.mbridge.msdk.china:mbjscommon:' + rootProject.ext.dependencies.mtg_china_version
+//    implementation 'com.mbridge.msdk.china:playercommon:' + rootProject.ext.dependencies.mtg_china_version
+//    implementation 'com.mbridge.msdk.china:reward:' + rootProject.ext.dependencies.mtg_china_version
+//    implementation 'com.mbridge.msdk.china:videocommon:' + rootProject.ext.dependencies.mtg_china_version
+//    implementation 'com.mbridge.msdk.china:chinasame:' + rootProject.ext.dependencies.mtg_china_version
+//    implementation 'com.mbridge.msdk.china:interstitialvideo:' + rootProject.ext.dependencies.mtg_china_version
+//    implementation 'com.mbridge.msdk.china:mbbanner:' + rootProject.ext.dependencies.mtg_china_version
+//    implementation 'com.mbridge.msdk.china:mbbid:' + rootProject.ext.dependencies.mtg_china_version
+//    implementation project(path: ':adapter_cn:mintegral_cn')
+
+    // Sigmob
+    implementation(name: 'windAd-3.3.3', ext: 'aar')
+    implementation project(path: ':adapter_cn:sigmob_cn')
+    // 快手
+    implementation(name: 'kssdk-ad--3.3.14', ext: 'aar')
+    implementation project(path: ':adapter_cn:ksad_cn')
+
+    implementation rootProject.ext.dependencies.admost
+    implementation rootProject.ext.dependencies.admost_volley
+    implementation rootProject.ext.dependencies.play_service_base
+    implementation rootProject.ext.dependencies.admost_facebook_adapter
+    implementation rootProject.ext.dependencies.admost_s2sbidding_adapter
+    implementation rootProject.ext.dependencies.admost_recyclerview
+    implementation rootProject.ext.dependencies.admost_annotation
+    implementation project(path: ':adapter:admost')
+
+    // InMobi
+    implementation rootProject.ext.dependencies.inmobi
+    implementation 'androidx.browser:browser:1.3.0'
+    implementation project(path: ':adapter:inmobi')
+
+    // FlatAds
+    implementation rootProject.ext.dependencies.flatads
+    implementation project(path: ':adapter:flatads')
+
+    // SAN Ads
+    implementation rootProject.ext.dependencies.sanads
+    implementation project(path: ':adapter:sanads')
+
+    implementation 'com.google.firebase:firebase-analytics:19.0.0'
 }
 
 repositories {

@@ -4,48 +4,136 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".MainActivity">
+    tools:context="com.openmediation.sdk.demo.MainActivity">
 
-    <Button
-        android:id="@+id/btn_native"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Native"
-        android:textAllCaps="false" />
+        android:orientation="vertical">
 
-    <Button
-        android:id="@+id/btn_interstitial1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Interstitial1"
-        android:textAllCaps="false" />
+        <ImageView
+            android:layout_width="184dp"
+            android:layout_height="80dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_adtiming_logo" />
 
-    <Button
-        android:id="@+id/btn_interstitial2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Interstitial2"
-        android:textAllCaps="false" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="AdTiming SDK Demo"
+            android:textColor="#000000"
+            android:textSize="30sp" />
 
-    <Button
-        android:id="@+id/btn_video1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Video1"
-        android:textAllCaps="false" />
+    </LinearLayout>
 
-    <Button
-        android:id="@+id/btn_video2"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Video2"
-        android:textAllCaps="false" />
+        android:layout_height="match_parent">
 
-    <Button
-        android:id="@+id/btn_interactive"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Interactive"
-        android:textAllCaps="false" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/btn_reward_video"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/btn_background"
+                android:enabled="false"
+                android:onClick="showRewardVideo"
+                android:text="Reward Video Ad Loading..."
+                android:textAllCaps="false"
+                android:textSize="20sp" />
+
+            <Button
+                android:id="@+id/btn_interstitial"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/btn_background"
+                android:enabled="false"
+                android:onClick="showInterstitial"
+                android:text="Interstitial Ad Loading..."
+                android:textAllCaps="false"
+                android:textSize="20sp" />
+            android:background="@drawable/btn_background"/>
+
+            <Button
+                android:id="@+id/btn_splash"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/btn_background"
+                android:onClick="showSplash"
+                android:text="Show Splash Ad"
+                android:textAllCaps="false"
+                android:textSize="20sp" />
+
+            <Button
+                android:id="@+id/btn_banner"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/btn_background"
+                android:onClick="loadAndShowBanner"
+                android:text="Load And Show Banner Ad"
+                android:textAllCaps="false"
+                android:textSize="20sp" />
+
+            <Button
+                android:id="@+id/btn_native"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/btn_background"
+                android:onClick="loadAndShowNative"
+                android:text="Load And Show Native Ad"
+                android:textAllCaps="false"
+                android:textSize="20sp" />
+
+            <Button
+                android:id="@+id/btn_promotion"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/btn_background"
+                android:enabled="false"
+                android:onClick="showPromotion"
+                android:text="Promotion Ad Loading..."
+                android:textAllCaps="false"
+                android:textSize="20sp" />
+
+            <Button
+                android:id="@+id/btn_native_list"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/btn_background"
+                android:text="Native RecyclerView"
+                android:textAllCaps="false"
+                android:textSize="20sp" />
+
+            <LinearLayout
+                android:id="@+id/ad_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:padding="20dp"></LinearLayout>
+
+
+        </LinearLayout>
+
+    </ScrollView>
 
 </LinearLayout>
