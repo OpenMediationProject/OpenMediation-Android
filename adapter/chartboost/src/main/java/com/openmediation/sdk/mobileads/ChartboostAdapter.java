@@ -115,10 +115,13 @@ public class ChartboostAdapter extends CustomAdsAdapter {
     public void setGDPRConsent(Context context, boolean consent) {
         super.setGDPRConsent(context, consent);
         if (context != null) {
-            if (consent) {
-                Chartboost.addDataUseConsent(context, new GDPR(GDPR.GDPR_CONSENT.BEHAVIORAL));
-            } else {
-                Chartboost.addDataUseConsent(context, new GDPR(GDPR.GDPR_CONSENT.NON_BEHAVIORAL));
+            try {
+                if (consent) {
+                    Chartboost.addDataUseConsent(context, new GDPR(GDPR.GDPR_CONSENT.BEHAVIORAL));
+                } else {
+                    Chartboost.addDataUseConsent(context, new GDPR(GDPR.GDPR_CONSENT.NON_BEHAVIORAL));
+                }
+            } catch (Throwable ignored) {
             }
         }
     }
@@ -127,13 +130,16 @@ public class ChartboostAdapter extends CustomAdsAdapter {
     public void setUSPrivacyLimit(Context context, boolean value) {
         super.setUSPrivacyLimit(context, value);
         if (context != null) {
-            DataUseConsent dataUseConsent;
-            if (value) {
-                dataUseConsent = new CCPA(CCPA.CCPA_CONSENT.OPT_OUT_SALE);
-            } else {
-                dataUseConsent = new CCPA(CCPA.CCPA_CONSENT.OPT_IN_SALE);
+            try {
+                DataUseConsent dataUseConsent;
+                if (value) {
+                    dataUseConsent = new CCPA(CCPA.CCPA_CONSENT.OPT_OUT_SALE);
+                } else {
+                    dataUseConsent = new CCPA(CCPA.CCPA_CONSENT.OPT_IN_SALE);
+                }
+                Chartboost.addDataUseConsent(context, dataUseConsent);
+            } catch (Throwable ignored) {
             }
-            Chartboost.addDataUseConsent(context, dataUseConsent);
         }
     }
 
@@ -160,19 +166,26 @@ public class ChartboostAdapter extends CustomAdsAdapter {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
         String checkError = check(adUnitId);
         if (TextUtils.isEmpty(checkError)) {
-            if (Chartboost.hasRewardedVideo(adUnitId)) {
+            try {
+                if (Chartboost.hasRewardedVideo(adUnitId)) {
+                    if (callback != null) {
+                        callback.onRewardedVideoLoadSuccess();
+                    }
+                } else {
+                    mRvLoadTriggerIds.add(adUnitId);
+                    if (callback != null) {
+                        mRvCallbacks.put(adUnitId, callback);
+                    }
+                    if (Chartboost.getDelegate() == null) {
+                        Chartboost.setDelegate(mCbDelegate);
+                    }
+                    Chartboost.cacheRewardedVideo(adUnitId);
+                }
+            } catch (Throwable e) {
                 if (callback != null) {
-                    callback.onRewardedVideoLoadSuccess();
+                    callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
                 }
-            } else {
-                mRvLoadTriggerIds.add(adUnitId);
-                if (callback != null) {
-                    mRvCallbacks.put(adUnitId, callback);
-                }
-                if (Chartboost.getDelegate() == null) {
-                    Chartboost.setDelegate(mCbDelegate);
-                }
-                Chartboost.cacheRewardedVideo(adUnitId);
             }
         } else {
             if (callback != null) {
@@ -186,17 +199,26 @@ public class ChartboostAdapter extends CustomAdsAdapter {
     public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
         String checkError = check(adUnitId);
         if (TextUtils.isEmpty(checkError)) {
-            if (Chartboost.hasRewardedVideo(adUnitId)) {
+            try {
+                if (Chartboost.hasRewardedVideo(adUnitId)) {
+                    if (callback != null) {
+                        mRvCallbacks.put(adUnitId, callback);
+                    }
+                    if (Chartboost.getDelegate() == null) {
+                        Chartboost.setDelegate(mCbDelegate);
+                    }
+                    Chartboost.showRewardedVideo(adUnitId);
+                } else {
+                    if (callback != null) {
+                        callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Ad Not Ready"));
+                    }
+                }
+            } catch (Throwable e) {
                 if (callback != null) {
-                    mRvCallbacks.put(adUnitId, callback);
+                    callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
                 }
-                if (Chartboost.getDelegate() == null) {
-                    Chartboost.setDelegate(mCbDelegate);
-                }
-                Chartboost.showRewardedVideo(adUnitId);
-            } else {
-                callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "ad not ready"));
             }
         } else {
             if (callback != null) {
@@ -220,11 +242,15 @@ public class ChartboostAdapter extends CustomAdsAdapter {
                 mIsInitCallbacks.put((String) dataMap.get("pid"), callback);
                 initSDK();
             } else {
-                callback.onInterstitialAdInitSuccess();
+                if (callback != null) {
+                    callback.onInterstitialAdInitSuccess();
+                }
             }
         } else {
-            callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
-                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, checkError));
+            if (callback != null) {
+                callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, checkError));
+            }
         }
     }
 
@@ -233,19 +259,26 @@ public class ChartboostAdapter extends CustomAdsAdapter {
         super.loadInterstitialAd(activity, adUnitId, extras, callback);
         String checkError = check(adUnitId);
         if (TextUtils.isEmpty(checkError)) {
-            if (Chartboost.hasInterstitial(adUnitId)) {
+            try {
+                if (Chartboost.hasInterstitial(adUnitId)) {
+                    if (callback != null) {
+                        callback.onInterstitialAdLoadSuccess();
+                    }
+                } else {
+                    mIsLoadTriggerIds.add(adUnitId);
+                    if (callback != null) {
+                        mIsCallbacks.put(adUnitId, callback);
+                    }
+                    if (Chartboost.getDelegate() == null) {
+                        Chartboost.setDelegate(mCbDelegate);
+                    }
+                    Chartboost.cacheInterstitial(adUnitId);
+                }
+            } catch (Throwable e) {
                 if (callback != null) {
-                    callback.onInterstitialAdLoadSuccess();
+                    callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
                 }
-            } else {
-                mIsLoadTriggerIds.add(adUnitId);
-                if (callback != null) {
-                    mIsCallbacks.put(adUnitId, callback);
-                }
-                if (Chartboost.getDelegate() == null) {
-                    Chartboost.setDelegate(mCbDelegate);
-                }
-                Chartboost.cacheInterstitial(adUnitId);
             }
         } else {
             if (callback != null) {
@@ -260,17 +293,26 @@ public class ChartboostAdapter extends CustomAdsAdapter {
         super.showInterstitialAd(activity, adUnitId, callback);
         String checkError = check(adUnitId);
         if (TextUtils.isEmpty(checkError)) {
-            if (Chartboost.hasInterstitial(adUnitId)) {
+            try {
+                if (Chartboost.hasInterstitial(adUnitId)) {
+                    if (callback != null) {
+                        mIsCallbacks.put(adUnitId, callback);
+                    }
+                    if (Chartboost.getDelegate() == null) {
+                        Chartboost.setDelegate(mCbDelegate);
+                    }
+                    Chartboost.showInterstitial(adUnitId);
+                } else {
+                    if (callback != null) {
+                        callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Ad Not Ready"));
+                    }
+                }
+            } catch (Throwable e) {
                 if (callback != null) {
-                    mIsCallbacks.put(adUnitId, callback);
+                    callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
                 }
-                if (Chartboost.getDelegate() == null) {
-                    Chartboost.setDelegate(mCbDelegate);
-                }
-                Chartboost.showInterstitial(adUnitId);
-            } else {
-                callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "ad not ready"));
             }
         } else {
             if (callback != null) {

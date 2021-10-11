@@ -68,30 +68,37 @@ public class KsAdSplashManager {
             }
             return;
         }
-        long posId;
         try {
-            posId = Long.parseLong(adUnitId);
-        } catch(Exception e) {
-            posId = 0L;
+            long posId;
+            try {
+                posId = Long.parseLong(adUnitId);
+            } catch(Exception e) {
+                posId = 0L;
+            }
+            int width = 0;
+            try {
+                width = Integer.parseInt(config.get(CONFIG_WIDTH).toString());
+            } catch(Exception ignored) {
+            }
+            int height = 0;
+            try {
+                height = Integer.parseInt(config.get(CONFIG_HEIGHT).toString());
+            } catch(Exception ignored) {
+            }
+            KsScene scene;
+            if (width <= 0 || height <= 0) {
+                scene = new KsScene.Builder(posId).build();
+            } else {
+                scene = new KsScene.Builder(posId).width(width).height(height).build();
+            }
+            InnerSplashAdListener listener = new InnerSplashAdListener(adUnitId, callback);
+            KsAdSDK.getLoadManager().loadSplashScreenAd(scene, listener);
+        } catch (Throwable e) {
+            if (callback != null) {
+                callback.onSplashAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_SPLASH, "KsAdAdapter", "Unknown Error, " + e.getMessage()));
+            }
         }
-        int width = 0;
-        try {
-            width = Integer.parseInt(config.get(CONFIG_WIDTH).toString());
-        } catch(Exception ignored) {
-        }
-        int height = 0;
-        try {
-            height = Integer.parseInt(config.get(CONFIG_HEIGHT).toString());
-        } catch(Exception ignored) {
-        }
-        KsScene scene;
-        if (width <= 0 || height <= 0) {
-            scene = new KsScene.Builder(posId).build();
-        } else {
-            scene = new KsScene.Builder(posId).width(width).height(height).build();
-        }
-        InnerSplashAdListener listener = new InnerSplashAdListener(adUnitId, callback);
-        KsAdSDK.getLoadManager().loadSplashScreenAd(scene, listener);
     }
 
     public boolean isAdAvailable(String adUnitId) {
@@ -126,10 +133,10 @@ public class KsAdSplashManager {
                     }
                     container.removeAllViews();
                     container.addView(splashView);
-                } catch(Exception e) {
+                } catch(Throwable e) {
                     if (callback != null) {
                         callback.onSplashAdShowFailed(AdapterErrorBuilder.buildShowError(
-                                AdapterErrorBuilder.AD_UNIT_SPLASH, "KsAdAdapter", e.getMessage()));
+                                AdapterErrorBuilder.AD_UNIT_SPLASH, "KsAdAdapter", "Unknown Error, " + e.getMessage()));
                     }
                 }
             }

@@ -34,6 +34,7 @@ public class Event {
 
     private String reqId; // AuctionID
     private int ruleId; // Mediation Rule ID
+    private JSONObject data;
 
     Event() throws Exception {
         this((String) null);
@@ -76,6 +77,7 @@ public class Event {
             cur = jsonObject.optString("cur");
             reqId = jsonObject.optString("reqId");
             ruleId = jsonObject.optInt("ruleId", -1);
+            data = jsonObject.optJSONObject("data");
         } catch (Exception e) {
             DeveloperLog.LogD("parse Event from json ", e);
         }
@@ -104,6 +106,7 @@ public class Event {
             JsonUtil.put(jsonObject, "cur", cur);
             JsonUtil.put(jsonObject, "reqId", reqId);
             JsonUtil.put(jsonObject, "ruleId", ruleId);
+            JsonUtil.put(jsonObject, "data", data);
         } catch (Exception e) {
             DeveloperLog.LogD("Event to json ", e);
         }
@@ -261,5 +264,13 @@ public class Event {
 
     public int getAbt() {
         return abt;
+    }
+
+    public void setData(JSONObject data) {
+        this.data = data;
+    }
+
+    public JSONObject getData() {
+        return data;
     }
 }

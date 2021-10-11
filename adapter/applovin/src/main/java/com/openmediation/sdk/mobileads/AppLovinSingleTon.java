@@ -71,7 +71,7 @@ public class AppLovinSingleTon {
                     mCallbacks.clear();
                 }
             });
-        } catch (Exception e) {
+        } catch (Throwable e) {
             mInitState = InitState.NOT_INIT;
             for (InitCallback callback : mCallbacks) {
                 if (callback != null) {

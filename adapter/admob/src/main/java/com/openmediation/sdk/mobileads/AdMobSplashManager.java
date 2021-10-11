@@ -133,10 +133,10 @@ public class AdMobSplashManager {
             public void run() {
                 try {
                     showSplashAd(activity, adUnitId, callback);
-                } catch(Exception e) {
+                } catch(Throwable e) {
                     if (callback != null) {
                         callback.onSplashAdShowFailed(AdapterErrorBuilder.buildShowError(
-                                AdapterErrorBuilder.AD_UNIT_SPLASH, "AdMobAdapter", e.getMessage()));
+                                AdapterErrorBuilder.AD_UNIT_SPLASH, "AdMobAdapter", "Unknown Error, " + e.getMessage()));
                     }
                 }
             }

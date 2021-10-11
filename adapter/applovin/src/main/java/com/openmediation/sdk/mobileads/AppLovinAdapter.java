@@ -75,11 +75,6 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
     }
 
     @Override
-    public boolean isAdNetworkInit() {
-        return AppLovinSingleTon.getInstance().isInit();
-    }
-
-    @Override
     public void setGDPRConsent(Context context, boolean consent) {
         super.setGDPRConsent(context, consent);
         if (context != null) {
@@ -163,12 +158,14 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
             if (videoAd == null) {
                 callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
                         AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Ad LoadFailed"));
+                return;
+            }
+            if (videoAd.isAdReadyToDisplay()) {
+                if (callback != null) {
+                    callback.onRewardedVideoLoadSuccess();
+                }
             } else {
-                if (videoAd.isAdReadyToDisplay()) {
-                    if (callback != null) {
-                        callback.onRewardedVideoLoadSuccess();
-                    }
-                } else {
+                try {
                     videoAd.preload(new AppLovinAdLoadListener() {
                         @Override
                         public void adReceived(AppLovinAd appLovinAd) {
@@ -188,6 +185,11 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
                         }
                     });
                     mRvCallbacks.put(adUnitId, callback);
+                } catch (Throwable e) {
+                    if (callback != null) {
+                        callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
+                    }
                 }
             }
         } else {
@@ -223,18 +225,29 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
                 }
                 return;
             }
-            if (callback != null) {
-                mRvCallbacks.put(adUnitId, callback);
+            try {
+                if (callback != null) {
+                    mRvCallbacks.put(adUnitId, callback);
+                }
+                videoAd.show(MediationUtil.getContext(), null, this,
+                        this, this);
+            } catch (Throwable e) {
+                if (callback != null) {
+                    callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
+                }
             }
-            videoAd.show(MediationUtil.getContext(), null, this,
-                    this, this);
         }
     }
 
     @Override
     public boolean isRewardedVideoAvailable(String adUnitId) {
-        AppLovinIncentivizedInterstitial videoAd = mRvAds.get(adUnitId);
-        return videoAd != null && videoAd.isAdReadyToDisplay();
+        try {
+            AppLovinIncentivizedInterstitial videoAd = mRvAds.get(adUnitId);
+            return videoAd != null && videoAd.isAdReadyToDisplay();
+        } catch (Throwable ignored) {
+            return false;
+        }
     }
 
     @Override
@@ -277,27 +290,34 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
                 }
                 return;
             }
-            AppLovinSdk sdk = AppLovinSingleTon.getInstance().getAppLovinSdk();
-            if (sdk != null) {
-                sdk.getAdService().loadNextAdForZoneId(adUnitId, new AppLovinAdLoadListener() {
-                    @Override
-                    public void adReceived(AppLovinAd appLovinAd) {
-                        if (appLovinAd != null) {
-                            mAppLovinIsAds.put(adUnitId, appLovinAd);
-                            if (callback != null) {
-                                callback.onInterstitialAdLoadSuccess();
+            try {
+                AppLovinSdk sdk = AppLovinSingleTon.getInstance().getAppLovinSdk();
+                if (sdk != null) {
+                    sdk.getAdService().loadNextAdForZoneId(adUnitId, new AppLovinAdLoadListener() {
+                        @Override
+                        public void adReceived(AppLovinAd appLovinAd) {
+                            if (appLovinAd != null) {
+                                mAppLovinIsAds.put(adUnitId, appLovinAd);
+                                if (callback != null) {
+                                    callback.onInterstitialAdLoadSuccess();
+                                }
                             }
                         }
-                    }
 
-                    @Override
-                    public void failedToReceiveAd(int i) {
-                        if (callback != null) {
-                            callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, i, getErrorString(i)));
+                        @Override
+                        public void failedToReceiveAd(int i) {
+                            if (callback != null) {
+                                callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, i, getErrorString(i)));
+                            }
                         }
-                    }
-                });
+                    });
+                }
+            } catch (Throwable e) {
+                if (callback != null) {
+                    callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
+                }
             }
         } else {
             if (callback != null) {
@@ -319,17 +339,24 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
             return;
         }
         if (isInterstitialAdAvailable(adUnitId)) {
-            AppLovinSdk sdk = AppLovinSingleTon.getInstance().getAppLovinSdk();
-            if (sdk != null) {
-                AppLovinInterstitialAdDialog interstitialAd = AppLovinInterstitialAd.create(sdk, MediationUtil.getContext());
-                if (interstitialAd != null) {
-                    interstitialAd.setAdClickListener(this);
-                    interstitialAd.setAdDisplayListener(this);
-                    if (callback != null) {
-                        mIsCallbacks.put(adUnitId, callback);
+            try {
+                AppLovinSdk sdk = AppLovinSingleTon.getInstance().getAppLovinSdk();
+                if (sdk != null) {
+                    AppLovinInterstitialAdDialog interstitialAd = AppLovinInterstitialAd.create(sdk, MediationUtil.getContext());
+                    if (interstitialAd != null) {
+                        interstitialAd.setAdClickListener(this);
+                        interstitialAd.setAdDisplayListener(this);
+                        if (callback != null) {
+                            mIsCallbacks.put(adUnitId, callback);
+                        }
+                        interstitialAd.showAndRender(mAppLovinIsAds.get(adUnitId));
+                        mAppLovinIsAds.remove(adUnitId);
                     }
-                    interstitialAd.showAndRender(mAppLovinIsAds.get(adUnitId));
-                    mAppLovinIsAds.remove(adUnitId);
+                }
+            } catch (Throwable e) {
+                if (callback != null) {
+                    callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
                 }
             }
         } else {
@@ -385,56 +412,67 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
             }
             return;
         }
+        try {
+            AppLovinAdSize adSize = getAdSize(MediationUtil.getContext(), extras);
+            if (adSize == null) {
+                callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, "unsupported banner size"));
+                return;
+            }
+            AppLovinSdk sdk = AppLovinSingleTon.getInstance().getAppLovinSdk();
+            final AppLovinAdView appLovinAdView = new AppLovinAdView(sdk, adSize, adUnitId, MediationUtil.getContext());
+            int width = 320, height = 50;
+            if (AppLovinAdSize.LEADER == adSize) {
+                width = 728;
+                height = 90;
+            }
+            appLovinAdView.setLayoutParams(new FrameLayout.LayoutParams(MediationUtil.dip2px(MediationUtil.getContext(), width),
+                    MediationUtil.dip2px(MediationUtil.getContext(), height)));
+            appLovinAdView.setAdLoadListener(new AppLovinAdLoadListener() {
+                @Override
+                public void adReceived(AppLovinAd appLovinAd) {
+                    if (callback != null) {
+                        callback.onBannerAdLoadSuccess(appLovinAdView);
+                    }
+                }
 
-        AppLovinAdSize adSize = getAdSize(MediationUtil.getContext(), extras);
-        if (adSize == null) {
-            callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
-                    AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, "unsupported banner size"));
-            return;
+                @Override
+                public void failedToReceiveAd(int i) {
+                    if (callback != null) {
+                        callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                                AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, i, AppLovinAdapter.getErrorString(i)));
+                    }
+                }
+            });
+            appLovinAdView.setAdClickListener(new AppLovinAdClickListener() {
+                @Override
+                public void adClicked(AppLovinAd appLovinAd) {
+                    if (callback != null) {
+                        callback.onBannerAdAdClicked();
+                    }
+                }
+            });
+            appLovinAdView.setAdDisplayListener(new AppLovinAdDisplayListener() {
+                @Override
+                public void adDisplayed(AppLovinAd appLovinAd) {
+                    if (callback != null) {
+                        callback.onBannerAdImpression();
+                    }
+                }
+
+                @Override
+                public void adHidden(AppLovinAd appLovinAd) {
+
+                }
+            });
+            appLovinAdView.loadNextAd();
+            mBannerAds.put(adUnitId, appLovinAdView);
+        } catch (Throwable e) {
+            if (callback != null) {
+                callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, "Unknown Error, " + e.getMessage()));
+            }
         }
-        AppLovinSdk sdk = AppLovinSingleTon.getInstance().getAppLovinSdk();
-        final AppLovinAdView appLovinAdView = new AppLovinAdView(sdk, adSize, adUnitId, MediationUtil.getContext());
-        appLovinAdView.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT));
-        appLovinAdView.setAdLoadListener(new AppLovinAdLoadListener() {
-            @Override
-            public void adReceived(AppLovinAd appLovinAd) {
-                if (callback != null) {
-                    callback.onBannerAdLoadSuccess(appLovinAdView);
-                }
-            }
-
-            @Override
-            public void failedToReceiveAd(int i) {
-                if (callback != null) {
-                    callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                            AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, i, AppLovinAdapter.getErrorString(i)));
-                }
-            }
-        });
-        appLovinAdView.setAdClickListener(new AppLovinAdClickListener() {
-            @Override
-            public void adClicked(AppLovinAd appLovinAd) {
-                if (callback != null) {
-                    callback.onBannerAdAdClicked();
-                }
-            }
-        });
-        appLovinAdView.setAdDisplayListener(new AppLovinAdDisplayListener() {
-            @Override
-            public void adDisplayed(AppLovinAd appLovinAd) {
-                if (callback != null) {
-                    callback.onBannerAdImpression();
-                }
-            }
-
-            @Override
-            public void adHidden(AppLovinAd appLovinAd) {
-
-            }
-        });
-        appLovinAdView.loadNextAd();
-        mBannerAds.put(adUnitId, appLovinAdView);
     }
 
     @Override
@@ -443,9 +481,12 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
         if (!mBannerAds.containsKey(adUnitId)) {
             return;
         }
-        if (mBannerAds.get(adUnitId) != null) {
-            mBannerAds.get(adUnitId).destroy();
-            mBannerAds.remove(adUnitId);
+        try {
+            if (mBannerAds.get(adUnitId) != null) {
+                mBannerAds.get(adUnitId).destroy();
+                mBannerAds.remove(adUnitId);
+            }
+        } catch (Throwable ignored) {
         }
     }
 

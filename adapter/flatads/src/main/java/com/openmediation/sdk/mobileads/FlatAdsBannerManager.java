@@ -14,8 +14,6 @@ import static com.openmediation.sdk.mobileads.FlatAdsAdapter.BID;
 
 public class FlatAdsBannerManager {
 
-    private static final String TAG = "OM-FlatAds: ";
-
     private static class Holder {
         private static final FlatAdsBannerManager INSTANCE = new FlatAdsBannerManager();
     }

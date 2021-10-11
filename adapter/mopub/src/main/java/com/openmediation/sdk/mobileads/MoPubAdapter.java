@@ -100,11 +100,6 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedAdLis
     }
 
     @Override
-    public boolean isAdNetworkInit() {
-        return mInitState == InitState.INIT_SUCCESS;
-    }
-
-    @Override
     public void onResume(Activity activity) {
         super.onResume(activity);
         MoPub.onCreate(activity);
@@ -208,23 +203,30 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedAdLis
     @Override
     public void loadRewardedVideo(final Activity activity, final String adUnitId, Map<String, Object> extras, final RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
-        String error = check(adUnitId);
-        if (TextUtils.isEmpty(error)) {
-            if (callback != null) {
-                mRvCallback.put(adUnitId, callback);
-            }
-            if (MoPubRewardedAds.hasRewardedAd(adUnitId)) {
+        try {
+            String error = check(adUnitId);
+            if (TextUtils.isEmpty(error)) {
                 if (callback != null) {
-                    callback.onRewardedVideoLoadSuccess();
+                    mRvCallback.put(adUnitId, callback);
+                }
+                if (MoPubRewardedAds.hasRewardedAd(adUnitId)) {
+                    if (callback != null) {
+                        callback.onRewardedVideoLoadSuccess();
+                    }
+                } else {
+                    MoPubRewardedAds.setRewardedAdListener(MoPubAdapter.this);
+                    MoPubRewardedAds.loadRewardedAd(adUnitId, mRequestParameters);
                 }
             } else {
-                MoPubRewardedAds.setRewardedAdListener(MoPubAdapter.this);
-                MoPubRewardedAds.loadRewardedAd(adUnitId, mRequestParameters);
+                if (callback != null) {
+                    callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
+                }
             }
-        } else {
+        } catch (Throwable e) {
             if (callback != null) {
-                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
-                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
+                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
             }
         }
     }
@@ -232,15 +234,30 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedAdLis
     @Override
     public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
-        if (isRewardedVideoAvailable(adUnitId)) {
-            if (callback != null) {
-                mRvCallback.put(adUnitId, callback);
+        try {
+            String error = check(adUnitId);
+            if (!TextUtils.isEmpty(error)) {
+                if (callback != null) {
+                    callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
+                }
+                return;
             }
-            MoPubRewardedAds.showRewardedAd(adUnitId);
-        } else {
+            if (isRewardedVideoAvailable(adUnitId)) {
+                if (callback != null) {
+                    mRvCallback.put(adUnitId, callback);
+                }
+                MoPubRewardedAds.showRewardedAd(adUnitId);
+            } else {
+                if (callback != null) {
+                    callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "MoPub ad not ready to show"));
+                }
+            }
+        } catch (Throwable e) {
             if (callback != null) {
                 callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "MoPub ad not ready to show"));
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
             }
         }
     }
@@ -356,23 +373,30 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedAdLis
     @Override
     public void loadInterstitialAd(Activity activity, String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, extras, callback);
-        String error = check(activity, adUnitId);
-        if (TextUtils.isEmpty(error)) {
-            MoPubInterstitial interstitial = getInterstitialAd(activity, adUnitId);
-            if (callback != null) {
-                mIsCallback.put(adUnitId, callback);
-            }
-            if (interstitial.isReady()) {
+        try {
+            String error = check(activity, adUnitId);
+            if (TextUtils.isEmpty(error)) {
+                MoPubInterstitial interstitial = getInterstitialAd(activity, adUnitId);
                 if (callback != null) {
-                    callback.onInterstitialAdLoadSuccess();
+                    mIsCallback.put(adUnitId, callback);
+                }
+                if (interstitial.isReady()) {
+                    if (callback != null) {
+                        callback.onInterstitialAdLoadSuccess();
+                    }
+                } else {
+                    interstitial.load();
                 }
             } else {
-                interstitial.load();
+                if (callback != null) {
+                    callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
+                }
             }
-        } else {
+        } catch (Throwable e) {
             if (callback != null) {
-                callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
-                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
+                callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
             }
         }
     }
@@ -452,22 +476,29 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedAdLis
     @Override
     public void loadBannerAd(Activity activity, String adUnitId, Map<String, Object> extras, BannerAdCallback callback) {
         super.loadBannerAd(activity, adUnitId, extras, callback);
-        String error = check(adUnitId);
-        if (TextUtils.isEmpty(error)) {
-            MoPubView adView = new MoPubView(MediationUtil.getContext());
-            MoPubView.MoPubAdSize adSize = getAdSize(extras, adView.getAdSize());
-            adView.setAdSize(adSize);
-            adView.setAdUnitId(adUnitId);
-            adView.setBannerAdListener(this);
-            mBannerAds.put(adUnitId, adView);
-            if (callback != null) {
-                mBnCallback.put(adUnitId, callback);
+        try {
+            String error = check(adUnitId);
+            if (TextUtils.isEmpty(error)) {
+                MoPubView adView = new MoPubView(MediationUtil.getContext());
+                MoPubView.MoPubAdSize adSize = getAdSize(extras, adView.getAdSize());
+                adView.setAdSize(adSize);
+                adView.setAdUnitId(adUnitId);
+                adView.setBannerAdListener(this);
+                mBannerAds.put(adUnitId, adView);
+                if (callback != null) {
+                    mBnCallback.put(adUnitId, callback);
+                }
+                adView.loadAd();
+            } else {
+                if (callback != null) {
+                    callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                            AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error));
+                }
             }
-            adView.loadAd();
-        } else {
+        } catch (Throwable e) {
             if (callback != null) {
-                callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
-                        AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error));
+                callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, "Unknown Error, " + e.getMessage()));
             }
         }
     }
@@ -527,22 +558,29 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedAdLis
     @Override
     public void loadNativeAd(Activity activity, String adUnitId, Map<String, Object> extras, NativeAdCallback callback) {
         super.loadNativeAd(activity, adUnitId, extras, callback);
-        String error = check(adUnitId);
-        if (TextUtils.isEmpty(error)) {
-            ViewBinder viewBinder = new ViewBinder.Builder(VID)
-                    .privacyInformationIconImageId(PID)
-                    .callToActionId(CID)
-                    .build();
-            MoPubStaticNativeAdRenderer moPubStaticNativeAdRenderer = new MoPubStaticNativeAdRenderer(viewBinder);
-            Context context = MediationUtil.getContext();
-            MoPubNative moPubNative = new MoPubNative(context, adUnitId,
-                    new MpNaLoadListener(context, adUnitId, callback));
-            moPubNative.registerAdRenderer(moPubStaticNativeAdRenderer);
-            moPubNative.makeRequest();
-        } else {
+        try {
+            String error = check(adUnitId);
+            if (TextUtils.isEmpty(error)) {
+                ViewBinder viewBinder = new ViewBinder.Builder(VID)
+                        .privacyInformationIconImageId(PID)
+                        .callToActionId(CID)
+                        .build();
+                MoPubStaticNativeAdRenderer moPubStaticNativeAdRenderer = new MoPubStaticNativeAdRenderer(viewBinder);
+                Context context = MediationUtil.getContext();
+                MoPubNative moPubNative = new MoPubNative(context, adUnitId,
+                        new MpNaLoadListener(context, adUnitId, callback));
+                moPubNative.registerAdRenderer(moPubStaticNativeAdRenderer);
+                moPubNative.makeRequest();
+            } else {
+                if (callback != null) {
+                    callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                            AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, error));
+                }
+            }
+        } catch (Throwable e) {
             if (callback != null) {
-                callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
-                        AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, error));
+                callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, "Unknown Error, " + e.getMessage()));
             }
         }
     }
@@ -620,7 +658,7 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedAdLis
                 });
             }
             addAndShowAdLogo(config.getNativeAd(), adView);
-        } catch (Exception ignored) {
+        } catch (Throwable ignored) {
         }
     }
 

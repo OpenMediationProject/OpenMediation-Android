@@ -12,10 +12,16 @@ import com.chartboost.heliumsdk.ad.HeliumInterstitialAd;
 import com.chartboost.heliumsdk.ad.HeliumInterstitialAdListener;
 import com.chartboost.heliumsdk.ad.HeliumRewardedAd;
 import com.chartboost.heliumsdk.ad.HeliumRewardedAdListener;
+import com.openmediation.sdk.mediation.BidCallback;
+import com.openmediation.sdk.bid.BidResponse;
+import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.InterstitialAdCallback;
+import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.openmediation.sdk.utils.AdLog;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -40,8 +46,6 @@ public class HeliumSingleTon {
     private final ConcurrentMap<String, HeliumRewardedAd> mRvAds;
     private final ConcurrentMap<String, HeliumInterstitialAd> mIsAds;
 
-    private final ConcurrentMap<String, HeliumBidCallback> mBidCallbacks;
-    private final ConcurrentMap<String, HeliumAdError> mBidError;
     private HeliumInterstitialCallback mInterstitialAdCallback;
     private HeliumVideoCallback mVideoAdCallback;
 
@@ -56,8 +60,6 @@ public class HeliumSingleTon {
     private HeliumSingleTon() {
         mRvAds = new ConcurrentHashMap<>();
         mIsAds = new ConcurrentHashMap<>();
-        mBidCallbacks = new ConcurrentHashMap<>();
-        mBidError = new ConcurrentHashMap<>();
     }
 
     public static HeliumSingleTon getInstance() {
@@ -112,7 +114,7 @@ public class HeliumSingleTon {
                     mCallbacks.clear();
                 }
             });
-        } catch (Exception e) {
+        } catch (Throwable e) {
             mInitState = InitState.NOT_INIT;
             AdLog.getSingleton().LogE("OM-ChartboostBid", e.getMessage());
             for (HeliumInitCallback callback : mCallbacks) {
@@ -136,33 +138,15 @@ public class HeliumSingleTon {
         mVideoAdCallback = callback;
     }
 
-    void addBidCallback(String placementId, HeliumBidCallback callback) {
-        if (!TextUtils.isEmpty(placementId) && callback != null) {
-            mBidCallbacks.put(placementId, callback);
-        }
-    }
-
-    void removeBidCallback(String placementId) {
-        if (!TextUtils.isEmpty(placementId)) {
-            mBidCallbacks.remove(placementId);
-        }
-    }
-
-    void loadRewardedVideo(String adUnitId) {
+    void loadRewardedVideo(String adUnitId, RewardedVideoCallback adCallback, BidCallback bidCallback) {
         HeliumRewardedAd heliumAd = mRvAds.get(adUnitId);
         if (heliumAd != null) {
             HeliumSdk.clearLoaded(heliumAd);
         }
-        HeliumRewardedAd rewardedAd = new HeliumRewardedAd(adUnitId, new InnerRvListener());
-        mRvAds.put(adUnitId, rewardedAd);
+        InnerRvListener listener = new InnerRvListener(adCallback, bidCallback);
+        HeliumRewardedAd rewardedAd = new HeliumRewardedAd(adUnitId, listener);
+        listener.setHeliumAd(rewardedAd);
         rewardedAd.load();
-    }
-
-    HeliumAdError getError(String adUnitId) {
-        if (!TextUtils.isEmpty(adUnitId)) {
-            return mBidError.get(adUnitId);
-        }
-        return null;
     }
 
     boolean isRewardedVideoReady(String adUnitId) {
@@ -180,13 +164,14 @@ public class HeliumSingleTon {
         }
     }
 
-    void loadInterstitial(String adUnitId) {
+    void loadInterstitial(String adUnitId, InterstitialAdCallback adCallback, BidCallback bidCallback) {
         HeliumInterstitialAd heliumAd = mIsAds.get(adUnitId);
         if (heliumAd != null) {
             HeliumSdk.clearLoaded(heliumAd);
         }
-        HeliumInterstitialAd interstitialAd = new HeliumInterstitialAd(adUnitId, new InnerIsListener());
-        mIsAds.put(adUnitId, interstitialAd);
+        InnerIsListener listener = new InnerIsListener(adCallback, bidCallback);
+        HeliumInterstitialAd interstitialAd = new HeliumInterstitialAd(adUnitId, listener);
+        listener.setHeliumAd(interstitialAd);
         interstitialAd.load();
     }
 
@@ -205,13 +190,30 @@ public class HeliumSingleTon {
         }
     }
 
-    private static class InnerRvListener implements HeliumRewardedAdListener {
+    private class InnerRvListener implements HeliumRewardedAdListener {
+
+        private final RewardedVideoCallback mAdCallback;
+        private final BidCallback mBidCallback;
+        private HeliumRewardedAd mHeliumRewardedAd;
+
+        private InnerRvListener(RewardedVideoCallback adCallback, BidCallback bidCallback) {
+            mAdCallback = adCallback;
+            mBidCallback = bidCallback;
+        }
+
+        public void setHeliumAd(HeliumRewardedAd rewardedAd) {
+            mHeliumRewardedAd = rewardedAd;
+        }
 
         @Override
         public void didReceiveWinningBid(String placementId, HashMap<String, String> hashMap) {
             AdLog.getSingleton().LogD("Helium RewardVideo ad didReceiveWinningBid, placementId : " + placementId + ", " + hashMap);
-            if (getInstance().mBidCallbacks.containsKey(placementId)) {
-                getInstance().mBidCallbacks.get(placementId).onBidSuccess(placementId, hashMap);
+            mRvAds.put(placementId, mHeliumRewardedAd);
+            if (mAdCallback != null) {
+                onBidSuccess(hashMap, mAdCallback);
+            }
+            if (mBidCallback != null) {
+                onBidSuccess(hashMap, mBidCallback);
             }
         }
 
@@ -219,94 +221,143 @@ public class HeliumSingleTon {
         public void didCache(String placementId, HeliumAdError error) {
             if (error != null) {
                 AdLog.getSingleton().LogE("Helium RewardedAd didCache ad error : " + placementId + " " + error.toString());
-                if (getInstance().mBidCallbacks.containsKey(placementId)) {
-                    getInstance().mBidCallbacks.get(placementId).onBidFailed(placementId, error.message);
+                if (mAdCallback != null) {
+                    onBidFailed(error.code + ", " + error.message, mAdCallback);
+                    mAdCallback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, "HeliumAdapter", error.code, error.message));
                 }
-                if (!TextUtils.isEmpty(placementId)) {
-                    getInstance().mBidError.put(placementId, error);
+                if (mBidCallback != null) {
+                    onBidFailed(error.code + ", " + error.message, mBidCallback);
                 }
                 return;
             }
             AdLog.getSingleton().LogD("Helium HeliumRewardedAd didCache ad load success " + placementId);
+            if (mAdCallback != null) {
+                mAdCallback.onRewardedVideoLoadSuccess();
+            }
         }
 
         @Override
         public void didShow(String placementId, HeliumAdError error) {
-            if (getInstance().mVideoAdCallback == null) {
+            if (mVideoAdCallback == null) {
                 return;
             }
             if (error != null) {
                 AdLog.getSingleton().LogE("Helium RewardedAd didCache ad error : " + placementId + " " + error.toString());
-                getInstance().mVideoAdCallback.didRewardedShowFailed(placementId, error);
+                mVideoAdCallback.didRewardedShowFailed(placementId, error);
                 return;
             }
             AdLog.getSingleton().LogD("Helium RewardVideo ad display");
-            getInstance().mVideoAdCallback.didRewardedShowed(placementId);
+            mVideoAdCallback.didRewardedShowed(placementId);
         }
 
         @Override
         public void didClose(String placementId, HeliumAdError error) {
             AdLog.getSingleton().LogD("Helium RewardVideo ad close");
-            if (getInstance().mVideoAdCallback != null) {
-                getInstance().mVideoAdCallback.didRewardedClosed(placementId);
+            if (mVideoAdCallback != null) {
+                mVideoAdCallback.didRewardedClosed(placementId);
             }
         }
 
         @Override
         public void didReceiveReward(String placementId, String s1) {
             AdLog.getSingleton().LogD("Helium RewardVideo ad didReceiveReward");
-            if (getInstance().mVideoAdCallback != null) {
-                getInstance().mVideoAdCallback.didRewardedRewarded(placementId);
+            if (mVideoAdCallback != null) {
+                mVideoAdCallback.didRewardedRewarded(placementId);
             }
         }
     }
 
-    private static class InnerIsListener implements HeliumInterstitialAdListener {
+    private class InnerIsListener implements HeliumInterstitialAdListener {
+
+        private final InterstitialAdCallback mAdCallback;
+        private final BidCallback mBidCallback;
+        private HeliumInterstitialAd mHeliumInterstitialAd;
+
+        private InnerIsListener(InterstitialAdCallback adCallback, BidCallback bidCallback) {
+            mAdCallback = adCallback;
+            mBidCallback = bidCallback;
+        }
+
+        public void setHeliumAd(HeliumInterstitialAd ad) {
+            mHeliumInterstitialAd = ad;
+        }
 
         @Override
         public void didReceiveWinningBid(String placementId, HashMap<String, String> hashMap) {
             AdLog.getSingleton().LogD("Helium Interstitial ad didReceiveWinningBid, placementId : " + placementId + ", " + hashMap);
-            if (getInstance().mBidCallbacks.containsKey(placementId)) {
-                getInstance().mBidCallbacks.get(placementId).onBidSuccess(placementId, hashMap);
+            mIsAds.put(placementId, mHeliumInterstitialAd);
+            if (mAdCallback != null) {
+                onBidSuccess(hashMap, mAdCallback);
+            }
+            if (mBidCallback != null) {
+                onBidSuccess(hashMap, mBidCallback);
             }
         }
 
         @Override
         public void didCache(String placementId, HeliumAdError error) {
             if (error != null) {
-                AdLog.getSingleton().LogE("Helium Interstitial ad load failed : " + error.toString());
-                if (getInstance().mBidCallbacks.containsKey(placementId)) {
-                    getInstance().mBidCallbacks.get(placementId).onBidFailed(placementId, error.message);
+                AdLog.getSingleton().LogE("Helium Interstitial ad load failed : " + placementId + ", " + error.toString());
+                if (mAdCallback != null) {
+                    onBidFailed(error.code + ", " + error.message, mAdCallback);
+                    mAdCallback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, "HeliumAdapter", error.code, error.message));
                 }
-                if (!TextUtils.isEmpty(placementId)) {
-                    getInstance().mBidError.put(placementId, error);
+                if (mBidCallback != null) {
+                    onBidFailed(error.code + ", " + error.message, mBidCallback);
                 }
                 return;
             }
-            AdLog.getSingleton().LogD("Helium Interstitial ad complete");
+            AdLog.getSingleton().LogD("Helium Interstitial ad complete: " + placementId);
+            if (mAdCallback != null) {
+                mAdCallback.onInterstitialAdLoadSuccess();
+            }
         }
 
         @Override
         public void didShow(String placementId, HeliumAdError error) {
             if (error != null) {
-                AdLog.getSingleton().LogD("Helium Helium Interstitial ad show failed: " + error.toString());
-                if (getInstance().mInterstitialAdCallback != null) {
-                    getInstance().mInterstitialAdCallback.didInterstitialShowFailed(placementId, error);
+                AdLog.getSingleton().LogD("Helium Interstitial ad show failed: " + placementId + ", " + error.toString());
+                if (mInterstitialAdCallback != null) {
+                    mInterstitialAdCallback.didInterstitialShowFailed(placementId, error);
                 }
                 return;
             }
-            AdLog.getSingleton().LogD("Helium Helium Interstitial ad didShow");
-            if (getInstance().mInterstitialAdCallback != null) {
-                getInstance().mInterstitialAdCallback.didInterstitialShowed(placementId);
+            AdLog.getSingleton().LogD("Helium Interstitial ad didShow: " + placementId);
+            if (mInterstitialAdCallback != null) {
+                mInterstitialAdCallback.didInterstitialShowed(placementId);
             }
         }
 
         @Override
         public void didClose(String placementId, HeliumAdError error) {
-            AdLog.getSingleton().LogD("Helium Helium Interstitial ad close");
-            if (getInstance().mInterstitialAdCallback != null) {
-                getInstance().mInterstitialAdCallback.didInterstitialClosed(placementId);
+            AdLog.getSingleton().LogD("Helium Helium Interstitial ad close: " + placementId);
+            if (mInterstitialAdCallback != null) {
+                mInterstitialAdCallback.didInterstitialClosed(placementId);
             }
         }
+    }
+
+    private void onBidSuccess(Map<String, String> map, BidCallback callback) {
+        if (callback == null) {
+            return;
+        }
+        if (map == null || map.isEmpty() || !map.containsKey("price")) {
+            callback.onBidFailed("Helium bid failed cause no bid response");
+            return;
+        }
+        String price = map.get("price");
+        BidResponse bidResponse = new BidResponse();
+        bidResponse.setOriginal(map.toString());
+        bidResponse.setPrice(Double.parseDouble(price));
+        callback.onBidSuccess(bidResponse);
+    }
+
+    private void onBidFailed(String error, BidCallback callback) {
+        if (callback == null) {
+            return;
+        }
+        callback.onBidFailed(error);
     }
 }

@@ -3,6 +3,7 @@
 
 package com.openmediation.sdk.core.imp.interstitialad;
 
+import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.core.AbstractInventoryAds;
 import com.openmediation.sdk.core.OmManager;
 import com.openmediation.sdk.interstitial.InterstitialAdListener;
@@ -64,7 +65,7 @@ public final class IsManager extends AbstractInventoryAds implements IsManagerLi
         super.initInsAndSendEvent(instance);
         if (!(instance instanceof IsInstance)) {
             instance.setMediationState(BaseInstance.MEDIATION_STATE.INIT_FAILED);
-            onInsInitFailed(instance, new Error(ErrorCode.CODE_LOAD_UNKNOWN_INTERNAL_ERROR,
+            onInsInitFailed(instance, new Error(ErrorCode.CODE_LOAD_UNKNOWN_ERROR,
                     "current is not an interstitial adUnit", -1));
             return;
         }
@@ -184,5 +185,15 @@ public final class IsManager extends AbstractInventoryAds implements IsManagerLi
     @Override
     public void onInterstitialAdLoadFailed(IsInstance isInstance, AdapterError error) {
         onInsLoadFailed(isInstance, error, false);
+    }
+
+    @Override
+    public void onBidSuccess(BaseInstance instance, BidResponse response) {
+        onInsC2SBidSuccess(instance, response);
+    }
+
+    @Override
+    public void onBidFailed(BaseInstance instance, String error) {
+        onInsC2SBidFailed(instance, error);
     }
 }

@@ -55,6 +55,7 @@ public class AdapterUtil {
         mAdapterPaths.put(MediationInfo.MEDIATION_ID_24, getAdapterPath(MediationInfo.MEDIATION_ID_24));
         mAdapterPaths.put(MediationInfo.MEDIATION_ID_25, getAdapterPath(MediationInfo.MEDIATION_ID_25));
         mAdapterPaths.put(MediationInfo.MEDIATION_ID_26, getAdapterPath(MediationInfo.MEDIATION_ID_26));
+        mAdapterPaths.put(MediationInfo.MEDIATION_ID_27, getAdapterPath(MediationInfo.MEDIATION_ID_27));
         mAdapterPaths.put(MediationInfo.MEDIATION_ID_30, getAdapterPath(MediationInfo.MEDIATION_ID_30));
     }
 
@@ -106,17 +107,6 @@ public class AdapterUtil {
             return mAdapters.get(mediationId);
         }
         return null;
-    }
-
-    /**
-     * Gets adapter path with type.
-     *
-     * @param type        the type
-     * @param mediationId the mediationId
-     * @return the adapter path with type
-     */
-    public static String getAdapterPathWithType(int type, int mediationId) {
-        return getMediationPath(mediationId).concat(getAdType(type));
     }
 
     private static AdNetwork getAdNetWork(CustomAdsAdapter adapter) {
@@ -222,6 +212,9 @@ public class AdapterUtil {
             case MediationInfo.MEDIATION_ID_26:
                 path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_26));
                 break;
+            case MediationInfo.MEDIATION_ID_27:
+                path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_27));
+                break;
             case MediationInfo.MEDIATION_ID_30:
                 path = MEDIATION_ADAPTER_BASE_PATH.concat(getAdapterName(MediationInfo.MEDIATION_NAME_30));
                 break;
@@ -229,31 +222,6 @@ public class AdapterUtil {
                 break;
         }
         return path;
-    }
-
-
-    /**
-     * Gets ad type.
-     *
-     * @param adIndex the ad index
-     * @return the ad type
-     */
-    static String getAdType(int adIndex) {
-        String adType = "";
-        switch (adIndex) {
-            case CommonConstants.BANNER:
-                adType = CommonConstants.ADTYPE_BANNER;
-                break;
-            case CommonConstants.NATIVE:
-                adType = CommonConstants.ADTYPE_NATIVE;
-                break;
-            case CommonConstants.SPLASH:
-                adType = CommonConstants.ADTYPE_SPLASH;
-                break;
-            default:
-                break;
-        }
-        return adType;
     }
 
     /**

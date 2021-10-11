@@ -8,6 +8,7 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.view.ViewGroup;
 
+import com.openmediation.sdk.bid.BidConstance;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
@@ -54,8 +55,34 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
     }
 
     @Override
-    public boolean isAdNetworkInit() {
-        return VungleSingleTon.getInstance().getInitState() == VungleSingleTon.InitState.INIT_SUCCESS;
+    public boolean isS2S() {
+        return true;
+    }
+
+    @Override
+    public boolean needPayload() {
+        return true;
+    }
+
+    @Override
+    public void initBid(Context context, Map<String, Object> dataMap) {
+        super.initBid(context, dataMap);
+        if (MediationUtil.getContext() == null) {
+            return;
+        }
+        if (dataMap == null || !dataMap.containsKey(BidConstance.BID_APP_KEY)) {
+            return;
+        }
+        String appKey = String.valueOf(dataMap.get(BidConstance.BID_APP_KEY));
+        VungleSingleTon.getInstance().init(MediationUtil.getContext(), appKey, null);
+    }
+
+    @Override
+    public String getBiddingToken(Context context) {
+        if (!Vungle.isInitialized()) {
+            VungleSingleTon.getInstance().init(MediationUtil.getContext(), mAppKey, null);
+        }
+        return Vungle.getAvailableBidTokens(MediationUtil.getContext());
     }
 
     @Override

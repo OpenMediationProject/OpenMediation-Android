@@ -224,16 +224,13 @@ public class ConfigurationHelper {
         int len = insArray.length();
         for (int i = 0; i < len; i++) {
             JSONObject insObject = insArray.optJSONObject(i);
-            BaseInstance instance = createInstance(adType);
             int instancesId = insObject.optInt("id");
             int mediationId = insObject.optInt("m");
             Mediation mediation = mapps.get(mediationId);
             if (mediation == null) {
                 continue;
             }
-            if (adType == CommonConstants.BANNER || adType == CommonConstants.NATIVE || adType == CommonConstants.SPLASH) {
-                instance.setPath(AdapterUtil.getAdapterPathWithType(adType, mediation.getId()));
-            }
+            BaseInstance instance = createInstance(adType);
             instance.setAppKey(mediation.getK());
 
             String key = insObject.optString("k");

@@ -6,6 +6,7 @@ package com.openmediation.sdk.core.imp.promotion;
 import android.app.Activity;
 import android.text.TextUtils;
 
+import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.core.AbstractInventoryAds;
 import com.openmediation.sdk.core.OmManager;
 import com.openmediation.sdk.mediation.AdapterError;
@@ -91,7 +92,7 @@ public final class CpManager extends AbstractInventoryAds implements CpManagerLi
         super.initInsAndSendEvent(instance);
         if (!(instance instanceof CpInstance)) {
             instance.setMediationState(BaseInstance.MEDIATION_STATE.INIT_FAILED);
-            onInsInitFailed(instance, new Error(ErrorCode.CODE_LOAD_UNKNOWN_INTERNAL_ERROR,
+            onInsInitFailed(instance, new Error(ErrorCode.CODE_LOAD_UNKNOWN_ERROR,
                     "current is not an promotion adUnit", -1));
             return;
         }
@@ -209,5 +210,15 @@ public final class CpManager extends AbstractInventoryAds implements CpManagerLi
     public void onPromotionAdLoadFailed(CpInstance instance, AdapterError error) {
         DeveloperLog.LogE("CpManager onPromotionAdLoadFailed : " + instance + " error : " + error);
         onInsLoadFailed(instance, error, false);
+    }
+
+    @Override
+    public void onBidSuccess(BaseInstance instance, BidResponse response) {
+        onInsC2SBidSuccess(instance, response);
+    }
+
+    @Override
+    public void onBidFailed(BaseInstance instance, String error) {
+        onInsC2SBidFailed(instance, error);
     }
 }

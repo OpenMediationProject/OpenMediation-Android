@@ -73,7 +73,7 @@ public class TencentNativeManager {
             InnerAdListener listener = new InnerAdListener(adUnitId, callback);
             NativeExpressAD expressAD = new NativeExpressAD(context, size, adUnitId, listener);
             expressAD.loadAD(1);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             if (callback != null) {
                 callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
                         AdapterErrorBuilder.AD_UNIT_NATIVE, "TencentAdAdapter", "Unknown Error"));

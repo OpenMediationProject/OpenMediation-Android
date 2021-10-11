@@ -62,11 +62,6 @@ public class TencentAdAdapter extends CustomAdsAdapter {
         return MediationInfo.MEDIATION_ID_6;
     }
 
-    @Override
-    public boolean isAdNetworkInit() {
-        return TencentAdManagerHolder.isInit();
-    }
-
     private synchronized boolean initSDK(String appKey) {
         if (TencentAdManagerHolder.isInit()) {
             return true;
@@ -118,7 +113,14 @@ public class TencentAdAdapter extends CustomAdsAdapter {
                 callback.onRewardedVideoLoadSuccess();
             }
         } else {
-            realLoadRvAd(MediationUtil.getContext(), adUnitId, callback);
+            try {
+                realLoadRvAd(MediationUtil.getContext(), adUnitId, callback);
+            } catch (Throwable e) {
+                if (callback != null) {
+                    callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
+                }
+            }
         }
     }
 
@@ -133,19 +135,26 @@ public class TencentAdAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        if (isRewardedVideoAvailable(adUnitId)) {
-            if (callback != null) {
-                mRvCallbacks.put(adUnitId, callback);
+        try {
+            if (isRewardedVideoAvailable(adUnitId)) {
+                if (callback != null) {
+                    mRvCallbacks.put(adUnitId, callback);
+                }
+                RewardVideoAD rewardedVideoAd = mRvAds.get(adUnitId);
+                if (rewardedVideoAd != null) {
+                    rewardedVideoAd.showAD(activity);
+                }
+                mRvAds.remove(adUnitId);
+            } else {
+                if (callback != null) {
+                    callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Tencent RewardedVideoAd not ready"));
+                }
             }
-            RewardVideoAD rewardedVideoAd = mRvAds.get(adUnitId);
-            if (rewardedVideoAd != null) {
-                rewardedVideoAd.showAD(activity);
-            }
-            mRvAds.remove(adUnitId);
-        } else {
+        } catch (Throwable e) {
             if (callback != null) {
                 callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Tencent RewardedVideoAd not ready"));
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
             }
         }
     }
@@ -203,7 +212,14 @@ public class TencentAdAdapter extends CustomAdsAdapter {
                 callback.onInterstitialAdLoadSuccess();
             }
         } else {
-            realLoadInterstitial(activity, adUnitId, callback);
+            try {
+                realLoadInterstitial(activity, adUnitId, callback);
+            } catch (Throwable e) {
+                if (callback != null) {
+                    callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
+                }
+            }
         }
     }
 
@@ -218,19 +234,26 @@ public class TencentAdAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        if (isInterstitialAdAvailable(adUnitId)) {
-            if (callback != null) {
-                mIsCallbacks.put(adUnitId, callback);
+        try {
+            if (isInterstitialAdAvailable(adUnitId)) {
+                if (callback != null) {
+                    mIsCallbacks.put(adUnitId, callback);
+                }
+                UnifiedInterstitialAD ad = mIsAds.get(adUnitId);
+                if (ad != null) {
+                    ad.showFullScreenAD(activity);
+                }
+                mIsAds.remove(adUnitId);
+            } else {
+                if (callback != null) {
+                    callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "TencentAds InterstitialAd not ready"));
+                }
             }
-            UnifiedInterstitialAD ad = mIsAds.get(adUnitId);
-            if (ad != null) {
-                ad.showFullScreenAD(activity);
-            }
-            mIsAds.remove(adUnitId);
-        } else {
+        } catch (Throwable e) {
             if (callback != null) {
                 callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "TencentAds InterstitialAd not ready"));
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
             }
         }
     }

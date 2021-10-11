@@ -6,6 +6,7 @@ package com.openmediation.sdk.core.imp.banner;
 import android.app.Activity;
 import android.view.View;
 
+import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.core.InsManager;
 import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.mediation.BannerAdCallback;
@@ -18,17 +19,15 @@ public class BnInstance extends BaseInstance implements BannerAdCallback {
 
     private BnManagerListener mListener;
 
-    void initBn(Activity activity, Map<String, Object> extras) {
+    void initBn(Activity activity) {
         if (mAdapter != null) {
-            mAdapter.initBannerAd(activity, extras, this);
-            InsManager.onInsInitStart(this);
+            mAdapter.initBannerAd(activity, InsManager.getInitDataMap(this), this);
         }
     }
 
     void loadBn(Activity activity, Map<String, Object> extras) {
         if (mAdapter != null) {
             DeveloperLog.LogD("load BannerAd : " + getMediationId() + " key : " + getKey());
-            mLoadStart = System.currentTimeMillis();
             mAdapter.loadBannerAd(activity, getKey(), extras, this);
         }
     }
@@ -81,4 +80,13 @@ public class BnInstance extends BaseInstance implements BannerAdCallback {
         mListener.onBannerAdAdClicked(this);
     }
 
+    @Override
+    public void onBidSuccess(BidResponse response) {
+        mListener.onBidSuccess(this, response);
+    }
+
+    @Override
+    public void onBidFailed(String error) {
+        mListener.onBidFailed(this, error);
+    }
 }

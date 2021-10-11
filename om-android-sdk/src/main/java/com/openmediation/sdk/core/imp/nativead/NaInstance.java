@@ -5,6 +5,7 @@ package com.openmediation.sdk.core.imp.nativead;
 
 import android.app.Activity;
 
+import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.core.InsManager;
 import com.openmediation.sdk.core.runnable.LoadTimeoutRunnable;
 import com.openmediation.sdk.mediation.AdapterError;
@@ -28,7 +29,6 @@ public class NaInstance extends BaseInstance implements NativeAdCallback, LoadTi
     void initNa(Activity activity) {
         if (mAdapter != null) {
             mAdapter.initNativeAd(activity, InsManager.getInitDataMap(this), this);
-            InsManager.onInsInitStart(this);
         }
     }
 
@@ -36,7 +36,6 @@ public class NaInstance extends BaseInstance implements NativeAdCallback, LoadTi
         setMediationState(MEDIATION_STATE.LOAD_PENDING);
         if (mAdapter != null) {
             DeveloperLog.LogD("load NativeAd : " + getMediationId() + " key : " + getKey());
-            mLoadStart = System.currentTimeMillis();
             InsManager.startInsLoadTimer(this, this);
             mAdapter.loadNativeAd(activity, getKey(), extras, this);
         }
@@ -49,7 +48,8 @@ public class NaInstance extends BaseInstance implements NativeAdCallback, LoadTi
     }
 
     boolean isNaAvailable() {
-        return mAdapter != null && getObject() instanceof AdnAdInfo;
+        return getMediationState() == MEDIATION_STATE.AVAILABLE &&
+                mAdapter != null && getObject() instanceof AdnAdInfo;
     }
 
     void destroyNa(AdnAdInfo adInfo) {
@@ -75,6 +75,7 @@ public class NaInstance extends BaseInstance implements NativeAdCallback, LoadTi
         mListener.onNativeAdInitFailed(this, error);
     }
 
+    @Override
     public void onNativeAdLoadSuccess(AdnAdInfo info) {
         setObject(info);
         AdInfo adInfo = new AdInfo();
@@ -111,5 +112,15 @@ public class NaInstance extends BaseInstance implements NativeAdCallback, LoadTi
         AdapterError errorResult = AdapterErrorBuilder.buildLoadCheckError(
                 AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapter == null ? "" : mAdapter.getClass().getSimpleName(), ErrorCode.ERROR_TIMEOUT);
         onNativeAdLoadFailed(errorResult);
+    }
+
+    @Override
+    public void onBidSuccess(BidResponse response) {
+        mListener.onBidSuccess(this, response);
+    }
+
+    @Override
+    public void onBidFailed(String error) {
+        mListener.onBidFailed(this, error);
     }
 }

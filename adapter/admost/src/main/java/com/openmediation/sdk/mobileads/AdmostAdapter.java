@@ -6,14 +6,18 @@
 package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 
+import com.openmediation.sdk.mediation.BidCallback;
+import com.openmediation.sdk.bid.BidConstance;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
+import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.mediation.NativeAdCallback;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.openmediation.sdk.mobileads.admost.BuildConfig;
@@ -49,11 +53,6 @@ public class AdmostAdapter extends CustomAdsAdapter implements AdmostInterstitia
     }
 
     @Override
-    public boolean isAdNetworkInit() {
-        return AdmostSingleTon.getInstance().isInit();
-    }
-
-    @Override
     public void onResume(Activity activity) {
         super.onResume(activity);
         AdmostSingleTon.getInstance().onResume();
@@ -63,6 +62,20 @@ public class AdmostAdapter extends CustomAdsAdapter implements AdmostInterstitia
     public void onPause(Activity activity) {
         super.onPause(activity);
         AdmostSingleTon.getInstance().onPause();
+    }
+
+    @Override
+    public void initBid(Context context, Map<String, Object> dataMap) {
+        super.initBid(context, dataMap);
+        if (!AdmostSingleTon.getInstance().isInit()) {
+            Activity activity;
+            if (context instanceof Activity) {
+                activity = (Activity) context;
+            } else {
+                activity = MediationUtil.getActivity();
+            }
+            init(activity, String.valueOf(dataMap.get(BidConstance.BID_APP_KEY)), null);
+        }
     }
 
     @Override
@@ -110,11 +123,7 @@ public class AdmostAdapter extends CustomAdsAdapter implements AdmostInterstitia
                 callback.onInterstitialAdLoadSuccess();
             }
         } else {
-            if (callback != null) {
-                String error = AdmostSingleTon.getInstance().getError(adUnitId);
-                callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
-            }
+            AdmostSingleTon.getInstance().loadInterstitial(adUnitId, callback, null);
         }
     }
 
@@ -185,11 +194,7 @@ public class AdmostAdapter extends CustomAdsAdapter implements AdmostInterstitia
                 callback.onRewardedVideoLoadSuccess();
             }
         } else {
-            if (callback != null) {
-                String error = AdmostSingleTon.getInstance().getError(adUnitId);
-                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
-                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
-            }
+            AdmostSingleTon.getInstance().loadRewardedVideo(adUnitId, callback, null);
         }
     }
 
@@ -354,4 +359,11 @@ public class AdmostAdapter extends CustomAdsAdapter implements AdmostInterstitia
             listener.onRewardedVideoAdClicked();
         }
     }
+
+    @Override
+    public void getBidResponse(Context context, Map<String, Object> dataMap, BidCallback callback) {
+        super.getBidResponse(context, dataMap, callback);
+        AdmostSingleTon.getInstance().getBidResponse(context, dataMap, callback);
+    }
+
 }

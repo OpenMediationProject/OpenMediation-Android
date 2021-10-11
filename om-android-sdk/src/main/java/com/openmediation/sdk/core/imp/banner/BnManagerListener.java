@@ -3,9 +3,10 @@
 
 package com.openmediation.sdk.core.imp.banner;
 
+import com.openmediation.sdk.core.BaseInsBidCallback;
 import com.openmediation.sdk.mediation.AdapterError;
 
-public interface BnManagerListener {
+public interface BnManagerListener extends BaseInsBidCallback {
     void onBannerAdInitSuccess(BnInstance instance);
 
     void onBannerAdInitFailed(BnInstance instance, AdapterError error);

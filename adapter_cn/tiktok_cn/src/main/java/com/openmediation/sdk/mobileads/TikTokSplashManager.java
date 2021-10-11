@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TikTokSplashManager {
-    private static String TAG = "TikTok: ";
+    private static final String TAG = "TikTok: ";
 
     private static final String CONFIG_TIMEOUT = "Timeout";
     private static final String CONFIG_WIDTH = "Width";
@@ -67,7 +67,7 @@ public class TikTokSplashManager {
         int fetchDelay;
         try {
             fetchDelay = Integer.parseInt(config.get(CONFIG_TIMEOUT).toString());
-        } catch(Exception e) {
+        } catch(Exception ignored) {
             fetchDelay = 0;
         }
         int width = 0;
@@ -138,10 +138,10 @@ public class TikTokSplashManager {
                     }
                     container.removeAllViews();
                     container.addView(splashView);
-                } catch(Exception e) {
+                } catch(Throwable e) {
                     if (callback != null) {
                         callback.onSplashAdShowFailed(AdapterErrorBuilder.buildShowError(
-                                AdapterErrorBuilder.AD_UNIT_SPLASH, "TikTokAdapter", e.getMessage()));
+                                AdapterErrorBuilder.AD_UNIT_SPLASH, "TikTokAdapter", "Unknown Error, " + e.getMessage()));
                     }
                 }
             }
@@ -154,8 +154,8 @@ public class TikTokSplashManager {
 
     private class InnerSplashAdListener implements TTAdNative.SplashAdListener {
 
-        private String mAdUnitId;
-        private SplashAdCallback mAdCallback;
+        private final String mAdUnitId;
+        private final SplashAdCallback mAdCallback;
 
         private InnerSplashAdListener(String adUnitId, SplashAdCallback callback) {
             this.mAdUnitId = adUnitId;
@@ -195,9 +195,9 @@ public class TikTokSplashManager {
         }
     }
 
-    private class SplashAdAdInteractionListener implements TTSplashAd.AdInteractionListener {
-        private String mAdUnitId;
-        private SplashAdCallback mAdCallback;
+    private static class SplashAdAdInteractionListener implements TTSplashAd.AdInteractionListener {
+        private final String mAdUnitId;
+        private final SplashAdCallback mAdCallback;
 
         private SplashAdAdInteractionListener(String adUnitId, SplashAdCallback callback) {
             this.mAdUnitId = adUnitId;

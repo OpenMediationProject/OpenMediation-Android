@@ -101,7 +101,7 @@ public class TencentSplashManager {
             ttSplashAd.showAd(container);
             mSplashAds.remove(adUnitId);
             mExpireTimestamps.remove(adUnitId);
-        } catch(Exception e) {
+        } catch(Throwable e) {
             if (callback != null) {
                 callback.onSplashAdShowFailed(AdapterErrorBuilder.buildShowError(
                         AdapterErrorBuilder.AD_UNIT_SPLASH, "TencentAdAdapter", e.getMessage()));

@@ -86,7 +86,7 @@ public class MintegralSingleTon {
                 }
 
             });
-        } catch (Exception e) {
+        } catch (Throwable e) {
             initError("Mintegral SDK Init Failed: " + e.getMessage());
         }
     }

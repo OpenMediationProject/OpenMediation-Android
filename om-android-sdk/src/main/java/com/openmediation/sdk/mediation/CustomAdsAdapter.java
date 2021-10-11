@@ -4,6 +4,7 @@
 package com.openmediation.sdk.mediation;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Build;
 import android.text.TextUtils;
 import android.view.ViewGroup;
@@ -22,12 +23,43 @@ import java.util.Map;
  * and invoke its methods.
  */
 public abstract class CustomAdsAdapter extends CustomAdParams implements RewardedVideoApi,
-        InterstitialAdApi, PromotionAdApi, BannerAdApi, NativeAdApi, SplashAdApi {
+        InterstitialAdApi, PromotionAdApi, BannerAdApi, NativeAdApi, SplashAdApi, BidApi {
 
     protected String mAppKey;
 
-    public boolean isAdNetworkInit() {
+    @Override
+    public void initBid(Context context, Map<String, Object> dataMap) {
+
+    }
+
+    @Override
+    public String getBiddingToken(Context context) {
+        return null;
+    }
+
+    @Override
+    public void getBidResponse(Context context, Map<String, Object> dataMap, BidCallback callback) {
+
+    }
+
+    @Override
+    public boolean isS2S() {
         return false;
+    }
+
+    @Override
+    public boolean needPayload() {
+        return false;
+    }
+
+    @Override
+    public void notifyWin(String placementId, Map<String, Object> dataMap) {
+
+    }
+
+    @Override
+    public void notifyLose(String placementId, Map<String, Object> dataMap) {
+
     }
 
     @Override

@@ -3,9 +3,10 @@
 
 package com.openmediation.sdk.core.imp.promotion;
 
+import com.openmediation.sdk.core.BaseInsBidCallback;
 import com.openmediation.sdk.mediation.AdapterError;
 
-public interface CpManagerListener {
+public interface CpManagerListener extends BaseInsBidCallback {
 
     void onPromotionAdInitSuccess(CpInstance cpInstance);
 

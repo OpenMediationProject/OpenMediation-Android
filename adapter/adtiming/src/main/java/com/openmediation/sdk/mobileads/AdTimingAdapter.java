@@ -8,6 +8,7 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.adtbid.sdk.AdTimingAds;
+import com.adtbid.sdk.bid.BidderTokenProvider;
 import com.adtbid.sdk.interstitial.AdTimingInterstitialAd;
 import com.adtbid.sdk.interstitial.InterstitialAdListener;
 import com.adtbid.sdk.utils.error.AdTimingError;
@@ -63,8 +64,18 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
     }
 
     @Override
-    public boolean isAdNetworkInit() {
-        return AdTimingSingleTon.getInstance().isInit();
+    public boolean isS2S() {
+        return true;
+    }
+
+    @Override
+    public boolean needPayload() {
+        return true;
+    }
+
+    @Override
+    public String getBiddingToken(Context context) {
+        return BidderTokenProvider.getBidderToken();
     }
 
     @Override

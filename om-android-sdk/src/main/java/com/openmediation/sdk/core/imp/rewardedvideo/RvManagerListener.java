@@ -3,9 +3,10 @@
 
 package com.openmediation.sdk.core.imp.rewardedvideo;
 
+import com.openmediation.sdk.core.BaseInsBidCallback;
 import com.openmediation.sdk.mediation.AdapterError;
 
-public interface RvManagerListener {
+public interface RvManagerListener extends BaseInsBidCallback {
     void onRewardedVideoInitSuccess(RvInstance rvInstance);
 
     void onRewardedVideoInitFailed(RvInstance rvInstance, AdapterError error);

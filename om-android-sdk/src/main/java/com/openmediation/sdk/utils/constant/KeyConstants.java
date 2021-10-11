@@ -348,6 +348,8 @@ public interface KeyConstants {
 
         /*Instance Priority*/
         String KEY_INSTANCE_PRIORITY = "ii";
+
+        String KEY_GCY = "gcy";
     }
 
     /**

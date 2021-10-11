@@ -4,9 +4,11 @@
 package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
+import android.content.Context;
 import android.text.TextUtils;
 
 import com.crosspromotion.sdk.CrossPromotionAds;
+import com.crosspromotion.sdk.bid.BidderTokenProvider;
 import com.crosspromotion.sdk.interstitial.InterstitialAd;
 import com.crosspromotion.sdk.interstitial.InterstitialAdListener;
 import com.crosspromotion.sdk.promotion.PromotionAd;
@@ -62,8 +64,18 @@ public class CrossPromotionAdapter extends CustomAdsAdapter implements RewardedV
     }
 
     @Override
-    public boolean isAdNetworkInit() {
-        return CrossPromotionSingleTon.getInstance().isInit();
+    public boolean isS2S() {
+        return true;
+    }
+
+    @Override
+    public boolean needPayload() {
+        return true;
+    }
+
+    @Override
+    public String getBiddingToken(Context context) {
+        return BidderTokenProvider.getBidderToken();
     }
 
     @Override

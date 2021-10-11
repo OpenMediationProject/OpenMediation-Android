@@ -7,7 +7,7 @@ android {
 
     defaultConfig {
         applicationId "com.openmediation.sdk.demo"
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
@@ -127,7 +127,7 @@ dependencies {
     // OAID
     implementation project(path: ':miit_mdid_1.0.10')
     // TikTok
-//    implementation(name: 'open_ad_sdk_3.9.0.0', ext: 'aar')
+//    implementation(name: 'open_ad_sdk_4.0.0.0', ext: 'aar')
 //    implementation project(path: ':adapter_cn:tiktok_cn')
 
     // TencentAds
@@ -150,7 +150,7 @@ dependencies {
     implementation(name: 'windAd-3.3.3', ext: 'aar')
     implementation project(path: ':adapter_cn:sigmob_cn')
     // 快手
-    implementation(name: 'kssdk-ad--3.3.13', ext: 'aar')
+    implementation(name: 'kssdk-ad--3.3.14', ext: 'aar')
     implementation project(path: ':adapter_cn:ksad_cn')
 
     implementation rootProject.ext.dependencies.admost
@@ -170,6 +170,11 @@ dependencies {
     // FlatAds
     implementation rootProject.ext.dependencies.flatads
     implementation project(path: ':adapter:flatads')
+
+    // SAN Ads
+    implementation rootProject.ext.dependencies.sanads
+    implementation project(path: ':adapter:sanads')
+
     implementation 'com.google.firebase:firebase-analytics:19.0.0'
 }
 

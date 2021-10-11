@@ -1,7 +1,5 @@
 package com.openmediation.sdk.utils.model;
 
-import android.text.TextUtils;
-
 import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.core.runnable.LoadTimeoutRunnable;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
@@ -22,8 +20,6 @@ public class BaseInstance extends Frequency implements Comparable<BaseInstance> 
     protected int mediationId;
     //placement key
     protected String key;
-    //placement template path
-    private String path;
     //group index
     private int grpIndex;
     //own index
@@ -46,6 +42,10 @@ public class BaseInstance extends Frequency implements Comparable<BaseInstance> 
     protected long mInitStart;
     protected long mLoadStart;
     protected long mShowStart;
+    /**
+     * bid start time
+     */
+    protected long mC2SBidStart;
 
     protected String mPlacementId;
 
@@ -104,14 +104,6 @@ public class BaseInstance extends Frequency implements Comparable<BaseInstance> 
 
     public void setMediationId(int mediationId) {
         this.mediationId = mediationId;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    public String getPath() {
-        return path;
     }
 
     public void setGrpIndex(int grpIndex) {
@@ -334,6 +326,18 @@ public class BaseInstance extends Frequency implements Comparable<BaseInstance> 
         return mScheduledFuture;
     }
 
+    public long getC2SBidStart() {
+        return mC2SBidStart;
+    }
+
+    public void setC2SBidStart(long c2SBidStart) {
+        this.mC2SBidStart = c2SBidStart;
+    }
+
+    public boolean isBid() {
+        return hb == 1;
+    }
+
     public BaseInstance copy(BaseInstance baseInstance) {
         baseInstance.setAppKey(appKey);
         baseInstance.setHb(hb);
@@ -341,7 +345,6 @@ public class BaseInstance extends Frequency implements Comparable<BaseInstance> 
         baseInstance.setId(id);
         baseInstance.setMediationId(mediationId);
         baseInstance.setName(name);
-        baseInstance.setPath(path);
         baseInstance.setKey(key);
         baseInstance.setPlacementId(mPlacementId);
         baseInstance.setAdapter(mAdapter);

@@ -14,6 +14,7 @@ import com.mbridge.msdk.MBridgeSDK;
 import com.mbridge.msdk.interstitialvideo.out.InterstitialVideoListener;
 import com.mbridge.msdk.interstitialvideo.out.MBBidInterstitialVideoHandler;
 import com.mbridge.msdk.interstitialvideo.out.MBInterstitialVideoHandler;
+import com.mbridge.msdk.mbbid.out.BidManager;
 import com.mbridge.msdk.out.MBBidRewardVideoHandler;
 import com.mbridge.msdk.out.MBConfiguration;
 import com.mbridge.msdk.out.MBRewardVideoHandler;
@@ -29,11 +30,13 @@ import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.openmediation.sdk.mobileads.mintegral.BuildConfig;
+import com.openmediation.sdk.utils.AdLog;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MintegralAdapter extends CustomAdsAdapter {
+    private static final String CLAZZ = "com.mbridge.msdk.mbbid.out.BidManager";
     private static final String PAY_LOAD = "pay_load";
     private ConcurrentHashMap<String, MBInterstitialVideoHandler> mInterstitialAds;
     private ConcurrentHashMap<String, MBRewardVideoHandler> mRvAds;
@@ -65,8 +68,24 @@ public class MintegralAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public boolean isAdNetworkInit() {
-        return MintegralSingleTon.getInstance().isInit();
+    public boolean isS2S() {
+        return true;
+    }
+
+    @Override
+    public boolean needPayload() {
+        return true;
+    }
+
+    @Override
+    public String getBiddingToken(Context context) {
+        try {
+            Class clazz = Class.forName(CLAZZ);
+            return BidManager.getBuyerUid(MediationUtil.getContext());
+        } catch(Throwable e) {
+            AdLog.getSingleton().LogE("Mintegral getBuyerUid Error: " + e.getMessage());
+        }
+        return "";
     }
 
     @Override
@@ -144,10 +163,10 @@ public class MintegralAdapter extends CustomAdsAdapter {
                         mBidAdUnits.put(adUnitId, true);
                         loadRvAdWithBid(context, adUnitId, payload, callback);
                     }
-                } catch(Exception e) {
+                } catch(Throwable e) {
                     if (callback != null) {
-                        callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
-                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, e.getMessage()));
+                        callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
                     }
                 }
             }
@@ -210,7 +229,14 @@ public class MintegralAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        showRvAd(adUnitId, callback);
+        try {
+            showRvAd(adUnitId, callback);
+        } catch (Throwable e) {
+            if (callback != null) {
+                callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
+            }
+        }
     }
 
     private void showRvAd(String adUnitId, RewardedVideoCallback callback) {
@@ -295,10 +321,10 @@ public class MintegralAdapter extends CustomAdsAdapter {
                         mBidAdUnits.put(adUnitId, true);
                         loadIsAdWithBid(context, adUnitId, payload, callback);
                     }
-                } catch(Exception e) {
+                } catch(Throwable e) {
                     if (callback != null) {
-                        callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
-                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, e.getMessage()));
+                        callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
                     }
                 }
             }
@@ -361,7 +387,14 @@ public class MintegralAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        showIsAd(adUnitId, callback);
+        try {
+            showIsAd(adUnitId, callback);
+        } catch (Throwable e) {
+            if (callback != null) {
+                callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
+            }
+        }
     }
 
     private void showIsAd(String adUnitId, InterstitialAdCallback callback) {

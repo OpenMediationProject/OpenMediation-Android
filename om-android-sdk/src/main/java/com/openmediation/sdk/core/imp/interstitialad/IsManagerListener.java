@@ -3,9 +3,10 @@
 
 package com.openmediation.sdk.core.imp.interstitialad;
 
+import com.openmediation.sdk.core.BaseInsBidCallback;
 import com.openmediation.sdk.mediation.AdapterError;
 
-public interface IsManagerListener {
+public interface IsManagerListener extends BaseInsBidCallback {
 
     void onInterstitialAdInitSuccess(IsInstance isInstance);
 
