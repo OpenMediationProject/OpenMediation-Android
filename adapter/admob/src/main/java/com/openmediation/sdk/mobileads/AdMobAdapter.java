@@ -792,8 +792,6 @@ public class AdMobAdapter extends CustomAdsAdapter {
             if (count > 0) {
                 View actualView = adView.getChildAt(0);
                 adView.removeView(actualView);
-                googleAdView.setLayoutParams(new ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                 googleAdView.addView(actualView);
                 adView.addView(googleAdView);
             }
