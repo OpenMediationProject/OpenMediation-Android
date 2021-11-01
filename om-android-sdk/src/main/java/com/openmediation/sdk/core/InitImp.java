@@ -59,16 +59,9 @@ public final class InitImp {
      * @param callback the callback
      */
     public static void init(Activity activity, InitConfiguration configuration, final InitCallback callback) {
-        //
-//        if (hasInit.get()) {
-//            return;
-//        }
-
         if (isInitRunning.get()) {
             return;
         }
-
-
         isInitRunning.set(true);
         sInitStart = System.currentTimeMillis();
 //        SensorManager.getSingleton();
