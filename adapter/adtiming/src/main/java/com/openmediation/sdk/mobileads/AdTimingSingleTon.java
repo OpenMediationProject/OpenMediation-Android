@@ -6,8 +6,8 @@ import com.adtbid.sdk.AdTimingAds;
 import com.adtbid.sdk.InitCallback;
 import com.adtbid.sdk.utils.error.AdTimingError;
 
-import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 public class AdTimingSingleTon implements InitCallback {
 
@@ -41,7 +41,7 @@ public class AdTimingSingleTon implements InitCallback {
     }
 
     private AdTimingSingleTon() {
-        initCallbacks = new HashSet<>();
+        initCallbacks = new CopyOnWriteArraySet<>();
     }
 
     public static AdTimingSingleTon getInstance() {

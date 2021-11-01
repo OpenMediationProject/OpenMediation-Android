@@ -167,6 +167,13 @@ public class AdTimingNativeManager {
         }
 
         @Override
+        public void onNativeAdShowed(String s) {
+            if (mAdCallback != null) {
+                mAdCallback.onNativeAdImpression();
+            }
+        }
+
+        @Override
         public void onNativeAdShowFailed(String s, AdTimingError adTimingError) {
 
         }

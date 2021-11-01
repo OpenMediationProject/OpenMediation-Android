@@ -40,7 +40,6 @@ import com.openmediation.sdk.utils.helper.IapHelper;
 import com.openmediation.sdk.utils.lifecycle.ActLifecycle;
 import com.openmediation.sdk.utils.model.Configurations;
 import com.openmediation.sdk.utils.model.Placement;
-import com.openmediation.sdk.utils.model.Scene;
 import com.openmediation.sdk.video.RewardedVideoListener;
 
 import org.json.JSONObject;
@@ -1047,21 +1046,7 @@ public final class OmManager implements InitCallback {
         if (manager != null) {
             manager.registerView(adView, adInfo);
         } else {
-            if (mCpListeners != null && mCpListeners.containsKey(placementId)) {
-                Set<PromotionAdListener> listeners = mCpListeners.get(placementId);
-                if (listeners == null || listeners.isEmpty()) {
-                    AdLog.getSingleton().LogE(ErrorCode.MSG_LOAD_SDK_UNINITIALIZED);
-                } else {
-                    for (PromotionAdListener listener : listeners) {
-                        listener.onPromotionAdShowFailed(
-                                SceneUtil.getScene(PlacementUtils.getPlacement(placementId), null),
-                                new Error(ErrorCode.CODE_SHOW_SDK_UNINITIALIZED,
-                                        ErrorCode.MSG_SHOW_SDK_UNINITIALIZED, -1));
-                    }
-                }
-            } else {
-                AdLog.getSingleton().LogE(ErrorCode.MSG_SHOW_SDK_UNINITIALIZED);
-            }
+            AdLog.getSingleton().LogE("NativeAd register failed: No Placement " + placementId);
         }
 
     }

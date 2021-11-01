@@ -313,6 +313,7 @@ public class InMobiAdapter extends CustomAdsAdapter {
         @Override
         public void onAdDisplayed(String placementId) {
             if (mCallback != null) {
+                mCallback.onRewardedVideoAdStarted();
                 mCallback.onRewardedVideoAdShowSuccess();
             }
         }
@@ -343,6 +344,7 @@ public class InMobiAdapter extends CustomAdsAdapter {
         public void onAdRewarded(String placementId) {
             if (mCallback != null) {
                 mCallback.onRewardedVideoAdRewarded();
+                mCallback.onRewardedVideoAdEnded();
             }
         }
     }

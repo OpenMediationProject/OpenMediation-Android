@@ -394,8 +394,13 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
         }
         AppLovinSdk sdk = AppLovinSingleTon.getInstance().getAppLovinSdk();
         final AppLovinAdView appLovinAdView = new AppLovinAdView(sdk, adSize, adUnitId, MediationUtil.getContext());
-        appLovinAdView.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT));
+        int width = 320, height = 50;
+        if (AppLovinAdSize.LEADER == adSize) {
+            width = 728;
+            height = 90;
+        }
+        appLovinAdView.setLayoutParams(new FrameLayout.LayoutParams(MediationUtil.dip2px(MediationUtil.getContext(), width),
+                MediationUtil.dip2px(MediationUtil.getContext(), height)));
         appLovinAdView.setAdLoadListener(new AppLovinAdLoadListener() {
             @Override
             public void adReceived(AppLovinAd appLovinAd) {

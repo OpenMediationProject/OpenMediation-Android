@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class TikTokAdapter extends CustomAdsAdapter {
-    private static String TAG = "TikTok: ";
+    private static String TAG = "OM-TikTok: ";
     private TTAdNative mTTAdNative;
     private ConcurrentMap<String, TTRewardVideoAd> mTTRvAds;
     private ConcurrentMap<String, TTFullScreenVideoAd> mTTFvAds;
@@ -455,7 +455,6 @@ public class TikTokAdapter extends CustomAdsAdapter {
         int[] screenPx = TTAdManagerHolder.getScreenPx(context);
         return new AdSlot.Builder()
                 .setCodeId(adUnitId)
-                .setSupportDeepLink(true)
                 .setImageAcceptedSize(screenPx[0], screenPx[1])
                 .setOrientation(orientation)
                 .build();

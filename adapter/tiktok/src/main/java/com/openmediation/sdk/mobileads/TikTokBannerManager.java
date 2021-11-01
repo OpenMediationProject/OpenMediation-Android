@@ -85,7 +85,6 @@ public class TikTokBannerManager {
             }
             AdSlot adSlot = new AdSlot.Builder()
                     .setCodeId(adUnitId)
-                    .setSupportDeepLink(true)
                     .setAdCount(1)
                     .setExpressViewAcceptedSize(width, height)
                     .build();

@@ -34,7 +34,7 @@ ext {
 //support 包相关包的引用
     dependencies = [
             // http://helpcenter.adtiming.com/
-            "adtiming"                   : 'com.adtiming:adnetwork:6.9.2',
+            "adtiming"                   : 'com.adtiming:adnetwork:6.9.4@aar',
             //fb https://developers.facebook.com/docs/audience-network/changelog-android/
             "facebook"                   : 'com.facebook.android:audience-network-sdk:6.5.1',
             //admob https://developers.google.com/admob/android/rel-notes
@@ -69,7 +69,7 @@ ext {
             // https://developer.fyber.com/hc/en-us/articles/360010822437-Integrating-the-Android-SDK
             "fyber"                      : '7.8.2',
             // https://www.pangleglobal.com/
-            "pangle"                     : 'com.pangle.global:ads-sdk:3.7.1.1',
+            "pangle"                     : 'com.pangle.global:ads-sdk:3.9.0.5',
 //            "pangle_cn"                  : 'com.pangle.cn:ads-sdk:3.6.1.1',
             // https://helium.chartboost.com/
             "helium"                     : 'com.chartboost:helium:2.3.1',
@@ -82,44 +82,47 @@ ext {
             // https://github.com/pubnative/pubnative-hybid-android-sdk/wiki/HyBid-Configuration
             "pubnative"                  : 'net.pubnative:hybid.sdk:2.5.2',
             // https://admost.github.io/amrandroid/
-            "admost"                     : 'com.admost.sdk:amr:2.3.7',
+            "admost"                     : 'com.admost.sdk:amr:2.4.4',
             "admost_volley"              : 'com.android.volley:volley:1.1.1',
-            "admost_facebook_adapter"    : 'com.admost.sdk:facebook-adapter:6.5.1.a25',
-            "admost_s2sbidding_adapter"  : 'com.admost.sdk:s2sbidding-adapter:1.0.5.a25',
+            "admost_facebook_adapter"    : 'com.admost.sdk:facebook-adapter:6.7.0.a26',
+            "admost_s2sbidding_adapter"  : 'com.admost.sdk:s2sbidding-adapter:1.0.8.a26',
             "admost_recyclerview"        : 'androidx.recyclerview:recyclerview:1.1.0',
             "admost_annotation"          : 'androidx.annotation:annotation:1.2.0',
             //flat https://github.com/flatads/document
             "flatads"                    : 'com.flatads.sdk:flatads:1.1.13',
             //inmobi https://support.inmobi.com/monetize/android-guidelines/#page__content1
-            "inmobi"                     : 'com.inmobi.monetization:inmobi-ads:9.2.0'
+            "inmobi"                     : 'com.inmobi.monetization:inmobi-ads:9.2.0',
+
+            // https://dev.appsflyer.com/hc/docs/install-android-sdk
+            "appsflyer"                  : 'com.appsflyer:af-android-sdk:6.4.0'
     ]
 
     adapterVersion = [
-            'adtiming'    : '2.4.0',
+            'adtiming'    : '2.4.1',
             'admob'       : '2.4.0',
             'facebook'    : '2.4.0',
-            'unity'       : '2.3.1',
-            'vungle'      : '2.3.1',
-            'adcolony'    : '2.3.1',
-            'applovin'    : '2.3.1',
+            'unity'       : '2.4.0',
+            'vungle'      : '2.4.0',
+            'adcolony'    : '2.4.0',
+            'applovin'    : '2.4.0',
             'mopub'       : '2.4.0',
-            'tapjoy'      : '2.3.0',
-            'chartboost'  : '2.3.0',
-            'helium'      : '2.3.0',
-            'tiktok'      : '2.4.0',
-            'mintegral'   : '2.3.1',
-            'ironsource'  : '2.3.0',
-            'fyber'       : '2.3.0',
-            'ogury'       : '2.3.0',
+            'tapjoy'      : '2.4.0',
+            'chartboost'  : '2.4.0',
+            'helium'      : '2.4.0',
+            'tiktok'      : '2.4.1',
+            'mintegral'   : '2.4.0',
+            'ironsource'  : '2.4.0',
+            'fyber'       : '2.4.0',
+            'ogury'       : '2.4.0',
             'pubnative'   : '2.4.0',
             'admost'      : '2.4.0',
             'flatads'     : '2.4.0',
-            'inmobi'      : '2.3.4',
-            'tiktok_cn'   : '2.4.0',
-            'tencentad_cn': '2.4.0',
-            'mintegral_cn': '2.3.1',
-            'sigmob_cn'   : '2.3.1',
-            'ksad_cn'     : '2.3.2',
+            'inmobi'      : '2.4.0',
+            'tiktok_cn'   : '2.4.1',
+            'tencentad_cn': '2.4.1',
+            'mintegral_cn': '2.4.0',
+            'sigmob_cn'   : '2.4.0',
+            'ksad_cn'     : '2.4.0',
     ]
 }
 

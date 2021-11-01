@@ -179,7 +179,7 @@ public class TikTokNativeManager {
         @Override
         public void onError(int i, String s) {
             if (mAdCallback != null) {
-                mAdCallback.onNativeAdInitFailed(AdapterErrorBuilder.buildLoadError(
+                mAdCallback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
                         AdapterErrorBuilder.AD_UNIT_NATIVE, "TikTokAdapter", i, s));
             }
         }
@@ -188,7 +188,7 @@ public class TikTokNativeManager {
         public void onFeedAdLoad(final List<TTFeedAd> list) {
             if (list == null || list.isEmpty() || list.get(0) == null) {
                 if (mAdCallback != null) {
-                    mAdCallback.onNativeAdInitFailed(AdapterErrorBuilder.buildLoadError(
+                    mAdCallback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
                             AdapterErrorBuilder.AD_UNIT_NATIVE, "TikTokAdapter", "No Fill"));
                 }
                 return;
@@ -222,7 +222,6 @@ public class TikTokNativeManager {
             adInfo.setType(MediationInfo.MEDIATION_ID_13);
             adInfo.setTitle(ad.getTitle());
             adInfo.setCallToActionText(ad.getButtonText());
-            adInfo.setStarRating(ad.getAppScore());
             if (callback != null) {
                 callback.onNativeAdLoadSuccess(adInfo);
             }

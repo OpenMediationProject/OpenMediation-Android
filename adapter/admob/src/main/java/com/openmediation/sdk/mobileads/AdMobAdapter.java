@@ -226,7 +226,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 } catch (Throwable e) {
                     if (callback != null) {
                         callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
-                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Init Failed: Unknown Error"));
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Init Failed: Unknown Error, " + e.getMessage()));
                     }
                 }
             }
@@ -255,8 +255,8 @@ public class AdMobAdapter extends CustomAdsAdapter {
                     RewardedAd.load(MediationUtil.getContext(), adUnitId, createAdRequest(), createRvLoadListener(adUnitId, callback));
                 } catch (Throwable e) {
                     if (callback != null) {
-                        callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
-                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, e.getMessage()));
+                        callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
                     }
                 }
             }
@@ -274,7 +274,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 } catch (Throwable e) {
                     if (callback != null) {
                         callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error"));
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
                     }
                 }
             }
@@ -421,7 +421,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 } catch (Throwable e) {
                     if (callback != null) {
                         callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
-                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error"));
+                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
                     }
                 }
             }
@@ -453,7 +453,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 } catch (Throwable e) {
                     if (callback != null) {
                         callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
-                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, e.getMessage()));
+                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
                     }
                 }
             }
@@ -471,7 +471,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 } catch (Throwable e) {
                     if (callback != null) {
                         callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error"));
+                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
                     }
                 }
             }
@@ -548,7 +548,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 } catch (Throwable e) {
                     if (callback != null) {
                         callback.onBannerAdInitFailed(AdapterErrorBuilder.buildInitError(
-                                AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, "Unknown Error"));
+                                AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, "Unknown Error, " + e.getMessage()));
                     }
                 }
             }
@@ -582,7 +582,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 } catch (Throwable e) {
                     if (callback != null) {
                         callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                                AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, e.getMessage()));
+                                AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, "Unknown Error, " + e.getMessage()));
                     }
                 }
             }
@@ -595,9 +595,12 @@ public class AdMobAdapter extends CustomAdsAdapter {
         if (!mBannerAds.containsKey(adUnitId)) {
             return;
         }
-        AdView view = mBannerAds.remove(adUnitId);
-        if (view != null) {
-            view.destroy();
+        try {
+            AdView view = mBannerAds.remove(adUnitId);
+            if (view != null) {
+                view.destroy();
+            }
+        } catch (Throwable e) {
         }
     }
 
@@ -639,7 +642,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 } catch (Throwable e) {
                     if (callback != null) {
                         callback.onNativeAdInitFailed(AdapterErrorBuilder.buildInitError(
-                                AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, "Unknown Error"));
+                                AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, "Unknown Error, " + e.getMessage()));
                     }
                 }
             }
@@ -695,7 +698,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 } catch (Throwable e) {
                     if (callback != null) {
                         callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                                AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, e.getMessage()));
+                                AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, "Unknown Error, " + e.getMessage()));
                     }
                 }
             }
@@ -712,12 +715,15 @@ public class AdMobAdapter extends CustomAdsAdapter {
         if (config == null) {
             return;
         }
-        if (config.getAdMobNativeAd() != null) {
-            config.getAdMobNativeAd().destroy();
-        }
-        if (config.getUnifiedNativeAdView() != null) {
-            config.getUnifiedNativeAdView().removeAllViews();
-            config.getUnifiedNativeAdView().destroy();
+        try {
+            if (config.getAdMobNativeAd() != null) {
+                config.getAdMobNativeAd().destroy();
+            }
+            if (config.getUnifiedNativeAdView() != null) {
+                config.getUnifiedNativeAdView().removeAllViews();
+                config.getUnifiedNativeAdView().destroy();
+            }
+        } catch (Throwable ignored) {
         }
     }
 
@@ -731,95 +737,72 @@ public class AdMobAdapter extends CustomAdsAdapter {
         if (config == null) {
             return;
         }
-        RelativeLayout relativeLayout = new RelativeLayout(adView.getContext());
         if (config.getAdMobNativeAd() == null) {
             return;
         }
-
-//        if (adView.getMediaView() != null) {
-//            mMediaView = adView.getMediaView();
-//            adView.setMediaView(mMediaView);
-//        }
-//
-//        if (adView.getAdIconView() != null) {
-//            mAdIconView = adView.getAdIconView();
-//            adView.setAdIconView(mAdIconView);
-//        }
-
-        com.google.android.gms.ads.nativead.NativeAdView mUnifiedNativeAdView =
-                new com.google.android.gms.ads.nativead.NativeAdView(adView.getContext());
-        if (adView.getTitleView() != null) {
-            mUnifiedNativeAdView.setHeadlineView(adView.getTitleView());
-        }
-
-        if (adView.getDescView() != null) {
-            mUnifiedNativeAdView.setBodyView(adView.getDescView());
-        }
-
-        if (adView.getCallToActionView() != null) {
-            mUnifiedNativeAdView.setCallToActionView(adView.getCallToActionView());
-        }
-
-        if (adView.getMediaView() != null) {
-            adView.getMediaView().removeAllViews();
-            com.google.android.gms.ads.nativead.MediaView adMobMediaView = new
-                    com.google.android.gms.ads.nativead.MediaView(adView.getContext());
-            adView.getMediaView().addView(adMobMediaView);
-            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,
-                    RelativeLayout.LayoutParams.WRAP_CONTENT);
-            layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
-            adMobMediaView.setLayoutParams(layoutParams);
-            mUnifiedNativeAdView.setMediaView(adMobMediaView);
-        }
-
-        if (adView.getAdIconView() != null && config.getAdMobNativeAd().getIcon() != null
-                && config.getAdMobNativeAd().getIcon().getDrawable() != null) {
-            adView.getAdIconView().removeAllViews();
-            ImageView iconImageView = new ImageView(adView.getContext());
-            adView.getAdIconView().addView(iconImageView);
-            iconImageView.setImageDrawable(config.getAdMobNativeAd().getIcon().getDrawable());
-            iconImageView.getLayoutParams().width = RelativeLayout.LayoutParams.MATCH_PARENT;
-            iconImageView.getLayoutParams().height = RelativeLayout.LayoutParams.MATCH_PARENT;
-            mUnifiedNativeAdView.setIconView(adView.getAdIconView());
-        }
-
-        TextView textView = new TextView(adView.getContext());
-        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(50, 35);
-        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-        textView.setLayoutParams(layoutParams);
-        textView.setBackgroundColor(Color.argb(255, 234, 234, 234));
-        textView.setGravity(Gravity.CENTER);
-        textView.setText("Ad");
-        textView.setTextSize(10);
-        textView.setTextColor(Color.argb(255, 45, 174, 201));
-        relativeLayout.addView(textView);
-        mUnifiedNativeAdView.setAdvertiserView(textView);
-
-        int count = adView.getChildCount();
-        for (int a = 0; a < count; a++) {
-            View v = adView.getChildAt(a);
-            if (v == null || v instanceof com.google.android.gms.ads.nativead.NativeAdView) {
-                continue;
+        try {
+            com.google.android.gms.ads.nativead.NativeAdView googleAdView =
+                    new com.google.android.gms.ads.nativead.NativeAdView(adView.getContext());
+            if (adView.getTitleView() != null) {
+                googleAdView.setHeadlineView(adView.getTitleView());
             }
-            adView.removeView(v);
-            relativeLayout.addView(v);
-        }
-        mUnifiedNativeAdView.setNativeAd(config.getAdMobNativeAd());
+            if (adView.getDescView() != null) {
+                googleAdView.setBodyView(adView.getDescView());
+            }
+            if (adView.getCallToActionView() != null) {
+                googleAdView.setCallToActionView(adView.getCallToActionView());
+            }
+            if (adView.getMediaView() != null) {
+                adView.getMediaView().removeAllViews();
+                com.google.android.gms.ads.nativead.MediaView adMobMediaView = new
+                        com.google.android.gms.ads.nativead.MediaView(adView.getContext());
+                adView.getMediaView().addView(adMobMediaView);
+                RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,
+                        RelativeLayout.LayoutParams.WRAP_CONTENT);
+                layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+                adMobMediaView.setLayoutParams(layoutParams);
+                googleAdView.setMediaView(adMobMediaView);
+            }
 
-        textView.bringToFront();
-        if (mUnifiedNativeAdView.getAdChoicesView() != null) {
-            mUnifiedNativeAdView.getAdChoicesView().bringToFront();
-        }
-        config.setUnifiedNativeAdView(mUnifiedNativeAdView);
+            if (adView.getAdIconView() != null && config.getAdMobNativeAd().getIcon() != null
+                    && config.getAdMobNativeAd().getIcon().getDrawable() != null) {
+                adView.getAdIconView().removeAllViews();
+                ImageView iconImageView = new ImageView(adView.getContext());
+                adView.getAdIconView().addView(iconImageView);
+                iconImageView.setImageDrawable(config.getAdMobNativeAd().getIcon().getDrawable());
+                iconImageView.getLayoutParams().width = RelativeLayout.LayoutParams.MATCH_PARENT;
+                iconImageView.getLayoutParams().height = RelativeLayout.LayoutParams.MATCH_PARENT;
+                googleAdView.setIconView(adView.getAdIconView());
+            }
 
-        adView.addView(mUnifiedNativeAdView);
-        int l = adView.getPaddingLeft();
-        int t = adView.getPaddingTop();
-        int r = adView.getPaddingRight();
-        int b = adView.getPaddingBottom();
-        relativeLayout.setPadding(l, t, r, b);
-        adView.setPadding(0, 0, 0, 0);
-        adView.addView(relativeLayout);
+            TextView textView = new TextView(adView.getContext());
+            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(50, 35);
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+            textView.setLayoutParams(layoutParams);
+            textView.setBackgroundColor(Color.argb(255, 234, 234, 234));
+            textView.setGravity(Gravity.CENTER);
+            textView.setText("Ad");
+            textView.setTextSize(10);
+            textView.setTextColor(Color.argb(255, 45, 174, 201));
+//            googleAdView.addView(textView);
+            googleAdView.setAdvertiserView(textView);
+            googleAdView.setNativeAd(config.getAdMobNativeAd());
+
+            textView.bringToFront();
+            if (googleAdView.getAdChoicesView() != null) {
+                googleAdView.getAdChoicesView().bringToFront();
+            }
+            config.setUnifiedNativeAdView(googleAdView);
+            int count = adView.getChildCount();
+            if (count > 0) {
+                View actualView = adView.getChildAt(0);
+                adView.removeView(actualView);
+                googleAdView.addView(actualView);
+                adView.addView(googleAdView);
+            }
+        } catch (Throwable e) {
+            AdLog.getSingleton().LogE("AdMobAdapter registerNativeAdView error: " + e.getMessage());
+        }
     }
 
     @Override
@@ -856,7 +839,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 } catch (Throwable e) {
                     if (callback != null) {
                         callback.onSplashAdInitFailed(AdapterErrorBuilder.buildInitError(
-                                AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, "Unknown Error"));
+                                AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, "Unknown Error, " + e.getMessage()));
                     }
                 }
             }
@@ -1024,8 +1007,8 @@ public class AdMobAdapter extends CustomAdsAdapter {
             }
 
             @Override
-            public void onAdOpened() {
-                super.onAdOpened();
+            public void onAdClicked() {
+                super.onAdClicked();
                 if (callback != null) {
                     callback.onNativeAdAdClicked();
                 }
