@@ -374,6 +374,15 @@ public class AdMobAdapter extends CustomAdsAdapter {
                     callback.onRewardedVideoAdClosed();
                 }
             }
+
+            @Override
+            public void onAdClicked() {
+                super.onAdClicked();
+                AdLog.getSingleton().LogD("AdMobAdapter", "RewardedAd onAdClicked");
+                if (callback != null) {
+                    callback.onRewardedVideoAdClicked();
+                }
+            }
         };
     }
 
@@ -931,6 +940,15 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 AdLog.getSingleton().LogD("AdMobAdapter", "InterstitialAd onAdDismissedFullScreenContent");
                 if (callback != null) {
                     callback.onInterstitialAdClosed();
+                }
+            }
+
+            @Override
+            public void onAdClicked() {
+                super.onAdClicked();
+                AdLog.getSingleton().LogD("AdMobAdapter", "InterstitialAd onAdClicked");
+                if (callback != null) {
+                    callback.onInterstitialAdClicked();
                 }
             }
         };

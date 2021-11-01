@@ -102,7 +102,7 @@ public class TencentNativeManager {
         public void onADLoaded(List<NativeExpressADView> list) {
             if (list == null || list.isEmpty() || list.get(0) == null) {
                 if (mAdCallback != null) {
-                    mAdCallback.onNativeAdInitFailed(AdapterErrorBuilder.buildLoadError(
+                    mAdCallback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
                             AdapterErrorBuilder.AD_UNIT_NATIVE, "TencentAdAdapter", "No Fill"));
                 }
                 return;

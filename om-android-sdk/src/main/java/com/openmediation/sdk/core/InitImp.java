@@ -58,7 +58,6 @@ public final class InitImp {
      * init method
      *
      * @param callback the callback
-     * @param channel  the channel
      */
     public static void init(Activity activity, InitConfiguration configuration, final InitCallback callback) {
 
@@ -154,7 +153,7 @@ public final class InitImp {
             DeveloperLog.LogD("requestConfig  exception : ", e);
             CrashUtil.getSingleton().saveException(e);
             Error error = new Error(ErrorCode.CODE_INIT_UNKNOWN_INTERNAL_ERROR
-                    , ErrorCode.MSG_INIT_UNKNOWN_INTERNAL_ERROR + e.getMessage(), ErrorCode.CODE_INTERNAL_UNKNOWN_OTHER);
+                    , ErrorCode.MSG_INIT_UNKNOWN_INTERNAL_ERROR, ErrorCode.CODE_INTERNAL_UNKNOWN_OTHER);
             DeveloperLog.LogE(error.toString() + ", requestConfig");
             callbackInitErrorOnUIThread(callback, error);
         }
@@ -176,7 +175,7 @@ public final class InitImp {
             CrashUtil.getSingleton().uploadException(config, appKey);
 
             InitScheduleTask.startTask(config);
-        } catch (Throwable e) {
+        } catch(Throwable e) {
             DeveloperLog.LogD("doAfterGetConfig  exception : ", e);
             CrashUtil.getSingleton().saveException(e);
         }
@@ -246,7 +245,6 @@ public final class InitImp {
                 }
                 initUtil();
                 DataCache.getInstance().setMEM(KeyConstants.KEY_APP_KEY, initConfiguration.getAppKey());
-                DataCache.getInstance().setMEM(KeyConstants.KEY_AF_ID, AFManager.getAfId(context));
                 String appChannel = initConfiguration.getChannel();
                 if (TextUtils.isEmpty(appChannel)) {
                     appChannel = "";
@@ -271,11 +269,11 @@ public final class InitImp {
                         }
                     }
                 });
-            } catch (Throwable e) {
+            } catch(Throwable e) {
                 DeveloperLog.LogD("initOnAsyncThread  exception : ", e);
                 CrashUtil.getSingleton().saveException(e);
                 Error error = new Error(ErrorCode.CODE_INIT_UNKNOWN_INTERNAL_ERROR
-                        , ErrorCode.MSG_INIT_UNKNOWN_INTERNAL_ERROR + e.getMessage(), ErrorCode.CODE_INTERNAL_UNKNOWN_OTHER);
+                        , ErrorCode.MSG_INIT_UNKNOWN_INTERNAL_ERROR, ErrorCode.CODE_INTERNAL_UNKNOWN_OTHER);
                 DeveloperLog.LogE(error.toString() + ", initOnAsyncThread");
                 callbackInitErrorOnUIThread(mCallback, error);
             }
@@ -383,7 +381,7 @@ public final class InitImp {
             Error result = new Error(ErrorCode.CODE_INIT_REQUEST_ERROR
                     , ErrorCode.MSG_INIT_REQUEST_ERROR + error, ErrorCode.CODE_INTERNAL_INIT_REQUEST_ERROR);
             DeveloperLog.LogE("request config failed : " + result + ", error:" + error);
-            AdLog.getSingleton().LogE("SDK Init Failed: " + error);
+            AdLog.getSingleton().LogE("Init Failed: " + error);
             callbackInitErrorOnUIThread(mCallback, result);
         }
     }

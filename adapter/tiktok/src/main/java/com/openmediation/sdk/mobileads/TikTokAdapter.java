@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class TikTokAdapter extends CustomAdsAdapter {
-    private static String TAG = "TikTok: ";
+    private static String TAG = "OM-TikTok: ";
     private TTAdNative mTTAdNative;
     private ConcurrentMap<String, TTRewardVideoAd> mTTRvAds;
     private ConcurrentMap<String, TTFullScreenVideoAd> mTTFvAds;
