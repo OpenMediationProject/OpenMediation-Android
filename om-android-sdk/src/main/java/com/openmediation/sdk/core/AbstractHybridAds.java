@@ -117,9 +117,6 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
      * On ad show failed callback.
      */
     protected void onAdShowFailedCallback(Error error) {
-        if (mCurrentIns != null && mBidResponses != null) {
-            mBidResponses.remove(mCurrentIns.getId());
-        }
     }
 
     protected void onViewAttachToWindow() {
@@ -166,9 +163,6 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
         if (mBs == 0) {
             mBs = 3;
         }
-        if (mBidResponses != null) {
-            mBidResponses.clear();
-        }
     }
 
     @Override
@@ -189,10 +183,7 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
             mTotalIns.addAll(finalTotalIns);
             InsManager.resetInsStateOnClResponse(mTotalIns);
             if (mPlacement != null) {
-                Map<Integer, BidResponse> bidResponseMap = WaterFallHelper.getS2sBidResponse(mPlacement, clInfo);
-                if (bidResponseMap != null && !bidResponseMap.isEmpty()) {
-                    mBidResponses.putAll(bidResponseMap);
-                }
+                WaterFallHelper.getS2sBidResponse(mPlacement, clInfo);
             }
             HandlerUtil.runOnUiThread(new Runnable() {
                 @Override
@@ -233,7 +224,7 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
                 InsManager.reportInsLoad(instance, EventId.INSTANCE_LOAD);
                 iLoadReport(instance);
             }
-            Map<String, Object> placementInfo = PlacementUtils.getLoadExtrasMap(mReqId, instance, mBidResponses.get(instance.getId()));
+            Map<String, Object> placementInfo = PlacementUtils.getLoadExtrasMap(mReqId, instance, instance.getBidResponse());
             insLoad(instance, placementInfo);
         }
     }
@@ -466,9 +457,6 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
                 }
 
                 try {
-                    if (mBidResponses != null && mBidResponses.containsKey(i.getId())) {
-                        i.setBidResponse(mBidResponses.get(i.getId()));
-                    }
                     i.setReqId(mReqId);
                     groupLoadCount++;
                     i.setMediationState(BaseInstance.MEDIATION_STATE.LOAD_PENDING);
@@ -567,7 +555,7 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
 
     @Override
     protected void notifyUnLoadInsBidLose() {
-        if (mTotalIns == null || mBidResponses == null) {
+        if (mTotalIns == null) {
             return;
         }
         int len = mTotalIns.size();
@@ -580,10 +568,7 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
                 continue;
             }
 
-            if (!mBidResponses.containsKey(instance.getId())) {
-                continue;
-            }
-            BidResponse bidResponse = mBidResponses.remove(instance.getId());
+            BidResponse bidResponse = instance.getBidResponse();
             if (bidResponse == null) {
                 continue;
             }

@@ -14,6 +14,7 @@ import com.adtbid.sdk.utils.error.AdTimingError;
 import com.adtbid.sdk.video.AdTimingRewardedVideo;
 import com.adtbid.sdk.video.RewardedVideoListener;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
@@ -298,15 +299,15 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
     }
 
     @Override
-    public void registerNativeAdView(String adUnitId, NativeAdView adView, NativeAdCallback callback) {
-        super.registerNativeAdView(adUnitId, adView, callback);
-        AdTimingNativeManager.getInstance().registerNativeView(adUnitId, adView, callback);
+    public void registerNativeAdView(String adUnitId, NativeAdView adView, AdnAdInfo adInfo, NativeAdCallback callback) {
+        super.registerNativeAdView(adUnitId, adView, adInfo, callback);
+        AdTimingNativeManager.getInstance().registerNativeView(adUnitId, adView, adInfo, callback);
     }
 
     @Override
-    public void destroyNativeAd(String adUnitId) {
-        super.destroyNativeAd(adUnitId);
-        AdTimingNativeManager.getInstance().destroyAd(adUnitId);
+    public void destroyNativeAd(String adUnitId, AdnAdInfo adInfo) {
+        super.destroyNativeAd(adUnitId, adInfo);
+        AdTimingNativeManager.getInstance().destroyAd(adUnitId, adInfo);
     }
 
     private void initSDK(String appKey) {

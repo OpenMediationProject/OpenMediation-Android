@@ -60,7 +60,8 @@ public interface ErrorCode {
      *
      */
     int CODE_LOAD_INVALID_REQUEST = 211;
-    String MSG_LOAD_INVALID_REQUEST = "Load Invalid Request";
+    String MSG_LOAD_INVALID_LOADING = "Load Invalid Request, Placement is loading";
+    String MSG_LOAD_INVALID_SHOWING = "Load Invalid Request, Placement is showing";
     /**
      *
      */

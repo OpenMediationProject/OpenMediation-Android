@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import android.view.ViewGroup;
 
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
@@ -310,9 +311,9 @@ public class TencentAdAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void destroyNativeAd(String adUnitId) {
-        super.destroyNativeAd(adUnitId);
-        TencentNativeManager.getInstance().destroyAd(adUnitId);
+    public void destroyNativeAd(String adUnitId, AdnAdInfo adInfo) {
+        super.destroyNativeAd(adUnitId, adInfo);
+        TencentNativeManager.getInstance().destroyAd(adUnitId, adInfo);
     }
 
     @Override

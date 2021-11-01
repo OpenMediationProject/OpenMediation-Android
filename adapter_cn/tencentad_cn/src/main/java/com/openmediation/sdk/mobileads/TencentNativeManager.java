@@ -4,13 +4,12 @@
 package com.openmediation.sdk.mobileads;
 
 import android.content.Context;
-import android.text.TextUtils;
 import android.view.ViewGroup;
 
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.NativeAdCallback;
-import com.openmediation.sdk.nativead.AdInfo;
 import com.openmediation.sdk.utils.AdLog;
 import com.qq.e.ads.nativ.ADSize;
 import com.qq.e.ads.nativ.NativeExpressAD;
@@ -20,18 +19,14 @@ import com.qq.e.comm.util.AdError;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class TencentNativeManager {
-
-    private final ConcurrentHashMap<String, NativeExpressADView> mNative;
 
     private static class Holder {
         private static final TencentNativeManager INSTANCE = new TencentNativeManager();
     }
 
     private TencentNativeManager() {
-        mNative = new ConcurrentHashMap<>();
     }
 
     public static TencentNativeManager getInstance() {
@@ -86,9 +81,10 @@ public class TencentNativeManager {
         }
     }
 
-    public void destroyAd(String adUnitId) {
-        if (!TextUtils.isEmpty(adUnitId) && mNative.get(adUnitId) != null) {
-            mNative.remove(adUnitId).destroy();
+    public void destroyAd(String adUnitId, AdnAdInfo adInfo) {
+        if (adInfo != null && adInfo.getAdnNativeAd() instanceof NativeExpressADView) {
+            NativeExpressADView adView = (NativeExpressADView) adInfo.getAdnNativeAd();
+            adView.destroy();
         }
     }
 
@@ -112,7 +108,6 @@ public class TencentNativeManager {
                 return;
             }
             NativeExpressADView ad = list.get(0);
-            mNative.put(mAdUnitId, ad);
             AdLog.getSingleton().LogE("Native type: " + (ad.getBoundData().getAdPatternType() == AdPatternType.NATIVE_VIDEO));
             ad.render();
         }
@@ -127,10 +122,11 @@ public class TencentNativeManager {
 
         @Override
         public void onRenderSuccess(NativeExpressADView adView) {
-            AdInfo adInfo = new AdInfo();
-            adInfo.setType(MediationInfo.MEDIATION_ID_13);
+            AdnAdInfo adInfo = new AdnAdInfo();
+            adInfo.setType(MediationInfo.MEDIATION_ID_6);
             adInfo.setTemplateRender(true);
             adInfo.setView(adView);
+            adInfo.setAdnNativeAd(adView);
             if (mAdCallback != null) {
                 mAdCallback.onNativeAdLoadSuccess(adInfo);
             }
@@ -138,7 +134,10 @@ public class TencentNativeManager {
 
         @Override
         public void onADExposure(NativeExpressADView adView) {
-
+            AdLog.getSingleton().LogD("TencentAd NativeAd onADExposure");
+            if (mAdCallback != null) {
+                mAdCallback.onNativeAdImpression();
+            }
         }
 
         @Override

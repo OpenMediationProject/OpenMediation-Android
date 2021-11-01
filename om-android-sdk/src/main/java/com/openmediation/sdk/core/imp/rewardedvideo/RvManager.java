@@ -113,15 +113,15 @@ public final class RvManager extends AbstractInventoryAds implements RvManagerLi
     }
 
     @Override
-    protected void callbackAvailableOnManual() {
-        super.callbackAvailableOnManual();
+    protected void callbackAvailableOnManual(BaseInstance instance) {
+        super.callbackAvailableOnManual(instance);
         mListenerWrapper.onRewardedVideoAvailabilityChanged(true);
         mListenerWrapper.onRewardedVideoLoadSuccess();
     }
 
     @Override
-    protected void callbackLoadSuccessOnManual() {
-        super.callbackLoadSuccessOnManual();
+    protected void callbackLoadSuccessOnManual(BaseInstance instance) {
+        super.callbackLoadSuccessOnManual(instance);
         mListenerWrapper.onRewardedVideoLoadSuccess();
     }
 

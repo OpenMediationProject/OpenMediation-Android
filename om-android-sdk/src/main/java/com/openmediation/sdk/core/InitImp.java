@@ -57,7 +57,6 @@ public final class InitImp {
      * init method
      *
      * @param callback the callback
-     * @param channel  the channel
      */
     public static void init(Activity activity, InitConfiguration configuration, final InitCallback callback) {
         //

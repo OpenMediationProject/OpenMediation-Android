@@ -41,6 +41,8 @@ dependencies {
     implementation rootProject.ext.dependencies.admob_facebook_adapter
     //vungle
     implementation rootProject.ext.dependencies.vungle
+    implementation rootProject.ext.dependencies.vungle_androidx
+    implementation rootProject.ext.dependencies.vungle_localbroadcast
     //AdColony
     implementation rootProject.ext.dependencies.adcolony
     //Applovin
@@ -58,6 +60,8 @@ dependencies {
     implementation rootProject.ext.dependencies.play_service_ads_identifier
     //unity
     implementation rootProject.ext.dependencies.unity
+    //ironsource
+    implementation rootProject.ext.dependencies.ironsource
 
     // AdTiming
     implementation rootProject.ext.dependencies.adtiming
@@ -123,11 +127,10 @@ dependencies {
     // OAID
     implementation project(path: ':miit_mdid_1.0.10')
     // TikTok
-//    implementation(name: 'tiktok_cn_ad_sdk_3.8.0.3', ext: 'aar')
+//    implementation(name: 'open_ad_sdk_3.9.0.0', ext: 'aar')
 //    implementation project(path: ':adapter_cn:tiktok_cn')
 
     // TencentAds
-//    implementation(name: 'GDTSDK.unionNormal.4.370.1240', ext: 'aar')
     implementation rootProject.ext.dependencies.tencentad
     implementation project(path: ':adapter_cn:tencentad_cn')
 
@@ -144,10 +147,10 @@ dependencies {
 //    implementation project(path: ':adapter_cn:mintegral_cn')
 
     // Sigmob
-    implementation(name: 'sigmob-3.2.0', ext: 'aar')
+    implementation(name: 'windAd-3.3.3', ext: 'aar')
     implementation project(path: ':adapter_cn:sigmob_cn')
     // 快手
-    implementation(name: 'kssdk-ad--3.3.12', ext: 'aar')
+    implementation(name: 'kssdk-ad--3.3.13', ext: 'aar')
     implementation project(path: ':adapter_cn:ksad_cn')
 
     implementation rootProject.ext.dependencies.admost

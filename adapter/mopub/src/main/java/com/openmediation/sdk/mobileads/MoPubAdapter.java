@@ -32,6 +32,7 @@ import com.mopub.nativeads.ViewBinder;
 import com.mopub.volley.Response;
 import com.mopub.volley.VolleyError;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
@@ -39,7 +40,6 @@ import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.mediation.NativeAdCallback;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
-import com.openmediation.sdk.nativead.AdInfo;
 import com.openmediation.sdk.nativead.NativeAdView;
 import com.openmediation.sdk.utils.AdLog;
 
@@ -63,7 +63,6 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedAdLis
     private final ConcurrentMap<String, InterstitialAdCallback> mIsCallback;
     private final ConcurrentMap<String, BannerAdCallback> mBnCallback;
     private final ConcurrentMap<String, MoPubView> mBannerAds;
-    private final ConcurrentMap<String, MoPubNativeAdsConfig> mNativeAds;
     private final ConcurrentMap<String, NativeAdCallback> mNaCallback;
 
     private static final int VID = generateViewId();
@@ -80,7 +79,6 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedAdLis
         mIsCallback = new ConcurrentHashMap<>();
         mBnCallback = new ConcurrentHashMap<>();
         mBannerAds = new ConcurrentHashMap<>();
-        mNativeAds = new ConcurrentHashMap<>();
         mNaCallback = new ConcurrentHashMap<>();
         // adjustment requested by MoPub to be able to report on this incremental supply
         mRequestParameters = new MoPubRewardedAdManager.RequestParameters(TP_PARAM);
@@ -550,85 +548,90 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedAdLis
     }
 
     @Override
-    public void registerNativeAdView(String adUnitId, final NativeAdView adView, NativeAdCallback callback) {
-        super.registerNativeAdView(adUnitId, adView, callback);
-        if (!mNativeAds.containsKey(adUnitId) && mNativeAds.get(adUnitId) == null) {
-            return;
-        }
-        List<View> views = new ArrayList<>();
-        if (adView.getMediaView() != null) {
-            views.add(adView.getMediaView());
-        }
+    public void registerNativeAdView(String adUnitId, final NativeAdView adView, AdnAdInfo adInfo, NativeAdCallback callback) {
+        super.registerNativeAdView(adUnitId, adView, adInfo, callback);
+        try {
+            if (adInfo == null || !(adInfo.getAdnNativeAd() instanceof MoPubNativeAdsConfig)) {
+                AdLog.getSingleton().LogE("MoPubAdapter NativeAd not ready");
+                return;
+            }
 
-        if (adView.getAdIconView() != null) {
-            views.add(adView.getAdIconView());
-        }
+            List<View> views = new ArrayList<>();
+            if (adView.getMediaView() != null) {
+                views.add(adView.getMediaView());
+            }
 
-        if (adView.getTitleView() != null) {
-            views.add(adView.getTitleView());
-        }
+            if (adView.getAdIconView() != null) {
+                views.add(adView.getAdIconView());
+            }
 
-        if (adView.getDescView() != null) {
-            views.add(adView.getDescView());
-        }
+            if (adView.getTitleView() != null) {
+                views.add(adView.getTitleView());
+            }
 
-        if (adView.getCallToActionView() != null) {
-            views.add(adView.getCallToActionView());
-        }
+            if (adView.getDescView() != null) {
+                views.add(adView.getDescView());
+            }
 
-        for (View view : views) {
-            if (view != null) {
-                view.setOnClickListener(new View.OnClickListener() {
+            if (adView.getCallToActionView() != null) {
+                views.add(adView.getCallToActionView());
+            }
+
+            for (View view : views) {
+                if (view != null) {
+                    view.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            adView.findViewById(CID).callOnClick();
+                        }
+                    });
+                }
+            }
+
+            MoPubNativeAdsConfig config = (MoPubNativeAdsConfig) adInfo.getAdnNativeAd();
+            if (config.getContent() != null && adView.getMediaView() != null) {
+                adView.getMediaView().removeAllViews();
+                ImageView imageView = new ImageView(adView.getContext());
+                adView.getMediaView().addView(imageView);
+                imageView.setImageBitmap(config.getContent());
+                imageView.getLayoutParams().width = RelativeLayout.LayoutParams.MATCH_PARENT;
+                imageView.getLayoutParams().height = RelativeLayout.LayoutParams.MATCH_PARENT;
+                adView.getMediaView().setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         adView.findViewById(CID).callOnClick();
                     }
                 });
             }
+
+            if (config.getIcon() != null && adView.getAdIconView() != null) {
+                adView.getAdIconView().removeAllViews();
+                ImageView iconImageView = new ImageView(adView.getContext());
+                adView.getAdIconView().addView(iconImageView);
+                iconImageView.setImageBitmap(config.getIcon());
+                iconImageView.getLayoutParams().width = RelativeLayout.LayoutParams.MATCH_PARENT;
+                iconImageView.getLayoutParams().height = RelativeLayout.LayoutParams.MATCH_PARENT;
+
+                adView.getAdIconView().setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        adView.findViewById(CID).callOnClick();
+                    }
+                });
+            }
+            addAndShowAdLogo(config.getNativeAd(), adView);
+        } catch (Exception ignored) {
         }
-
-        MoPubNativeAdsConfig config = mNativeAds.get(adUnitId);
-        if (config.getContent() != null && adView.getMediaView() != null) {
-            adView.getMediaView().removeAllViews();
-            ImageView imageView = new ImageView(adView.getContext());
-            adView.getMediaView().addView(imageView);
-            imageView.setImageBitmap(config.getContent());
-            imageView.getLayoutParams().width = RelativeLayout.LayoutParams.MATCH_PARENT;
-            imageView.getLayoutParams().height = RelativeLayout.LayoutParams.MATCH_PARENT;
-            adView.getMediaView().setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    adView.findViewById(CID).callOnClick();
-                }
-            });
-        }
-
-        if (config.getIcon() != null && adView.getAdIconView() != null) {
-            adView.getAdIconView().removeAllViews();
-            ImageView iconImageView = new ImageView(adView.getContext());
-            adView.getAdIconView().addView(iconImageView);
-            iconImageView.setImageBitmap(config.getIcon());
-            iconImageView.getLayoutParams().width = RelativeLayout.LayoutParams.MATCH_PARENT;
-            iconImageView.getLayoutParams().height = RelativeLayout.LayoutParams.MATCH_PARENT;
-
-            adView.getAdIconView().setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    adView.findViewById(CID).callOnClick();
-                }
-            });
-        }
-
-        addAndShowAdLogo(config.getNativeAd(), adView);
     }
 
     @Override
-    public void destroyNativeAd(String adUnitId) {
-        super.destroyNativeAd(adUnitId);
-        if (!mNativeAds.containsKey(adUnitId)) {
+    public void destroyNativeAd(String adUnitId, AdnAdInfo adInfo) {
+        super.destroyNativeAd(adUnitId, adInfo);
+        if (adInfo == null || !(adInfo.getAdnNativeAd() instanceof MoPubNativeAdsConfig)) {
+            AdLog.getSingleton().LogE("MoPubAdapter destroyNativeAd failed: AdnAdInfo is null");
             return;
         }
-        MoPubNativeAdsConfig config = mNativeAds.remove(adUnitId);
+        MoPubNativeAdsConfig config = (MoPubNativeAdsConfig) adInfo.getAdnNativeAd();
         if (config.getNativeAd() != null) {
             config.getNativeAd().destroy();
         }
@@ -680,7 +683,7 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedAdLis
 
             nativeAd.prepare(parent);
             nativeAd.renderAdView(parent);
-        } catch(Throwable e) {
+        } catch (Throwable e) {
             AdLog.getSingleton().LogE(TAG, "addAndShowAdLogo error : " + e.getMessage());
         }
     }
@@ -823,13 +826,7 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedAdLis
                 nativeAd.setMoPubNativeEventListener(new MpNaImpressionListener(callback));
                 final MoPubNativeAdsConfig config = new MoPubNativeAdsConfig();
                 config.setNativeAd(nativeAd);
-                mNativeAds.put(adUnitId, config);
-                StaticNativeAd staticNativeAd = (StaticNativeAd) nativeAd.getBaseNativeAd();
-                final AdInfo adInfo = new AdInfo();
-                adInfo.setDesc(staticNativeAd.getText());
-                adInfo.setType(getAdNetworkId());
-                adInfo.setCallToActionText(staticNativeAd.getCallToAction());
-                adInfo.setTitle(staticNativeAd.getTitle());
+                final StaticNativeAd staticNativeAd = (StaticNativeAd) nativeAd.getBaseNativeAd();
                 MoPubUtil.Request(context, staticNativeAd.getIconImageUrl(), new Response.Listener<Bitmap>() {
                     @Override
                     public void onResponse(Bitmap bitmap) {
@@ -845,8 +842,13 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedAdLis
                     @Override
                     public void onResponse(Bitmap bitmap) {
                         config.setContent(bitmap);
-                        mNativeAds.put(adUnitId, config);
                         if (callback != null) {
+                            final AdnAdInfo adInfo = new AdnAdInfo();
+                            adInfo.setAdnNativeAd(config);
+                            adInfo.setDesc(staticNativeAd.getText());
+                            adInfo.setType(getAdNetworkId());
+                            adInfo.setCallToActionText(staticNativeAd.getCallToAction());
+                            adInfo.setTitle(staticNativeAd.getTitle());
                             callback.onNativeAdLoadSuccess(adInfo);
                         }
                         AdLog.getSingleton().LogD(TAG, "MoPub Native ad load success ");
@@ -887,7 +889,10 @@ public class MoPubAdapter extends CustomAdsAdapter implements MoPubRewardedAdLis
 
         @Override
         public void onImpression(View view) {
-
+            AdLog.getSingleton().LogD("MoPubAdapter NativeAd onImpression");
+            if (callback != null) {
+                callback.onNativeAdImpression();
+            }
         }
 
         @Override

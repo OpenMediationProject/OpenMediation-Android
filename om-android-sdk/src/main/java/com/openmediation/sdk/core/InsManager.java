@@ -5,6 +5,7 @@ import android.util.SparseArray;
 
 import com.openmediation.sdk.ImpressionManager;
 import com.openmediation.sdk.bid.BidResponse;
+import com.openmediation.sdk.core.imp.nativead.NaInstance;
 import com.openmediation.sdk.core.runnable.LoadTimeoutRunnable;
 import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
@@ -17,6 +18,7 @@ import com.openmediation.sdk.utils.InsExecutor;
 import com.openmediation.sdk.utils.JsonUtil;
 import com.openmediation.sdk.utils.PlacementUtils;
 import com.openmediation.sdk.utils.cache.DataCache;
+import com.openmediation.sdk.utils.constant.CommonConstants;
 import com.openmediation.sdk.utils.constant.KeyConstants;
 import com.openmediation.sdk.utils.error.ErrorCode;
 import com.openmediation.sdk.utils.event.EventId;
@@ -389,20 +391,20 @@ public class InsManager {
         return instanceList;
     }
 
-    public static synchronized List<Integer> getInsIdWithStatus(List<BaseInstance> instances, BaseInstance.MEDIATION_STATE... states) {
+    public static synchronized List<BaseInstance> getInsIdWithStatus(List<BaseInstance> instances, BaseInstance.MEDIATION_STATE... states) {
         if (instances == null) {
             return Collections.emptyList();
         }
 
-        List<Integer> insIdList = new ArrayList<>();
+        List<BaseInstance> insList = new ArrayList<>();
         for (BaseInstance in : instances) {
             for (BaseInstance.MEDIATION_STATE state : states) {
                 if (in.getMediationState() == state) {
-                    insIdList.add(in.getId());
+                    insList.add(in);
                 }
             }
         }
-        return insIdList;
+        return insList;
     }
 
     /**
@@ -448,10 +450,12 @@ public class InsManager {
             if (state == BaseInstance.MEDIATION_STATE.INIT_FAILED) {
                 in.setMediationState(BaseInstance.MEDIATION_STATE.NOT_INITIATED);
             } else if (state == BaseInstance.MEDIATION_STATE.LOAD_FAILED ||
-                    state == BaseInstance.MEDIATION_STATE.CAPPED) {
+                    state == BaseInstance.MEDIATION_STATE.CAPPED ||
+                    state == BaseInstance.MEDIATION_STATE.SKIP) {
                 in.setMediationState(BaseInstance.MEDIATION_STATE.NOT_AVAILABLE);
             } else if (state == BaseInstance.MEDIATION_STATE.NOT_AVAILABLE) {
-                in.setObject(null);
+                // TODO
+//                in.setObject(null);
             }
         }
     }
@@ -526,7 +530,7 @@ public class InsManager {
         CopyOnWriteArrayList<BaseInstance> list = new CopyOnWriteArrayList<>();
         for (int i = 0; i < insMap.size(); i++) {
             BaseInstance instance = insMap.valueAt(i);
-            if (instance instanceof BaseInstance) {
+            if (instance != null) {
                 list.add(instance);
             }
         }
@@ -579,6 +583,15 @@ public class InsManager {
             }
             if (TextUtils.equals(instanceId, String.valueOf(ins.getId()))) {
                 return ins;
+            }
+        }
+        return null;
+    }
+
+    public static BaseInstance getFirstAvailableIns(List<BaseInstance> instances) {
+        for (BaseInstance instance : instances) {
+            if (instance.getMediationState() == BaseInstance.MEDIATION_STATE.AVAILABLE) {
+                return instance;
             }
         }
         return null;
@@ -641,7 +654,7 @@ public class InsManager {
         List<BaseInstance> instancesList = new ArrayList<>();
         for (int i = 0; i < insArray.length(); i++) {
             int insId = insArray.optInt(i);
-            BaseInstance instance = insMap.get(insId);
+            BaseInstance instance = getInsWithAdType(placement, insId, insMap);
             if (instance != null) {
                 instance.setWfAbt(abt);
                 instance.setMediationRule(mediationRule);
@@ -650,8 +663,9 @@ public class InsManager {
                 instance.setPriority(0);
                 instance.setRevenuePrecision(1);
                 // clear bid response
-                if (!cacheAds) {
+                if (!cacheAds || instance.getMediationState() != BaseInstance.MEDIATION_STATE.AVAILABLE) {
                     instance.setBidResponse(null);
+                    instance.setObject(null);
                 }
                 instancesList.add(instance);
             } else {
@@ -703,10 +717,9 @@ public class InsManager {
             JSONObject insObject = insArray.optJSONObject(i);
             BaseInstance instance = getInstance(reqId, placement, insObject, insMap, mediationRule, abt);
             if (instance != null) {
-                // TODO
-//                instance.setIndex(i);
-                if (!cacheAds) {
+                if (!cacheAds || instance.getMediationState() != BaseInstance.MEDIATION_STATE.AVAILABLE) {
                     instance.setBidResponse(null);
+                    instance.setObject(null);
                 }
                 instancesList.add(instance);
             }
@@ -745,7 +758,7 @@ public class InsManager {
                                             SparseArray<BaseInstance> insMap, MediationRule mediationRule, int abt) {
         if (insObject != null) {
             int insId = insObject.optInt("id");
-            BaseInstance ins = insMap.get(insId);
+            BaseInstance ins = getInsWithAdType(placement, insId, insMap);
             if (ins != null) {
                 if (ins.getMediationState() != BaseInstance.MEDIATION_STATE.AVAILABLE) {
                     ins.setWfAbt(abt);
@@ -760,6 +773,21 @@ public class InsManager {
             reportNoInstance(reqId, placement, mediationRule, insId);
         }
         return null;
+    }
+
+    private static BaseInstance getInsWithAdType(Placement placement, int insId,
+                                                 SparseArray<BaseInstance> insMap) {
+        BaseInstance ins = insMap.get(insId);
+        if (ins != null) {
+            //TODO:
+            if (placement.getT() == CommonConstants.NATIVE && ins.getMediationState() != BaseInstance.MEDIATION_STATE.AVAILABLE) {
+                BaseInstance naIns = new NaInstance();
+                naIns = ins.copy(naIns);
+                insMap.put(naIns.getId(), naIns);
+                return naIns;
+            }
+        }
+        return ins;
     }
 
     private static List<String> buildZoneIds(Set<String> keys
@@ -810,7 +838,8 @@ public class InsManager {
         return origin;
     }
 
-    private static void reportNoInstance(String reqId, Placement placement, MediationRule mediationRule, int insId) {
+    private static void reportNoInstance(String reqId, Placement placement, MediationRule
+            mediationRule, int insId) {
         JSONObject jsonObject = PlacementUtils.placementEventParams(placement.getId());
         JsonUtil.put(jsonObject, "iid", insId);
         JsonUtil.put(jsonObject, "reqId", reqId);

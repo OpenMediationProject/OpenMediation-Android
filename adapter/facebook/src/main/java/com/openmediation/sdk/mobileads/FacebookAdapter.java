@@ -27,6 +27,7 @@ import com.facebook.ads.NativeAdListener;
 import com.facebook.ads.RewardedVideoAd;
 import com.facebook.ads.RewardedVideoAdExtendedListener;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
@@ -34,8 +35,8 @@ import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.mediation.NativeAdCallback;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
-import com.openmediation.sdk.nativead.AdInfo;
 import com.openmediation.sdk.nativead.NativeAdView;
+import com.openmediation.sdk.utils.AdLog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +54,6 @@ public class FacebookAdapter extends CustomAdsAdapter {
     private ConcurrentMap<String, RewardedVideoAd> mFbRvAds;
     private ConcurrentMap<String, InterstitialAd> mFbIsAds;
     private ConcurrentMap<String, AdView> mBannerAds;
-    private ConcurrentMap<String, FacebookNativeAdsConfig> mNativeAds;
     private ConcurrentMap<String, RewardedVideoCallback> mRvCallbacks;
     private ConcurrentMap<String, InterstitialAdCallback> mIsCallbacks;
     private ConcurrentMap<String, BannerAdCallback> mBnCallbacks;
@@ -63,7 +63,6 @@ public class FacebookAdapter extends CustomAdsAdapter {
         mFbRvAds = new ConcurrentHashMap<>();
         mFbIsAds = new ConcurrentHashMap<>();
         mBannerAds = new ConcurrentHashMap<>();
-        mNativeAds = new ConcurrentHashMap<>();
         mRvCallbacks = new ConcurrentHashMap<>();
         mIsCallbacks = new ConcurrentHashMap<>();
         mBnCallbacks = new ConcurrentHashMap<>();
@@ -334,7 +333,6 @@ public class FacebookAdapter extends CustomAdsAdapter {
         super.loadNativeAd(activity, adUnitId, extras, callback);
         String error = check(adUnitId);
         if (TextUtils.isEmpty(error)) {
-            FacebookNativeAdsConfig config = new FacebookNativeAdsConfig();
             NativeAd nativeAd = new NativeAd(MediationUtil.getContext(), adUnitId);
             NativeAd.NativeAdLoadConfigBuilder loadConfigBuilder = nativeAd.buildLoadAdConfig();
             if (extras.containsKey(PAY_LOAD)) {
@@ -342,8 +340,6 @@ public class FacebookAdapter extends CustomAdsAdapter {
             }
             loadConfigBuilder.withAdListener(new FbNaAdListener(nativeAd, callback));
             nativeAd.loadAd(loadConfigBuilder.build());
-            config.setNativeAd(nativeAd);
-            mNativeAds.put(adUnitId, config);
         } else {
             if (callback != null) {
                 callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
@@ -353,33 +349,37 @@ public class FacebookAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void destroyNativeAd(String adUnitId) {
-        super.destroyNativeAd(adUnitId);
-        if (!mNativeAds.containsKey(adUnitId)) {
+    public void destroyNativeAd(String adUnitId, AdnAdInfo adInfo) {
+        super.destroyNativeAd(adUnitId, adInfo);
+        if (adInfo == null || !(adInfo.getAdnNativeAd() instanceof FacebookNativeAdsConfig)) {
+            AdLog.getSingleton().LogE("FacebookAdapter NativeAd destroyNativeAd failed, AdnAdInfo is null");
             return;
         }
-        FacebookNativeAdsConfig config = mNativeAds.get(adUnitId);
-        if (config == null) {
-            return;
+        try {
+            FacebookNativeAdsConfig config = (FacebookNativeAdsConfig) adInfo.getAdnNativeAd();
+            if (config.getMediaView() != null) {
+                config.getMediaView().destroy();
+            }
+            if (config.getIconView() != null) {
+                config.getIconView().destroy();
+            }
+            if (config.getNativeAd() != null) {
+                config.getNativeAd().unregisterView();
+                config.getNativeAd().destroy();
+            }
+        } catch (Exception ignored) {
         }
-        if (config.getMediaView() != null) {
-            config.getMediaView().destroy();
-        }
-        if (config.getIconView() != null) {
-            config.getIconView().destroy();
-        }
-        if (config.getNativeAd() != null) {
-            config.getNativeAd().unregisterView();
-            config.getNativeAd().destroy();
-        }
-        mNativeAds.remove(adUnitId);
     }
 
     @Override
-    public void registerNativeAdView(String adUnitId, NativeAdView adView, NativeAdCallback callback) {
-        super.registerNativeAdView(adUnitId, adView, callback);
+    public void registerNativeAdView(String adUnitId, NativeAdView adView, AdnAdInfo adInfo, NativeAdCallback callback) {
+        super.registerNativeAdView(adUnitId, adView, adInfo, callback);
         try {
-            FacebookNativeAdsConfig config = mNativeAds.get(adUnitId);
+            if (adInfo == null || !(adInfo.getAdnNativeAd() instanceof FacebookNativeAdsConfig)) {
+                AdLog.getSingleton().LogE("FacebookAdapter NativeAd not ready, AdnAdInfo is null");
+                return;
+            }
+            FacebookNativeAdsConfig config = (FacebookNativeAdsConfig) adInfo.getAdnNativeAd();
             if (config == null || config.getNativeAd() == null) {
                 return;
             }
@@ -701,7 +701,9 @@ public class FacebookAdapter extends CustomAdsAdapter {
 
         @Override
         public void onLoggingImpression(Ad ad) {
-
+            if (callback != null) {
+                callback.onBannerAdImpression();
+            }
         }
     }
 
@@ -730,13 +732,15 @@ public class FacebookAdapter extends CustomAdsAdapter {
 
         @Override
         public void onAdLoaded(Ad ad) {
-            AdInfo info = new AdInfo();
-            info.setDesc(nativeAd.getAdBodyText());
-            info.setType(MediationInfo.MEDIATION_ID_3);
-            info.setCallToActionText(nativeAd.getAdCallToAction());
-            info.setTitle(nativeAd.getAdHeadline());
-
             if (callback != null) {
+                FacebookNativeAdsConfig config = new FacebookNativeAdsConfig();
+                config.setNativeAd(nativeAd);
+                AdnAdInfo info = new AdnAdInfo();
+                info.setAdnNativeAd(config);
+                info.setDesc(nativeAd.getAdBodyText());
+                info.setType(MediationInfo.MEDIATION_ID_3);
+                info.setCallToActionText(nativeAd.getAdCallToAction());
+                info.setTitle(nativeAd.getAdHeadline());
                 callback.onNativeAdLoadSuccess(info);
             }
         }
@@ -750,7 +754,10 @@ public class FacebookAdapter extends CustomAdsAdapter {
 
         @Override
         public void onLoggingImpression(Ad ad) {
-
+            AdLog.getSingleton().LogD("FacebookAdapter", "NativeAd onLoggingImpression");
+            if (callback != null) {
+                callback.onNativeAdImpression();
+            }
         }
     }
 }

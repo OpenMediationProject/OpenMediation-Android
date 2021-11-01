@@ -4,7 +4,7 @@
 package com.openmediation.sdk.mobileads;
 
 public interface FlatAdsBidCallback {
-    void onBidSuccess(String adUnitId, float ecpm);
+    void onBidSuccess(String adUnitId, float ecpm, Object object);
 
     void onBidFailed(String adUnitId, String error);
 }

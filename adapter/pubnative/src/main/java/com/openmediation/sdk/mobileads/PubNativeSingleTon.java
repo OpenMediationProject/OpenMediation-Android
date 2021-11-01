@@ -9,6 +9,8 @@ import android.text.TextUtils;
 import android.util.TypedValue;
 import android.widget.RelativeLayout;
 
+import com.openmediation.sdk.mediation.AdnAdInfo;
+import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.utils.AdLog;
 
@@ -41,7 +43,6 @@ public class PubNativeSingleTon {
     private final ConcurrentHashMap<String, HyBidRewardedAd> mRvAds;
     private final ConcurrentHashMap<String, HyBidInterstitialAd> mIsAds;
     private final ConcurrentHashMap<String, HyBidAdView> mBannerAds;
-    private final ConcurrentHashMap<String, NativeAd> mNativeAds;
     private final ConcurrentHashMap<String, PubNativeBannerListener> mBannerListeners;
 
     private final ConcurrentMap<String, PubNativeCallback> mBidCallbacks;
@@ -64,7 +65,6 @@ public class PubNativeSingleTon {
         mBidError = new ConcurrentHashMap<>();
         mBannerAds = new ConcurrentHashMap<>();
         mBannerListeners = new ConcurrentHashMap<>();
-        mNativeAds = new ConcurrentHashMap<>();
     }
 
     public static PubNativeSingleTon getInstance() {
@@ -276,7 +276,7 @@ public class PubNativeSingleTon {
         public void onRewardedLoaded() {
             AdLog.getSingleton().LogD(TAG, "PubNative onRewardedLoaded PlacementId : " + mAdUnitId);
             mRvAds.put(mAdUnitId, mRewarded);
-            bidSuccess(mAdUnitId, mRewarded.getBidPoints());
+            bidSuccess(mAdUnitId, mRewarded.getBidPoints(), null);
         }
 
         @Override
@@ -335,7 +335,7 @@ public class PubNativeSingleTon {
         public void onInterstitialLoaded() {
             AdLog.getSingleton().LogD(TAG, "PubNative InterstitialAd onInterstitialLoaded PlacementId : " + mAdUnitId);
             mIsAds.put(mAdUnitId, mInterstitialAd);
-            bidSuccess(mAdUnitId, mInterstitialAd.getBidPoints());
+            bidSuccess(mAdUnitId, mInterstitialAd.getBidPoints(), null);
         }
 
         @Override
@@ -451,7 +451,7 @@ public class PubNativeSingleTon {
         public void onAdLoaded() {
             AdLog.getSingleton().LogD(TAG, "PubNative Banner onAdLoaded : " + mAdUnitId);
             mBannerAds.put(mAdUnitId, mBannerAdView);
-            bidSuccess(mAdUnitId, mBannerAdView.getBidPoints());
+            bidSuccess(mAdUnitId, mBannerAdView.getBidPoints(), mBannerAdView);
         }
 
         @Override
@@ -511,18 +511,6 @@ public class PubNativeSingleTon {
         MediationUtil.runOnUiThread(runnable);
     }
 
-    NativeAd getNativeAd(String adUnitId) {
-        return mNativeAds.get(adUnitId);
-    }
-
-    public void destroyNativeAd(String adUnitId) {
-        NativeAd nativeAd = mNativeAds.remove(adUnitId);
-        if (nativeAd != null) {
-            nativeAd.stopTracking();
-            nativeAd = null;
-        }
-    }
-
     private class HyBidNativeAdListener implements HyBidNativeAdRequest.RequestListener {
 
         String mAdUnitId;
@@ -538,8 +526,14 @@ public class PubNativeSingleTon {
                 return;
             }
             AdLog.getSingleton().LogD(TAG, "PubNative Native onAdLoaded : " + mAdUnitId);
-            mNativeAds.put(mAdUnitId, nativeAd);
-            bidSuccess(mAdUnitId, nativeAd.getBidPoints());
+            AdnAdInfo adInfo = new AdnAdInfo();
+            adInfo.setAdnNativeAd(nativeAd);
+            adInfo.setDesc(nativeAd.getDescription());
+            adInfo.setType(MediationInfo.MEDIATION_ID_23);
+            adInfo.setTitle(nativeAd.getTitle());
+            adInfo.setCallToActionText(nativeAd.getCallToActionText());
+            adInfo.setStarRating(nativeAd.getRating());
+            bidSuccess(mAdUnitId, nativeAd.getBidPoints(), adInfo);
         }
 
         @Override
@@ -549,7 +543,7 @@ public class PubNativeSingleTon {
         }
     }
 
-    private void bidSuccess(String adUnitId, Integer points) {
+    private void bidSuccess(String adUnitId, Integer points, Object object) {
         if (getInstance().mBidCallbacks.containsKey(adUnitId)) {
             Map<String, String> map = new HashMap<>();
             // 1 point = $ 0.001
@@ -558,7 +552,7 @@ public class PubNativeSingleTon {
                 price = PrebidUtils.getBidFromPoints(points, PrebidUtils.KeywordMode.THREE_DECIMALS);
             }
             map.put(PubNativeBidAdapter.PRICE, price);
-            getInstance().mBidCallbacks.get(adUnitId).onBidSuccess(adUnitId, map);
+            getInstance().mBidCallbacks.get(adUnitId).onBidSuccess(adUnitId, map, object);
         }
         getInstance().mBidError.remove(adUnitId);
     }

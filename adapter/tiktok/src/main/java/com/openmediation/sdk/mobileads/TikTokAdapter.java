@@ -16,6 +16,7 @@ import com.bytedance.sdk.openadsdk.TTAdSdk;
 import com.bytedance.sdk.openadsdk.TTFullScreenVideoAd;
 import com.bytedance.sdk.openadsdk.TTRewardVideoAd;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
@@ -342,15 +343,15 @@ public class TikTokAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void registerNativeAdView(String adUnitId, NativeAdView adView, NativeAdCallback callback) {
-        super.registerNativeAdView(adUnitId, adView, callback);
-        TikTokNativeManager.getInstance().registerView(adUnitId, adView, callback);
+    public void registerNativeAdView(String adUnitId, NativeAdView adView, AdnAdInfo adInfo, NativeAdCallback callback) {
+        super.registerNativeAdView(adUnitId, adView, adInfo, callback);
+        TikTokNativeManager.getInstance().registerView(adUnitId, adView, adInfo, callback);
     }
 
     @Override
-    public void destroyNativeAd(String adUnitId) {
-        super.destroyNativeAd(adUnitId);
-        TikTokNativeManager.getInstance().destroyAd(adUnitId);
+    public void destroyNativeAd(String adUnitId, AdnAdInfo adInfo) {
+        super.destroyNativeAd(adUnitId, adInfo);
+        TikTokNativeManager.getInstance().destroyAd(adUnitId, adInfo);
     }
 
     private void initSdk(TTAdManagerHolder.InitCallback callback) {
@@ -554,7 +555,6 @@ public class TikTokAdapter extends CustomAdsAdapter {
         @Override
         public void onSkippedVideo() {
         }
-
     }
 
 }

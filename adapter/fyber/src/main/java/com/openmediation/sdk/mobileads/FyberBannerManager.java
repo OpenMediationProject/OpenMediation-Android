@@ -18,7 +18,6 @@ import com.fyber.inneractive.sdk.external.InneractiveAdViewEventsListenerWithImp
 import com.fyber.inneractive.sdk.external.InneractiveAdViewUnitController;
 import com.fyber.inneractive.sdk.external.InneractiveErrorCode;
 import com.fyber.inneractive.sdk.external.InneractiveUnitController.AdDisplayError;
-import com.fyber.inneractive.sdk.external.InneractiveUserConfig;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.MediationUtil;

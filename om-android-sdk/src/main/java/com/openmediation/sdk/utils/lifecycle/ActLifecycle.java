@@ -14,7 +14,6 @@ import com.openmediation.sdk.utils.AdtUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
 
 import java.util.List;
-import java.util.Stack;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ActLifecycle implements Application.ActivityLifecycleCallbacks {

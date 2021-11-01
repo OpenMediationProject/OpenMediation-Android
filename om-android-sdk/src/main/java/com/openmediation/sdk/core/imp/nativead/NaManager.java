@@ -3,36 +3,52 @@
 
 package com.openmediation.sdk.core.imp.nativead;
 
-import android.view.View;
 
-import com.openmediation.sdk.core.AbstractHybridAds;
+import com.openmediation.sdk.core.AbstractInventoryAds;
 import com.openmediation.sdk.core.InsManager;
 import com.openmediation.sdk.core.OmManager;
 import com.openmediation.sdk.mediation.AdapterError;
+import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.nativead.AdInfo;
 import com.openmediation.sdk.nativead.NativeAdListener;
 import com.openmediation.sdk.nativead.NativeAdView;
-import com.openmediation.sdk.utils.AdsUtil;
+import com.openmediation.sdk.utils.AdLog;
+import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.error.Error;
-import com.openmediation.sdk.utils.error.ErrorBuilder;
 import com.openmediation.sdk.utils.error.ErrorCode;
-import com.openmediation.sdk.utils.event.EventId;
 import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.PlacementInfo;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class NaManager extends AbstractHybridAds implements NaManagerListener, View.OnAttachStateChangeListener {
+public class NaManager extends AbstractInventoryAds implements NaManagerListener {
 
-    private NativeAdView mNativeAdView;
-    private boolean isImpressed;
     private int width = -1;
     private int height = -1;
-    private boolean isTemplateRender;
+    private boolean isCallbackToUser = false;
 
-    public NaManager(String placementId, NativeAdListener listener) {
-        super(placementId);
-        mListenerWrapper.setNaListener(listener);
+    /**
+     * NativeAd Cache
+     */
+    private final Map<AdInfo, NaInstance> mInstancesMap;
+
+    public NaManager() {
+        super();
+        mInstancesMap = new ConcurrentHashMap<>();
+    }
+
+    public void initNativeAd() {
+        checkScheduleTaskStarted();
+    }
+
+    public void addAdListener(NativeAdListener listener) {
+        mListenerWrapper.addNativeAdListener(listener);
+    }
+
+    public void removeAdListener(NativeAdListener listener) {
+        mListenerWrapper.removeNativeAdListener(listener);
     }
 
     public void setDisplayParams(int width, int height) {
@@ -41,42 +57,28 @@ public class NaManager extends AbstractHybridAds implements NaManagerListener, V
     }
 
     @Override
-    protected void onAdErrorCallback(Error error) {
+    protected void callbackAvailableOnManual(BaseInstance instance) {
+        super.callbackAvailableOnManual(instance);
+        onLoadSuccess(instance);
+    }
+
+    @Override
+    protected void callbackLoadError(Error error) {
+        super.callbackLoadError(error);
         mListenerWrapper.onNativeAdLoadFailed(mPlacementId, error);
     }
 
     @Override
-    protected void onAdReadyCallback() {
-        if (mCurrentIns != null) {
-            Object o = mCurrentIns.getObject();
-            if (o instanceof AdInfo) {
-                AdInfo adInfo = (AdInfo) o;
-                if (adInfo.isTemplateRender()) {
-                    isTemplateRender = true;
-                    View view = adInfo.getView();
-                    if (view != null) {
-                        view.addOnAttachStateChangeListener(this);
-                    }
-                } else {
-                    isTemplateRender = false;
-                }
-                mListenerWrapper.onNativeAdLoaded(mPlacementId, adInfo);
-            } else {
-                Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_NO_AVAILABLE_AD,
-                        ErrorCode.MSG_LOAD_NO_AVAILABLE_AD, ErrorCode.CODE_LOAD_UNKNOWN_INTERNAL_ERROR);
-                mListenerWrapper.onNativeAdLoadFailed(mPlacementId, error);
-            }
-        } else {
-            Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_NO_AVAILABLE_AD,
-                    ErrorCode.MSG_LOAD_NO_AVAILABLE_AD, ErrorCode.CODE_LOAD_UNKNOWN_INTERNAL_ERROR);
-            mListenerWrapper.onNativeAdLoadFailed(mPlacementId, error);
-        }
+    protected void callbackLoadSuccessOnManual(BaseInstance instance) {
+        super.callbackLoadSuccessOnManual(instance);
+        onLoadSuccess(instance);
     }
 
-//    @Override
-//    protected void onAdClickCallback() {
-//        mListenerWrapper.onNativeAdClicked(mPlacementId);
-//    }
+    @Override
+    protected void callbackLoadFailedOnManual(Error error) {
+        super.callbackLoadFailedOnManual(error);
+        mListenerWrapper.onNativeAdLoadFailed(mPlacementId, error);
+    }
 
     @Override
     protected boolean isInsAvailable(BaseInstance instance) {
@@ -84,11 +86,16 @@ public class NaManager extends AbstractHybridAds implements NaManagerListener, V
     }
 
     @Override
-    protected void insInit(BaseInstance instance, Map<String, Object> extras) {
+    protected void initInsAndSendEvent(BaseInstance instance) {
+        super.initInsAndSendEvent(instance);
         if (instance instanceof NaInstance) {
             NaInstance naInstance = (NaInstance) instance;
             naInstance.setNaManagerListener(this);
-            naInstance.initNa(mActRefs.get(), extras);
+            naInstance.initNa(mActRefs.get());
+        } else {
+            instance.setMediationState(BaseInstance.MEDIATION_STATE.INIT_FAILED);
+            onInsInitFailed(instance, new Error(ErrorCode.CODE_LOAD_UNKNOWN_INTERNAL_ERROR,
+                    "current is not an native adUnit", -1));
         }
     }
 
@@ -109,41 +116,52 @@ public class NaManager extends AbstractHybridAds implements NaManagerListener, V
     }
 
     @Override
+    protected void onAvailabilityChanged(boolean available, Error error) {
+
+    }
+
+    @Override
+    protected void insShow(BaseInstance instance) {
+
+    }
+
+    @Override
     protected PlacementInfo getPlacementInfo() {
         return new PlacementInfo(mPlacementId).getPlacementInfo(getPlacementType());
     }
 
-    @Override
-    public void loadAds(OmManager.LOAD_TYPE type) {
-        AdsUtil.callActionReport(mPlacementId, 0, EventId.CALLED_LOAD);
-        super.loadAds(type);
+    public void loadNativeAd() {
+        isCallbackToUser = false;
+        loadAds(OmManager.LOAD_TYPE.MANUAL);
     }
 
-    @Override
-    public void destroy() {
-        if (mNativeAdView != null) {
-            mNativeAdView.removeAllViews();
-            mNativeAdView = null;
-        }
-        super.destroy();
-    }
-
-    @Override
-    protected void destroyAdEvent(BaseInstance instances) {
-        NaInstance naInstance = (NaInstance) instances;
-        naInstance.destroyNa();
-        InsManager.reportInsDestroyed(instances);
-    }
-
-    public void registerView(NativeAdView adView) {
-        if (isDestroyed || isTemplateRender) {
+    public void destroy(AdInfo adInfo) {
+        if (adInfo == null || !mInstancesMap.containsKey(adInfo)) {
+            AdLog.getSingleton().LogD("NativeAd destroy failed: AdnNativeAd is null, PlacementId: " + mPlacementId);
             return;
         }
-        mNativeAdView = adView;
-        if (mCurrentIns != null && mCurrentIns instanceof NaInstance) {
-            NaInstance instance = (NaInstance) mCurrentIns;
-            mNativeAdView.addOnAttachStateChangeListener(this);
-            instance.registerView(adView);
+        NaInstance instance = mInstancesMap.remove(adInfo);
+        destroyAdEvent(instance);
+    }
+
+    protected void destroyAdEvent(NaInstance instance) {
+        if (instance != null && instance.getObject() instanceof AdnAdInfo) {
+            instance.destroyNa((AdnAdInfo) instance.getObject());
+        }
+        InsManager.reportInsDestroyed(instance);
+    }
+
+    public void registerView(NativeAdView adView, AdInfo adInfo) {
+        if (isDestroyed || adInfo == null || adInfo.isTemplateRender()) {
+            return;
+        }
+        if (!mInstancesMap.containsKey(adInfo)) {
+            AdLog.getSingleton().LogD("NativeAd registerView failed: AdnNativeAd is null, PlacementId: " + mPlacementId);
+            return;
+        }
+        NaInstance instance = mInstancesMap.get(adInfo);
+        if (instance != null && instance.getObject() instanceof AdnAdInfo) {
+            instance.registerView(adView, (AdnAdInfo) instance.getObject());
         }
     }
 
@@ -154,38 +172,65 @@ public class NaManager extends AbstractHybridAds implements NaManagerListener, V
 
     @Override
     public void onNativeAdInitFailed(NaInstance instance, AdapterError error) {
-        onInsLoadFailed(instance, error, !isManualTriggered);
+        Error errorResult = new Error(ErrorCode.CODE_LOAD_FAILED_IN_ADAPTER, error.toString(), -1);
+        onInsInitFailed(instance, errorResult);
     }
 
     @Override
-    public void onNativeAdLoadSuccess(NaInstance instance) {
-        onInsLoadSuccess(instance, !isManualTriggered);
+    public void onNativeAdLoadSuccess(NaInstance instance, AdInfo adInfo) {
+        mInstancesMap.put(adInfo, instance);
+        onInsLoadSuccess(instance, false);
     }
 
     @Override
     public void onNativeAdLoadFailed(NaInstance instance, AdapterError error) {
-        onInsLoadFailed(instance, error, !isManualTriggered);
+        onInsLoadFailed(instance, error, false);
+    }
+
+    @Override
+    public void onNativeAdImpression(NaInstance instance) {
+        onInsShowSuccess(instance, null);
+        notifyInsBidWin(instance);
+        InsManager.onInsShow(instance, null);
+        mListenerWrapper.onNativeAdImpression(mPlacementId, getAdInfoByIns(instance));
     }
 
     @Override
     public void onNativeAdAdClicked(NaInstance instance) {
         onInsClicked(instance, null);
-        mListenerWrapper.onNativeAdClicked(mPlacementId);
+        mListenerWrapper.onNativeAdClicked(mPlacementId, getAdInfoByIns(instance));
     }
 
-    @Override
-    public void onViewAttachedToWindow(View v) {
-        if (isImpressed) {
+    private void onLoadSuccess(BaseInstance instance) {
+        if (isCallbackToUser) {
             return;
         }
-        isImpressed = true;
-        onViewAttachToWindow();
+        // available change
+        shouldNotifyAvailableChanged(false);
+        isCallbackToUser = true;
+        AdInfo info = getAdInfoByIns(instance);
+        if (info == null) {
+            //TODO:
+            DeveloperLog.LogE("NativeAd load failed: AdInfo not found in InstancesMap, PlacementId: " + mPlacementId);
+            AdLog.getSingleton().LogE("NativeAd load failed: AdInfo not found in InstancesMap, PlacementId: " + mPlacementId);
+            Error error = new Error(ErrorCode.CODE_LOAD_FAILED_IN_ADAPTER, ErrorCode.ERROR_NO_FILL, -1);
+            mListenerWrapper.onNativeAdLoadFailed(mPlacementId, error);
+        } else {
+            mListenerWrapper.onNativeAdLoaded(mPlacementId, info);
+            instance.setMediationState(BaseInstance.MEDIATION_STATE.SKIP);
+            loadAds(OmManager.LOAD_TYPE.CLOSE);
+        }
     }
 
-    @Override
-    public void onViewDetachedFromWindow(View v) {
-        isImpressed = false;
-        v.removeOnAttachStateChangeListener(this);
-        onViewDetachFromWindow();
+    private AdInfo getAdInfoByIns(BaseInstance instance) {
+        if (mInstancesMap.containsValue(instance)) {
+            Set<AdInfo> infos = mInstancesMap.keySet();
+            for (AdInfo info : infos) {
+                if (mInstancesMap.get(info).equals(instance)) {
+                    return info;
+                }
+            }
+        }
+        return null;
     }
 }

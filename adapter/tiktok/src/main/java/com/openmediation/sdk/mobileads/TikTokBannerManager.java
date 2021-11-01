@@ -214,6 +214,9 @@ public class TikTokBannerManager {
         if (MediationUtil.DESC_RECTANGLE.equals(desc)) {
             widthDp = 300;
             heightDp = 250;
+        } else if (MediationUtil.DESC_LEADERBOARD.equals(desc)) {
+            widthDp = 728;
+            heightDp = 90;
         } else if (MediationUtil.DESC_SMART.equals(desc) && MediationUtil.isLargeScreen(MediationUtil.getContext())) {
             widthDp = 728;
             heightDp = 90;

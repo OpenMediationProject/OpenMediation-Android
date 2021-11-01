@@ -14,5 +14,7 @@ public interface NativeAdListener extends BaseAdListener {
 
     void onNativeAdClicked(String placementId);
 
+    void onNativeAdShowed(String placementId);
+
     void onNativeAdShowFailed(String placementId, Error error);
 }

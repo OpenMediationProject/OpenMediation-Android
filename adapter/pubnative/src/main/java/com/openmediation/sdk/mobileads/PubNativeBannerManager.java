@@ -8,6 +8,7 @@ import android.text.TextUtils;
 
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.BannerAdCallback;
+import com.openmediation.sdk.mediation.MediationUtil;
 
 import net.pubnative.lite.sdk.views.HyBidAdView;
 
@@ -46,38 +47,44 @@ public class PubNativeBannerManager {
         });
     }
 
-    public void loadAd(String adUnitId, Map<String, Object> extras, final BannerAdCallback callback) {
-        HyBidAdView adView = PubNativeSingleTon.getInstance().getBannerAd(adUnitId);
-        if (adView == null) {
-            String error = PubNativeSingleTon.getInstance().getError(adUnitId);
-            if (TextUtils.isEmpty(error)) {
-                error = "No Fill";
-            }
-            if (callback != null) {
-                callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                        AdapterErrorBuilder.AD_UNIT_BANNER, "PubNativeAdapter", error));
-            }
-            return;
-        }
-        PubNativeSingleTon.getInstance().addBannerListener(adUnitId, new PubNativeBannerListener() {
+    public void loadAd(final String adUnitId, Map<String, Object> extras, final BannerAdCallback callback) {
+        Runnable runnable = new Runnable() {
             @Override
-            public void onAdImpression(String placementId) {
-                if (callback != null) {
-                    callback.onBannerAdImpression();
+            public void run() {
+                HyBidAdView adView = PubNativeSingleTon.getInstance().getBannerAd(adUnitId);
+                if (adView == null) {
+                    String error = PubNativeSingleTon.getInstance().getError(adUnitId);
+                    if (TextUtils.isEmpty(error)) {
+                        error = "No Fill";
+                    }
+                    if (callback != null) {
+                        callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                                AdapterErrorBuilder.AD_UNIT_BANNER, "PubNativeAdapter", error));
+                    }
+                    return;
                 }
-            }
+                PubNativeSingleTon.getInstance().addBannerListener(adUnitId, new PubNativeBannerListener() {
+                    @Override
+                    public void onAdImpression(String placementId) {
+                        if (callback != null) {
+                            callback.onBannerAdImpression();
+                        }
+                    }
 
-            @Override
-            public void onAdClick(String placementId) {
+                    @Override
+                    public void onAdClick(String placementId) {
+                        if (callback != null) {
+                            callback.onBannerAdAdClicked();
+                        }
+                    }
+                });
+                adView.show();
                 if (callback != null) {
-                    callback.onBannerAdAdClicked();
+                    callback.onBannerAdLoadSuccess(adView);
                 }
             }
-        });
-        adView.show();
-        if (callback != null) {
-            callback.onBannerAdLoadSuccess(adView);
-        }
+        };
+        MediationUtil.runOnUiThread(runnable);
     }
 
     public boolean isAdAvailable(String adUnitId) {

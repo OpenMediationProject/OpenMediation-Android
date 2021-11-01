@@ -5,7 +5,6 @@ package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
 import android.content.Context;
-import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -14,10 +13,11 @@ import com.bytedance.sdk.openadsdk.TTAdDislike;
 import com.bytedance.sdk.openadsdk.TTAdNative;
 import com.bytedance.sdk.openadsdk.TTNativeExpressAd;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.mediation.NativeAdCallback;
-import com.openmediation.sdk.nativead.AdInfo;
+import com.openmediation.sdk.utils.AdLog;
 
 import java.util.List;
 import java.util.Map;
@@ -26,15 +26,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TikTokNativeManager {
     private TTAdNative mTTAdNative;
 
-    private final ConcurrentHashMap<String, TTNativeExpressAd> mNative;
-    private final ConcurrentHashMap<String, View> mNativeView;
+    private final ConcurrentHashMap<TTNativeExpressAd, View> mNativeView;
 
     private static class Holder {
         private static final TikTokNativeManager INSTANCE = new TikTokNativeManager();
     }
 
     private TikTokNativeManager() {
-        mNative = new ConcurrentHashMap<>();
         mNativeView = new ConcurrentHashMap<>();
     }
 
@@ -93,11 +91,12 @@ public class TikTokNativeManager {
         }
     }
 
-    public void destroyAd(String adUnitId) {
-        if (!TextUtils.isEmpty(adUnitId) && mNative.containsKey(adUnitId)) {
-            mNative.remove(adUnitId).destroy();
+    public void destroyAd(String adUnitId, AdnAdInfo adInfo) {
+        if (adInfo != null && adInfo.getAdnNativeAd() instanceof TTNativeExpressAd) {
+            TTNativeExpressAd ad = (TTNativeExpressAd) adInfo.getAdnNativeAd();
+            ad.destroy();
+            mNativeView.remove(ad);
         }
-        mNativeView.remove(adUnitId);
     }
 
     private class InnerAdListener implements TTAdNative.NativeExpressAdListener {
@@ -138,7 +137,11 @@ public class TikTokNativeManager {
 
                 @Override
                 public void onAdShow(View view, int type) {
+                    AdLog.getSingleton().LogD("TikTok NativeAd onAdShow");
                     bindDislike(MediationUtil.getActivity(), mAdUnitId, ad);
+                    if (mAdCallback != null) {
+                        mAdCallback.onNativeAdImpression();
+                    }
                 }
 
                 @Override
@@ -151,12 +154,12 @@ public class TikTokNativeManager {
 
                 @Override
                 public void onRenderSuccess(View view, float width, float height) {
-                    mNative.put(mAdUnitId, ad);
-                    mNativeView.put(mAdUnitId, view);
-                    AdInfo adInfo = new AdInfo();
+                    mNativeView.put(ad, view);
+                    AdnAdInfo adInfo = new AdnAdInfo();
                     adInfo.setType(MediationInfo.MEDIATION_ID_13);
                     adInfo.setTemplateRender(true);
                     adInfo.setView(view);
+                    adInfo.setAdnNativeAd(ad);
                     if (mAdCallback != null) {
                         mAdCallback.onNativeAdLoadSuccess(adInfo);
                     }
@@ -166,7 +169,7 @@ public class TikTokNativeManager {
         }
     }
 
-    private void bindDislike(Activity activity, final String adUnitId, TTNativeExpressAd ad) {
+    private void bindDislike(Activity activity, final String adUnitId, final TTNativeExpressAd ad) {
         ad.setDislikeCallback(activity, new TTAdDislike.DislikeInteractionCallback() {
             @Override
             public void onShow() {
@@ -174,8 +177,8 @@ public class TikTokNativeManager {
 
             @Override
             public void onSelected(int position, String value, boolean enforce) {
-                if (mNativeView.containsKey(adUnitId)) {
-                    View view = mNativeView.remove(adUnitId);
+                if (mNativeView.containsKey(ad)) {
+                    View view = mNativeView.remove(ad);
                     if (view != null && view.getParent() instanceof ViewGroup) {
                         ((ViewGroup) view.getParent()).removeView(view);
                         view = null;

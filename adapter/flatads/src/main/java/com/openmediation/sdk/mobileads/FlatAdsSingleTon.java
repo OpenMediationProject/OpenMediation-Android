@@ -5,6 +5,7 @@ package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
 import android.text.TextUtils;
+import android.widget.RelativeLayout;
 
 import com.flatads.sdk.FlatAdSDK;
 import com.flatads.sdk.builder.InterstitialAd;
@@ -18,13 +19,13 @@ import com.flatads.sdk.response.AdContent;
 import com.flatads.sdk.statics.ErrorCode;
 import com.flatads.sdk.ui.BannerAdView;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.mediation.NativeAdCallback;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
-import com.openmediation.sdk.nativead.AdInfo;
 import com.openmediation.sdk.utils.AdLog;
 
 import java.util.Map;
@@ -38,7 +39,7 @@ public class FlatAdsSingleTon {
     private final ConcurrentHashMap<String, RewardedAd> mRvAds;
     private final ConcurrentHashMap<String, InterstitialAd> mIsAds;
     private final ConcurrentHashMap<String, BannerAdView> mBannerAds;
-    private final ConcurrentHashMap<String, FlatAdsNativeAdsConfig> mNativeAds;
+    private final ConcurrentHashMap<FlatAdsNativeAdsConfig, String> mNativeAdToken;
     private final ConcurrentHashMap<String, String> mAdToken;
 
     private final ConcurrentMap<String, FlatAdsBidCallback> mBidCallbacks;
@@ -53,9 +54,9 @@ public class FlatAdsSingleTon {
         mBannerAds = new ConcurrentHashMap<>();
         mRvAds = new ConcurrentHashMap<>();
         mIsAds = new ConcurrentHashMap<>();
-        mNativeAds = new ConcurrentHashMap<>();
         mBidCallbacks = new ConcurrentHashMap<>();
         mBidError = new ConcurrentHashMap<>();
+        mNativeAdToken = new ConcurrentHashMap<>();
     }
 
     public static FlatAdsSingleTon getInstance() {
@@ -139,7 +140,19 @@ public class FlatAdsSingleTon {
                 try {
                     BannerAdView bannerAdView = new BannerAdView(MediationUtil.getContext());
                     bannerAdView.setAdUnitId(adUnitId);
-                    bannerAdView.setBannerSize(getAdSize(adSize));
+                    int size = getAdSize(adSize);
+                    RelativeLayout.LayoutParams layoutParams;
+                    if (size == 1) {
+                        layoutParams = new RelativeLayout.LayoutParams(
+                                MediationUtil.dip2px(MediationUtil.getContext(), 300),
+                                MediationUtil.dip2px(MediationUtil.getContext(), 250));
+                    } else {
+                        layoutParams = new RelativeLayout.LayoutParams(
+                                MediationUtil.dip2px(MediationUtil.getContext(), 320),
+                                MediationUtil.dip2px(MediationUtil.getContext(), 50));
+                    }
+                    bannerAdView.setLayoutParams(layoutParams);
+                    bannerAdView.setBannerSize(size);
                     bannerAdView.setAdLoadListener(new AdLoadListener() {
                         @Override
                         public void onAdSucLoad(AdContent adContent) {
@@ -158,7 +171,7 @@ public class FlatAdsSingleTon {
                             AdLog.getSingleton().LogD(TAG, "BannerAd getBidding price: " + price + ", token : " + token);
                             mAdToken.put(adUnitId, token);
                             mBannerAds.put(adUnitId, bannerAdView);
-                            bidSuccess(adUnitId, price);
+                            bidSuccess(adUnitId, price, null);
                         }
                     });
                 } catch (Throwable e) {
@@ -289,11 +302,12 @@ public class FlatAdsSingleTon {
                 @Override
                 public void getBidding(float price, String token) {
                     AdLog.getSingleton().LogD(TAG, "NativeAd getBidding price: " + price + ", token : " + token);
-                    mAdToken.put(adUnitId, token);
+                    AdnAdInfo info = new AdnAdInfo();
                     FlatAdsNativeAdsConfig adsConfig = new FlatAdsNativeAdsConfig();
                     adsConfig.setNativeAd(nativeAd);
-                    mNativeAds.put(adUnitId, adsConfig);
-                    bidSuccess(adUnitId, price);
+                    info.setAdnNativeAd(adsConfig);
+                    mNativeAdToken.put(adsConfig, token);
+                    bidSuccess(adUnitId, price, info);
                 }
             });
         } catch (Throwable e) {
@@ -302,11 +316,10 @@ public class FlatAdsSingleTon {
         }
     }
 
-    void loadNativeAdWithBid(String adUnitId, NativeAdCallback callback) {
+    void loadNativeAdWithBid(String adUnitId, AdnAdInfo info, FlatAdsNativeAdsConfig config, NativeAdCallback callback) {
         try {
-            FlatAdsNativeAdsConfig adsConfig = mNativeAds.get(adUnitId);
-            String token = mAdToken.remove(adUnitId);
-            if (adsConfig == null || adsConfig.getNativeAd() == null || TextUtils.isEmpty(token)) {
+            String token = mNativeAdToken.remove(config);
+            if (config.getNativeAd() == null || TextUtils.isEmpty(token)) {
                 AdLog.getSingleton().LogE(TAG, "NativeAd Load Failed : No Fill");
                 if (callback != null) {
                     callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
@@ -314,13 +327,16 @@ public class FlatAdsSingleTon {
                 }
                 return;
             }
-            NativeAd nativeAd = adsConfig.getNativeAd();
-            nativeAd.setAdListener(new InnerNativeListener(adUnitId, nativeAd, callback));
+            NativeAd nativeAd = config.getNativeAd();
+            nativeAd.setAdListener(new InnerNativeListener(adUnitId, info, config, nativeAd, callback));
             nativeAd.winBidding(token);
             nativeAd.loadAd(token);
         } catch (Throwable e) {
             AdLog.getSingleton().LogE(TAG, "NativeAd LoadFailed");
-            destroyNativeAd(adUnitId);
+            if (callback != null) {
+                callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_NATIVE, "FlatAdsAdapter", e.getMessage()));
+            }
         }
     }
 
@@ -328,21 +344,29 @@ public class FlatAdsSingleTon {
         String adUnitId;
         NativeAd nativeAd;
         NativeAdCallback callback;
+        FlatAdsNativeAdsConfig config;
+        AdnAdInfo adInfo;
 
-        private InnerNativeListener(String adUnitId, NativeAd nativeAd, NativeAdCallback callback) {
+        private InnerNativeListener(String adUnitId, AdnAdInfo info, FlatAdsNativeAdsConfig config, NativeAd nativeAd, NativeAdCallback callback) {
             this.adUnitId = adUnitId;
             this.nativeAd = nativeAd;
             this.callback = callback;
+            this.config = config;
+            this.adInfo = info;
         }
 
         @Override
         public void onAdSucLoad(AdContent adContent) {
             AdLog.getSingleton().LogD(TAG, "NativeAd onAdSucLoad adUnitId : " + adUnitId);
-            FlatAdsNativeAdsConfig adsConfig = new FlatAdsNativeAdsConfig();
-            adsConfig.setNativeAd(nativeAd);
-            adsConfig.setAdContent(adContent);
-            mNativeAds.put(adUnitId, adsConfig);
-            AdInfo adInfo = new AdInfo();
+            if (config == null) {
+                config = new FlatAdsNativeAdsConfig();
+            }
+            config.setNativeAd(nativeAd);
+            config.setAdContent(adContent);
+            if (adInfo == null) {
+                adInfo = new AdnAdInfo();
+            }
+            adInfo.setAdnNativeAd(config);
             adInfo.setDesc(adContent.desc);
             adInfo.setType(MediationInfo.MEDIATION_ID_25);
             adInfo.setTitle(adContent.title);
@@ -355,21 +379,11 @@ public class FlatAdsSingleTon {
         @Override
         public void onAdFailLoad(ErrorCode errorCode) {
             AdLog.getSingleton().LogE(TAG, "NativeAd LoadFailed: " + errorCode.getCode() + ", " + errorCode.getMsg());
-            destroyNativeAd(adUnitId);
             if (callback != null) {
                 callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
                         AdapterErrorBuilder.AD_UNIT_NATIVE, "FlatAdsAdapter", errorCode.getCode(), errorCode.getMsg()));
             }
         }
-    }
-
-    FlatAdsNativeAdsConfig getNativeAd(String adUnitId) {
-        return mNativeAds.get(adUnitId);
-    }
-
-    public void destroyNativeAd(String adUnitId) {
-        mNativeAds.remove(adUnitId);
-        mAdToken.remove(adUnitId);
     }
 
     public void bidInterstitial(String adUnitId) {
@@ -394,7 +408,7 @@ public class FlatAdsSingleTon {
                     AdLog.getSingleton().LogD(TAG, "InterstitialAd getBidding price: " + price + ", token : " + token);
                     mAdToken.put(adUnitId, token);
                     mIsAds.put(adUnitId, interstitialAd);
-                    bidSuccess(adUnitId, price);
+                    bidSuccess(adUnitId, price, null);
                 }
             });
         } catch (Throwable e) {
@@ -498,7 +512,7 @@ public class FlatAdsSingleTon {
                     AdLog.getSingleton().LogD(TAG, "RewardedVideoAd getBidding price: " + price + ", token : " + token);
                     mAdToken.put(adUnitId, token);
                     mRvAds.put(adUnitId, rewardedAd);
-                    bidSuccess(adUnitId, price);
+                    bidSuccess(adUnitId, price, null);
                 }
             });
         } catch (Throwable e) {
@@ -589,9 +603,9 @@ public class FlatAdsSingleTon {
         }
     }
 
-    private void bidSuccess(String adUnitId, float ecpm) {
+    private void bidSuccess(String adUnitId, float ecpm, Object object) {
         if (mBidCallbacks.containsKey(adUnitId)) {
-            mBidCallbacks.get(adUnitId).onBidSuccess(adUnitId, ecpm);
+            mBidCallbacks.get(adUnitId).onBidSuccess(adUnitId, ecpm, object);
         }
         mBidError.remove(adUnitId);
     }
@@ -699,7 +713,19 @@ public class FlatAdsSingleTon {
                 try {
                     BannerAdView bannerAdView = new BannerAdView(activity);
                     bannerAdView.setAdUnitId(adUnitId);
-                    bannerAdView.setBannerSize(getAdSize(MediationUtil.getBannerDesc(extras)));
+                    int size = getAdSize(MediationUtil.getBannerDesc(extras));
+                    RelativeLayout.LayoutParams layoutParams;
+                    if (size == 1) {
+                        layoutParams = new RelativeLayout.LayoutParams(
+                                MediationUtil.dip2px(MediationUtil.getContext(), 300),
+                                MediationUtil.dip2px(MediationUtil.getContext(), 250));
+                    } else {
+                        layoutParams = new RelativeLayout.LayoutParams(
+                                MediationUtil.dip2px(MediationUtil.getContext(), 320),
+                                MediationUtil.dip2px(MediationUtil.getContext(), 50));
+                    }
+                    bannerAdView.setLayoutParams(layoutParams);
+                    bannerAdView.setBannerSize(size);
                     bannerAdView.setAdLoadListener(new AdLoadListener() {
                         @Override
                         public void onAdSucLoad(AdContent adContent) {
@@ -737,11 +763,10 @@ public class FlatAdsSingleTon {
         try {
             //native
             NativeAd nativeAd = new NativeAd(adUnitId, MediationUtil.getContext());
-            nativeAd.setAdListener(new InnerNativeListener(adUnitId, nativeAd, callback));
+            nativeAd.setAdListener(new InnerNativeListener(adUnitId, null, null, nativeAd, callback));
             nativeAd.loadAd();
         } catch (Throwable e) {
             AdLog.getSingleton().LogE(TAG, "NativeAd Load error : " + e.getMessage());
-            destroyNativeAd(adUnitId);
             if (callback != null) {
                 callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
                         AdapterErrorBuilder.AD_UNIT_NATIVE, "FlatAdsAdapter", "No Fill"));

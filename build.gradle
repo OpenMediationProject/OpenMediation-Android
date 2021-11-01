@@ -39,15 +39,17 @@ ext {
             "facebook"                   : 'com.facebook.android:audience-network-sdk:6.5.1',
             //admob https://developers.google.com/admob/android/rel-notes
             "admob"                      : 'com.google.android.gms:play-services-ads:20.2.0',
-            "admob_facebook_adapter"     : 'com.google.ads.mediation:facebook:6.5.0.0',
+            "admob_facebook_adapter"     : 'com.google.ads.mediation:facebook:6.5.1.0',
             //vungle https://github.com/Vungle/Android-SDK/blob/master/CHANGELOG.md
-            "vungle"                     : 'com.vungle:publisher-sdk-android:6.9.1',
+            "vungle"                     : 'com.vungle:publisher-sdk-android:6.10.1',
+            "vungle_androidx"            : 'androidx.core:core:1.3.2',
+            "vungle_localbroadcast"      : 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0',
             //AdColony https://github.com/AdColony/AdColony-Android-SDK/blob/master/CHANGELOG.md
-            "adcolony"                   : 'com.adcolony:sdk:4.5.0',
+            "adcolony"                   : 'com.adcolony:sdk:4.6.1',
             //AppLovin https://dash.applovin.com/documentation/mediation/android/changelog
-            "applovin"                   : 'com.applovin:applovin-sdk:10.3.1',
+            "applovin"                   : 'com.applovin:applovin-sdk:10.3.2',
             //MoPub https://developers.mopub.com/publishers/android/changelog/
-            "mopub"                      : 'com.mopub:mopub-sdk:5.17.0@aar',
+            "mopub"                      : 'com.mopub:mopub-sdk:5.18.0@aar',
             "mopub_volley"               : 'com.mopub.volley:mopub-volley:2.1.0',
             //TapJoy https://dev.tapjoy.com/en/android-sdk/Changelog
             "tapjoy"                     : 'com.tapjoy:tapjoy-android-sdk:12.8.1@aar',
@@ -60,30 +62,30 @@ ext {
             //gp-ads-identifier
             "play_service_ads_identifier": 'com.google.android.gms:play-services-ads-identifier:17.0.1',
             //Mintegral http://cdn-adn.rayjump.com/cdn-adn/v2/markdown_v2/index.html?file=sdk-m_sdk-android&lang=en
-            "mtg_version"                : '15.6.01',
-            "mtg_china_version"          : '15.6.02',
+            "mtg_version"                : '15.6.31',
+            "mtg_china_version"          : '15.6.32',
             // IronSource https://developers.ironsrc.com/ironsource-mobile/android/sdk-change-log/
-            "ironsource"                 : 'com.ironsource.sdk:mediationsdk:7.1.7',
+            "ironsource"                 : 'com.ironsource.sdk:mediationsdk:7.1.8',
             // https://developer.fyber.com/hc/en-us/articles/360010822437-Integrating-the-Android-SDK
             "fyber"                      : '7.8.2',
             // https://www.pangleglobal.com/
-            "pangle"                     : 'com.pangle.global:ads-sdk:3.9.0.3',
+            "pangle"                     : 'com.pangle.global:ads-sdk:3.9.0.5',
 //            "pangle_cn"                  : 'com.pangle.cn:ads-sdk:3.6.1.1',
             // https://helium.chartboost.com/
             "helium"                     : 'com.chartboost:helium:2.3.1',
             "helium_facebook_adapter"    : 'com.chartboost:helium-facebook:2.3.1.0',
             "eventbus"                   : 'org.greenrobot:eventbus:3.2.0',
             // https://developers.adnet.qq.com/doc/android/access_doc
-            "tencentad"                  : 'com.qq.e.union:union:4.380.1250',
+            "tencentad"                  : 'com.qq.e.union:union:4.390.1260',
             // https://ogury-ltd.gitbook.io/release-notes/android
-            "ogury"                      : 'co.ogury:ogury-sdk:5.0.9',
+            "ogury"                      : 'co.ogury:ogury-sdk:5.0.10',
             // https://github.com/pubnative/pubnative-hybid-android-sdk/wiki/HyBid-Configuration
             "pubnative"                  : 'net.pubnative:hybid.sdk:2.5.2',
             // https://admost.github.io/amrandroid/
-            "admost"                     : 'com.admost.sdk:amr:2.3.5',
+            "admost"                     : 'com.admost.sdk:amr:2.4.4',
             "admost_volley"              : 'com.android.volley:volley:1.1.1',
-            "admost_facebook_adapter"    : 'com.admost.sdk:facebook-adapter:6.5.0.a25',
-            "admost_s2sbidding_adapter"  : 'com.admost.sdk:s2sbidding-adapter:1.0.5.a25',
+            "admost_facebook_adapter"    : 'com.admost.sdk:facebook-adapter:6.7.0.a26',
+            "admost_s2sbidding_adapter"  : 'com.admost.sdk:s2sbidding-adapter:1.0.8.a26',
             "admost_recyclerview"        : 'androidx.recyclerview:recyclerview:1.1.0',
             "admost_annotation"          : 'androidx.annotation:annotation:1.2.0',
             //flat https://github.com/flatads/document
@@ -96,31 +98,31 @@ ext {
     ]
 
     adapterVersion = [
-            'adtiming'    : '2.3.5',
-            'admob'       : '2.3.2',
-            'facebook'    : '2.3.0',
-            'unity'       : '2.3.1',
-            'vungle'      : '2.3.0',
-            'adcolony'    : '2.3.1',
-            'applovin'    : '2.3.3',
-            'mopub'       : '2.3.1',
-            'tapjoy'      : '2.3.0',
-            'chartboost'  : '2.3.0',
-            'helium'      : '2.3.0',
-            'tiktok'      : '2.3.5',
-            'mintegral'   : '2.3.1',
-            'ironsource'  : '2.3.0',
-            'fyber'       : '2.3.0',
-            'ogury'       : '2.3.0',
-            'pubnative'   : '2.3.1',
-            'admost'      : '2.3.2',
-            'flatads'     : '2.3.3',
-            'inmobi'      : '2.3.5',
-            'tiktok_cn'   : '2.3.5',
-            'tencentad_cn': '2.3.5',
-            'mintegral_cn': '2.3.1',
-            'sigmob_cn'   : '2.3.1',
-            'ksad_cn'     : '2.3.1',
+            'adtiming'    : '2.4.1',
+            'admob'       : '2.4.0',
+            'facebook'    : '2.4.0',
+            'unity'       : '2.4.0',
+            'vungle'      : '2.4.0',
+            'adcolony'    : '2.4.0',
+            'applovin'    : '2.4.0',
+            'mopub'       : '2.4.0',
+            'tapjoy'      : '2.4.0',
+            'chartboost'  : '2.4.0',
+            'helium'      : '2.4.0',
+            'tiktok'      : '2.4.1',
+            'mintegral'   : '2.4.0',
+            'ironsource'  : '2.4.0',
+            'fyber'       : '2.4.0',
+            'ogury'       : '2.4.0',
+            'pubnative'   : '2.4.0',
+            'admost'      : '2.4.0',
+            'flatads'     : '2.4.0',
+            'inmobi'      : '2.4.0',
+            'tiktok_cn'   : '2.4.1',
+            'tencentad_cn': '2.4.1',
+            'mintegral_cn': '2.4.0',
+            'sigmob_cn'   : '2.4.0',
+            'ksad_cn'     : '2.4.0',
     ]
 }
 

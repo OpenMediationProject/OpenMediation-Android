@@ -69,8 +69,7 @@ public class BidC2SAuctionManager {
                 if (callback != null) {
                     mBidResultCallbacks.put(placementId, callback);
                 }
-                boolean cacheAdsType = PlacementUtils.isCacheAdsType(adType);
-                resetBidState(cacheAdsType, bidInstances);
+                resetBidState(bidInstances);
                 int biding = 0;
                 for (BaseInstance bidInstance : bidInstances) {
                     if (bidInstance == null) {
@@ -79,10 +78,6 @@ public class BidC2SAuctionManager {
                     BidAdapter bidAdapter = BidAdapterUtil.getBidAdapter(bidInstance.getMediationId());
                     if (bidAdapter == null) {
                         bidInstance.setBidState(BaseInstance.BID_STATE.BID_FAILED);
-                        continue;
-                    }
-                    // if MEDIATION_STATE is AVAILABLE, no bid
-                    if (cacheAdsType && InsManager.isInstanceAvailable(bidInstance)) {
                         continue;
                     }
                     biding++;
@@ -95,7 +90,7 @@ public class BidC2SAuctionManager {
                 }
 
                 if (biding == 0 && callback != null) {
-                    callback.onBidC2SComplete(bidInstances, null);
+                    callback.onBidC2SComplete(null, null);
                 }
             }
         });
@@ -114,13 +109,13 @@ public class BidC2SAuctionManager {
     }
 
     private synchronized void bidSuccess(BaseInstance instance, BidResponse response) {
-        // TODO
-        if (instance.getBidState() != BaseInstance.BID_STATE.BID_PENDING) {
+        if (response == null || instance.getBidState() != BaseInstance.BID_STATE.BID_PENDING) {
             return;
         }
         instance.setRevenue(response.getPrice());
         instance.setBidState(BaseInstance.BID_STATE.BID_SUCCESS);
         instance.setBidResponse(response);
+        instance.setObject(response.getObject());
         JSONObject jsonObject = InsManager.buildReportData(instance);
         if (mBidStartTime != null && mBidStartTime.get(instance.getId()) != null) {
             long start = mBidStartTime.get(instance.getId());
@@ -153,6 +148,9 @@ public class BidC2SAuctionManager {
     private synchronized void bidFailed(BaseInstance instance, String error) {
         DeveloperLog.LogD(instance + " C2S Bid Failed: " + error);
         instance.setBidState(BaseInstance.BID_STATE.BID_FAILED);
+        // reset BidResponse and Object
+        instance.setBidResponse(null);
+         instance.setObject(null);
         JSONObject jsonObject = InsManager.buildReportData(instance);
         JsonUtil.put(jsonObject, "msg", error);
         if (mBidStartTime != null && mBidStartTime.get(instance.getId()) != null) {
@@ -213,11 +211,8 @@ public class BidC2SAuctionManager {
         return success + failed == instances.size();
     }
 
-    private void resetBidState(boolean cacheAdsType, List<BaseInstance> bidInstances) {
+    private void resetBidState(List<BaseInstance> bidInstances) {
         for (BaseInstance instance : bidInstances) {
-            if (cacheAdsType && InsManager.isInstanceAvailable(instance)) {
-                continue;
-            }
             instance.setReqId(null);
             instance.setBidState(BaseInstance.BID_STATE.NOT_BIDDING);
         }

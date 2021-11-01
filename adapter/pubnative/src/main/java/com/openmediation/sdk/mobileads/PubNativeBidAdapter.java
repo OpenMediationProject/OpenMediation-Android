@@ -78,7 +78,7 @@ public class PubNativeBidAdapter extends BidAdapter implements PubNativeCallback
     }
 
     @Override
-    public void onBidSuccess(String placementId, Map<String, String> map) {
+    public void onBidSuccess(String placementId, Map<String, String> map, Object object) {
         PubNativeSingleTon.getInstance().removeBidCallback(placementId);
         BidCallback callback = mBidCallbacks.get(placementId);
         if (callback == null) {
@@ -92,6 +92,7 @@ public class PubNativeBidAdapter extends BidAdapter implements PubNativeCallback
         BidResponse bidResponse = new BidResponse();
         bidResponse.setOriginal(map.toString());
         bidResponse.setPrice(Double.parseDouble(price));
+        bidResponse.setObject(object);
         callback.bidSuccess(bidResponse);
     }
 
@@ -105,13 +106,4 @@ public class PubNativeBidAdapter extends BidAdapter implements PubNativeCallback
         callback.bidFailed(error);
     }
 
-    @Override
-    public void notifyWin(String placementId, Map<String, Object> dataMap) {
-        super.notifyWin(placementId, dataMap);
-    }
-
-    @Override
-    public void notifyLose(String placementId, Map<String, Object> dataMap) {
-        super.notifyLose(placementId, dataMap);
-    }
 }

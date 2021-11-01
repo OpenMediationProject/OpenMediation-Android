@@ -129,8 +129,8 @@ public final class CpManager extends AbstractInventoryAds implements CpManagerLi
     }
 
     @Override
-    protected void callbackAvailableOnManual() {
-        super.callbackAvailableOnManual();
+    protected void callbackAvailableOnManual(BaseInstance instance) {
+        super.callbackAvailableOnManual(instance);
         mListenerWrapper.onPromotionAdAvailabilityChanged(true);
     }
 

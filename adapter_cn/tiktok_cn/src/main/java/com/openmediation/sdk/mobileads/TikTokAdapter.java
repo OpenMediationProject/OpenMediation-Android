@@ -17,6 +17,7 @@ import com.bytedance.sdk.openadsdk.TTAdSdk;
 import com.bytedance.sdk.openadsdk.TTFullScreenVideoAd;
 import com.bytedance.sdk.openadsdk.TTRewardVideoAd;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
@@ -343,9 +344,9 @@ public class TikTokAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void destroyNativeAd(String adUnitId) {
-        super.destroyNativeAd(adUnitId);
-        TikTokNativeManager.getInstance().destroyAd(adUnitId);
+    public void destroyNativeAd(String adUnitId, AdnAdInfo adInfo) {
+        super.destroyNativeAd(adUnitId, adInfo);
+        TikTokNativeManager.getInstance().destroyAd(adUnitId, adInfo);
     }
 
     @Override
@@ -598,7 +599,7 @@ public class TikTokAdapter extends CustomAdsAdapter {
         }
 
         @Override
-        public void onRewardVerify(boolean rewardVerify, int i, String s, int i1, String s1) {
+        public void onRewardVerify(boolean rewardVerify, int rewardAmount, String rewardName, int errorCode, String errorMsg) {
             if (callback != null && rewardVerify) {
                 callback.onRewardedVideoAdRewarded();
             }

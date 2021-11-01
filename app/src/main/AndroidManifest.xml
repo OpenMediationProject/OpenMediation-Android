@@ -7,14 +7,13 @@
         android:hardwareAccelerated="true"
         android:name="com.openmediation.sdk.demo.AppApplication"
         android:allowBackup="true"
-        android:fullBackupContent="@xml/vungle_backup_rule"
         android:icon="@mipmap/ic_adtiming"
         android:label="@string/app_name"
         android:networkSecurityConfig="@xml/app_network_security_config"
         android:roundIcon="@mipmap/ic_adtiming"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        tools:replace="android:fullBackupContent,android:networkSecurityConfig">
+        tools:replace="android:networkSecurityConfig">
         <activity android:name="com.openmediation.sdk.demo.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -25,6 +24,11 @@
 
         <activity
             android:name="com.openmediation.sdk.demo.SplashAdActivity"
+            android:configChanges="keyboardHidden|screenSize|orientation"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.DeviceDefault.NoActionBar" />
+        <activity
+            android:name="com.openmediation.sdk.demo.NativeRecyclerActivity"
             android:configChanges="keyboardHidden|screenSize|orientation"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.DeviceDefault.NoActionBar" />

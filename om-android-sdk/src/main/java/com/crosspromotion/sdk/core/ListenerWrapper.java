@@ -166,6 +166,14 @@ public class ListenerWrapper {
                 }
             });
         }
+        if (canSendCallback(mNativeListener)) {
+            sendCallback(new Runnable() {
+                @Override
+                public void run() {
+                    mNativeListener.onNativeAdShowed(placementId);
+                }
+            });
+        }
     }
 
     public void onAdOpenFailed(final String placementId, final Error error) {

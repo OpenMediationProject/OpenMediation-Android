@@ -5,10 +5,10 @@ package com.openmediation.sdk.mobileads;
 
 import android.content.Context;
 
-import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.bid.BidAdapter;
 import com.openmediation.sdk.bid.BidCallback;
 import com.openmediation.sdk.bid.BidConstance;
+import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.mediation.MediationUtil;
 
 import java.util.Map;

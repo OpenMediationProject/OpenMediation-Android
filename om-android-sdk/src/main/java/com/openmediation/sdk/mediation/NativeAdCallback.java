@@ -3,8 +3,6 @@
 
 package com.openmediation.sdk.mediation;
 
-import com.openmediation.sdk.nativead.AdInfo;
-
 public interface NativeAdCallback {
     /**
      * called when third-party ad network ads init success
@@ -21,7 +19,7 @@ public interface NativeAdCallback {
     /**
      * called when third-party ad network ads load success
      */
-    void onNativeAdLoadSuccess(AdInfo info);
+    void onNativeAdLoadSuccess(AdnAdInfo info);
 
     /**
      * called when third-party ad network load failed
@@ -29,6 +27,11 @@ public interface NativeAdCallback {
      * @param error load failed reason
      */
     void onNativeAdLoadFailed(AdapterError error);
+
+    /**
+     * called when third-party ad network impression
+     */
+    void onNativeAdImpression();
 
     /**
      * called when third-party ad network ads are clicked

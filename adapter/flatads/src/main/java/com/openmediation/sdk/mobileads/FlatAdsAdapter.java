@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.text.TextUtils;
 
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
@@ -107,15 +108,15 @@ public class FlatAdsAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void registerNativeAdView(String adUnitId, NativeAdView adView, NativeAdCallback callback) {
-        super.registerNativeAdView(adUnitId, adView, callback);
-        FlatAdsNativeManager.getInstance().registerNativeView(adUnitId, adView, callback);
+    public void registerNativeAdView(String adUnitId, NativeAdView adView, AdnAdInfo adInfo, NativeAdCallback callback) {
+        super.registerNativeAdView(adUnitId, adView, adInfo, callback);
+        FlatAdsNativeManager.getInstance().registerNativeView(adUnitId, adView, adInfo, callback);
     }
 
     @Override
-    public void destroyNativeAd(String adUnitId) {
-        super.destroyNativeAd(adUnitId);
-        FlatAdsNativeManager.getInstance().destroyAd(adUnitId);
+    public void destroyNativeAd(String adUnitId, AdnAdInfo adInfo) {
+        super.destroyNativeAd(adUnitId, adInfo);
+        FlatAdsNativeManager.getInstance().destroyNativeAd(adUnitId, adInfo);
     }
 
     @Override

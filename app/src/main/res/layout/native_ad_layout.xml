@@ -9,7 +9,6 @@
         android:id="@+id/ad_media"
         android:layout_width="match_parent"
         android:layout_height="200dp"
-        android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
 
     <com.openmediation.sdk.nativead.AdIconView

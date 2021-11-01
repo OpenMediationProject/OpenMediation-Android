@@ -84,14 +84,14 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
         AdLog.getSingleton().LogE("Ad load failed placementId: " + mPlacementId + ", " + error);
     }
 
-    protected void callbackAvailableOnManual() {
+    protected void callbackAvailableOnManual(BaseInstance instance) {
 //        isManualTriggered = false;
     }
 
     /**
      * Callback load success on manual.
      */
-    protected void callbackLoadSuccessOnManual() {
+    protected void callbackLoadSuccessOnManual(BaseInstance instance) {
     }
 
     /**
@@ -114,10 +114,26 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
     }
 
     @Override
-    protected boolean shouldLoadBlock() {
-        if (isInLoadingProgress || isInShowingProgress) {
+    protected boolean shouldLoadBlock(OmManager.LOAD_TYPE type) {
+        if (type == OmManager.LOAD_TYPE.MANUAL) {
+            isManualTriggered = true;
+            checkScheduleTaskStarted();
+            int availableCount = InsManager.instanceCount(mTotalIns, BaseInstance.MEDIATION_STATE.AVAILABLE);
+            if (availableCount > 0) {
+                callbackAvailableOnManual(InsManager.getFirstAvailableIns(mTotalIns));
+            }
+        }
+
+        if (isInLoadingProgress) {
             Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
-                    , ErrorCode.MSG_LOAD_INVALID_REQUEST, ErrorCode.CODE_INTERNAL_REQUEST_PLACEMENTID);
+                    , ErrorCode.MSG_LOAD_INVALID_LOADING, ErrorCode.CODE_INTERNAL_REQUEST_PLACEMENTID);
+            DeveloperLog.LogE("load ad for placement : " +
+                    (Preconditions.checkNotNull(mPlacement) ? mPlacement.getId() : "") + " failed cause : " + error);
+            AdsUtil.loadBlockedReport(Preconditions.checkNotNull(mPlacement) ? mPlacement.getId() : "", error);
+            return true;
+        } else if (isInShowingProgress) {
+            Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
+                    , ErrorCode.MSG_LOAD_INVALID_SHOWING, ErrorCode.CODE_INTERNAL_REQUEST_PLACEMENTID);
             DeveloperLog.LogE("load ad for placement : " +
                     (Preconditions.checkNotNull(mPlacement) ? mPlacement.getId() : "") + " failed cause : " + error);
             AdsUtil.loadBlockedReport(Preconditions.checkNotNull(mPlacement) ? mPlacement.getId() : "", error);
@@ -131,15 +147,7 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
     protected boolean shouldReplenishInventory(OmManager.LOAD_TYPE type) {
         int availableCount = InsManager.instanceCount(mTotalIns, BaseInstance.MEDIATION_STATE.AVAILABLE);
 
-        //if load is manually triggered
-        if (type == OmManager.LOAD_TYPE.MANUAL) {
-            //only checks ScheduleTask when manually triggered
-            checkScheduleTaskStarted();
-
-            if (availableCount > 0 && shouldNotifyAvailableChanged(true)) {
-                callbackAvailableOnManual();
-            }
-        } else {
+        if (type != OmManager.LOAD_TYPE.MANUAL) {
             String pid = mPlacement != null ? mPlacement.getId() : "";
             reportEvent(EventId.ATTEMPT_TO_BRING_NEW_FEED, PlacementUtils.placementEventParams(pid));
             if (availableCount > 0) {
@@ -205,7 +213,6 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
                 Error error = new Error(ErrorCode.CODE_LOAD_NO_AVAILABLE_AD
                         , ErrorCode.MSG_LOAD_NO_AVAILABLE_AD, ErrorCode.CODE_INTERNAL_SERVER_ERROR);
                 DeveloperLog.LogE(error.toString() + ", tmp:" + totalIns + ", last:" + lastAvailableIns);
-                // TODO
                 whenAllLoadFailed();
                 callbackLoadError(error);
             } else {
@@ -230,10 +237,7 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
             isInLoadingProgress = false;
         } else {
             if (mPlacement != null) {
-                Map<Integer, BidResponse> bidResponseMap = WaterFallHelper.getS2sBidResponse(mPlacement, clInfo);
-                if (bidResponseMap != null && !bidResponseMap.isEmpty()) {
-                    mBidResponses.putAll(bidResponseMap);
-                }
+                WaterFallHelper.getS2sBidResponse(mPlacement, clInfo);
             }
             HandlerUtil.runOnUiThread(new Runnable() {
                 @Override
@@ -249,9 +253,9 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
         List<BidResponse> responses = null;
         if (hasAvailableInventory()) {
             responses = new ArrayList<>();
-            List<Integer> ids = InsManager.getInsIdWithStatus(mTotalIns, BaseInstance.MEDIATION_STATE.AVAILABLE);
-            for (Integer id : ids) {
-                BidResponse bidResponse = mBidResponses.get(id);
+            List<BaseInstance> insList = InsManager.getInsIdWithStatus(mTotalIns, BaseInstance.MEDIATION_STATE.AVAILABLE);
+            for (BaseInstance ins : insList) {
+                BidResponse bidResponse = ins.getBidResponse();
                 if (bidResponse != null) {
                     responses.add(bidResponse);
                 }
@@ -313,9 +317,7 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
 
         if (instance.getHb() == 1) {
             InsManager.reportInsLoad(instance, EventId.INSTANCE_PAYLOAD_REQUEST);
-            BidResponse bidResponse = mBidResponses.get(instance.getId());
-            instance.setBidResponse(bidResponse);
-            insLoad(instance, PlacementUtils.getLoadExtrasMap(mReqId, instance, bidResponse));
+            insLoad(instance, PlacementUtils.getLoadExtrasMap(mReqId, instance, instance.getBidResponse()));
         } else {
             InsManager.reportInsLoad(instance, EventId.INSTANCE_LOAD);
             LrReportHelper.report(instance, mLoadType.getValue(), mPlacement.getWfAbt(), CommonConstants.INSTANCE_LOAD, 0);
@@ -362,16 +364,16 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
         } else {
             notifyUnLoadInsBidLose();
         }
-        if (isManualTriggered) {
-            callbackLoadSuccessOnManual();
-        }
         if (shouldNotifyAvailableChanged(true)) {
             if (!isAReadyReported.get()) {
                 isAReadyReported.set(true);
-                LrReportHelper.report(mReqId, mRuleId, instance.getPlacementId(), mLoadType.getValue(), mPlacement.getWfAbt(),
+                LrReportHelper.report(instance.getReqId(), mRuleId, instance.getPlacementId(), mLoadType.getValue(), mPlacement.getWfAbt(),
                         CommonConstants.WATERFALL_READY, 0);
             }
             onAvailabilityChanged(true, null);
+        }
+        if (isManualTriggered) {
+            callbackLoadSuccessOnManual(instance);
         }
         AdLog.getSingleton().LogD("Ad load success placementId: " + mPlacementId);
     }
@@ -417,7 +419,9 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
 //        if (shouldNotifyAvailableChanged(false)) {
 //            onAvailabilityChanged(false, null);
 //        }
-        isInShowingProgress = true;
+        if (getPlacementType() != CommonConstants.NATIVE) {
+            isInShowingProgress = true;
+        }
         AdLog.getSingleton().LogD("Ad show success placementId: " + mPlacementId);
     }
 
@@ -446,6 +450,14 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
             return null;
         }
         return mPlacement.getRfs();
+    }
+
+    /**
+     * The default load interval
+     * @return interval sec
+     */
+    public int getDefaultInterval() {
+        return 30;
     }
 
     protected void checkScheduleTaskStarted() {
@@ -477,10 +489,10 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
      * @return should finish load or not
      */
     private boolean shouldFinishLoad() {
-        int readyCount = InsManager.instanceCount(mTotalIns, BaseInstance.MEDIATION_STATE.AVAILABLE);
+        int readyCount = InsManager.instanceCount(mTotalIns, BaseInstance.MEDIATION_STATE.AVAILABLE, BaseInstance.MEDIATION_STATE.SKIP);
         int allLoadedCount = InsManager.instanceCount(mTotalIns, BaseInstance.MEDIATION_STATE.AVAILABLE,
                 BaseInstance.MEDIATION_STATE.INIT_FAILED, BaseInstance.MEDIATION_STATE.LOAD_FAILED,
-                BaseInstance.MEDIATION_STATE.CAPPED);
+                BaseInstance.MEDIATION_STATE.CAPPED, BaseInstance.MEDIATION_STATE.SKIP);
         if (readyCount >= mInventorySize || allLoadedCount == mTotalIns.size()) {
             DeveloperLog.LogD("full of cache or loaded all ins, current load is finished : " +
                     readyCount);
@@ -503,10 +515,18 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
      * schedules Load Ad Task
      */
     private void scheduleLoadAdTask() {
-        if (mPlacement == null || mPlacement.getRfs() == null || mPlacement.getRfs().isEmpty()) {
+        if (mPlacementId == null) {
             return;
         }
         Map<Integer, Integer> rfs = mPlacement.getRfs();
+        if (rfs == null || rfs.isEmpty()) {
+            mDidScheduleTaskStarted.set(true);
+            int delay = getDefaultInterval();
+            DeveloperLog.LogD("post adsScheduleTask delay : " + delay);
+            WorkExecutor.execute(new AdsScheduleTask(this, delay), delay,
+                    TimeUnit.SECONDS);
+            return;
+        }
         Collection<Integer> values = rfs.values();
         int delay = 0;
         for (Integer value : values) {
@@ -617,24 +637,14 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
     }
 
     private void removeBidResponseWhenLoad() {
-        if (mBidResponses == null || mBidResponses.isEmpty()) {
-            return;
-        }
-        List<Integer> availableIns = InsManager.getInsIdWithStatus(mTotalIns, BaseInstance.MEDIATION_STATE.AVAILABLE);
+        List<BaseInstance> availableIns = InsManager.getInsIdWithStatus(mTotalIns, BaseInstance.MEDIATION_STATE.AVAILABLE);
         if (availableIns.isEmpty()) {
-            mBidResponses.clear();
             return;
         }
-
-        Set<Integer> ids = mBidResponses.keySet();
-        for (Integer id : ids) {
-            if (availableIns.contains(id)) {
-                BidResponse bidResponse = mBidResponses.get(id);
-                if (bidResponse != null && bidResponse.isExpired()) {
-                    resetMediationStateAndNotifyLose(InsManager.getInsById(mTotalIns, id));
-                }
-            } else {
-                mBidResponses.remove(id);
+        for (BaseInstance instance : availableIns) {
+            BidResponse bidResponse = instance.getBidResponse();
+            if (bidResponse != null && bidResponse.isExpired()) {
+                resetMediationStateAndNotifyLose(instance);
             }
         }
     }
@@ -647,14 +657,10 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
     }
 
     private void notifyUnShowedBidLose(BaseInstance instance) {
-        if (mBidResponses == null || instance == null) {
+        if (instance == null) {
             return;
         }
-        if (!mBidResponses.containsKey(instance.getId())) {
-            return;
-        }
-        BidResponse bidResponse = mBidResponses.get(instance.getId());
-        mBidResponses.remove(instance.getId());
+        BidResponse bidResponse = instance.getBidResponse();
         if (bidResponse == null) {
             return;
         }
@@ -664,7 +670,7 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
 
     @Override
     protected void notifyUnLoadInsBidLose() {
-        if (mTotalIns == null || mBidResponses == null) {
+        if (mTotalIns == null) {
             return;
         }
         for (BaseInstance in : mTotalIns) {
@@ -672,9 +678,8 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
                 continue;
             }
             if ((in.getMediationState() == BaseInstance.MEDIATION_STATE.NOT_INITIATED ||
-                    in.getMediationState() == BaseInstance.MEDIATION_STATE.NOT_AVAILABLE) &&
-                    mBidResponses.containsKey(in.getId())) {
-                BidResponse bidResponse = mBidResponses.remove(in.getId());
+                    in.getMediationState() == BaseInstance.MEDIATION_STATE.NOT_AVAILABLE)) {
+                BidResponse bidResponse = in.getBidResponse();
                 if (bidResponse == null) {
                     continue;
                 }

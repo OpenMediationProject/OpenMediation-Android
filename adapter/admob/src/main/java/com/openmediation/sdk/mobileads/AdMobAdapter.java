@@ -43,6 +43,7 @@ import com.google.android.gms.ads.rewarded.RewardItem;
 import com.google.android.gms.ads.rewarded.RewardedAd;
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
@@ -51,7 +52,6 @@ import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.mediation.NativeAdCallback;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.openmediation.sdk.mediation.SplashAdCallback;
-import com.openmediation.sdk.nativead.AdInfo;
 import com.openmediation.sdk.nativead.NativeAdView;
 import com.openmediation.sdk.utils.AdLog;
 
@@ -64,7 +64,6 @@ public class AdMobAdapter extends CustomAdsAdapter {
     private final ConcurrentMap<String, RewardedAd> mRewardedAds;
     private final ConcurrentMap<String, InterstitialAd> mInterstitialAds;
     private final ConcurrentMap<String, AdView> mBannerAds;
-    private final ConcurrentMap<String, AdMobNativeAdsConfig> mNativeAds;
     private final ConcurrentMap<String, RewardedVideoCallback> mRvInitCallbacks;
     private final ConcurrentMap<String, InterstitialAdCallback> mIsInitCallbacks;
     private final ConcurrentMap<String, BannerAdCallback> mBnInitCallbacks;
@@ -75,7 +74,6 @@ public class AdMobAdapter extends CustomAdsAdapter {
         mRewardedAds = new ConcurrentHashMap<>();
         mInterstitialAds = new ConcurrentHashMap<>();
         mBannerAds = new ConcurrentHashMap<>();
-        mNativeAds = new ConcurrentHashMap<>();
         mRvInitCallbacks = new ConcurrentHashMap<>();
         mIsInitCallbacks = new ConcurrentHashMap<>();
         mBnInitCallbacks = new ConcurrentHashMap<>();
@@ -673,8 +671,8 @@ public class AdMobAdapter extends CustomAdsAdapter {
                         public void onNativeAdLoaded(NativeAd nativeAd) {
                             try {
                                 config.setAdMobNativeAd(nativeAd);
-                                mNativeAds.put(adUnitId, config);
-                                AdInfo info = new AdInfo();
+                                AdnAdInfo info = new AdnAdInfo();
+                                info.setAdnNativeAd(config);
                                 info.setType(getAdNetworkId());
                                 info.setTitle(nativeAd.getHeadline());
                                 info.setDesc(nativeAd.getBody());
@@ -696,7 +694,6 @@ public class AdMobAdapter extends CustomAdsAdapter {
                     AdLoader loader = builder.withNativeAdOptions(nativeAdOptionsBuilder.build())
                             .withAdListener(createNativeAdListener(callback)).build();
                     config.setAdLoader(loader);
-                    mNativeAds.put(adUnitId, config);
                     loader.loadAd(createAdRequest());
                 } catch (Throwable e) {
                     if (callback != null) {
@@ -709,12 +706,12 @@ public class AdMobAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void destroyNativeAd(String adUnitId) {
-        super.destroyNativeAd(adUnitId);
-        if (!mNativeAds.containsKey(adUnitId)) {
+    public void destroyNativeAd(String adUnitId, AdnAdInfo adnAdInfo) {
+        super.destroyNativeAd(adUnitId, adnAdInfo);
+        if (adnAdInfo == null || !(adnAdInfo.getAdnNativeAd() instanceof AdMobNativeAdsConfig)) {
             return;
         }
-        AdMobNativeAdsConfig config = mNativeAds.remove(adUnitId);
+        AdMobNativeAdsConfig config = (AdMobNativeAdsConfig) adnAdInfo.getAdnNativeAd();
         if (config == null) {
             return;
         }
@@ -731,12 +728,12 @@ public class AdMobAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public void registerNativeAdView(String adUnitId, NativeAdView adView, NativeAdCallback callback) {
-        super.registerNativeAdView(adUnitId, adView, callback);
-        if (!mNativeAds.containsKey(adUnitId)) {
+    public void registerNativeAdView(String adUnitId, NativeAdView adView, AdnAdInfo adnAdInfo, NativeAdCallback callback) {
+        super.registerNativeAdView(adUnitId, adView, adnAdInfo, callback);
+        if (adnAdInfo == null || !(adnAdInfo.getAdnNativeAd() instanceof AdMobNativeAdsConfig)) {
             return;
         }
-        AdMobNativeAdsConfig config = mNativeAds.get(adUnitId);
+        AdMobNativeAdsConfig config = (AdMobNativeAdsConfig) adnAdInfo.getAdnNativeAd();
         if (config == null) {
             return;
         }
@@ -1014,6 +1011,14 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 super.onAdClicked();
                 if (callback != null) {
                     callback.onNativeAdAdClicked();
+                }
+            }
+
+            @Override
+            public void onAdImpression() {
+                super.onAdImpression();
+                if (callback != null) {
+                    callback.onNativeAdImpression();
                 }
             }
         };

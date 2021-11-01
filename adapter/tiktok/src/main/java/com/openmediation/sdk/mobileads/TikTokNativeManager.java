@@ -5,7 +5,6 @@ package com.openmediation.sdk.mobileads;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -20,11 +19,11 @@ import com.crosspromotion.sdk.utils.Cache;
 import com.crosspromotion.sdk.utils.ImageUtils;
 import com.crosspromotion.sdk.utils.ResDownloader;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.mediation.NativeAdCallback;
 import com.openmediation.sdk.nativead.AdIconView;
-import com.openmediation.sdk.nativead.AdInfo;
 import com.openmediation.sdk.nativead.MediaView;
 import com.openmediation.sdk.nativead.NativeAdView;
 import com.openmediation.sdk.utils.AdLog;
@@ -35,19 +34,15 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class TikTokNativeManager {
     private TTAdNative mTTAdNative;
-
-    private final ConcurrentHashMap<String, TTFeedAd> mFeedAds;
 
     private static class Holder {
         private static final TikTokNativeManager INSTANCE = new TikTokNativeManager();
     }
 
     private TikTokNativeManager() {
-        mFeedAds = new ConcurrentHashMap<>();
     }
 
     public static TikTokNativeManager getInstance() {
@@ -92,21 +87,21 @@ public class TikTokNativeManager {
         }
     }
 
-    public void registerView(final String adUnitId, final NativeAdView adView, final NativeAdCallback callback) {
+    public void registerView(final String adUnitId, final NativeAdView adView, final AdnAdInfo adInfo, final NativeAdCallback callback) {
         MediationUtil.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                innerRegisterView(adUnitId, adView, callback);
+                innerRegisterView(adUnitId, adView, adInfo, callback);
             }
         });
     }
 
-    private void innerRegisterView(String adUnitId, NativeAdView adView, final NativeAdCallback callback) {
+    private void innerRegisterView(String adUnitId, NativeAdView adView, AdnAdInfo adInfo, final NativeAdCallback callback) {
         try {
-            TTFeedAd feedAd = mFeedAds.remove(adUnitId);
-            if (feedAd == null) {
+            if (adInfo == null || !(adInfo.getAdnNativeAd() instanceof TTFeedAd)) {
                 return;
             }
+            TTFeedAd feedAd = (TTFeedAd) adInfo.getAdnNativeAd();
             MediaView mediaView = adView.getMediaView();
             ArrayList<View> images = new ArrayList<>();
             if (mediaView != null) {
@@ -157,6 +152,10 @@ public class TikTokNativeManager {
 
                 @Override
                 public void onAdShow(TTNativeAd ttNativeAd) {
+                    AdLog.getSingleton().LogD("TikTok NativeAd onAdShow");
+                    if (callback != null) {
+                        callback.onNativeAdImpression();
+                    }
                 }
             });
         } catch(Throwable e) {
@@ -164,10 +163,7 @@ public class TikTokNativeManager {
         }
     }
 
-    public void destroyAd(String adUnitId) {
-        if (!TextUtils.isEmpty(adUnitId) && mFeedAds.containsKey(adUnitId)) {
-            mFeedAds.remove(adUnitId);
-        }
+    public void destroyAd(String adUnitId, AdnAdInfo adInfo) {
     }
 
     private class InnerAdListener implements TTAdNative.FeedAdListener {
@@ -220,8 +216,8 @@ public class TikTokNativeManager {
                 }
                 AdLog.getSingleton().LogD("TikTokAdapter", "Content File = " + file);
             }
-            mFeedAds.put(adUnitId, ad);
-            AdInfo adInfo = new AdInfo();
+            AdnAdInfo adInfo = new AdnAdInfo();
+            adInfo.setAdnNativeAd(ad);
             adInfo.setDesc(ad.getDescription());
             adInfo.setType(MediationInfo.MEDIATION_ID_13);
             adInfo.setTitle(ad.getTitle());

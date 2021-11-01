@@ -77,17 +77,7 @@ public class FlatAdsBidAdapter extends BidAdapter implements FlatAdsBidCallback 
     }
 
     @Override
-    public void notifyWin(String placementId, Map<String, Object> dataMap) {
-        super.notifyWin(placementId, dataMap);
-    }
-
-    @Override
-    public void notifyLose(String placementId, Map<String, Object> dataMap) {
-        super.notifyLose(placementId, dataMap);
-    }
-
-    @Override
-    public void onBidSuccess(String adUnitId, float ecpm) {
+    public void onBidSuccess(String adUnitId, float ecpm, Object object) {
         FlatAdsSingleTon.getInstance().removeBidCallback(adUnitId);
         BidCallback callback = mBidCallbacks.get(adUnitId);
         if (callback == null) {
@@ -95,6 +85,7 @@ public class FlatAdsBidAdapter extends BidAdapter implements FlatAdsBidCallback 
         }
         BidResponse bidResponse = new BidResponse();
         bidResponse.setPrice(ecpm);
+        bidResponse.setObject(object);
         callback.bidSuccess(bidResponse);
     }
 

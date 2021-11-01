@@ -371,6 +371,11 @@ public class VungleAdapter extends CustomAdsAdapter implements PlayAdCallback {
     }
 
     @Override
+    public void creativeId(String creativeId) {
+
+    }
+
+    @Override
     public void onAdStart(String id) {
         if (mRvCallback.containsKey(id)) {
             RewardedVideoCallback callback = mRvCallback.get(id);

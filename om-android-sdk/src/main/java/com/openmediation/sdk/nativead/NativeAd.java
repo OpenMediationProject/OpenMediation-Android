@@ -3,52 +3,40 @@
 
 package com.openmediation.sdk.nativead;
 
-import android.app.Activity;
-
 import com.openmediation.sdk.core.OmManager;
-import com.openmediation.sdk.core.imp.nativead.NaManager;
 
 /**
  * <p>
  * In general you should get instances of {@link NativeAd}
  * <p>
  * When you have a {@link NativeAd} instance and wish to show a view you should:
- * 1. Call {@link #loadAd()} to prepare ad.
- * 2. Call {@link #registerNativeAdView(NativeAdView)} with a compatible {@link NativeAdView} to render the ad data into the view.
- * 3. When the ad view is no longer shown to the user, call {@link #destroy()}. You can later
- * call {@link #loadAd()} again if the ad will be shown to users.
+ * 1. Call {@link #loadAd(String)} to prepare ad.
+ * 2. Call {@link #registerNativeAdView(String, NativeAdView, AdInfo)} with a compatible {@link NativeAdView} to render the ad data into the view.
+ * 3. When the ad view is no longer shown to the user, call {@link #destroy(String, AdInfo)}. You can later
+ * call {@link #loadAd(String)} again if the ad will be shown to users.
  */
 public class NativeAd {
 
-    private NaManager mNative;
-
-    /**
-     * Instantiates NativeAd
-     *
-     * @param activity    the activity
-     * @param placementId the placement id
-     * @param adListener  the ad listener
-     */
-    @Deprecated
-    public NativeAd(Activity activity, String placementId, NativeAdListener adListener) {
-        mNative = new NaManager(placementId, adListener);
+    private NativeAd() {
     }
 
-    public NativeAd(String placementId, NativeAdListener adListener) {
-        mNative = new NaManager(placementId, adListener);
+    public static void addAdListener(String placementId, NativeAdListener listener) {
+        OmManager.getInstance().addNativeAdListener(placementId, listener);
     }
 
-    public void setDisplayParams(int width, int height) {
-        if (mNative != null) {
-            mNative.setDisplayParams(width, height);
-        }
+    public static void removeAdListener(String placementId, NativeAdListener listener) {
+        OmManager.getInstance().removeNativeAdListener(placementId, listener);
+    }
+
+    public static void setDisplayParams(String placementId, int width, int height) {
+        OmManager.getInstance().setDisplayParams(placementId, width, height);
     }
 
     /**
      * Load ad.
      */
-    public void loadAd() {
-        mNative.loadAds(OmManager.LOAD_TYPE.MANUAL);
+    public static void loadAd(String placementId) {
+        OmManager.getInstance().loadNativeAd(placementId);
     }
 
     /**
@@ -56,15 +44,15 @@ public class NativeAd {
      *
      * @param adView The ad {@link NativeAdView}
      */
-    public void registerNativeAdView(NativeAdView adView) {
-        mNative.registerView(adView);
+    public static void registerNativeAdView(String placementId, NativeAdView adView, AdInfo info) {
+        OmManager.getInstance().registerNativeAdView(placementId, adView, info);
     }
 
     /**
      * Cleans up all {@link NativeAd} state. Call this method when the {@link NativeAd} will never be shown to a
      * user again.
      */
-    public void destroy() {
-        mNative.destroy();
+    public static void destroy(String placementId, AdInfo info) {
+        OmManager.getInstance().destroyNativeAd(placementId, info);
     }
 }

@@ -314,6 +314,8 @@ public abstract class OmAds {
         INTERSTITIAL("interstitial"),
         /*Ad type Promotion*/
         PROMOTION("promotion"),
+        /*Ad type NativeAd*/
+//        NATIVE("native"),
         /* No Preload*/
         NONE("none");
 

@@ -7,7 +7,6 @@ package com.openmediation.sdk.mobileads;
 
 import android.content.Context;
 
-import com.inmobi.sdk.InMobiSdk;
 import com.openmediation.sdk.banner.AdSize;
 import com.openmediation.sdk.bid.BidAdapter;
 import com.openmediation.sdk.bid.BidCallback;

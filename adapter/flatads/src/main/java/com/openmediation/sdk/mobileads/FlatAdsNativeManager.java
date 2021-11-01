@@ -12,6 +12,7 @@ import com.flatads.sdk.callback.AdShowListener;
 import com.flatads.sdk.response.AdContent;
 import com.flatads.sdk.ui.NativeAdLayout;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.mediation.NativeAdCallback;
 import com.openmediation.sdk.nativead.AdIconView;
 import com.openmediation.sdk.nativead.MediaView;
@@ -25,7 +26,8 @@ import static com.openmediation.sdk.mobileads.FlatAdsAdapter.BID;
 
 public class FlatAdsNativeManager {
     private static final String TAG = "FlatAdsNativeManager";
-    private final ConcurrentHashMap<String, NativeAdLayout> mNativeAdLayoutMap;
+    private static final String ADN_OBJECT = "AdnObject";
+    private final ConcurrentHashMap<FlatAdsNativeAdsConfig, NativeAdLayout> mNativeAdLayoutMap;
 
     private static class Holder {
         private static final FlatAdsNativeManager INSTANCE = new FlatAdsNativeManager();
@@ -61,12 +63,19 @@ public class FlatAdsNativeManager {
 
     public void loadAd(String adUnitId, Map<String, Object> extras, final NativeAdCallback callback) {
         boolean bid = false;
-        if (extras.containsKey(BID) && extras.get(BID) instanceof Integer) {
+        if (extras != null && extras.containsKey(BID) && extras.get(BID) instanceof Integer) {
             bid = ((int) extras.get(BID)) == 1;
         }
         if (bid) {
-            final FlatAdsNativeAdsConfig adsConfig = FlatAdsSingleTon.getInstance().getNativeAd(adUnitId);
-            if (adsConfig == null || adsConfig.getNativeAd() == null) {
+            AdnAdInfo info = null;
+            FlatAdsNativeAdsConfig config = null;
+            if (extras.get(ADN_OBJECT) instanceof AdnAdInfo) {
+                info = (AdnAdInfo) extras.get(ADN_OBJECT);
+                if (info != null && info.getAdnNativeAd() instanceof FlatAdsNativeAdsConfig) {
+                    config = (FlatAdsNativeAdsConfig) info.getAdnNativeAd();
+                }
+            }
+            if (config == null || config.getNativeAd() == null) {
                 String error = FlatAdsSingleTon.getInstance().getError(adUnitId);
                 if (TextUtils.isEmpty(error)) {
                     error = "No Fill";
@@ -77,27 +86,24 @@ public class FlatAdsNativeManager {
                 }
                 return;
             }
-            FlatAdsSingleTon.getInstance().loadNativeAdWithBid(adUnitId, callback);
+            FlatAdsSingleTon.getInstance().loadNativeAdWithBid(adUnitId, info, config, callback);
         } else {
             FlatAdsSingleTon.getInstance().loadNativeAd(adUnitId, callback);
         }
     }
 
-    void registerNativeView(String adUnitId, NativeAdView adView, final NativeAdCallback callback) {
+    void registerNativeView(String adUnitId, NativeAdView adView, AdnAdInfo adInfo, final NativeAdCallback callback) {
         try {
-            final FlatAdsNativeAdsConfig adsConfig = FlatAdsSingleTon.getInstance().getNativeAd(adUnitId);
-            if (adsConfig == null) {
+            if (adInfo == null || !(adInfo.getAdnNativeAd() instanceof FlatAdsNativeAdsConfig)) {
                 return;
             }
-            AdContent adContent = adsConfig.getAdContent();
+            FlatAdsNativeAdsConfig config = (FlatAdsNativeAdsConfig) adInfo.getAdnNativeAd();
+            if (config == null || config.getAdContent() == null) {
+                return;
+            }
+            AdContent adContent = config.getAdContent();
             NativeAdLayout nativeAdLayout = new NativeAdLayout(adView.getContext());
 
-//            if (adView.getTitleView() instanceof TextView) {
-//                nativeAdLayout.setTitle((TextView) adView.getTitleView());
-//            }
-//            if (adView.getDescView() instanceof TextView) {
-//                nativeAdLayout.setDescribe((TextView) adView.getDescView());
-//            }
             if (adView.getCallToActionView() instanceof TextView) {
                 nativeAdLayout.setButton((TextView) adView.getCallToActionView());
             }
@@ -106,7 +112,6 @@ public class FlatAdsNativeManager {
                 MediaView mediaView = adView.getMediaView();
                 com.flatads.sdk.ui.MediaView adnMediaView = new com.flatads.sdk.ui.MediaView(adView.getContext());
                 nativeAdLayout.setMedia(adnMediaView);
-                // TODO
                 mediaView.removeAllViews();
                 mediaView.addView(adnMediaView);
                 RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,
@@ -127,6 +132,9 @@ public class FlatAdsNativeManager {
                 @Override
                 public void onAdShowed() {
                     AdLog.getSingleton().LogD("FlatAdsNativeManager", "NativeAd onAdShowed");
+                    if (callback != null) {
+                        callback.onNativeAdImpression();
+                    }
                 }
 
                 @Override
@@ -144,16 +152,25 @@ public class FlatAdsNativeManager {
                 }
             });
             nativeAdLayout.showAd(adContent);
-            mNativeAdLayoutMap.put(adUnitId, nativeAdLayout);
+            mNativeAdLayoutMap.put(config, nativeAdLayout);
         } catch (Throwable ignored) {
         }
     }
 
-    void destroyAd(String adUnitId) {
-        FlatAdsSingleTon.getInstance().destroyNativeAd(adUnitId);
-        NativeAdLayout nativeAdLayout = mNativeAdLayoutMap.remove(adUnitId);
-        if (nativeAdLayout != null) {
-            nativeAdLayout.destroy();
+    public void destroyNativeAd(String adUnitId, AdnAdInfo adInfo) {
+        if (adInfo == null || !(adInfo.getAdnNativeAd() instanceof FlatAdsNativeAdsConfig)) {
+            return;
+        }
+        FlatAdsNativeAdsConfig config = (FlatAdsNativeAdsConfig) adInfo.getAdnNativeAd();
+        if (config == null || config.getAdContent() == null) {
+            return;
+        }
+        try {
+            NativeAdLayout nativeAdLayout = mNativeAdLayoutMap.remove(adUnitId);
+            if (nativeAdLayout != null) {
+                nativeAdLayout.destroy();
+            }
+        } catch (Throwable ignored) {
         }
     }
 
