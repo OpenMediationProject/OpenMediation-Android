@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.core.MetaData;
 import com.openmediation.sdk.core.OmManager;
+import com.openmediation.sdk.utils.AFManager;
 import com.openmediation.sdk.utils.AdtUtil;
 import com.openmediation.sdk.utils.DensityUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
@@ -377,7 +378,7 @@ public class RequestBuilder {
         body.put(KeyConstants.RequestBody.KEY_LIP, DeviceUtil.getHostIp());
         body.put(KeyConstants.RequestBody.KEY_LCOUNTRY, map.get(KeyConstants.RequestBody.KEY_LCOUNTRY));
         body.put(KeyConstants.RequestBody.KEY_FM, DeviceUtil.getFm());
-        body.put(KeyConstants.RequestBody.KEY_AF_ID, DataCache.getInstance().getFromMem(KeyConstants.KEY_AF_ID, String.class));
+        body.put(KeyConstants.RequestBody.KEY_AF_ID, AFManager.getAfId(context));
         Map<String, Integer> battery = DeviceUtil.getBatteryInfo(context);
         if (battery == null || battery.isEmpty()) {
             body.put(KeyConstants.RequestBody.KEY_BATTERY, 0);

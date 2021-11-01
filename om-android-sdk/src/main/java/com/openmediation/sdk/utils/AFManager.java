@@ -18,10 +18,15 @@ public class AFManager {
         }
         try {
             Class.forName("com.appsflyer.AppsFlyerLib");
-        } catch (Exception e) {
+        } catch (Throwable e) {
             return null;
         }
-        return com.appsflyer.AppsFlyerLib.getInstance().getAppsFlyerUID(context);
+        try {
+            return com.appsflyer.AppsFlyerLib.getInstance().getAppsFlyerUID(context);
+        } catch (Throwable e) {
+            DeveloperLog.LogE("getAppsFlyerUID error: " + e.getMessage());
+        }
+        return null;
     }
 
     public static void sendAFConversionData(Object conversionData) {

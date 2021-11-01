@@ -104,17 +104,17 @@ public class SpManager extends AbstractHybridAds implements SpManagerListener {
 
     @Override
     public void onSplashAdInitFailed(SpInstance instance, AdapterError error) {
-        onInsLoadFailed(instance, error);
+        onInsLoadFailed(instance, error, !isManualTriggered);
     }
 
     @Override
     public void onSplashAdLoadSuccess(SpInstance instance) {
-        onInsLoadSuccess(instance);
+        onInsLoadSuccess(instance, !isManualTriggered);
     }
 
     @Override
     public void onSplashAdLoadFailed(SpInstance instance, AdapterError error) {
-        onInsLoadFailed(instance, error);
+        onInsLoadFailed(instance, error, !isManualTriggered);
     }
 
     @Override

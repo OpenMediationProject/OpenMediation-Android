@@ -202,12 +202,12 @@ public final class CpManager extends AbstractInventoryAds implements CpManagerLi
 
     @Override
     public void onPromotionAdLoadSuccess(CpInstance instance) {
-        onInsLoadSuccess(instance);
+        onInsLoadSuccess(instance, false);
     }
 
     @Override
-    public void onPromotionAdLoadFailed(CpInstance instance, AdapterError  error) {
+    public void onPromotionAdLoadFailed(CpInstance instance, AdapterError error) {
         DeveloperLog.LogE("CpManager onPromotionAdLoadFailed : " + instance + " error : " + error);
-        onInsLoadFailed(instance, error);
+        onInsLoadFailed(instance, error, false);
     }
 }

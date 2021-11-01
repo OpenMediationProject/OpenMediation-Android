@@ -33,7 +33,7 @@ public class MintegralSingleTon {
         return MintegralHolder.INSTANCE;
     }
 
-    public void initSDK(final Context context, final String appKey, final InitCallback listener) {
+    public synchronized void initSDK(final Context context, final String appKey, final InitCallback listener) {
         if (context == null || TextUtils.isEmpty(appKey)) {
             if (listener != null) {
                 AdLog.getSingleton().LogE("Init Failed: Context or AppKey is null");
@@ -81,9 +81,10 @@ public class MintegralSingleTon {
                 }
 
                 @Override
-                public void onInitFail() {
-                    initError("Mintegral SDK Init Failed");
+                public void onInitFail(String err) {
+                    initError("Mintegral SDK Init Failed: " + err);
                 }
+
             });
         } catch (Exception e) {
             initError("Mintegral SDK Init Failed: " + e.getMessage());

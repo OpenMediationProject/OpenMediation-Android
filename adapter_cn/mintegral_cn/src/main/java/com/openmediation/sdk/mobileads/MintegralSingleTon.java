@@ -81,11 +81,12 @@ public class MintegralSingleTon {
                 }
 
                 @Override
-                public void onInitFail() {
-                    initError("Mintegral SDK Init Failed");
+                public void onInitFail(String err) {
+                    initError("Mintegral SDK Init Failed: " + err);
                 }
+
             });
-        } catch(Exception e) {
+        } catch (Exception e) {
             initError("Mintegral SDK Init Failed: " + e.getMessage());
         }
     }

@@ -22,6 +22,7 @@ import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.MediationUtil;
+import com.openmediation.sdk.mediation.NativeAdCallback;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.openmediation.sdk.mediation.SplashAdCallback;
 import com.openmediation.sdk.utils.AdLog;
@@ -291,7 +292,7 @@ public class TikTokAdapter extends CustomAdsAdapter {
     @Override
     public void loadBannerAd(Activity activity, String adUnitId, Map<String, Object> extras, BannerAdCallback callback) {
         super.loadBannerAd(activity, adUnitId, extras, callback);
-        String error = check(activity, adUnitId);
+        String error = check(adUnitId);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
@@ -299,7 +300,7 @@ public class TikTokAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        TikTokBannerManager.getInstance().loadAd(activity, adUnitId, extras, callback);
+        TikTokBannerManager.getInstance().loadAd(adUnitId, extras, callback);
     }
 
     @Override
@@ -311,6 +312,40 @@ public class TikTokAdapter extends CustomAdsAdapter {
     public void destroyBannerAd(String adUnitId) {
         super.destroyBannerAd(adUnitId);
         TikTokBannerManager.getInstance().destroyAd(adUnitId);
+    }
+
+    @Override
+    public void initNativeAd(Activity activity, Map<String, Object> extras, NativeAdCallback callback) {
+        super.initNativeAd(activity, extras, callback);
+        String error = check();
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onNativeAdInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, error));
+            }
+            return;
+        }
+        TikTokNativeManager.getInstance().initAd(MediationUtil.getContext(), extras, callback);
+    }
+
+    @Override
+    public void loadNativeAd(Activity activity, String adUnitId, Map<String, Object> extras, NativeAdCallback callback) {
+        super.loadNativeAd(activity, adUnitId, extras, callback);
+        String error = check(adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, error));
+            }
+            return;
+        }
+        TikTokNativeManager.getInstance().loadAd(adUnitId, extras, callback);
+    }
+
+    @Override
+    public void destroyNativeAd(String adUnitId) {
+        super.destroyNativeAd(adUnitId);
+        TikTokNativeManager.getInstance().destroyAd(adUnitId);
     }
 
     @Override
@@ -398,6 +433,11 @@ public class TikTokAdapter extends CustomAdsAdapter {
 
         @Override
         public void onFullScreenVideoCached() {
+        }
+
+        @Override
+        public void onFullScreenVideoCached(TTFullScreenVideoAd ttFullScreenVideoAd) {
+
         }
     }
 
@@ -489,6 +529,11 @@ public class TikTokAdapter extends CustomAdsAdapter {
 
         @Override
         public void onRewardVideoCached() {
+        }
+
+        @Override
+        public void onRewardVideoCached(TTRewardVideoAd ttRewardVideoAd) {
+
         }
 
         @Override

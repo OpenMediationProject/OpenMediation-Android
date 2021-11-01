@@ -75,7 +75,7 @@ public class AdTimingAdapter extends CustomAdsAdapter implements RewardedVideoLi
     @Override
     public void setUSPrivacyLimit(Context context, boolean value) {
         super.setUSPrivacyLimit(context, value);
-        AdTimingAds.setAgeRestricted(value);
+        AdTimingAds.setUSPrivacyLimit(value);
     }
 
     @Override

@@ -41,7 +41,7 @@ public class AdtUtil {
         Application application = null;
         try {
             application = (Application) Class.forName("android.app.ActivityThread").getMethod("currentApplication").invoke(null, new Object[]{});
-        } catch (Exception e) {
+        } catch (Throwable e) {
             DeveloperLog.LogE("RuntimeUtil:currentApplication:", e);
             CrashUtil.getSingleton().saveException(e);
         }
@@ -52,7 +52,7 @@ public class AdtUtil {
         Application application = null;
         try {
             application = (Application) Class.forName("android.app.AppGlobals").getMethod("getInitialApplication").invoke(null, new Object[]{});
-        } catch (Exception e) {
+        } catch (Throwable e) {
             DeveloperLog.LogE("RuntimeUtil:getInitialApplication:", e);
             CrashUtil.getSingleton().saveException(e);
         }

@@ -29,6 +29,6 @@ dependencies {
     }
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     //vungle
-    implementation(rootProject.ext.dependencies.vungle)
+    implementation rootProject.ext.dependencies.vungle
     implementation project(':om-android-sdk')
 }

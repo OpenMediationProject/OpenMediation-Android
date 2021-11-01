@@ -108,25 +108,26 @@ public class PubNativeAdapter extends CustomAdsAdapter implements PubNativeVideo
     public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
         String checkError = check(adUnitId);
-        if (TextUtils.isEmpty(checkError)) {
-            if (isRewardedVideoAvailable(adUnitId)) {
-                if (callback != null) {
-                    callback.onRewardedVideoLoadSuccess();
-                }
-                return;
-            }
+        if (!TextUtils.isEmpty(checkError)) {
             if (callback != null) {
-                String error = PubNativeSingleTon.getInstance().getError(adUnitId);
-                if (TextUtils.isEmpty(error)) {
-                    error = "No Fill";
-                }
-                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
-                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
+                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, checkError));
             }
+            return;
+        }
+        if (isRewardedVideoAvailable(adUnitId)) {
+            if (callback != null) {
+                callback.onRewardedVideoLoadSuccess();
+            }
+            return;
         }
         if (callback != null) {
-            callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
-                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, checkError));
+            String error = PubNativeSingleTon.getInstance().getError(adUnitId);
+            if (TextUtils.isEmpty(error)) {
+                error = "No Fill";
+            }
+            callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
         }
     }
 

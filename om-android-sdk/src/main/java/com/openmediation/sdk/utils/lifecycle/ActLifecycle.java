@@ -13,12 +13,13 @@ import android.os.Bundle;
 import com.openmediation.sdk.utils.AdtUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
 
-import java.util.Enumeration;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.List;
+import java.util.Stack;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ActLifecycle implements Application.ActivityLifecycleCallbacks {
 
-    private ConcurrentHashMap<Integer, Activity> mRefActivities = new ConcurrentHashMap<>();
+    private List<Activity> mRefActivities = new CopyOnWriteArrayList<>();
 
     private static final class DKLifecycleHolder {
         private static final ActLifecycle INSTANCE = new ActLifecycle();
@@ -36,7 +37,9 @@ public class ActLifecycle implements Application.ActivityLifecycleCallbacks {
     }
 
     public void setActivity(Activity activity) {
-        mRefActivities.put(activity.hashCode(), activity);
+        if (!mRefActivities.contains(activity)) {
+            mRefActivities.add(activity);
+        }
     }
 
     @Override
@@ -44,7 +47,9 @@ public class ActLifecycle implements Application.ActivityLifecycleCallbacks {
         if (isAdActivity(activity)) {
             return;
         }
-        mRefActivities.put(activity.hashCode(), activity);
+        if (!mRefActivities.contains(activity)) {
+            mRefActivities.add(activity);
+        }
     }
 
     @Override
@@ -52,7 +57,9 @@ public class ActLifecycle implements Application.ActivityLifecycleCallbacks {
         if (isAdActivity(activity)) {
             return;
         }
-        mRefActivities.put(activity.hashCode(), activity);
+        if (!mRefActivities.contains(activity)) {
+            mRefActivities.add(activity);
+        }
     }
 
     @Override
@@ -61,7 +68,9 @@ public class ActLifecycle implements Application.ActivityLifecycleCallbacks {
         if (isAdActivity(activity)) {
             return;
         }
-        mRefActivities.put(activity.hashCode(), activity);
+        if (!mRefActivities.contains(activity)) {
+            mRefActivities.add(activity);
+        }
     }
 
     @Override
@@ -79,14 +88,17 @@ public class ActLifecycle implements Application.ActivityLifecycleCallbacks {
     @Override
     public void onActivityDestroyed(Activity activity) {
         DeveloperLog.LogD("onActivityDestroyed: " + activity.toString());
-        mRefActivities.remove(activity.hashCode());
+        mRefActivities.remove(activity);
+        DeveloperLog.LogD("after onActivityDestroyed: " + mRefActivities.size());
     }
 
     public Activity getActivity() {
-        Enumeration<Activity> elements = mRefActivities.elements();
-        Activity act;
-        while (elements.hasMoreElements()) {
-            act = elements.nextElement();
+        if (mRefActivities == null || mRefActivities.isEmpty()) {
+            return null;
+        }
+        int size = mRefActivities.size();
+        for (int i = size - 1; i >=0; i --) {
+            Activity act = mRefActivities.get(i);
             if (act.isFinishing() || (Build.VERSION.SDK_INT >= 17 && act.isDestroyed())) {
                 continue;
             }

@@ -219,7 +219,7 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
         }
         CustomAdsAdapter adsAdapter = AdapterUtil.getCustomAdsAdapter(instance.getMediationId());
         if (adsAdapter == null) {
-            onInsError(instance, ErrorCode.ERROR_CREATE_MEDATION_ADAPTER);
+            onInsError(instance, ErrorCode.ERROR_CREATE_MEDIATION_ADAPTER);
             return;
         }
         instance.setAdapter(adsAdapter);
@@ -249,16 +249,12 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
         String adapterName = instance.getAdapter() == null ? "" : instance.getAdapter().getClass().getSimpleName();
         AdapterError adapterError = AdapterErrorBuilder.buildLoadCheckError(
                 adType, adapterName, error);
-        onInsLoadFailed(instance, adapterError);
+        onInsLoadFailed(instance, adapterError, !isManualTriggered);
     }
 
     @Override
-    protected synchronized void onInsLoadSuccess(BaseInstance instances) {
-        super.onInsLoadSuccess(instances);
-
-        if (!isManualTriggered) {
-            EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_RELOAD_SUCCESS, InsManager.buildReportData(instances));
-        }
+    protected synchronized void onInsLoadSuccess(BaseInstance instances, boolean reload) {
+        super.onInsLoadSuccess(instances, reload);
         if (isFo || instances.getIndex() <= mCanCallbackIndex) {
             //gives ready callback without waiting for priority checking
             placementReadyCallback(instances);
@@ -366,8 +362,8 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
     }
 
     @Override
-    protected void onInsLoadFailed(BaseInstance instance, AdapterError error) {
-        super.onInsLoadFailed(instance, error);
+    protected void onInsLoadFailed(BaseInstance instance, AdapterError error, boolean reload) {
+        super.onInsLoadFailed(instance, error, reload);
 
 //        testNotifyInsFailed(instance);
         //MoPubBanner registered a receiver, we need to take care of it
@@ -465,7 +461,7 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
 
                 //blocked?
                 if (AdRateUtil.shouldBlockInstance(mPlacementId + i.getKey(), i)) {
-                    onInsCapped(PlacementUtils.getPlacementType(getPlacementType()), i);
+                    onInsCapped(PlacementUtils.getPlacementType(getPlacementType()), i, !isManualTriggered);
                     continue;
                 }
 

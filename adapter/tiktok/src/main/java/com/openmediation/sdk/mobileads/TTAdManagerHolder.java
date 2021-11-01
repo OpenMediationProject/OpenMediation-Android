@@ -75,17 +75,16 @@ public class TTAdManagerHolder {
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
-                TTAdSdk.init(context, buildConfig(context, appId, consent, ageRestricted), initCallback);
+                TTAdSdk.init(context, buildConfig(appId, consent, ageRestricted), initCallback);
             }
         };
         MediationUtil.runOnUiThread(runnable);
     }
 
-    private static TTAdConfig buildConfig(Context context, String appId, Boolean consent, Boolean ageRestricted) {
+    private static TTAdConfig buildConfig(String appId, Boolean consent, Boolean ageRestricted) {
         TTAdConfig.Builder builder = new TTAdConfig.Builder()
                 .appId(appId)
-                .useTextureView(true)
-                .appName(context.getApplicationInfo().loadLabel(context.getPackageManager()).toString());
+                .useTextureView(true);
         if (consent != null) {
             // 0 close GDRP Privacy protection ，1: open GDRP Privacy protection
             builder.setGDPR(consent ? 1 : 0);

@@ -24,7 +24,6 @@ import com.openmediation.sdk.utils.event.EventUploadManager;
 import com.openmediation.sdk.utils.helper.WaterFallHelper;
 import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.Configurations;
-import com.openmediation.sdk.utils.model.Instance;
 import com.openmediation.sdk.utils.model.InstanceLoadStatus;
 import com.openmediation.sdk.utils.model.Mediation;
 import com.openmediation.sdk.utils.model.MediationRule;
@@ -231,7 +230,7 @@ public class InsManager {
     /**
      * On ins load success.
      */
-    public static void onInsLoadSuccess(BaseInstance insFields) {
+    public static void onInsLoadSuccess(BaseInstance insFields, boolean reload) {
         if (insFields == null) {
             return;
         }
@@ -246,7 +245,11 @@ public class InsManager {
         if (insFields.getHb() == 1) {
             EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_PAYLOAD_SUCCESS, data);
         } else {
-            EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_LOAD_SUCCESS, data);
+            if (reload) {
+                EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_RELOAD_SUCCESS, data);
+            } else {
+                EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_LOAD_SUCCESS, data);
+            }
         }
     }
 
@@ -793,14 +796,14 @@ public class InsManager {
             BaseInstance i = origin.get(a);
 
             //resets instance's state if init failed or load failed
-            Instance.MEDIATION_STATE state = i.getMediationState();
-            if (state == Instance.MEDIATION_STATE.INIT_FAILED) {
-                i.setMediationState(Instance.MEDIATION_STATE.NOT_INITIATED);
-            } else if (state == Instance.MEDIATION_STATE.LOAD_FAILED) {
-                i.setMediationState(Instance.MEDIATION_STATE.NOT_AVAILABLE);
+            BaseInstance.MEDIATION_STATE state = i.getMediationState();
+            if (state == BaseInstance.MEDIATION_STATE.INIT_FAILED) {
+                i.setMediationState(BaseInstance.MEDIATION_STATE.NOT_INITIATED);
+            } else if (state == BaseInstance.MEDIATION_STATE.LOAD_FAILED) {
+                i.setMediationState(BaseInstance.MEDIATION_STATE.NOT_AVAILABLE);
             }
             DeveloperLog.LogD("ins state : " + i.getMediationState());
-            if (state != Instance.MEDIATION_STATE.AVAILABLE) {
+            if (state != BaseInstance.MEDIATION_STATE.AVAILABLE) {
                 i.setObject(null);
             }
         }

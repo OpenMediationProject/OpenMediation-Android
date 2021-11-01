@@ -7,7 +7,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -346,8 +345,6 @@ public class MainActivity extends Activity {
                     MediaView mediaView = adView.findViewById(R.id.ad_media);
                     nativeAdView = new NativeAdView(MainActivity.this);
                     AdIconView adIconView = adView.findViewById(R.id.ad_icon_media);
-                    DisplayMetrics displayMetrics = MainActivity.this.getResources().getDisplayMetrics();
-                    mediaView.getLayoutParams().height = (int) (displayMetrics.widthPixels / (1200.0 / 627.0));
                     nativeAdView.addView(adView);
                     nativeAdView.setTitleView(title);
                     nativeAdView.setDescView(desc);
@@ -375,7 +372,8 @@ public class MainActivity extends Activity {
             }
 
         });
-
+        // dp
+        nativeAd.setDisplayParams(300, 0);
         nativeAd.loadAd();
     }
 

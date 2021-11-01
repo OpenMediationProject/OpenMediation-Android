@@ -46,8 +46,9 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
     //
     protected Scene mScene;
     private int mInventorySize;
-    //
+    // ad loading
     protected boolean isInLoadingProgress;
+    // ad showing
     protected boolean isInShowingProgress;
 
     private final AtomicBoolean mLastAvailability = new AtomicBoolean(false);
@@ -110,6 +111,20 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
      * Callback ad closed.
      */
     protected void callbackAdClosed() {
+    }
+
+    @Override
+    protected boolean shouldLoadBlock() {
+        if (isInLoadingProgress || isInShowingProgress) {
+            Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
+                    , ErrorCode.MSG_LOAD_INVALID_REQUEST, ErrorCode.CODE_INTERNAL_REQUEST_PLACEMENTID);
+            DeveloperLog.LogE("load ad for placement : " +
+                    (Preconditions.checkNotNull(mPlacement) ? mPlacement.getId() : "") + " failed cause : " + error);
+            AdsUtil.loadBlockedReport(Preconditions.checkNotNull(mPlacement) ? mPlacement.getId() : "", error);
+            callbackLoadError(error);
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -190,6 +205,8 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
                 Error error = new Error(ErrorCode.CODE_LOAD_NO_AVAILABLE_AD
                         , ErrorCode.MSG_LOAD_NO_AVAILABLE_AD, ErrorCode.CODE_INTERNAL_SERVER_ERROR);
                 DeveloperLog.LogE(error.toString() + ", tmp:" + totalIns + ", last:" + lastAvailableIns);
+                // TODO
+                whenAllLoadFailed();
                 callbackLoadError(error);
             } else {
                 DeveloperLog.LogD("request cl success, but ins[] is empty, but has history");
@@ -290,7 +307,7 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
         if (AdRateUtil.shouldBlockInstance(Preconditions.checkNotNull(mPlacement) ?
                 mPlacement.getId() : "" + instance.getKey(), instance)) {
             instance.setMediationState(BaseInstance.MEDIATION_STATE.CAPPED);
-            onInsCapped(PlacementUtils.getPlacementType(getPlacementType()), instance);
+            onInsCapped(PlacementUtils.getPlacementType(getPlacementType()), instance, false);
             return;
         }
 
@@ -337,8 +354,8 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
      * @param instance the instance
      */
     @Override
-    protected synchronized void onInsLoadSuccess(BaseInstance instance) {
-        super.onInsLoadSuccess(instance);
+    protected synchronized void onInsLoadSuccess(BaseInstance instance, boolean reload) {
+        super.onInsLoadSuccess(instance, reload);
         mAllLoadFailedCount.set(0);
         if (!shouldFinishLoad()) {
             initOrFetchNextAdapter();
@@ -366,8 +383,8 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
      * @param error    the error
      */
     @Override
-    protected synchronized void onInsLoadFailed(BaseInstance instance, AdapterError error) {
-        super.onInsLoadFailed(instance, error);
+    protected synchronized void onInsLoadFailed(BaseInstance instance, AdapterError error, boolean reload) {
+        super.onInsLoadFailed(instance, error, reload);
         Error errorResult = new Error(ErrorCode.CODE_LOAD_FAILED_IN_ADAPTER, error.toString(), -1);
         if (shouldFinishLoad()) {
             boolean hasInventory = hasAvailableInventory();

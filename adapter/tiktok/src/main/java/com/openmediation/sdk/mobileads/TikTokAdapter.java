@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class TikTokAdapter extends CustomAdsAdapter {
-    private static String TAG = "TikTok: ";
+    private static String TAG = "OM-TikTok: ";
     private TTAdNative mTTAdNative;
     private ConcurrentMap<String, TTRewardVideoAd> mTTRvAds;
     private ConcurrentMap<String, TTFullScreenVideoAd> mTTFvAds;
@@ -291,7 +291,7 @@ public class TikTokAdapter extends CustomAdsAdapter {
     @Override
     public void loadBannerAd(Activity activity, String adUnitId, Map<String, Object> extras, BannerAdCallback callback) {
         super.loadBannerAd(activity, adUnitId, extras, callback);
-        String error = check(activity, adUnitId);
+        String error = check(adUnitId);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
@@ -299,7 +299,7 @@ public class TikTokAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        TikTokBannerManager.getInstance().loadAd(activity, adUnitId, extras, callback);
+        TikTokBannerManager.getInstance().loadAd(adUnitId, extras, callback);
     }
 
     @Override
@@ -330,7 +330,7 @@ public class TikTokAdapter extends CustomAdsAdapter {
     @Override
     public void loadNativeAd(Activity activity, String adUnitId, Map<String, Object> extras, NativeAdCallback callback) {
         super.loadNativeAd(activity, adUnitId, extras, callback);
-        String error = check(activity, adUnitId);
+        String error = check(adUnitId);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
@@ -454,7 +454,6 @@ public class TikTokAdapter extends CustomAdsAdapter {
         int[] screenPx = TTAdManagerHolder.getScreenPx(context);
         return new AdSlot.Builder()
                 .setCodeId(adUnitId)
-                .setSupportDeepLink(true)
                 .setImageAcceptedSize(screenPx[0], screenPx[1])
                 .setOrientation(orientation)
                 .build();
@@ -546,7 +545,7 @@ public class TikTokAdapter extends CustomAdsAdapter {
         }
 
         @Override
-        public void onRewardVerify(boolean rewardVerify, int rewardAmount, String rewardName) {
+        public void onRewardVerify(boolean rewardVerify, int rewardAmount, String rewardName, int errorCode, String errorMsg) {
             if (callback != null && rewardVerify) {
                 callback.onRewardedVideoAdRewarded();
             }

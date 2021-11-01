@@ -35,7 +35,6 @@ import com.openmediation.sdk.utils.event.EventId;
 import com.openmediation.sdk.utils.helper.IapHelper;
 import com.openmediation.sdk.utils.model.Configurations;
 import com.openmediation.sdk.utils.model.Placement;
-import com.openmediation.sdk.utils.model.Scene;
 import com.openmediation.sdk.video.RewardedVideoListener;
 
 import org.json.JSONObject;

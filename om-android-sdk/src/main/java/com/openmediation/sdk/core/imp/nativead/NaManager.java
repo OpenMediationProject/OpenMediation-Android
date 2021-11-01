@@ -154,17 +154,17 @@ public class NaManager extends AbstractHybridAds implements NaManagerListener, V
 
     @Override
     public void onNativeAdInitFailed(NaInstance instance, AdapterError error) {
-        onInsLoadFailed(instance, error);
+        onInsLoadFailed(instance, error, !isManualTriggered);
     }
 
     @Override
     public void onNativeAdLoadSuccess(NaInstance instance) {
-        onInsLoadSuccess(instance);
+        onInsLoadSuccess(instance, !isManualTriggered);
     }
 
     @Override
     public void onNativeAdLoadFailed(NaInstance instance, AdapterError error) {
-        onInsLoadFailed(instance, error);
+        onInsLoadFailed(instance, error, !isManualTriggered);
     }
 
     @Override

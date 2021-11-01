@@ -184,12 +184,12 @@ public final class RvManager extends AbstractInventoryAds implements RvManagerLi
 
     @Override
     public void onRewardedVideoLoadSuccess(RvInstance rvInstance) {
-        onInsLoadSuccess(rvInstance);
+        onInsLoadSuccess(rvInstance, false);
     }
 
     @Override
     public void onRewardedVideoLoadFailed(RvInstance rvInstance, AdapterError error) {
-        onInsLoadFailed(rvInstance, error);
+        onInsLoadFailed(rvInstance, error, false);
     }
 
     @Override

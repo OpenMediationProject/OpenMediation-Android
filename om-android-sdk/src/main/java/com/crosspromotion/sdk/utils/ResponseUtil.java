@@ -9,7 +9,7 @@ import com.crosspromotion.sdk.bean.AdAppBean;
 import com.crosspromotion.sdk.bean.AdBean;
 import com.crosspromotion.sdk.bean.AdMark;
 import com.crosspromotion.sdk.bean.AdVideoBean;
-import com.openmediation.sdk.utils.InsUtil;
+import com.openmediation.sdk.core.InsManager;
 import com.openmediation.sdk.utils.PlacementUtils;
 import com.openmediation.sdk.utils.constant.CommonConstants;
 import com.openmediation.sdk.utils.model.BaseInstance;
@@ -139,7 +139,7 @@ public final class ResponseUtil {
             return;
         }
         String instanceId = String.valueOf(extras.get("InstanceId"));
-        BaseInstance instance = InsUtil.getInsById(placement, instanceId);
+        BaseInstance instance = InsManager.getInsById(placement, instanceId);
         if (instance != null) {
             instance.setRevenue(adBean.getRevenue());
             instance.setRevenuePrecision(adBean.getRevenuePrecision());

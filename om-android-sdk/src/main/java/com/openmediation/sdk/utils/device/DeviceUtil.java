@@ -110,7 +110,7 @@ public class DeviceUtil {
             if (result != null) {
                 return result.toString();
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             DeveloperLog.LogD("DeviceUtil", e);
             CrashUtil.getSingleton().saveException(e);
         }

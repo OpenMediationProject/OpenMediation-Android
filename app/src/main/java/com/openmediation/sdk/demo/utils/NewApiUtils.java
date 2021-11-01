@@ -7,7 +7,7 @@ import android.util.Log;
 
 public class NewApiUtils {
 
-    public static final String TAG = "OmDebug";
+    public static final String TAG = "AdtDebug";
     public static boolean ENABLE_LOG = false;
     public static final String APPKEY = "OtnCjcU7ERE0D21GRoquiQBY6YXR3YLl";
 

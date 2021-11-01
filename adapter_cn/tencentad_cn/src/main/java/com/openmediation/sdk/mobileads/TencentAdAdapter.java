@@ -15,6 +15,7 @@ import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.MediationUtil;
+import com.openmediation.sdk.mediation.NativeAdCallback;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.openmediation.sdk.mediation.SplashAdCallback;
 import com.openmediation.sdk.mobileads.tencentad.BuildConfig;
@@ -278,6 +279,40 @@ public class TencentAdAdapter extends CustomAdsAdapter {
     public void destroyBannerAd(String adUnitId) {
         super.destroyBannerAd(adUnitId);
         TencentBannerManager.getInstance().destroyAd(adUnitId);
+    }
+
+    @Override
+    public void initNativeAd(Activity activity, Map<String, Object> extras, NativeAdCallback callback) {
+        super.initNativeAd(activity, extras, callback);
+        String error = check();
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onNativeAdInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, error));
+            }
+            return;
+        }
+        TencentNativeManager.getInstance().initAd(MediationUtil.getContext(), extras, callback);
+    }
+
+    @Override
+    public void loadNativeAd(Activity activity, String adUnitId, Map<String, Object> extras, NativeAdCallback callback) {
+        super.loadNativeAd(activity, adUnitId, extras, callback);
+        String error = check(adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, error));
+            }
+            return;
+        }
+        TencentNativeManager.getInstance().loadAd(MediationUtil.getContext(), adUnitId, extras, callback);
+    }
+
+    @Override
+    public void destroyNativeAd(String adUnitId) {
+        super.destroyNativeAd(adUnitId);
+        TencentNativeManager.getInstance().destroyAd(adUnitId);
     }
 
     @Override

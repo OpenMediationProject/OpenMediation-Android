@@ -168,6 +168,11 @@ public class AdTimingNativeManager {
         }
 
         @Override
+        public void onNativeAdShowed(String s) {
+
+        }
+
+        @Override
         public void onNativeAdShowFailed(String s, AdTimingError adTimingError) {
 
         }

@@ -178,11 +178,11 @@ public final class IsManager extends AbstractInventoryAds implements IsManagerLi
 
     @Override
     public void onInterstitialAdLoadSuccess(IsInstance isInstance) {
-        onInsLoadSuccess(isInstance);
+        onInsLoadSuccess(isInstance, false);
     }
 
     @Override
     public void onInterstitialAdLoadFailed(IsInstance isInstance, AdapterError error) {
-        onInsLoadFailed(isInstance, error);
+        onInsLoadFailed(isInstance, error, false);
     }
 }
