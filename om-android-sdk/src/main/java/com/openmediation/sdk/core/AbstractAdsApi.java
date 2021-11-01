@@ -581,9 +581,9 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
             return ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
                     , ErrorCode.ERROR_LOAD_CAPPED, ErrorCode.CODE_INTERNAL_UNKNOWN_OTHER);
         }
-        if (type != OmManager.LOAD_TYPE.MANUAL && OmManager.getInstance().getAutoLoadLimit()) {
+        if (type != OmManager.LOAD_TYPE.MANUAL && !OmManager.getInstance().getAutoCache()) {
             return ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
-                    , "Ad load limit, user \"OmAds.setAutoLoadLimit(false)\" to unlock the limit", ErrorCode.CODE_INTERNAL_UNKNOWN_OTHER);
+                    , "Ad load limit, user \"OmAds.setAutoCache(true)\" to unlock the limit", ErrorCode.CODE_INTERNAL_UNKNOWN_OTHER);
         }
         return null;
     }

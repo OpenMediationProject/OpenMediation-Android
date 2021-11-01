@@ -455,7 +455,13 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
             if (instance == null || instance.getMediationState() != BaseInstance.MEDIATION_STATE.AVAILABLE) {
                 continue;
             }
-            if (instance.isExpired() || !isInsAvailable(instance)) {
+            if (instance.isExpired()) {
+                DeveloperLog.LogD("AbstractInventoryAds, Instance has expired: " + instance);
+                resetMediationStateAndNotifyLose(instance);
+                continue;
+            }
+            if (!isInsAvailable(instance)) {
+                DeveloperLog.LogD("AbstractInventoryAds, Instance is not available: " + instance);
                 resetMediationStateAndNotifyLose(instance);
             }
         }

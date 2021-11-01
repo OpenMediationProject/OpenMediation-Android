@@ -195,10 +195,10 @@ public class AdmostSingleTon {
 
             @Override
             public void onInitFailed(int err) {
-                AdLog.getSingleton().LogE(TAG, "AdMost SDK initialized failed: " + err);
+                AdLog.getSingleton().LogD(TAG, "AdMost SDK initialized failed, err code = " + err);
                 for (InitListener listener : mListeners) {
                     if (listener != null) {
-                        listener.initFailed(err, "AdMost init failed");
+                        listener.initFailed(err, "AdMost init failed, err code = " + err);
                     }
                 }
                 mListeners.clear();

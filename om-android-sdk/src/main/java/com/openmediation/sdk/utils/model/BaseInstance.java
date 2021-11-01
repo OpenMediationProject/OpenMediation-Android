@@ -401,7 +401,7 @@ public class BaseInstance extends Frequency implements Comparable<BaseInstance> 
                 "id=" + id +
                 ", mId=" + mediationId +
                 ", index=" + index +
-                ", grpIndex=" + grpIndex +
+                ", mAdExpiredTime=" + mAdExpiredTime +
                 ", pid=" + mPlacementId +
                 ", revenue=" + revenue +
                 ", name=" + name +

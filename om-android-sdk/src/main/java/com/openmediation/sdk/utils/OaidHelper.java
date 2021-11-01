@@ -33,20 +33,19 @@ public class OaidHelper {
             int error = com.bun.miitmdid.core.MdidSdkHelper.InitSdk(context, true, new IIdentifierCallback(listener));
 
             switch (error) {
+                case ErrorCode.INIT_ERROR_RESULT_DELAY:
+                    WorkExecutor.execute(new Timeout(listener), 1, TimeUnit.SECONDS);
+                    break;
                 case ErrorCode.INIT_ERROR_MANUFACTURER_NOSUPPORT:
                 case ErrorCode.INIT_ERROR_DEVICE_NOSUPPORT:
                 case ErrorCode.INIT_ERROR_LOAD_CONFIGFILE:
                 case ErrorCode.INIT_HELPER_CALL_ERROR:
+                default:
                     DeveloperLog.LogD("get oaid error : " + error);
                     if (listener != null) {
                         listener.onGetOaid("");
                         isCallback.set(true);
                     }
-                    break;
-                case ErrorCode.INIT_ERROR_RESULT_DELAY:
-                    WorkExecutor.execute(new Timeout(listener), 1, TimeUnit.SECONDS);
-                    break;
-                default:
                     break;
             }
         } catch (Throwable e) {

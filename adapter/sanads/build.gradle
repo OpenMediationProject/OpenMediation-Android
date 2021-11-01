@@ -30,6 +30,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':om-android-sdk')
     implementation rootProject.ext.dependencies.sanads
+    implementation rootProject.ext.dependencies.okhttp
 }
 
 repositories {

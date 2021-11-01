@@ -8,7 +8,7 @@ android {
     defaultConfig {
         applicationId "com.openmediation.sdk.demo"
         minSdkVersion 21
-        targetSdkVersion 28
+        targetSdkVersion rootProject.ext.version.targetSdkVersion
         versionCode 1
         versionName "1.0"
         multiDexEnabled true
@@ -60,17 +60,14 @@ dependencies {
     implementation rootProject.ext.dependencies.play_service_ads_identifier
     //unity
     implementation rootProject.ext.dependencies.unity
+    //ironsource
+    implementation rootProject.ext.dependencies.ironsource
 
     // AdTiming
     implementation rootProject.ext.dependencies.adtiming
     // Mintegral
     implementation project(path: ':adapter:mintegral')
-    implementation 'com.mbridge.msdk.oversea:videojs:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mbridge.msdk.oversea:mbjscommon:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mbridge.msdk.oversea:playercommon:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mbridge.msdk.oversea:reward:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mbridge.msdk.oversea:videocommon:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mbridge.msdk.oversea:same:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mbridge.msdk.oversea:interstitialvideo:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mbridge.msdk.oversea:mbbanner:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mbridge.msdk.oversea:mbbid:' + rootProject.ext.dependencies.mtg_version
@@ -107,9 +104,9 @@ dependencies {
     implementation project(path: ':adapter:helium')
     implementation project(path: ':adapter:tapjoy')
 
-//    implementation rootProject.ext.dependencies.pangle
-//    implementation rootProject.ext.dependencies.play_service_ads_identifier
-//    implementation project(path: ':adapter:tiktok')
+    implementation rootProject.ext.dependencies.pangle
+    implementation rootProject.ext.dependencies.play_service_ads_identifier
+    implementation project(path: ':adapter:tiktok')
     implementation project(path: ':adapter:ironsource')
     implementation project(path: ':adapter:fyber')
 
@@ -119,36 +116,31 @@ dependencies {
     implementation rootProject.ext.dependencies.pubnative
     implementation project(path: ':adapter:pubnative')
 
-    implementation 'com.appsflyer:af-android-sdk:6.3.0'
+    implementation rootProject.ext.dependencies.appsflyer
 
     // 国内版
     // OAID
     implementation project(path: ':miit_mdid_1.0.10')
     // TikTok
-    implementation(name: 'open_ad_sdk_4.0.0.0', ext: 'aar')
-    implementation project(path: ':adapter_cn:tiktok_cn')
+//    implementation rootProject.ext.dependencies.pangle_cn
+//    implementation project(path: ':adapter_cn:tiktok_cn')
 
     // TencentAds
     implementation rootProject.ext.dependencies.tencentad
     implementation project(path: ':adapter_cn:tencentad_cn')
 
     // Mintegral
-//    implementation 'com.mbridge.msdk.china:videojs:' + rootProject.ext.dependencies.mtg_china_version
-//    implementation 'com.mbridge.msdk.china:mbjscommon:' + rootProject.ext.dependencies.mtg_china_version
-//    implementation 'com.mbridge.msdk.china:playercommon:' + rootProject.ext.dependencies.mtg_china_version
 //    implementation 'com.mbridge.msdk.china:reward:' + rootProject.ext.dependencies.mtg_china_version
-//    implementation 'com.mbridge.msdk.china:videocommon:' + rootProject.ext.dependencies.mtg_china_version
-//    implementation 'com.mbridge.msdk.china:chinasame:' + rootProject.ext.dependencies.mtg_china_version
 //    implementation 'com.mbridge.msdk.china:interstitialvideo:' + rootProject.ext.dependencies.mtg_china_version
 //    implementation 'com.mbridge.msdk.china:mbbanner:' + rootProject.ext.dependencies.mtg_china_version
 //    implementation 'com.mbridge.msdk.china:mbbid:' + rootProject.ext.dependencies.mtg_china_version
 //    implementation project(path: ':adapter_cn:mintegral_cn')
 
     // Sigmob
-    implementation(name: 'windAd-3.3.3', ext: 'aar')
+    implementation(name: 'sigmob-3.4.1', ext: 'aar')
     implementation project(path: ':adapter_cn:sigmob_cn')
     // 快手
-    implementation(name: 'kssdk-ad--3.3.14', ext: 'aar')
+    implementation(name: 'kssdk-ad--3.3.16', ext: 'aar')
     implementation project(path: ':adapter_cn:ksad_cn')
 
     implementation rootProject.ext.dependencies.admost
@@ -171,6 +163,7 @@ dependencies {
 
     // SAN Ads
     implementation rootProject.ext.dependencies.sanads
+    implementation rootProject.ext.dependencies.okhttp
     implementation project(path: ':adapter:sanads')
 
     implementation 'com.google.firebase:firebase-analytics:19.0.0'

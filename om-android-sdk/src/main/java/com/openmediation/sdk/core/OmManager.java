@@ -3,6 +3,8 @@
 
 package com.openmediation.sdk.core;
 
+import static com.openmediation.sdk.OmAds.AD_TYPE;
+
 import android.app.Activity;
 import android.content.IntentFilter;
 import android.text.TextUtils;
@@ -61,8 +63,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.openmediation.sdk.OmAds.AD_TYPE;
-
 /**
  * The type Om manager.
  */
@@ -94,7 +94,11 @@ public final class OmManager implements InitCallback {
     private final ConcurrentLinkedQueue<InitCallback> mInitCallbacks = new ConcurrentLinkedQueue<>();
 
     private Map<String, Object> mTagsMap;
-    private boolean mAutoLoadLimit;
+
+    /**
+     * auto cache inventory ad
+     */
+    private boolean mAutoCacheAd = true;
 
     private final AtomicBoolean mReInit = new AtomicBoolean(false);
     /**
@@ -1062,21 +1066,7 @@ public final class OmManager implements InitCallback {
         if (manager != null) {
             manager.registerView(adView, adInfo);
         } else {
-            if (mCpListeners != null && mCpListeners.containsKey(placementId)) {
-                Set<PromotionAdListener> listeners = mCpListeners.get(placementId);
-                if (listeners == null || listeners.isEmpty()) {
-                    AdLog.getSingleton().LogE(ErrorCode.MSG_LOAD_SDK_UNINITIALIZED);
-                } else {
-                    for (PromotionAdListener listener : listeners) {
-                        listener.onPromotionAdShowFailed(
-                                SceneUtil.getScene(PlacementUtils.getPlacement(placementId), null),
-                                new Error(ErrorCode.CODE_SHOW_SDK_UNINITIALIZED,
-                                        ErrorCode.MSG_SHOW_SDK_UNINITIALIZED, -1));
-                    }
-                }
-            } else {
-                AdLog.getSingleton().LogE(ErrorCode.MSG_SHOW_SDK_UNINITIALIZED);
-            }
+            AdLog.getSingleton().LogE("NativeAd register failed: No Placement " + placementId);
         }
 
     }
@@ -1141,12 +1131,17 @@ public final class OmManager implements InitCallback {
      * ReInit SDK
      */
     public void startReInitTask(final boolean force) {
+        if (isInit()) {
+            unregisterNetworkReceiver();
+            return;
+        }
         if (!force && mReInitCount.get() >= MAX_INIT_COUNT) {
             return;
         }
         WorkExecutor.execute(new Runnable() {
             @Override
             public void run() {
+                registerNetworkReceiver();
                 if (!NetworkChecker.isAvailable(MediationUtil.getContext())) {
                     DeveloperLog.d("Stop Re Init SDK: Network Unknown");
                     return;
@@ -1155,7 +1150,6 @@ public final class OmManager implements InitCallback {
                     InitImp.startReInitSDK(OmManager.this);
                     return;
                 }
-                registerNetworkReceiver();
                 DeveloperLog.d("Init Error Execute Re Init SDK Delay : 3 seconds, retry count: " + mReInitCount.get());
                 mReInit.set(true);
                 mReInitCount.incrementAndGet();
@@ -1743,15 +1737,15 @@ public final class OmManager implements InitCallback {
     }
 
     /**
-     * Pause AD auto-loading
-     * @param limit limit
+     * AD auto-loading
+     * @param autoCache autoCache
      */
-    public void setAutoLoadLimit(boolean limit) {
-        mAutoLoadLimit = limit;
+    public void setAutoCache(boolean autoCache) {
+        mAutoCacheAd = autoCache;
     }
 
-    public boolean getAutoLoadLimit() {
-        return mAutoLoadLimit;
+    public boolean getAutoCache() {
+        return mAutoCacheAd;
     }
 
     public void onNetworkChanged() {

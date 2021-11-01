@@ -35,6 +35,7 @@
 -keep class com.openmediation.sdk.video.**{*;}
 -keep class com.openmediation.sdk.OmAds{*;}
 -keep class com.openmediation.sdk.OmAds$AD_TYPE{*;}
+-keep class com.openmediation.sdk.OmAds$CACHE_TYPE{*;}
 -keep class com.openmediation.sdk.InitCallback{*;}
 -keep class com.openmediation.sdk.InitConfiguration{*;}
 -keep class com.openmediation.sdk.InitConfiguration$*{*;}

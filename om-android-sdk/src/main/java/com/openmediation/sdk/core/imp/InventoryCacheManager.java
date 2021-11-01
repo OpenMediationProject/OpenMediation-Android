@@ -29,11 +29,12 @@ public abstract class InventoryCacheManager extends AbstractInventoryAds {
             String cache = OmCacheManager.getInstance().getWaterfallData(mPlacement.getId(), mPlacement.getT());
             if (!TextUtils.isEmpty(cache)) {
                 mReadWfFromLocal = true;
-                DeveloperLog.LogD(TAG, "Om wf read local cache");
+                DeveloperLog.LogD(TAG, "Om wf read local cache, placementId: " + mPlacement.getId());
                 onInternalRequestSuccess(cache);
+            } else {
+                // has no cache
+                DeveloperLog.LogD(TAG, "Om wf need read from cache, but has no local cache, placementId: " + mPlacement.getId());
             }
-            // has no cache
-            DeveloperLog.LogD(TAG, "Om wf need read from cache, but has no local cache");
         } catch (Throwable e) {
             Error error = ErrorBuilder.build(ErrorCode.CODE_LOAD_UNKNOWN_ERROR
                     , "InventoryCacheManager Read waterfall cache error: " + e.getMessage(), ErrorCode.CODE_INTERNAL_UNKNOWN_OTHER);

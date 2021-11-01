@@ -405,6 +405,11 @@ public class KsAdAdapter extends CustomAdsAdapter {
                             callback.onRewardedVideoAdRewarded();
                         }
                     }
+
+                    @Override
+                    public void onRewardStepVerify(int taskType, int currentTaskStatus) {
+
+                    }
                 });
                 rewardVideoAd.showRewardVideoAd(activity, null);
             }

@@ -224,12 +224,12 @@ public abstract class OmAds {
     }
 
     /**
-     * limit auto load ad
-     * default false
-     * @param limit boolean
+     * auto load inventory ad
+     * default true
+     * @param autoCache autoCache
      */
-    public static void setAutoLoadLimit(boolean limit) {
-        OmManager.getInstance().setAutoLoadLimit(limit);
+    public static void setAutoCache(boolean autoCache) {
+        OmManager.getInstance().setAutoCache(autoCache);
     }
 
     /**
@@ -346,16 +346,18 @@ public abstract class OmAds {
      * SDK supported cache Ad types
      */
     public enum CACHE_TYPE {
-        /*Ad type BANNER*/
+        /*Ad type Banner*/
         BANNER(CommonConstants.BANNER),
-        /*Ad type NATIVE*/
+        /*Ad type Native*/
         NATIVE(CommonConstants.NATIVE),
         /*Ad type Rewarded_Video*/
         REWARDED_VIDEO(CommonConstants.VIDEO),
         /*Ad type Interstitial*/
         INTERSTITIAL(CommonConstants.INTERSTITIAL),
         /*Ad type Splash*/
-        SPLASH(CommonConstants.SPLASH);
+        SPLASH(CommonConstants.SPLASH),
+        /*Ad type CrossPromotion*/
+        CROSS_PROMOTION(CommonConstants.PROMOTION);
 
         private int mValue;
 

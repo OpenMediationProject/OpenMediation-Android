@@ -1,7 +1,7 @@
 ext {
     adapterVersion = [
             'adtiming'    : '2.5.0',
-            'admob'       : '2.5.0',
+            'admob'       : '2.5.1',
             'facebook'    : '2.5.0',
             'unity'       : '2.5.0',
             'vungle'      : '2.5.0',
@@ -25,6 +25,6 @@ ext {
             'tencentad_cn': '2.5.0',
             'mintegral_cn': '2.5.0',
             'sigmob_cn'   : '2.5.0',
-            'ksad_cn'     : '2.5.0',
+            'ksad_cn'     : '2.5.1',
     ]
 }

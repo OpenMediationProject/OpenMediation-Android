@@ -61,6 +61,7 @@ public class MainActivity extends Activity {
     private AdInfo mAdInfo;
 
     private ImpressionDataListener mDataListener;
+    private PromotionAdListener mPromotionAdListener;
 
     private final NativeAdListener mNativeAdListener = new NativeAdListener() {
         @Override
@@ -261,7 +262,7 @@ public class MainActivity extends Activity {
     }
 
     private void setPromotionListener() {
-        PromotionAd.setAdListener(new PromotionAdListener() {
+        mPromotionAdListener = new PromotionAdListener() {
             @Override
             public void onPromotionAdAvailabilityChanged(boolean available) {
                 if (available) {
@@ -289,7 +290,8 @@ public class MainActivity extends Activity {
             public void onPromotionAdClicked(Scene scene) {
                 NewApiUtils.printLog("onPromotionAdClicked " + scene);
             }
-        });
+        };
+        PromotionAd.addAdListener(mPromotionAdListener);
     }
 
     public void showRewardVideo(View view) {
@@ -455,5 +457,6 @@ public class MainActivity extends Activity {
         if (mDataListener != null) {
             OmAds.removeImpressionDataListener(mDataListener);
         }
+        PromotionAd.removeAdListener(mPromotionAdListener);
     }
 }
