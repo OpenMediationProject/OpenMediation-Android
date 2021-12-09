@@ -72,7 +72,7 @@ public class SpManager extends HybridCacheManager implements SpManagerListener {
 
     @Override
     protected void insLoad(BaseInstance instance, Map<String, Object> extras) {
-        super.initInsAndSendEvent(instance);
+        super.insLoad(instance, extras);
         if (instance instanceof SpInstance) {
             SpInstance splashInstance = (SpInstance) instance;
             splashInstance.setSplashManagerListener(this);

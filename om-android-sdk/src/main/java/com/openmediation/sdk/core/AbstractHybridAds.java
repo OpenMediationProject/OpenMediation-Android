@@ -291,7 +291,7 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
             Error errorResult = new Error(ErrorCode.CODE_LOAD_NO_AVAILABLE_AD, ErrorCode.MSG_LOAD_NO_AVAILABLE_AD + "All ins load failed, PlacementId: " + mPlacementId, -1);
             DeveloperLog.LogE(errorResult.toString());
             callbackLoadError(errorResult);
-            finishLoad();
+            finishLoad(errorResult);
             cancelTimeout(true, -1);
             AdsUtil.advanceEventReport(mPlacementId, AdvanceEventId.CODE_INS_GROUP_LOAD_FAILED,
                     AdvanceEventId.MSG_INS_GROUP_LOAD_FAILED);
@@ -351,7 +351,7 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
             if (mBs <= 0 || size <= instanceIndex) {
                 Error errorResult = new Error(ErrorCode.CODE_LOAD_NO_AVAILABLE_AD, ErrorCode.ERROR_NO_FILL + "No available instance", -1);
                 callbackLoadError(errorResult);
-                finishLoad();
+                finishLoad(errorResult);
                 DeveloperLog.LogE(errorResult.toString());
                 AdsUtil.advanceEventReport(mPlacementId, AdvanceEventId.CODE_LOAD_INS_INDEX_OOB,
                         AdvanceEventId.MSG_LOAD_INS_INDEX_OOB + "bs = " + mBs + ", size = " + size + ", loadIndex = " + instanceIndex);
@@ -469,6 +469,7 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
         aReadyReport();
         notifyUnLoadInsBidLose();
         callbackAdReady();
+        finishLoad(null);
     }
 
     @Override

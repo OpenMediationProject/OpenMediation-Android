@@ -8,6 +8,9 @@ import com.openmediation.sdk.ImpressionManager;
 import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.core.imp.nativead.NaInstance;
 import com.openmediation.sdk.core.runnable.LoadTimeoutRunnable;
+import com.openmediation.sdk.inspector.InspectorManager;
+import com.openmediation.sdk.inspector.LogConstants;
+import com.openmediation.sdk.inspector.logs.InventoryLog;
 import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.MediationInfo;
@@ -198,6 +201,7 @@ public class InsManager {
         if (insFields == null) {
             return;
         }
+        cancelInsLoadTimer(insFields);
         insFields.setMediationState(BaseInstance.MEDIATION_STATE.INITIATED);
         JSONObject data = buildReportData(insFields);
         if (insFields.getInitStart() > 0) {
@@ -217,6 +221,7 @@ public class InsManager {
         if (insFields == null) {
             return;
         }
+        cancelInsLoadTimer(insFields);
         insFields.setMediationState(BaseInstance.MEDIATION_STATE.INIT_FAILED);
         JSONObject data = buildReportData(insFields);
         if (error != null) {
@@ -395,7 +400,7 @@ public class InsManager {
         EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_SHOW, buildReportDataWithScene(insFields, scene));
     }
 
-    public static void onInsClosed(BaseInstance insFields, Scene scene) {
+    public static void onInsClosed(boolean isInventoryAdsType, BaseInstance insFields, Scene scene) {
         if (insFields == null) {
             return;
         }
@@ -409,6 +414,11 @@ public class InsManager {
         }
         EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_CLOSED, data);
         insFields.setBidResponse(null);
+
+        InventoryLog inventoryLog = new InventoryLog();
+        inventoryLog.setInstance(insFields);
+        inventoryLog.setEventTag(LogConstants.INVENTORY_OUT);
+        InspectorManager.getInstance().addInventoryLog(isInventoryAdsType, insFields.getPlacementId(), inventoryLog);
     }
 
     public static void onInsClick(BaseInstance insFields, Scene scene) {

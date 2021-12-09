@@ -104,6 +104,7 @@ public final class RvManager extends InventoryCacheManager implements RvManagerL
 
     @Override
     protected void insLoad(BaseInstance instance, Map<String, Object> extras) {
+        super.insLoad(instance, extras);
         RvInstance rvInstance = (RvInstance) instance;
         rvInstance.loadRv(mActRefs.get(), extras);
     }

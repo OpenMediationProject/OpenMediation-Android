@@ -11,6 +11,9 @@ import com.openmediation.sdk.InitCallback;
 import com.openmediation.sdk.InitConfiguration;
 import com.openmediation.sdk.bid.BidManager;
 import com.openmediation.sdk.core.runnable.InitScheduleTask;
+import com.openmediation.sdk.inspector.InspectorManager;
+import com.openmediation.sdk.inspector.LogConstants;
+import com.openmediation.sdk.inspector.logs.InitLog;
 import com.openmediation.sdk.utils.AFManager;
 import com.openmediation.sdk.utils.AdLog;
 import com.openmediation.sdk.utils.AdapterUtil;
@@ -51,6 +54,7 @@ public final class InitImp {
     private static final AtomicBoolean hasInit = new AtomicBoolean(false);
     private static final AtomicBoolean isInitRunning = new AtomicBoolean(false);
     private static long sInitStart;
+    private static InitLog sInitLog;
 
     private static AtomicBoolean hasInitCallback = new AtomicBoolean(false);
 
@@ -63,9 +67,8 @@ public final class InitImp {
      * @param callback the callback
      * @param channel  the channel
      */
-    public static void init(Activity activity, InitConfiguration configuration, final InitCallback callback) {
-
-        // TODO reInit SDK
+    public static void init(Activity activity, InitConfiguration configuration, InitLog initLog, final InitCallback callback) {
+        //
 //        if (hasInit.get()) {
 //            return;
 //        }
@@ -76,6 +79,7 @@ public final class InitImp {
         hasInitCallback.set(false);
         isInitRunning.set(true);
         sInitStart = System.currentTimeMillis();
+        sInitLog = initLog;
 //        SensorManager.getSingleton();
         DeveloperLog.enableDebug(AdtUtil.getInstance().getApplicationContext(), false);
         CrashUtil.getSingleton().init();
@@ -100,7 +104,7 @@ public final class InitImp {
             String initHost = DataCache.getInstance().getFromMem(KeyConstants.KEY_INIT_HOST, String.class);
             InitConfiguration configuration = new InitConfiguration.Builder().appKey(appKey)
                     .channel(appChannel).initHost(initHost).build();
-            init(ActLifecycle.getInstance().getActivity(), configuration, new InitCallback() {
+            init(ActLifecycle.getInstance().getActivity(), configuration, new InitLog(), new InitCallback() {
                 @Override
                 public void onSuccess() {
                     DeveloperLog.LogD("reInitSDK success");
@@ -174,6 +178,7 @@ public final class InitImp {
     private static void doAfterGetConfig(String appKey, Configurations config) {
         try {
             DeveloperLog.enableDebug(AdtUtil.getInstance().getApplicationContext(), config.getD() == 1);
+            InspectorManager.getInstance().setEnable(config.getD() == 1);
             AFManager.checkAfDataStatus();
             EventUploadManager.getInstance().updateReportSettings(config);
             //reports error logs
@@ -233,6 +238,10 @@ public final class InitImp {
                 mCallback.onSuccess();
             }
             initCompleteReport(reInitRunning.get() ? EventId.RE_INIT_COMPLETE : EventId.INIT_COMPLETE, null);
+            if (sInitLog != null) {
+                sInitLog.setEventTag(LogConstants.INIT_SUCCESS);
+                InspectorManager.getInstance().addInitLog(sInitLog);
+            }
             reInitRunning.set(false);
             hasInitCallback.set(true);
         }
@@ -336,6 +345,11 @@ public final class InitImp {
             }
             if (mCallback != null) {
                 mCallback.onError(mError);
+            }
+            if (sInitLog != null) {
+                sInitLog.setEventTag(LogConstants.INIT_FAILED);
+                sInitLog.setDetail(mError.toString());
+                InspectorManager.getInstance().addInitLog(sInitLog);
             }
             reInitRunning.set(false);
             hasInitCallback.set(true);

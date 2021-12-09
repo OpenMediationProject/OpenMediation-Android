@@ -25,6 +25,7 @@
 -keep class com.openmediation.sdk.banner.**{*;}
 -keep class com.openmediation.sdk.bid.**{*;}
 -keep class com.openmediation.sdk.core.**{*;}
+-keep class com.openmediation.sdk.inspector.**{*;}
 -keep class com.openmediation.sdk.interstitial.**{*;}
 -keep class com.openmediation.sdk.mediation.**{*;}
 -keep class com.openmediation.sdk.mobileads.**{*;}

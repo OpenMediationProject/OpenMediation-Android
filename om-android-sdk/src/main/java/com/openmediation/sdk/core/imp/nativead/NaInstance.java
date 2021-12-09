@@ -28,6 +28,8 @@ public class NaInstance extends BaseInstance implements NativeAdCallback, LoadTi
 
     void initNa(Activity activity) {
         if (mAdapter != null) {
+            DeveloperLog.LogD("init NativeAd : " + getMediationId() + " key : " + getKey());
+            InsManager.startInsLoadTimer(this, this);
             mAdapter.initNativeAd(activity, InsManager.getInitDataMap(this), this);
         }
     }

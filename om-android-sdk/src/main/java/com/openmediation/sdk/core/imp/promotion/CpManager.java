@@ -120,6 +120,7 @@ public final class CpManager extends AbstractInventoryAds implements CpManagerLi
 
     @Override
     protected void insLoad(BaseInstance instance, Map<String, Object> extras) {
+        super.insLoad(instance, extras);
         CpInstance cpInstance = (CpInstance) instance;
         cpInstance.loadCp(mActRefs.get(), extras);
     }

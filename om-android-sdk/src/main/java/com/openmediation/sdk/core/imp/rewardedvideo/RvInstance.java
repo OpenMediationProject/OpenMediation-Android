@@ -46,6 +46,8 @@ public class RvInstance extends BaseInstance implements RewardedVideoCallback, L
     void initRv(Activity activity) {
         setMediationState(MEDIATION_STATE.INIT_PENDING);
         if (mAdapter != null) {
+            DeveloperLog.LogD("init RewardedVideoAd : " + getMediationId() + " key : " + getKey());
+            InsManager.startInsLoadTimer(this, this);
             mAdapter.initRewardedVideo(activity, InsManager.getInitDataMap(this), this);
         }
     }

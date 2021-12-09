@@ -8,6 +8,9 @@ import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.core.InsManager;
 import com.openmediation.sdk.core.OmManager;
 import com.openmediation.sdk.core.imp.InventoryCacheManager;
+import com.openmediation.sdk.inspector.InspectorManager;
+import com.openmediation.sdk.inspector.LogConstants;
+import com.openmediation.sdk.inspector.logs.InventoryLog;
 import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.nativead.AdInfo;
@@ -102,6 +105,7 @@ public class NaManager extends InventoryCacheManager implements NaManagerListene
 
     @Override
     protected void insLoad(BaseInstance instance, Map<String, Object> extras) {
+        super.insLoad(instance, extras);
         if (instance instanceof NaInstance) {
             NaInstance naInstance = (NaInstance) instance;
             naInstance.setNaManagerListener(this);
@@ -219,6 +223,12 @@ public class NaManager extends InventoryCacheManager implements NaManagerListene
         } else {
             mListenerWrapper.onNativeAdLoaded(mPlacementId, info);
             instance.setMediationState(BaseInstance.MEDIATION_STATE.SKIP);
+            
+            InventoryLog inventoryLog = new InventoryLog();
+            inventoryLog.setInstance(instance);
+            inventoryLog.setEventTag(LogConstants.INVENTORY_OUT);
+            InspectorManager.getInstance().addInventoryLog(isInventoryAdsType(), mPlacementId, inventoryLog);
+
             loadAds(OmManager.LOAD_TYPE.CLOSE);
         }
     }

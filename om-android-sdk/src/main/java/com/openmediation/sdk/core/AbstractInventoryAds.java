@@ -4,6 +4,9 @@ import com.openmediation.sdk.bid.BidLoseReason;
 import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.bid.BidUtil;
 import com.openmediation.sdk.core.runnable.AdsScheduleTask;
+import com.openmediation.sdk.inspector.InspectorManager;
+import com.openmediation.sdk.inspector.LogConstants;
+import com.openmediation.sdk.inspector.logs.InventoryLog;
 import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.utils.AdLog;
@@ -55,6 +58,7 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
     private final AtomicBoolean mDidScheduleTaskStarted = new AtomicBoolean(false);
     private final AtomicBoolean isAReadyReported = new AtomicBoolean(false);
     private final AtomicInteger mAllLoadFailedCount = new AtomicInteger(0);
+    private int mInterval;
 
     protected abstract void onAvailabilityChanged(boolean available, Error error);
 
@@ -77,6 +81,18 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
     @Override
     protected boolean isReload() {
         return false;
+    }
+
+    protected int getInventorySize() {
+        return mInventorySize;
+    }
+
+    protected List<BaseInstance> getAvailableInstance() {
+        return InsManager.getInsWithStatus(mTotalIns, BaseInstance.MEDIATION_STATE.AVAILABLE);
+    }
+
+    protected int getIntervalTime() {
+        return mInterval;
     }
 
     /**
@@ -206,8 +222,8 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
     }
 
     @Override
-    protected void finishLoad() {
-        super.finishLoad();
+    protected void finishLoad(Error error) {
+        super.finishLoad(error);
         isInLoadingProgress = false;
     }
 
@@ -299,6 +315,7 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
      * @param error    the error
      */
     protected void onInsInitFailed(BaseInstance instance, Error error) {
+        super.onInsInitFailed(instance, error);
         notifyLoadFailedInsBidLose(instance);
         if (shouldFinishLoad()) {
             boolean hasInventory = hasAvailableInventory();
@@ -351,6 +368,7 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
         if (isManualTriggered) {
             callbackLoadSuccessOnManual(instance);
         }
+
         AdLog.getSingleton().LogD("Ad load success placementId: " + mPlacementId);
     }
 
@@ -497,7 +515,12 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
         if (readyCount >= mInventorySize || allLoadedCount == mTotalIns.size()) {
             DeveloperLog.LogD("full of cache or loaded all ins, current load is finished : " +
                     readyCount);
-            finishLoad();
+            Error error = null;
+            if (readyCount <=0) {
+                error = new Error(ErrorCode.CODE_LOAD_NO_AVAILABLE_AD
+                        , "all ins load failed", ErrorCode.CODE_INTERNAL_SERVER_ERROR);
+            }
+            finishLoad(error);
             return true;
         }
         return false;
@@ -524,6 +547,7 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
         if (rfs == null || rfs.isEmpty()) {
             mDidScheduleTaskStarted.set(true);
             int delay = getDefaultInterval();
+            mInterval = delay;
             DeveloperLog.LogD("post adsScheduleTask delay : " + delay);
             WorkExecutor.execute(new AdsScheduleTask(this, delay), delay,
                     TimeUnit.SECONDS);
@@ -540,6 +564,7 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
         }
         if (delay > 0) {
             mDidScheduleTaskStarted.set(true);
+            mInterval = delay;
             DeveloperLog.LogD("post adsScheduleTask delay : " + delay);
             WorkExecutor.execute(new AdsScheduleTask(this, delay), delay,
                     TimeUnit.SECONDS);
@@ -560,6 +585,10 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
         }
         DeveloperLog.LogD("shouldNotifyAvailableChanged for placement : " + mPlacement + " " + false);
         return false;
+    }
+
+    public void setInterval(int interval) {
+        this.mInterval = interval;
     }
 
     /**
@@ -612,7 +641,7 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
                 }
             } else {
                 callbackLoadError(error);
-                finishLoad();
+                finishLoad(error);
             }
             AdsUtil.advanceEventReport(mPlacementId, AdvanceEventId.CODE_CAN_NOT_LOAD,
                     AdvanceEventId.MSG_CAN_NOT_LOAD);
@@ -659,6 +688,11 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
             instance.setMediationState(BaseInstance.MEDIATION_STATE.NOT_AVAILABLE);
             AdsUtil.advanceEventReport(instance, AdvanceEventId.CODE_AD_EXPIRED,
                     AdvanceEventId.MSG_AD_EXPIRED);
+
+            InventoryLog inventoryLog = new InventoryLog();
+            inventoryLog.setInstance(instance);
+            inventoryLog.setEventTag(LogConstants.INVENTORY_OUT);
+            InspectorManager.getInstance().addInventoryLog(isInventoryAdsType(), mPlacementId, inventoryLog);
         }
         BidUtil.notifyLose(instance, BidLoseReason.INVENTORY_DID_NOT_MATERIALISE.getValue());
     }

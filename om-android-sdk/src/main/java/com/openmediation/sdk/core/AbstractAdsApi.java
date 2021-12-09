@@ -11,6 +11,11 @@ import com.openmediation.sdk.bid.BidManager;
 import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.bid.BidResponseCallback;
 import com.openmediation.sdk.bid.BidUtil;
+import com.openmediation.sdk.inspector.InspectorManager;
+import com.openmediation.sdk.inspector.LogConstants;
+import com.openmediation.sdk.inspector.logs.InstanceLog;
+import com.openmediation.sdk.inspector.logs.InventoryLog;
+import com.openmediation.sdk.inspector.logs.WaterfallLog;
 import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
@@ -45,6 +50,7 @@ import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class AbstractAdsApi implements InitCallback, BidResponseCallback, Request.OnRequestCallback {
@@ -80,6 +86,10 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
      */
     protected boolean mReadWfFromLocal;
 
+    protected WaterfallLog mWfLog;
+    protected Map<BaseInstance, InstanceLog> mInsLogs;
+    private boolean isWfFailed = true;
+
     public abstract boolean isInventoryAdsType();
 
     /**
@@ -96,7 +106,17 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
      * @param instance the instance to load ads
      * @param extras   the extras
      */
-    protected abstract void insLoad(BaseInstance instance, Map<String, Object> extras);
+    protected void insLoad(BaseInstance instance, Map<String, Object> extras) {
+        InstanceLog log = mInsLogs.get(instance);
+        if (log == null) {
+            log = new InstanceLog(instance);
+        }
+        if (mWfLog != null) {
+            mWfLog.addInsLog(log);
+            mWfLog.removeFromUnloadInstance(instance);
+        }
+        mInsLogs.put(instance, log);
+    }
 
     /**
      * Gets placement info.
@@ -166,6 +186,13 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
         mReqId = DeviceUtil.createReqId();
         mLoadType = type;
         isManualTriggered = type == OmManager.LOAD_TYPE.MANUAL;
+        mWfLog = new WaterfallLog();
+        if (mInsLogs == null) {
+            mInsLogs = new ConcurrentHashMap<>();
+        } else {
+            mInsLogs.clear();
+        }
+        isWfFailed = true;
         if (getPlacementType() == CommonConstants.PROMOTION) {
             startLoadAdsImpl(null, InsManager.getInstanceList(mPlacement));
             return;
@@ -214,7 +241,7 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
         return null;
     }
 
-    protected void finishLoad() {
+    protected void finishLoad(Error error) {
         long dur = 0;
         if (mStartLoadTime > 0) {
             dur = SystemClock.elapsedRealtime() - mStartLoadTime;
@@ -222,6 +249,17 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
         mStartLoadTime = 0;
         AdsUtil.advanceEventReport(mPlacementId, AdvanceEventId.CODE_PLACEMENT_LOAD_DUR,
                 AdvanceEventId.MSG_PLACEMENT_LOAD_DUR + dur + " ms.");
+        if (mWfLog != null && mPlacement != null && mPlacement.getT() != CommonConstants.PROMOTION) {
+            if (isWfFailed) {
+                mWfLog.setEventTag(LogConstants.WF_FAILED);
+                if (error != null) {
+                    mWfLog.setDetail(error.toString());
+                }
+            } else {
+                mWfLog.setEventTag(LogConstants.WF_SUCCESS);
+            }
+            InspectorManager.getInstance().addWaterfallLog(mPlacementId, mWfLog);
+        }
     }
 
     protected void inventoryAdsReportAReady() {
@@ -245,6 +283,9 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
             return;
         }
 
+        if (mWfLog != null) {
+            mWfLog.setUnloadInstance(totalIns);
+        }
         startLoadAdsImpl(clInfo, totalIns);
     }
 
@@ -256,6 +297,7 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
     protected void initInsAndSendEvent(BaseInstance instance) {
         setActRef();
         InsManager.onInsInitStart(instance);
+        onInsInitStart(instance);
     }
 
     /**
@@ -315,17 +357,61 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
         DeveloperLog.LogD(instance + " C2S Bid Failed: " + error);
     }
 
+    protected synchronized void onInsInitStart(BaseInstance instance) {
+        InstanceLog log = new InstanceLog(instance);
+        if (mWfLog != null) {
+            mWfLog.addInsLog(log);
+            mWfLog.removeFromUnloadInstance(instance);
+        }
+        mInsLogs.put(instance, log);
+    }
+
+    protected synchronized void onInsInitFailed(BaseInstance instance, Error error) {
+        InstanceLog log = mInsLogs.get(instance);
+        if (log != null) {
+            if (instance.getHb() == 1) {
+                log.setEventTag(LogConstants.INS_PAYLOAD_FAILED);
+            } else {
+                log.setEventTag(LogConstants.INS_LOAD_FAILED);
+            }
+            log.setDetail(error.toString());
+        }
+    }
+
     protected synchronized void onInsLoadSuccess(BaseInstance instance, boolean reload) {
+        isWfFailed = false;
         if (instance.getHb() != 1) {
             LrReportHelper.report(instance, mLoadType.getValue(), mPlacement.getWfAbt(), mPlacement.getWfAbtId(),
                     CommonConstants.INSTANCE_READY, 0);
         }
         InsManager.onInsLoadSuccess(instance, reload);
+        InstanceLog log = mInsLogs.get(instance);
+        if (log != null) {
+            if (instance.getHb() == 1) {
+                log.setEventTag(LogConstants.INS_PAYLOAD_SUCCESS);
+            } else {
+                log.setEventTag(LogConstants.INS_FILL);
+            }
+            log.setRevenue(instance.getRevenue());
+        }
+        InventoryLog inventoryLog = new InventoryLog();
+        inventoryLog.setInstance(instance);
+        inventoryLog.setEventTag(LogConstants.INVENTORY_IN);
+        InspectorManager.getInstance().addInventoryLog(isInventoryAdsType(), mPlacementId, inventoryLog);
     }
 
     protected synchronized void onInsLoadFailed(BaseInstance instance, AdapterError error, boolean reload) {
         notifyLoadFailedInsBidLose(instance);
         InsManager.onInsLoadFailed(instance, error, reload);
+        InstanceLog log = mInsLogs.get(instance);
+        if (log != null) {
+            if (instance.getHb() == 1) {
+                log.setEventTag(LogConstants.INS_PAYLOAD_FAILED);
+            } else {
+                log.setEventTag(LogConstants.INS_LOAD_FAILED);
+            }
+            log.setDetail(error.toString());
+        }
     }
 
     protected void onInsShowSuccess(BaseInstance instance, Scene scene) {
@@ -357,7 +443,7 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
     }
 
     protected void onInsClosed(BaseInstance instance, Scene scene) {
-        InsManager.onInsClosed(instance, scene);
+        InsManager.onInsClosed(isInventoryAdsType(), instance, scene);
     }
 
     protected void onInsCapped(String adType, BaseInstance instance, boolean reload) {
@@ -416,7 +502,7 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
     @Override
     public void onError(Error result) {
         callbackLoadError(result);
-        finishLoad();
+        finishLoad(result);
         AdsUtil.advanceEventReport(mPlacementId, AdvanceEventId.CODE_RE_INIT_ERROR,
                 AdvanceEventId.MSG_RE_INIT_ERROR + result);
     }
@@ -440,7 +526,7 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
                     , ErrorCode.MSG_LOAD_SERVER_ERROR + " Load ad failed: " + e.getMessage(), ErrorCode.CODE_INTERNAL_UNKNOWN_OTHER);
             CrashUtil.getSingleton().saveException(e);
             callbackLoadError(error);
-            finishLoad();
+            finishLoad(error);
             AdsUtil.advanceEventReport(mPlacementId, AdvanceEventId.CODE_START_LOAD_ERROR,
                     AdvanceEventId.MSG_START_LOAD_ERROR + e.getMessage());
         }
@@ -456,7 +542,7 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
                 DeveloperLog.LogE(error.toString() + ", request cl http code:"
                         + (response != null ? response.code() : "null") + ", placement:" + mPlacement);
                 callbackLoadError(error);
-                finishLoad();
+                finishLoad(error);
                 AdsUtil.advanceEventReport(mPlacementId, AdvanceEventId.CODE_WF_RESPONSE_ERROR,
                         AdvanceEventId.MSG_WF_RESPONSE_ERROR + msg);
                 return;
@@ -477,7 +563,7 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
                     ", Placement:" + mPlacement, e);
             CrashUtil.getSingleton().saveException(e);
             callbackLoadError(error);
-            finishLoad();
+            finishLoad(error);
             AdsUtil.advanceEventReport(mPlacementId, AdvanceEventId.CODE_WF_RESPONSE_EXCEPTION,
                     AdvanceEventId.MSG_WF_RESPONSE_EXCEPTION, e.getMessage());
         } finally {
@@ -504,7 +590,13 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
         MediationRule mediationRule = WaterFallHelper.getMediationRule(wfInfo);
         if (mediationRule != null) {
             mRuleId = mediationRule.getId();
+            if (mWfLog != null) {
+                mWfLog.setMediationRuleId(mRuleId);
+                mWfLog.setMediationRuleName(mediationRule.getName());
+            }
         }
+        InspectorManager.getInstance().notifyWaterfallChanged(mPlacementId, mWfLog);
+
         mPlacement.setWfAbt(wfInfo.optInt("abt"));
         mPlacement.setWfAbtId(wfInfo.optInt("abtId"));
         // TODO report Waterfall Ready
@@ -540,7 +632,7 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
         } else {
             callbackLoadError(error);
         }
-        finishLoad();
+        finishLoad(error);
     }
 
     private Error checkLoadAvailable(OmManager.LOAD_TYPE type) {

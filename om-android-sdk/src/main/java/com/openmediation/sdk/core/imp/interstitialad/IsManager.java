@@ -89,6 +89,7 @@ public final class IsManager extends InventoryCacheManager implements IsManagerL
 
     @Override
     protected void insLoad(BaseInstance instance, Map<String, Object> extras) {
+        super.insLoad(instance, extras);
         IsInstance isInstance = (IsInstance) instance;
         isInstance.loadIs(mActRefs.get(), extras);
     }

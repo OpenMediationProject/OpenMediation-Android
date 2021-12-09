@@ -132,32 +132,8 @@ public class AdMobAdapter extends CustomAdsAdapter {
     // All calls to MobileAds must be on the main thread --> run all calls to initSDK in a thread.
     private synchronized void initSDK() {
         mInitState = InitState.INIT_PENDING;
-        String adMobAppKey = null;
-        try {
-            ApplicationInfo appInfo = MediationUtil.getContext().getPackageManager()
-                    .getApplicationInfo(MediationUtil.getContext().getPackageName(),
-                            PackageManager.GET_META_DATA);
-            Bundle bundle = appInfo.metaData;
-            adMobAppKey = bundle.getString("com.google.android.gms.ads.APPLICATION_ID");
-        } catch (Throwable e) {
-            AdLog.getSingleton().LogE("AdMob can't find APPLICATION_ID in manifest.xml ");
-        }
-
-        if (TextUtils.isEmpty(adMobAppKey)) {
-            adMobAppKey = mAppKey;
-        }
-
-        if (TextUtils.isEmpty(adMobAppKey)) {
-            MobileAds.initialize(MediationUtil.getContext());
-            onInitSuccess();
-        } else {
-            MobileAds.initialize(MediationUtil.getContext(), new OnInitializationCompleteListener() {
-                @Override
-                public void onInitializationComplete(InitializationStatus initializationStatus) {
-                    onInitSuccess();
-                }
-            });
-        }
+        MobileAds.initialize(MediationUtil.getContext());
+        onInitSuccess();
     }
 
     private void onInitSuccess() {

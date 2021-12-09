@@ -17,6 +17,10 @@ import com.openmediation.sdk.core.imp.nativead.NaManager;
 import com.openmediation.sdk.core.imp.promotion.CpManager;
 import com.openmediation.sdk.core.imp.rewardedvideo.RvManager;
 import com.openmediation.sdk.core.imp.splash.SpAdManager;
+import com.openmediation.sdk.inspector.InspectorManager;
+import com.openmediation.sdk.inspector.LogConstants;
+import com.openmediation.sdk.inspector.logs.InitLog;
+import com.openmediation.sdk.inspector.logs.SettingsLog;
 import com.openmediation.sdk.interstitial.InterstitialAdListener;
 import com.openmediation.sdk.mediation.MediationInterstitialListener;
 import com.openmediation.sdk.mediation.MediationRewardVideoListener;
@@ -43,6 +47,7 @@ import com.openmediation.sdk.utils.error.ErrorCode;
 import com.openmediation.sdk.utils.event.EventId;
 import com.openmediation.sdk.utils.helper.IapHelper;
 import com.openmediation.sdk.utils.lifecycle.ActLifecycle;
+import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.Configurations;
 import com.openmediation.sdk.utils.model.Placement;
 import com.openmediation.sdk.utils.request.network.util.NetworkChecker;
@@ -185,6 +190,7 @@ public final class OmManager implements InitCallback {
      */
     public void init(Activity activity, InitConfiguration configuration, InitCallback callback) {
         Preconditions.checkNotNull(configuration, true);
+        InitLog initLog = new InitLog();
         if (activity != null) {
             if (ActLifecycle.getInstance().getActivity() == null) {
                 ActLifecycle.getInstance().setActivity(activity);
@@ -193,6 +199,8 @@ public final class OmManager implements InitCallback {
         if (InitImp.isInit()) {
             if (callback != null) {
                 callback.onSuccess();
+                initLog.setEventTag(LogConstants.INIT_SUCCESS);
+                InspectorManager.getInstance().addInitLog(initLog);
             }
             //checks for preloading and scheduled tasks
             anotherInitCalledAfterInitSuccess(configuration.getAdTypes());
@@ -201,7 +209,7 @@ public final class OmManager implements InitCallback {
             pendingInit(callback);
         } else {
             pendingInit(callback);
-            InitImp.init(activity, configuration, this);
+            InitImp.init(activity, configuration, initLog, this);
         }
 
         //adds for use after initialization
@@ -341,6 +349,10 @@ public final class OmManager implements InitCallback {
 
     public void setUserId(String userId) {
         mUserId = userId;
+        SettingsLog settingsLog = new SettingsLog();
+        settingsLog.setUserId(userId);
+        settingsLog.setEventTag(LogConstants.USER_ID_CHANGE);
+        InspectorManager.getInstance().addSettingsLog(settingsLog);
     }
 
     public String getUserId() {
@@ -359,6 +371,11 @@ public final class OmManager implements InitCallback {
             return;
         }
         mTagsMap.putAll(map);
+
+        SettingsLog settingsLog = new SettingsLog();
+        settingsLog.setTags(map);
+        settingsLog.setEventTag(LogConstants.CUSTOM_TAG_CHANGE);
+        InspectorManager.getInstance().addSettingsLog(settingsLog);
     }
 
     public Map<String, Object> getCustomTags() {
@@ -412,6 +429,13 @@ public final class OmManager implements InitCallback {
             return;
         }
         mTagsMap.put(key, value);
+
+        Map<String, Object> map = new HashMap<>();
+        map.put(key, value);
+        SettingsLog settingsLog = new SettingsLog();
+        settingsLog.setTags(map);
+        settingsLog.setEventTag(LogConstants.CUSTOM_TAG_CHANGE);
+        InspectorManager.getInstance().addSettingsLog(settingsLog);
     }
 
     public void setCustomTagObjects(String key, Object[] values) {
@@ -436,6 +460,13 @@ public final class OmManager implements InitCallback {
             return;
         }
         mTagsMap.put(key, values);
+
+        Map<String, Object> map = new HashMap<>();
+        map.put(key, values);
+        SettingsLog settingsLog = new SettingsLog();
+        settingsLog.setTags(map);
+        settingsLog.setEventTag(LogConstants.CUSTOM_TAG_CHANGE);
+        InspectorManager.getInstance().addSettingsLog(settingsLog);
     }
 
     private boolean checkInvalidTagValue(Object value) {
@@ -461,6 +492,12 @@ public final class OmManager implements InitCallback {
         if (mTagsMap != null) {
             mTagsMap.remove(key);
         }
+        SettingsLog settingsLog = new SettingsLog();
+        Map<String, Object> map = new HashMap<>();
+        map.put(key, "");
+        settingsLog.setTags(map);
+        settingsLog.setEventTag(LogConstants.CUSTOM_TAG_REMOVE);
+        InspectorManager.getInstance().addSettingsLog(settingsLog);
     }
 
     public void clearCustomTags() {
@@ -468,6 +505,9 @@ public final class OmManager implements InitCallback {
             mTagsMap.clear();
         }
         mTagsMap = null;
+        SettingsLog settingsLog = new SettingsLog();
+        settingsLog.setEventTag(LogConstants.CUSTOM_TAG_CLEAR);
+        InspectorManager.getInstance().addSettingsLog(settingsLog);
     }
 
     /**
@@ -1083,6 +1123,87 @@ public final class OmManager implements InitCallback {
         } else {
             AdLog.getSingleton().LogE(ErrorCode.MSG_SHOW_SDK_UNINITIALIZED);
         }
+    }
+
+    public int getInventorySize(String placementId) {
+        Placement placement = PlacementUtils.getPlacement(placementId);
+        if (placement == null) {
+            return -1;
+        }
+        AbstractInventoryAds manager = null;
+        int type = placement.getT();
+        switch (type) {
+            case CommonConstants.NATIVE:
+                manager = getNaManager(placementId);
+                break;
+            case CommonConstants.INTERSTITIAL:
+                manager = getIsManager(placementId);
+                break;
+            case CommonConstants.VIDEO:
+                manager = getRvManager(placementId);
+                break;
+            case CommonConstants.PROMOTION:
+                manager = getCpManager(placementId);
+                break;
+        }
+        if (manager == null) {
+            return -1;
+        }
+        return manager.getInventorySize();
+    }
+
+    public List<BaseInstance> getAvailableInstance(String placementId) {
+        Placement placement = PlacementUtils.getPlacement(placementId);
+        if (placement == null) {
+            return null;
+        }
+        AbstractInventoryAds manager = null;
+        int type = placement.getT();
+        switch (type) {
+            case CommonConstants.NATIVE:
+                manager = getNaManager(placementId);
+                break;
+            case CommonConstants.INTERSTITIAL:
+                manager = getIsManager(placementId);
+                break;
+            case CommonConstants.VIDEO:
+                manager = getRvManager(placementId);
+                break;
+            case CommonConstants.PROMOTION:
+                manager = getCpManager(placementId);
+                break;
+        }
+        if (manager == null) {
+            return null;
+        }
+        return manager.getAvailableInstance();
+    }
+
+    public int getIntervalTime(String placementId) {
+        Placement placement = PlacementUtils.getPlacement(placementId);
+        if (placement == null) {
+            return -1;
+        }
+        AbstractInventoryAds manager = null;
+        int type = placement.getT();
+        switch (type) {
+            case CommonConstants.NATIVE:
+                manager = getNaManager(placementId);
+                break;
+            case CommonConstants.INTERSTITIAL:
+                manager = getIsManager(placementId);
+                break;
+            case CommonConstants.VIDEO:
+                manager = getRvManager(placementId);
+                break;
+            case CommonConstants.PROMOTION:
+                manager = getCpManager(placementId);
+                break;
+        }
+        if (manager == null) {
+            return -1;
+        }
+        return manager.getIntervalTime();
     }
 
     @Override

@@ -55,6 +55,7 @@ public class AdsScheduleTask implements Runnable {
     private void execLoad(int delay, int count) {
         if (delay > 0) {
             DeveloperLog.LogD("execute adsScheduleTask delay : " + delay + ", fail count = " + count);
+            adsManager.setInterval(delay);
             WorkExecutor.execute(this, delay, TimeUnit.SECONDS);
         } else {
             DeveloperLog.LogD("can't execute adsScheduleTask delay : " + delay);

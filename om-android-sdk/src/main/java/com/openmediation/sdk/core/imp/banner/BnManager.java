@@ -158,6 +158,7 @@ public class BnManager extends HybridCacheManager implements BnManagerListener, 
 
     @Override
     protected void insLoad(BaseInstance instance, Map<String, Object> extras) {
+        super.insLoad(instance, extras);
         if (!isManualTriggered) {
             EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_RELOAD, InsManager.buildReportData(instance));
         }

@@ -32,6 +32,8 @@ public class CpInstance extends BaseInstance implements PromotionAdCallback, Loa
     void initCp(Activity activity) {
         setMediationState(MEDIATION_STATE.INIT_PENDING);
         if (mAdapter != null) {
+            DeveloperLog.LogD("init PromotionAd : " + getMediationId() + " key : " + getKey());
+            InsManager.startInsLoadTimer(this, this);
             mAdapter.initPromotionAd(activity, InsManager.getInitDataMap(this), this);
         }
     }

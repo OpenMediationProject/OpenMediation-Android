@@ -106,7 +106,7 @@ ext {
 
     adapterVersion = [
             'adtiming'    : '2.5.0',
-            'admob'       : '2.5.1',
+            'admob'       : '2.5.2',
             'facebook'    : '2.5.0',
             'unity'       : '2.5.0',
             'vungle'      : '2.5.0',
@@ -146,17 +146,11 @@ allprojects {
             url "https://dl-maven-android.mintegral.com/repository/mbridge_android_sdk_china"
         }
         maven {
-            url "https://adcolony.bintray.com/AdColony"
-        }
-        maven {
             name "Tapjoy's maven repo"
             url "https://sdk.tapjoy.com/"
         }
         maven {
             url "https://dl.adtiming.com/android-sdk"
-        }
-        maven {
-            url "https://fyber.bintray.com/marketplace"
         }
         maven {
             url 'https://maven.ogury.co'

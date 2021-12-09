@@ -40,6 +40,8 @@ public class IsInstance extends BaseInstance implements InterstitialAdCallback, 
     void initIs(Activity activity) {
         setMediationState(MEDIATION_STATE.INIT_PENDING);
         if (mAdapter != null) {
+            DeveloperLog.LogD("init InterstitialAd : " + getMediationId() + " key : " + getKey());
+            InsManager.startInsLoadTimer(this, this);
             mAdapter.initInterstitialAd(activity, InsManager.getInitDataMap(this), this);
         }
     }
