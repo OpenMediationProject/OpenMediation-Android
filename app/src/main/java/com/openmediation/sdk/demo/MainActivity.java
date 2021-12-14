@@ -149,7 +149,6 @@ public class MainActivity extends Activity {
         NewApiUtils.printLog("start init sdk");
         InitConfiguration configuration = new InitConfiguration.Builder()
                 .appKey(NewApiUtils.APPKEY)
-                .useCacheAdTypes(OmAds.CACHE_TYPE.REWARDED_VIDEO)
                 .logEnable(true)
                 .build();
         OmAds.init(this, configuration, new InitCallback() {
