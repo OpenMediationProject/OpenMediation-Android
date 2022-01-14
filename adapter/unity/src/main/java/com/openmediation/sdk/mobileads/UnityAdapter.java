@@ -17,26 +17,24 @@ import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.openmediation.sdk.mobileads.unity.BuildConfig;
 import com.openmediation.sdk.utils.AdLog;
 import com.unity3d.ads.IUnityAdsInitializationListener;
+import com.unity3d.ads.IUnityAdsLoadListener;
 import com.unity3d.ads.IUnityAdsShowListener;
 import com.unity3d.ads.UnityAds;
-import com.unity3d.ads.mediation.IUnityAdsExtendedListener;
 import com.unity3d.ads.metadata.MetaData;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArraySet;
 
-public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedListener {
+public class UnityAdapter extends CustomAdsAdapter {
 
-    private static final String TAG = "Unity";
-    private ConcurrentLinkedQueue<String> mRvLoadTrigerIds;
-    private ConcurrentLinkedQueue<String> mIsLoadTrigerIds;
+    private static final String TAG = "OM-Unity";
+    private CopyOnWriteArraySet<String> mLoadedIds;
     private ConcurrentHashMap<String, InterstitialAdCallback> mIsCallbacks;
     private ConcurrentHashMap<String, RewardedVideoCallback> mRvCallbacks;
 
     public UnityAdapter() {
-        mIsLoadTrigerIds = new ConcurrentLinkedQueue<>();
-        mRvLoadTrigerIds = new ConcurrentLinkedQueue<>();
+        mLoadedIds = new CopyOnWriteArraySet<>();
 
         mIsCallbacks = new ConcurrentHashMap<>();
         mRvCallbacks = new ConcurrentHashMap<>();
@@ -97,7 +95,6 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
     }
 
     private synchronized void initSDK(IUnityAdsInitializationListener listener) {
-        UnityAds.addListener(this);
         UnitySingleTon.getInstance().init(MediationUtil.getContext(), mAppKey, listener);
     }
 
@@ -135,23 +132,38 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
     public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras, final RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
         String checkError = check(adUnitId);
-        if (TextUtils.isEmpty(checkError)) {
-            if (callback != null) {
-                mRvCallbacks.put(adUnitId, callback);
-            }
-            if (isRewardedVideoAvailable(adUnitId)) {
-                if (callback != null) {
-                    callback.onRewardedVideoLoadSuccess();
-                }
-            } else {
-                mRvLoadTrigerIds.add(adUnitId);
-            }
-        } else {
+        if (!TextUtils.isEmpty(checkError)) {
             if (callback != null) {
                 callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
                         AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, checkError));
             }
+            return;
         }
+        if (isRewardedVideoAvailable(adUnitId)) {
+            if (callback != null) {
+                callback.onRewardedVideoLoadSuccess();
+            }
+            return;
+        }
+        UnityAds.load(adUnitId, new IUnityAdsLoadListener() {
+            @Override
+            public void onUnityAdsAdLoaded(String placementId) {
+                mLoadedIds.add(placementId);
+                AdLog.getSingleton().LogD(TAG, "RewardedVideo onUnityAdsAdLoaded: " + placementId);
+                if (callback != null) {
+                    callback.onRewardedVideoLoadSuccess();
+                }
+            }
+
+            @Override
+            public void onUnityAdsFailedToLoad(String placementId, UnityAds.UnityAdsLoadError error, String message) {
+                AdLog.getSingleton().LogD(TAG, "RewardedVideo onUnityAdsFailedToLoad: " + placementId + " , error: " + error + " , message: " + message);
+                if (callback != null) {
+                    callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, message));
+                }
+            }
+        });
     }
 
     @Override
@@ -220,7 +232,7 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
 
     @Override
     public boolean isRewardedVideoAvailable(String adUnitId) {
-        return UnityAds.getPlacementState(adUnitId) == UnityAds.PlacementState.READY;
+        return mLoadedIds != null && mLoadedIds.contains(adUnitId);
     }
 
     @Override
@@ -263,21 +275,36 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
             }
             return;
         }
-        if (callback != null) {
-            mIsCallbacks.put(adUnitId, callback);
-        }
         if (isInterstitialAdAvailable(adUnitId)) {
             if (callback != null) {
                 callback.onInterstitialAdLoadSuccess();
             }
-        } else {
-            mIsLoadTrigerIds.add(adUnitId);
+            return;
         }
+        UnityAds.load(adUnitId, new IUnityAdsLoadListener() {
+            @Override
+            public void onUnityAdsAdLoaded(String placementId) {
+                mLoadedIds.add(placementId);
+                AdLog.getSingleton().LogD(TAG, "InterstitialAd onUnityAdsAdLoaded: " + placementId);
+                if (callback != null) {
+                    callback.onInterstitialAdLoadSuccess();
+                }
+            }
+
+            @Override
+            public void onUnityAdsFailedToLoad(String placementId, UnityAds.UnityAdsLoadError error, String message) {
+                AdLog.getSingleton().LogD(TAG, "InterstitialAd onUnityAdsFailedToLoad: " + placementId + " , error: " + error + " , message: " + message);
+                if (callback != null) {
+                    callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, message));
+                }
+            }
+        });
     }
 
     @Override
     public boolean isInterstitialAdAvailable(String adUnitId) {
-        return UnityAds.getPlacementState(adUnitId) == UnityAds.PlacementState.READY;
+        return mLoadedIds != null && mLoadedIds.contains(adUnitId);
     }
 
     @Override
@@ -292,6 +319,13 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
             return;
         }
         try {
+            if (!isInterstitialAdAvailable(adUnitId)) {
+                if (callback != null) {
+                    callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "ad not ready"));
+                }
+                return;
+            }
             UnityAds.show(activity, adUnitId, new IUnityAdsShowListener() {
                 @Override
                 public void onUnityAdsShowFailure(String placementId, UnityAds.UnityAdsShowError error, String message) {
@@ -383,60 +417,40 @@ public class UnityAdapter extends CustomAdsAdapter implements IUnityAdsExtendedL
         }
     }
 
-    @Override
-    public void onUnityAdsClick(String placementId) {
-    }
-
-    @Override
-    public void onUnityAdsPlacementStateChanged(String placementId, UnityAds.PlacementState oldState, UnityAds.PlacementState newState) {
-        AdLog.getSingleton().LogD(TAG, "onUnityAdsPlacementStateChanged : " + placementId
-                + " oldState : " + oldState.name() + " newState: " + newState.name());
-        if (newState.equals(oldState) || newState.equals(UnityAds.PlacementState.WAITING)) {
-            return;
-        }
-
-        if (!TextUtils.isEmpty(placementId)) {
-            if (mRvLoadTrigerIds.contains(placementId)) {
-                RewardedVideoCallback rvCallback = mRvCallbacks.get(placementId);
-                if (rvCallback != null) {
-                    if (isRewardedVideoAvailable(placementId)) {
-                        rvCallback.onRewardedVideoLoadSuccess();
-                    } else {
-                        rvCallback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
-                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, newState.name()));
-                    }
-                    mRvLoadTrigerIds.remove(placementId);
-                }
-            } else {
-                if (mIsLoadTrigerIds.contains(placementId)) {
-                    InterstitialAdCallback isCallback = mIsCallbacks.get(placementId);
-                    if (isCallback != null) {
-                        if (isInterstitialAdAvailable(placementId)) {
-                            isCallback.onInterstitialAdLoadSuccess();
-                        } else {
-                            isCallback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, newState.name()));
-                        }
-                        mIsLoadTrigerIds.remove(placementId);
-                    }
-                }
-            }
-        }
-    }
-
-    @Override
-    public void onUnityAdsReady(String placementId) {
-    }
-
-    @Override
-    public void onUnityAdsStart(String placementId) {
-    }
-
-    @Override
-    public void onUnityAdsFinish(String placementId, UnityAds.FinishState result) {
-    }
-
-    @Override
-    public void onUnityAdsError(UnityAds.UnityAdsError error, String message) {
-    }
+//    @Override
+//    public void onUnityAdsPlacementStateChanged(String placementId, UnityAds.PlacementState oldState, UnityAds.PlacementState newState) {
+//        AdLog.getSingleton().LogD(TAG, "onUnityAdsPlacementStateChanged : " + placementId
+//                + " oldState : " + oldState.name() + " newState: " + newState.name());
+//        if (newState.equals(oldState) || newState.equals(UnityAds.PlacementState.WAITING)) {
+//            return;
+//        }
+//
+//        if (!TextUtils.isEmpty(placementId)) {
+//            if (mRvLoadTrigerIds.contains(placementId)) {
+//                RewardedVideoCallback rvCallback = mRvCallbacks.get(placementId);
+//                if (rvCallback != null) {
+//                    if (isRewardedVideoAvailable(placementId)) {
+//                        rvCallback.onRewardedVideoLoadSuccess();
+//                    } else {
+//                        rvCallback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+//                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, newState.name()));
+//                    }
+//                    mRvLoadTrigerIds.remove(placementId);
+//                }
+//            } else {
+//                if (mIsLoadTrigerIds.contains(placementId)) {
+//                    InterstitialAdCallback isCallback = mIsCallbacks.get(placementId);
+//                    if (isCallback != null) {
+//                        if (isInterstitialAdAvailable(placementId)) {
+//                            isCallback.onInterstitialAdLoadSuccess();
+//                        } else {
+//                            isCallback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+//                                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, newState.name()));
+//                        }
+//                        mIsLoadTrigerIds.remove(placementId);
+//                    }
+//                }
+//            }
+//        }
+//    }
 }

@@ -8,6 +8,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
+import android.view.ViewGroup;
 
 import com.mbridge.msdk.MBridgeConstans;
 import com.mbridge.msdk.MBridgeSDK;
@@ -23,13 +24,17 @@ import com.mbridge.msdk.out.MBridgeSDKFactory;
 import com.mbridge.msdk.out.RewardInfo;
 import com.mbridge.msdk.out.RewardVideoListener;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.MediationUtil;
+import com.openmediation.sdk.mediation.NativeAdCallback;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
+import com.openmediation.sdk.mediation.SplashAdCallback;
 import com.openmediation.sdk.mobileads.mintegral.BuildConfig;
+import com.openmediation.sdk.nativead.NativeAdView;
 import com.openmediation.sdk.utils.AdLog;
 
 import java.util.Map;
@@ -37,19 +42,17 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class MintegralAdapter extends CustomAdsAdapter {
     private static final String CLAZZ = "com.mbridge.msdk.mbbid.out.BidManager";
-    private static final String PAY_LOAD = "pay_load";
+    public static final String PAY_LOAD = "pay_load";
     private ConcurrentHashMap<String, MBInterstitialVideoHandler> mInterstitialAds;
     private ConcurrentHashMap<String, MBRewardVideoHandler> mRvAds;
     private ConcurrentHashMap<String, MBBidInterstitialVideoHandler> mInterstitialBidAds;
     private ConcurrentHashMap<String, MBBidRewardVideoHandler> mRvBidAds;
-    private ConcurrentHashMap<String, Boolean> mBidAdUnits;
 
     public MintegralAdapter() {
         mInterstitialAds = new ConcurrentHashMap<>();
         mRvAds = new ConcurrentHashMap<>();
         mRvBidAds = new ConcurrentHashMap<>();
         mInterstitialBidAds = new ConcurrentHashMap<>();
-        mBidAdUnits = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -68,6 +71,18 @@ public class MintegralAdapter extends CustomAdsAdapter {
     }
 
     @Override
+    public void onPause(Activity activity) {
+        super.onPause(activity);
+        MintegralSplashManager.getInstance().onPause();
+    }
+
+    @Override
+    public void onResume(Activity activity) {
+        super.onResume(activity);
+        MintegralSplashManager.getInstance().onResume();
+    }
+
+    @Override
     public boolean isS2S() {
         return true;
     }
@@ -82,7 +97,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
         try {
             Class clazz = Class.forName(CLAZZ);
             return BidManager.getBuyerUid(MediationUtil.getContext());
-        } catch(Throwable e) {
+        } catch (Throwable e) {
             AdLog.getSingleton().LogE("Mintegral getBuyerUid Error: " + e.getMessage());
         }
         return "";
@@ -157,13 +172,13 @@ public class MintegralAdapter extends CustomAdsAdapter {
                         payload = String.valueOf(extras.get(PAY_LOAD));
                     }
                     if (TextUtils.isEmpty(payload)) {
-                        mBidAdUnits.remove(adUnitId);
+                        MintegralSingleTon.getInstance().removeBidAdUnit(adUnitId);
                         loadRvAd(context, adUnitId, callback);
                     } else {
-                        mBidAdUnits.put(adUnitId, true);
+                        MintegralSingleTon.getInstance().putBidAdUnit(adUnitId, payload);
                         loadRvAdWithBid(context, adUnitId, payload, callback);
                     }
-                } catch(Throwable e) {
+                } catch (Throwable e) {
                     if (callback != null) {
                         callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
                                 AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
@@ -210,7 +225,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
         if (TextUtils.isEmpty(adUnitId)) {
             return false;
         }
-        if (mBidAdUnits.containsKey(adUnitId)) {
+        if (MintegralSingleTon.getInstance().containsKeyBidAdUnit(adUnitId)) {
             MBBidRewardVideoHandler videoHandler = mRvBidAds.get(adUnitId);
             return videoHandler != null && videoHandler.isBidReady();
         }
@@ -240,7 +255,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
     }
 
     private void showRvAd(String adUnitId, RewardedVideoCallback callback) {
-        if (mBidAdUnits.containsKey(adUnitId)) {
+        if (MintegralSingleTon.getInstance().containsKeyBidAdUnit(adUnitId)) {
             MBBidRewardVideoHandler rewardVideoHandler = mRvBidAds.get(adUnitId);
             if (rewardVideoHandler == null || !rewardVideoHandler.isBidReady()) {
                 if (callback != null) {
@@ -315,13 +330,13 @@ public class MintegralAdapter extends CustomAdsAdapter {
                         payload = String.valueOf(extras.get(PAY_LOAD));
                     }
                     if (TextUtils.isEmpty(payload)) {
-                        mBidAdUnits.remove(adUnitId);
+                        MintegralSingleTon.getInstance().removeBidAdUnit(adUnitId);
                         loadIsAd(context, adUnitId, callback);
                     } else {
-                        mBidAdUnits.put(adUnitId, true);
+                        MintegralSingleTon.getInstance().putBidAdUnit(adUnitId, payload);
                         loadIsAdWithBid(context, adUnitId, payload, callback);
                     }
-                } catch(Throwable e) {
+                } catch (Throwable e) {
                     if (callback != null) {
                         callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
                                 AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
@@ -368,7 +383,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
         if (TextUtils.isEmpty(adUnitId)) {
             return false;
         }
-        if (mBidAdUnits.containsKey(adUnitId)) {
+        if (MintegralSingleTon.getInstance().containsKeyBidAdUnit(adUnitId)) {
             MBBidInterstitialVideoHandler bidInterstitialVideoHandler = mInterstitialBidAds.get(adUnitId);
             return bidInterstitialVideoHandler != null && bidInterstitialVideoHandler.isBidReady();
         }
@@ -398,7 +413,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
     }
 
     private void showIsAd(String adUnitId, InterstitialAdCallback callback) {
-        if (mBidAdUnits.containsKey(adUnitId)) {
+        if (MintegralSingleTon.getInstance().containsKeyBidAdUnit(adUnitId)) {
             MBBidInterstitialVideoHandler mtgInterstitialVideoHandler = mInterstitialBidAds.get(adUnitId);
             if (mtgInterstitialVideoHandler == null || !mtgInterstitialVideoHandler.isBidReady()) {
                 if (callback != null) {
@@ -458,6 +473,99 @@ public class MintegralAdapter extends CustomAdsAdapter {
     public void destroyBannerAd(String adUnitId) {
         super.destroyBannerAd(adUnitId);
         MintegralBannerManager.getInstance().destroyAd(adUnitId);
+    }
+
+    @Override
+    public void initSplashAd(Activity activity, Map<String, Object> extras, SplashAdCallback callback) {
+        super.initSplashAd(activity, extras, callback);
+        String error = check();
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onSplashAdInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, error));
+            }
+            return;
+        }
+        MintegralSplashManager.getInstance().initAd(MediationUtil.getContext(), extras, callback);
+    }
+
+    @Override
+    public void loadSplashAd(Activity activity, String adUnitId, Map<String, Object> extras, SplashAdCallback callback) {
+        super.loadSplashAd(activity, adUnitId, extras, callback);
+        String error = check(adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onSplashAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, error));
+            }
+            return;
+        }
+        MintegralSplashManager.getInstance().loadAd(MediationUtil.getContext(), adUnitId, extras, callback);
+    }
+
+    @Override
+    public boolean isSplashAdAvailable(String adUnitId) {
+        return MintegralSplashManager.getInstance().isAdAvailable(adUnitId);
+    }
+
+    @Override
+    public void showSplashAd(Activity activity, String adUnitId, ViewGroup viewGroup, SplashAdCallback callback) {
+        super.showSplashAd(activity, adUnitId, viewGroup, callback);
+        String error = check(adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onSplashAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, error));
+            }
+            return;
+        }
+        MintegralSplashManager.getInstance().showAd(adUnitId, viewGroup, callback);
+    }
+
+    @Override
+    public void destroySplashAd(String adUnitId) {
+        super.destroySplashAd(adUnitId);
+        MintegralSplashManager.getInstance().destroyAd(adUnitId);
+    }
+
+    @Override
+    public void initNativeAd(Activity activity, Map<String, Object> extras, NativeAdCallback callback) {
+        super.initNativeAd(activity, extras, callback);
+        String error = check();
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onNativeAdInitFailed(AdapterErrorBuilder.buildInitError(
+                        AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, error));
+            }
+            return;
+        }
+        MintegralNativeManager.getInstance().initAd(MediationUtil.getContext(), extras, callback);
+    }
+
+    @Override
+    public void loadNativeAd(Activity activity, String adUnitId, Map<String, Object> extras, NativeAdCallback callback) {
+        super.loadNativeAd(activity, adUnitId, extras, callback);
+        String error = check(adUnitId);
+        if (!TextUtils.isEmpty(error)) {
+            if (callback != null) {
+                callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, error));
+            }
+            return;
+        }
+        MintegralNativeManager.getInstance().loadAd(MediationUtil.getContext(), adUnitId, extras, callback);
+    }
+
+    @Override
+    public void registerNativeAdView(String adUnitId, NativeAdView adView, AdnAdInfo adnAdInfo, NativeAdCallback callback) {
+        super.registerNativeAdView(adUnitId, adView, adnAdInfo, callback);
+        MintegralNativeManager.getInstance().registerNativeView(adUnitId, adView, adnAdInfo, callback);
+    }
+
+    @Override
+    public void destroyNativeAd(String adUnitId, AdnAdInfo adnAdInfo) {
+        super.destroyNativeAd(adUnitId, adnAdInfo);
+        MintegralNativeManager.getInstance().destroyAd(adUnitId, adnAdInfo);
     }
 
     private void initSDK(MintegralSingleTon.InitCallback listener) {

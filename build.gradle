@@ -38,16 +38,16 @@ ext {
             //fb https://developers.facebook.com/docs/audience-network/changelog-android/
             "facebook"                   : 'com.facebook.android:audience-network-sdk:6.8.0',
             //admob https://developers.google.com/admob/android/rel-notes
-            "admob"                      : 'com.google.android.gms:play-services-ads:20.4.0',
-            "admob_facebook_adapter"     : 'com.google.ads.mediation:facebook:6.7.0.0',
+            "admob"                      : 'com.google.android.gms:play-services-ads:20.5.0',
+            "admob_facebook_adapter"     : 'com.google.ads.mediation:facebook:6.8.0.0',
             //vungle https://github.com/Vungle/Android-SDK/blob/master/CHANGELOG.md
-            "vungle"                     : 'com.vungle:publisher-sdk-android:6.10.2',
+            "vungle"                     : 'com.vungle:publisher-sdk-android:6.10.3',
             "vungle_androidx"            : 'androidx.core:core:1.3.2',
             "vungle_localbroadcast"      : 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0',
             //AdColony https://github.com/AdColony/AdColony-Android-SDK/blob/master/CHANGELOG.md
-            "adcolony"                   : 'com.adcolony:sdk:4.6.4',
+            "adcolony"                   : 'com.adcolony:sdk:4.6.5',
             //AppLovin https://dash.applovin.com/documentation/mediation/android/changelog
-            "applovin"                   : 'com.applovin:applovin-sdk:10.3.4',
+            "applovin"                   : 'com.applovin:applovin-sdk:10.3.5',
             //MoPub https://developers.mopub.com/publishers/android/changelog/
             "mopub"                      : 'com.mopub:mopub-sdk:5.18.0@aar',
             "mopub_volley"               : 'com.mopub.volley:mopub-volley:2.1.0',
@@ -56,47 +56,46 @@ ext {
             //chartboost https://answers.chartboost.com/en-us/child_article/android-amazon
             "chartboost"                 : 'com.chartboost:chartboost-sdk:8.2.1',
             //unity https://github.com/Unity-Technologies/unity-ads-android/releases
-            "unity"                      : 'com.unity3d.ads:unity-ads:3.7.5',
+            "unity"                      : 'com.unity3d.ads:unity-ads:4.0.0',
             //gp-base.
             "play_service_base"          : 'com.google.android.gms:play-services-base:17.6.0',
             //gp-ads-identifier
-            "play_service_ads_identifier": 'com.google.android.gms:play-services-ads-identifier:17.0.1',
+            "play_service_ads_identifier": 'com.google.android.gms:play-services-ads-identifier:17.1.0',
             //Mintegral http://cdn-adn.rayjump.com/cdn-adn/v2/markdown_v2/index.html?file=sdk-m_sdk-android&lang=en
-            "mtg_version"                : '15.7.31',
-            "mtg_china_version"          : '15.7.32',
+            "mtg_version"                : '15.8.01',
+            "mtg_china_version"          : '15.8.02',
             // IronSource https://developers.ironsrc.com/ironsource-mobile/android/sdk-change-log/
-            "ironsource"                 : 'com.ironsource.sdk:mediationsdk:7.1.11.1',
+            "ironsource"                 : 'com.ironsource.sdk:mediationsdk:7.1.12.2',
             // https://developer.fyber.com/hc/en-us/articles/360010822437-Integrating-the-Android-SDK
             "fyber"                      : '7.8.4',
             // https://www.pangleglobal.com/
-            "pangle"                     : 'com.pangle.global:ads-sdk:3.9.0.5',
+            "pangle"                     : 'com.pangle.global:ads-sdk:4.1.1.2',
             // https://helium.chartboost.com/
-            "helium"                     : 'com.chartboost:helium:2.3.1',
-            "helium_facebook_adapter"    : 'com.chartboost:helium-facebook:2.3.1.0',
+            "helium"                     : 'com.chartboost:helium:2.3.2',
+            "helium_facebook_adapter"    : 'com.chartboost:helium-facebook:2.3.2.0',
             "eventbus"                   : 'org.greenrobot:eventbus:3.2.0',
             // https://developers.adnet.qq.com/doc/android/access_doc
             // https://adnet.qq.com/resource/sdk
-            "tencentad"                  : 'com.qq.e.union:union:4.420.1290',
+            "tencentad"                  : 'com.qq.e.union:union:4.431.1301',
             // https://ogury-ltd.gitbook.io/release-notes/android
             "ogury"                      : 'co.ogury:ogury-sdk:5.1.0',
             // https://github.com/pubnative/pubnative-hybid-android-sdk/wiki/HyBid-Configuration
-            "pubnative"                  : 'net.pubnative:hybid.sdk:2.7.0',
+            "pubnative"                  : 'net.pubnative:hybid.sdk:2.9.0',
             // https://admost.github.io/amrandroid/
-            "admost"                     : 'com.admost.sdk:amr:2.4.4',
-            "admost_volley"              : 'com.android.volley:volley:1.1.1',
-            "admost_facebook_adapter"    : 'com.admost.sdk:facebook-adapter:6.7.0.a26',
-            "admost_s2sbidding_adapter"  : 'com.admost.sdk:s2sbidding-adapter:1.0.8.a26',
+            "admost"                     : 'com.admost.sdk:amr:2.4.8',
+            "admost_volley"              : 'com.android.volley:volley:1.2.1',
+            "admost_facebook_adapter"    : 'com.admost.sdk:facebook-adapter:6.8.0.a27',
             "admost_recyclerview"        : 'androidx.recyclerview:recyclerview:1.1.0',
             "admost_annotation"          : 'androidx.annotation:annotation:1.2.0',
             //FlatAds https://github.com/flatads/document
             "flatads"                    : 'com.flatads.sdk:flatads:1.1.13',
             //InMobi https://support.inmobi.com/monetize/android-guidelines/
-            "inmobi"                     : 'com.inmobi.monetization:inmobi-ads:9.2.1',
+            "inmobi"                     : 'com.inmobi.monetization:inmobi-ads:10.0.1',
             // SHAREit https://github.com/san-sdk/sample/wiki/Integrate-the-SAN-SDK
-            "sanads"                     : 'com.myadsget:san-sdk:2.0.2.5',
+            "sanads"                     : 'com.myadsget:san-sdk:3.3.4',
             "okhttp"                     : 'com.squareup.okhttp3:okhttp:3.14.9',
             // 穿山甲国内 https://www.pangle.cn/
-            "pangle_cn"                  : 'com.pangle.cn:ads-sdk-pro:4.0.0.6',
+            "pangle_cn"                  : 'com.pangle.cn:ads-sdk-pro:4.1.0.6',
 
             // https://dev.appsflyer.com/hc/docs/install-android-sdk
             "appsflyer"                  : 'com.appsflyer:af-android-sdk:6.4.0'
@@ -108,7 +107,7 @@ ext {
             'adtiming'    : '2.5.0',
             'admob'       : '2.5.2',
             'facebook'    : '2.5.0',
-            'unity'       : '2.5.0',
+            'unity'       : '2.5.1',
             'vungle'      : '2.5.0',
             'adcolony'    : '2.6.0',
             'applovin'    : '2.5.0',
@@ -116,8 +115,8 @@ ext {
             'tapjoy'      : '2.5.0',
             'chartboost'  : '2.5.0',
             'helium'      : '2.5.0',
-            'tiktok'      : '2.5.0',
-            'mintegral'   : '2.5.0',
+            'tiktok'      : '2.5.1',
+            'mintegral'   : '2.6.0',
             'ironsource'  : '2.5.0',
             'fyber'       : '2.5.0',
             'ogury'       : '2.5.0',
@@ -126,9 +125,9 @@ ext {
             'flatads'     : '2.5.0',
             'inmobi'      : '2.5.0',
             'sanads'      : '2.5.0',
-            'tiktok_cn'   : '2.5.0',
+            'tiktok_cn'   : '2.5.1',
             'tencentad_cn': '2.5.0',
-            'mintegral_cn': '2.5.0',
+            'mintegral_cn': '2.6.0',
             'sigmob_cn'   : '2.5.0',
             'ksad_cn'     : '2.5.1',
     ]

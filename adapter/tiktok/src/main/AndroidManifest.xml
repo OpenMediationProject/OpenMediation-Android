@@ -4,10 +4,4 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- if use textureView for video ad，please add this permission -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <application>
-        <provider
-            android:name="com.bytedance.sdk.openadsdk.multipro.TTMultiProvider"
-            android:authorities="${applicationId}.TTMultiProvider"
-            android:exported="false" />
-    </application>
 </manifest>

@@ -15,18 +15,37 @@ import com.openmediation.sdk.utils.AdLog;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class MintegralSingleTon {
 
     private InitState mInitState = InitState.NOT_INIT;
     private final List<InitCallback> mCallbacks = new CopyOnWriteArrayList<>();
+    private ConcurrentHashMap<String, String> mBidAdUnits;
+
+    public String removeBidAdUnit(String adUnitId) {
+        return mBidAdUnits.remove(adUnitId);
+    }
+
+    public void putBidAdUnit(String adUnitId, String token) {
+        mBidAdUnits.put(adUnitId, token);
+    }
+
+    public boolean containsKeyBidAdUnit(String adUnitId) {
+        return mBidAdUnits.containsKey(adUnitId);
+    }
+
+    public String getBidToken(String adUnitId) {
+        return mBidAdUnits.get(adUnitId);
+    }
 
     private static class MintegralHolder {
         private static final MintegralSingleTon INSTANCE = new MintegralSingleTon();
     }
 
     private MintegralSingleTon() {
+        mBidAdUnits = new ConcurrentHashMap<>();
     }
 
     public static MintegralSingleTon getInstance() {
@@ -129,7 +148,6 @@ public class MintegralSingleTon {
         INIT_PENDING,
         INIT_SUCCESS
     }
-
 
     public interface InitCallback {
         void onSuccess();

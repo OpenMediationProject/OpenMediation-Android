@@ -17,16 +17,16 @@ android {
 }
 
 dependencies {
-  implementation 'com.openmediation:om-android-sdk:2.6.0'
+  implementation 'com.openmediation:om-android-sdk:2.6.1'
 
   // AdTiming-Adapter
   implementation 'com.openmediation.adapters:adtiming:2.5.0'
   // AdMob-Adapter
-  implementation 'com.openmediation.adapters:admob:2.5.1'
+  implementation 'com.openmediation.adapters:admob:2.5.2'
   // Facebook-Adapter
   implementation 'com.openmediation.adapters:facebook:2.5.0'
   // Unity-Adapter
-  implementation 'com.openmediation.adapters:unity:2.5.0'
+  implementation 'com.openmediation.adapters:unity:2.5.1'
   // Vungle-Adapter
   implementation 'com.openmediation.adapters:vungle:2.5.0'
   // AdColony-Adapter
@@ -40,9 +40,9 @@ dependencies {
   // Chartboost-Adapter
   implementation 'com.openmediation.adapters:chartboost:2.5.0'
   // Mintegral-Adapter
-  implementation 'com.openmediation.adapters:mintegral:2.5.0'
+  implementation 'com.openmediation.adapters:mintegral:2.6.0'
   //TikTok-Adapter
-  implementation 'com.openmediation.adapters:tiktok:2.5.0'
+  implementation 'com.openmediation.adapters:tiktok:2.5.1'
   //IronSource-Adapter
   implementation 'com.openmediation.adapters:ironsource:2.5.0'
   //Fyber-Adapter

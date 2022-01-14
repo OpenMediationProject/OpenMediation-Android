@@ -641,8 +641,8 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
                 }
             } else {
                 callbackLoadError(error);
-                finishLoad(error);
             }
+            finishLoad(error);
             AdsUtil.advanceEventReport(mPlacementId, AdvanceEventId.CODE_CAN_NOT_LOAD,
                     AdvanceEventId.MSG_CAN_NOT_LOAD);
         }
