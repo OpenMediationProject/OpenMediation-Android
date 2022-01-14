@@ -67,7 +67,7 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
             mAdColonyOptions.setPrivacyConsentString(AdColonyAppOptions.GDPR, consent ? "1" : "0");
             mAdColonyOptions.setPrivacyFrameworkRequired(AdColonyAppOptions.GDPR, true);
             AdColony.setAppOptions(mAdColonyOptions);
-        } catch (Exception ignored) {
+        } catch (Throwable ignored) {
         }
     }
 
@@ -78,7 +78,7 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
             mAdColonyOptions.setPrivacyConsentString(AdColonyAppOptions.CCPA, value ? "1" : "0");
             mAdColonyOptions.setPrivacyFrameworkRequired(AdColonyAppOptions.CCPA, true);
             AdColony.setAppOptions(mAdColonyOptions);
-        } catch (Exception ignored) {
+        } catch (Throwable ignored) {
         }
     }
 
@@ -102,39 +102,55 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
     @Override
     public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
-        String error = check(adUnitId);
-        if (TextUtils.isEmpty(error)) {
-            AdColonyInterstitial rvAd = mAdColonyAds.get(adUnitId);
-            mRvCallback.put(adUnitId, callback);
-            if (rvAd == null || rvAd.isExpired()) {
-                AdColony.setRewardListener(this);
-                AdColony.requestInterstitial(adUnitId, new AdColonyAdListener());
-            } else if (!rvAd.isExpired()) {
-                callback.onRewardedVideoLoadSuccess();
+        try {
+            String error = check(adUnitId);
+            if (TextUtils.isEmpty(error)) {
+                AdColonyInterstitial rvAd = mAdColonyAds.get(adUnitId);
+                mRvCallback.put(adUnitId, callback);
+                if (rvAd == null || rvAd.isExpired()) {
+                    AdColony.setRewardListener(this);
+                    AdColony.requestInterstitial(adUnitId, new AdColonyAdListener());
+                } else if (!rvAd.isExpired()) {
+                    callback.onRewardedVideoLoadSuccess();
+                }
+            } else {
+                if (callback != null) {
+                    callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
+                }
             }
-        } else {
-            callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
-                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
+        } catch (Throwable e) {
+            if (callback != null) {
+                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
+            }
         }
     }
 
     @Override
     public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
-        if (isRewardedVideoAvailable(adUnitId)) {
-            AdColonyInterstitial ad = mAdColonyAds.remove(adUnitId);
-            if (ad != null) {
-                ad.show();
+        try {
+            if (isRewardedVideoAvailable(adUnitId)) {
+                AdColonyInterstitial ad = mAdColonyAds.remove(adUnitId);
+                if (ad != null) {
+                    ad.show();
+                } else {
+                    if (callback != null) {
+                        callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, AdColonyAdapter.this.mAdapterName, "AdColony ad not ready"));
+                    }
+                }
             } else {
                 if (callback != null) {
                     callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
                             AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, AdColonyAdapter.this.mAdapterName, "AdColony ad not ready"));
                 }
             }
-        } else {
+        } catch (Throwable e) {
             if (callback != null) {
                 callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, AdColonyAdapter.this.mAdapterName, "AdColony ad not ready"));
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, AdColonyAdapter.this.mAdapterName, "Unknown Error, " + e.getMessage()));
             }
         }
     }
@@ -147,7 +163,7 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
             }
             AdColonyInterstitial ad = mAdColonyAds.get(adUnitId);
             return ad != null && !ad.isExpired();
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             return false;
         }
     }
@@ -197,37 +213,53 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
     @Override
     public void loadInterstitialAd(Activity activity, String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, extras, callback);
-        String error = check(adUnitId);
-        if (TextUtils.isEmpty(error)) {
-            mIsCallback.put(adUnitId, callback);
-            if (isInterstitialAdAvailable(adUnitId)) {
-                callback.onInterstitialAdLoadSuccess();
+        try {
+            String error = check(adUnitId);
+            if (TextUtils.isEmpty(error)) {
+                mIsCallback.put(adUnitId, callback);
+                if (isInterstitialAdAvailable(adUnitId)) {
+                    callback.onInterstitialAdLoadSuccess();
+                } else {
+                    AdColony.requestInterstitial(adUnitId, new AdIsColonyAdListener());
+                }
             } else {
-                AdColony.requestInterstitial(adUnitId, new AdIsColonyAdListener());
+                if (callback != null) {
+                    callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
+                }
             }
-        } else {
-            callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
-                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
+        } catch (Throwable e) {
+            if (callback != null) {
+                callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
+            }
         }
     }
 
     @Override
     public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
-        if (isInterstitialAdAvailable(adUnitId)) {
-            AdColonyInterstitial ad = mIsAdColonyAds.remove(adUnitId);
-            if (ad != null) {
-                ad.show();
+        try {
+            if (isInterstitialAdAvailable(adUnitId)) {
+                AdColonyInterstitial ad = mIsAdColonyAds.remove(adUnitId);
+                if (ad != null) {
+                    ad.show();
+                } else {
+                    if (callback != null) {
+                        callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "AdColony ad not ready"));
+                    }
+                }
             } else {
                 if (callback != null) {
                     callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
                             AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "AdColony ad not ready"));
                 }
             }
-        } else {
+        } catch (Throwable e) {
             if (callback != null) {
                 callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "AdColony ad not ready"));
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
             }
         }
     }
@@ -237,8 +269,12 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
         if (TextUtils.isEmpty(adUnitId)) {
             return false;
         }
-        AdColonyInterstitial ad = mIsAdColonyAds.get(adUnitId);
-        return ad != null && !ad.isExpired();
+        try {
+            AdColonyInterstitial ad = mIsAdColonyAds.get(adUnitId);
+            return ad != null && !ad.isExpired();
+        } catch (Throwable e) {
+            return false;
+        }
     }
 
     private class AdColonyAdListener extends AdColonyInterstitialListener {
@@ -281,6 +317,13 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
         @Override
         public void onExpiring(AdColonyInterstitial ad) {
             AdLog.getSingleton().LogD(TAG, "RewardedVideoAd onExpiring: " + ad.getZoneID());
+            try {
+                RewardedVideoCallback callback = mRvCallback.get(ad.getZoneID());
+                if (callback != null) {
+                    callback.onAdExpired();
+                }
+            } catch (Throwable ignored) {
+            }
         }
 
         @Override
@@ -334,6 +377,13 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
         @Override
         public void onExpiring(AdColonyInterstitial ad) {
             AdLog.getSingleton().LogD(TAG, "InterstitialAd onExpiring: " + ad.getZoneID());
+            try {
+                InterstitialAdCallback callback = mIsCallback.get(ad.getZoneID());
+                if (callback != null) {
+                    callback.onAdExpired();
+                }
+            } catch (Throwable ignored) {
+            }
         }
 
         @Override

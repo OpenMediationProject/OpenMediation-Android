@@ -25,6 +25,7 @@
 -keep class com.openmediation.sdk.banner.**{*;}
 -keep class com.openmediation.sdk.bid.**{*;}
 -keep class com.openmediation.sdk.core.**{*;}
+-keep class com.openmediation.sdk.inspector.**{*;}
 -keep class com.openmediation.sdk.interstitial.**{*;}
 -keep class com.openmediation.sdk.mediation.**{*;}
 -keep class com.openmediation.sdk.mobileads.**{*;}
@@ -35,6 +36,7 @@
 -keep class com.openmediation.sdk.video.**{*;}
 -keep class com.openmediation.sdk.OmAds{*;}
 -keep class com.openmediation.sdk.OmAds$AD_TYPE{*;}
+-keep class com.openmediation.sdk.OmAds$CACHE_TYPE{*;}
 -keep class com.openmediation.sdk.InitCallback{*;}
 -keep class com.openmediation.sdk.InitConfiguration{*;}
 -keep class com.openmediation.sdk.InitConfiguration$*{*;}

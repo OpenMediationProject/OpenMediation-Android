@@ -85,7 +85,7 @@ public class UnitySingleTon {
                     mCallbacks.clear();
                 }
             });
-        } catch(Exception e) {
+        } catch (Throwable e) {
             mInitState = InitState.NOT_INIT;
             if (listener != null) {
                 String errorMsg = UnityAds.UnityAdsInitializationError.INTERNAL_ERROR.name() + ", " + e.getMessage();

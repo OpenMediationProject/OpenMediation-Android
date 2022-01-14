@@ -5,6 +5,7 @@ package com.openmediation.sdk.core.imp.interstitialad;
 
 import android.app.Activity;
 
+import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.core.InsManager;
 import com.openmediation.sdk.core.runnable.LoadTimeoutRunnable;
 import com.openmediation.sdk.mediation.AdapterError;
@@ -39,8 +40,9 @@ public class IsInstance extends BaseInstance implements InterstitialAdCallback, 
     void initIs(Activity activity) {
         setMediationState(MEDIATION_STATE.INIT_PENDING);
         if (mAdapter != null) {
+            DeveloperLog.LogD("init InterstitialAd : " + getMediationId() + " key : " + getKey());
+            InsManager.startInsLoadTimer(this, this);
             mAdapter.initInterstitialAd(activity, InsManager.getInitDataMap(this), this);
-            InsManager.onInsInitStart(this);
         }
     }
 
@@ -49,7 +51,6 @@ public class IsInstance extends BaseInstance implements InterstitialAdCallback, 
         if (mAdapter != null) {
             DeveloperLog.LogD("load InterstitialAd : " + getMediationId() + " key : " + getKey());
             InsManager.startInsLoadTimer(this, this);
-            mLoadStart = System.currentTimeMillis();
             mAdapter.loadInterstitialAd(activity, getKey(), extras, this);
         }
     }
@@ -62,8 +63,8 @@ public class IsInstance extends BaseInstance implements InterstitialAdCallback, 
     }
 
     boolean isIsAvailable() {
-        return mAdapter != null && mAdapter.isInterstitialAdAvailable(getKey())
-                && getMediationState() == MEDIATION_STATE.AVAILABLE;
+        return getMediationState() == MEDIATION_STATE.AVAILABLE &&
+                mAdapter != null && mAdapter.isInterstitialAdAvailable(getKey());
     }
 
     void setIsManagerListener(IsManagerListener listener) {
@@ -121,5 +122,20 @@ public class IsInstance extends BaseInstance implements InterstitialAdCallback, 
         AdapterError errorResult = AdapterErrorBuilder.buildLoadCheckError(
                 AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapter == null ? "" : mAdapter.getClass().getSimpleName(), ErrorCode.ERROR_TIMEOUT);
         onInterstitialAdLoadFailed(errorResult);
+    }
+
+    @Override
+    public void onBidSuccess(BidResponse response) {
+        mListener.onBidSuccess(this, response);
+    }
+
+    @Override
+    public void onBidFailed(String error) {
+        mListener.onBidFailed(this, error);
+    }
+
+    @Override
+    public void onAdExpired() {
+        mListener.onAdExpired(this);
     }
 }

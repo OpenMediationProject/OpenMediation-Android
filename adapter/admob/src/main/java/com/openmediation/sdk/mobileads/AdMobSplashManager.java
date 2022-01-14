@@ -133,10 +133,10 @@ public class AdMobSplashManager {
             public void run() {
                 try {
                     showSplashAd(activity, adUnitId, callback);
-                } catch(Exception e) {
+                } catch(Throwable e) {
                     if (callback != null) {
                         callback.onSplashAdShowFailed(AdapterErrorBuilder.buildShowError(
-                                AdapterErrorBuilder.AD_UNIT_SPLASH, "AdMobAdapter", e.getMessage()));
+                                AdapterErrorBuilder.AD_UNIT_SPLASH, "AdMobAdapter", "Unknown Error, " + e.getMessage()));
                     }
                 }
             }
@@ -185,6 +185,7 @@ public class AdMobSplashManager {
                 new FullScreenContentCallback() {
                     @Override
                     public void onAdDismissedFullScreenContent() {
+                        super.onAdDismissedFullScreenContent();;
                         if (callback != null) {
                             callback.onSplashAdDismissed();
                         }
@@ -192,6 +193,7 @@ public class AdMobSplashManager {
 
                     @Override
                     public void onAdFailedToShowFullScreenContent(AdError adError) {
+                        super.onAdFailedToShowFullScreenContent(adError);
                         if (callback != null) {
                             callback.onSplashAdShowFailed(AdapterErrorBuilder.buildShowError(
                                     AdapterErrorBuilder.AD_UNIT_SPLASH, "AdMobAdapter", adError.getCode(), adError.getMessage()));
@@ -199,7 +201,16 @@ public class AdMobSplashManager {
                     }
 
                     @Override
+                    public void onAdClicked() {
+                        super.onAdClicked();
+                        if (callback != null) {
+                            callback.onSplashAdAdClicked();
+                        }
+                    }
+
+                    @Override
                     public void onAdShowedFullScreenContent() {
+                        super.onAdShowedFullScreenContent();
                         if (callback != null) {
                             callback.onSplashAdShowSuccess();
                         }

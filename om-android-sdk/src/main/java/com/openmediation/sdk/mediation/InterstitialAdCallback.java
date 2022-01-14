@@ -6,7 +6,7 @@ package com.openmediation.sdk.mediation;
 /**
  * This interface is used to notify adapter's lifecycle to mediation SDK
  */
-public interface InterstitialAdCallback {
+public interface InterstitialAdCallback extends BidCallback, OnAdExpiredCallback {
     /**
      * called t third-party ad network ads init success
      */

@@ -9,6 +9,7 @@ import android.app.Activity;
 
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.BannerAdCallback;
+import com.openmediation.sdk.mediation.MediationUtil;
 
 import java.util.Map;
 
@@ -47,15 +48,7 @@ public class AdmostBannerManager {
     }
 
     public void loadAd(String adUnitId, Map<String, Object> extras, BannerAdCallback callback) {
-        AdmostBannerAdsConfig config = AdmostSingleTon.getInstance().getBannerAd(adUnitId);
-        if (config == null) {
-            String error = AdmostSingleTon.getInstance().getError(adUnitId);
-            if (callback != null) {
-                callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                        AdapterErrorBuilder.AD_UNIT_BANNER, "AdmostAdapter", error));
-            }
-            return;
-        }
+        AdmostSingleTon.getInstance().removeBannerListener(adUnitId);
         AdmostSingleTon.getInstance().addBannerListener(adUnitId, new AdmostBannerCallback() {
 
             @Override
@@ -65,9 +58,17 @@ public class AdmostBannerManager {
                 }
             }
         });
-        if (callback != null) {
-            callback.onBannerAdLoadSuccess(config.getAdView());
+        AdmostBannerAdsConfig config = AdmostSingleTon.getInstance().removeBannerAd(adUnitId);
+        if (config != null) {
+            if (callback != null) {
+                callback.onBannerAdLoadSuccess(config.getAdView());
+            }
+            return;
         }
+
+        int height = AdmostSingleTon.getAdSizeHeight(MediationUtil.getBannerDesc(extras));
+        // Load Banner
+        AdmostSingleTon.getInstance().loadBanner(adUnitId, height, callback, null);
     }
 
 }

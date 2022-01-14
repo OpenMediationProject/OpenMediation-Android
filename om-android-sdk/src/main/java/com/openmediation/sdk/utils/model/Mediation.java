@@ -14,6 +14,9 @@ public class Mediation {
     private String nn;
     //ad network's app key
     private String k;
+
+    // ad expired time
+    private long et;
 //    
 //    public HashMap<String,String> mediationData;
 
@@ -47,5 +50,13 @@ public class Mediation {
 
     public String getNetworkName() {
         return TextUtils.isEmpty(nn) ? n : nn;
+    }
+
+    public long getEt() {
+        return et;
+    }
+
+    public void setEt(long et) {
+        this.et = et;
     }
 }

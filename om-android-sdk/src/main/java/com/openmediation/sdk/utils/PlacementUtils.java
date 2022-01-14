@@ -84,18 +84,18 @@ public class PlacementUtils {
         return adType;
     }
 
-    public static Map<String, Object> getLoadExtrasMap(String reqId, BaseInstance instance, BidResponse bidResponse) {
+    public static Map<String, Object> getLoadExtrasMap(String reqId, String placementId, BaseInstance instance) {
         Map<String, Object> extras = new HashMap<>();
+        BidResponse bidResponse = instance.getBidResponse();
         if (bidResponse != null && !TextUtils.isEmpty(bidResponse.getPayLoad())) {
             extras.put("pay_load", bidResponse.getPayLoad());
         }
-        if (instance != null) {
-            extras.put("InstanceId", String.valueOf(instance.getId()));
-        }
+        extras.put("InstanceId", String.valueOf(instance.getId()));
         extras.put("AuctionId", reqId);
         extras.put("AppKey", instance.getAppKey());
         extras.put("Bid", instance.getHb());
         extras.put("AdnObject", instance.getObject());
+        extras.put("PlacementId", placementId);
         return extras;
     }
 

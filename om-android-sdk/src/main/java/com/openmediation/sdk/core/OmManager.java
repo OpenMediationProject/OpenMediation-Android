@@ -3,7 +3,10 @@
 
 package com.openmediation.sdk.core;
 
+import static com.openmediation.sdk.OmAds.AD_TYPE;
+
 import android.app.Activity;
+import android.content.IntentFilter;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -14,9 +17,14 @@ import com.openmediation.sdk.core.imp.nativead.NaManager;
 import com.openmediation.sdk.core.imp.promotion.CpManager;
 import com.openmediation.sdk.core.imp.rewardedvideo.RvManager;
 import com.openmediation.sdk.core.imp.splash.SpAdManager;
+import com.openmediation.sdk.inspector.InspectorManager;
+import com.openmediation.sdk.inspector.LogConstants;
+import com.openmediation.sdk.inspector.logs.InitLog;
+import com.openmediation.sdk.inspector.logs.SettingsLog;
 import com.openmediation.sdk.interstitial.InterstitialAdListener;
 import com.openmediation.sdk.mediation.MediationInterstitialListener;
 import com.openmediation.sdk.mediation.MediationRewardVideoListener;
+import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.nativead.AdInfo;
 import com.openmediation.sdk.nativead.NativeAdListener;
 import com.openmediation.sdk.nativead.NativeAdView;
@@ -29,6 +37,7 @@ import com.openmediation.sdk.utils.JsonUtil;
 import com.openmediation.sdk.utils.PlacementUtils;
 import com.openmediation.sdk.utils.Preconditions;
 import com.openmediation.sdk.utils.SceneUtil;
+import com.openmediation.sdk.utils.WorkExecutor;
 import com.openmediation.sdk.utils.cache.DataCache;
 import com.openmediation.sdk.utils.constant.CommonConstants;
 import com.openmediation.sdk.utils.constant.KeyConstants;
@@ -38,8 +47,10 @@ import com.openmediation.sdk.utils.error.ErrorCode;
 import com.openmediation.sdk.utils.event.EventId;
 import com.openmediation.sdk.utils.helper.IapHelper;
 import com.openmediation.sdk.utils.lifecycle.ActLifecycle;
+import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.Configurations;
 import com.openmediation.sdk.utils.model.Placement;
+import com.openmediation.sdk.utils.request.network.util.NetworkChecker;
 import com.openmediation.sdk.video.RewardedVideoListener;
 
 import org.json.JSONObject;
@@ -53,9 +64,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static com.openmediation.sdk.OmAds.AD_TYPE;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The type Om manager.
@@ -85,9 +96,23 @@ public final class OmManager implements InitCallback {
     private final AtomicBoolean mDidNaInit = new AtomicBoolean(false);
     private boolean mIsInForeground = true;
     private String mUserId = null;
-    private static final ConcurrentLinkedQueue<InitCallback> mInitCallbacks = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<InitCallback> mInitCallbacks = new ConcurrentLinkedQueue<>();
 
     private Map<String, Object> mTagsMap;
+
+    /**
+     * auto cache inventory ad
+     */
+    private boolean mAutoCacheAd = true;
+
+    private final AtomicBoolean mReInit = new AtomicBoolean(false);
+    /**
+     * max retry init count
+     */
+    private static final int MAX_INIT_COUNT = 10;
+    private final AtomicInteger mReInitCount = new AtomicInteger(0);
+
+    private NetworkReceiver mNetworkReceiver;
 
     private static final class OmHolder {
         private static final OmManager INSTANCE = new OmManager();
@@ -165,6 +190,7 @@ public final class OmManager implements InitCallback {
      */
     public void init(Activity activity, InitConfiguration configuration, InitCallback callback) {
         Preconditions.checkNotNull(configuration, true);
+        InitLog initLog = new InitLog();
         if (activity != null) {
             if (ActLifecycle.getInstance().getActivity() == null) {
                 ActLifecycle.getInstance().setActivity(activity);
@@ -173,6 +199,8 @@ public final class OmManager implements InitCallback {
         if (InitImp.isInit()) {
             if (callback != null) {
                 callback.onSuccess();
+                initLog.setEventTag(LogConstants.INIT_SUCCESS);
+                InspectorManager.getInstance().addInitLog(initLog);
             }
             //checks for preloading and scheduled tasks
             anotherInitCalledAfterInitSuccess(configuration.getAdTypes());
@@ -181,7 +209,7 @@ public final class OmManager implements InitCallback {
             pendingInit(callback);
         } else {
             pendingInit(callback);
-            InitImp.init(activity, configuration, this);
+            InitImp.init(activity, configuration, initLog, this);
         }
 
         //adds for use after initialization
@@ -321,6 +349,10 @@ public final class OmManager implements InitCallback {
 
     public void setUserId(String userId) {
         mUserId = userId;
+        SettingsLog settingsLog = new SettingsLog();
+        settingsLog.setUserId(userId);
+        settingsLog.setEventTag(LogConstants.USER_ID_CHANGE);
+        InspectorManager.getInstance().addSettingsLog(settingsLog);
     }
 
     public String getUserId() {
@@ -339,6 +371,11 @@ public final class OmManager implements InitCallback {
             return;
         }
         mTagsMap.putAll(map);
+
+        SettingsLog settingsLog = new SettingsLog();
+        settingsLog.setTags(map);
+        settingsLog.setEventTag(LogConstants.CUSTOM_TAG_CHANGE);
+        InspectorManager.getInstance().addSettingsLog(settingsLog);
     }
 
     public Map<String, Object> getCustomTags() {
@@ -392,6 +429,13 @@ public final class OmManager implements InitCallback {
             return;
         }
         mTagsMap.put(key, value);
+
+        Map<String, Object> map = new HashMap<>();
+        map.put(key, value);
+        SettingsLog settingsLog = new SettingsLog();
+        settingsLog.setTags(map);
+        settingsLog.setEventTag(LogConstants.CUSTOM_TAG_CHANGE);
+        InspectorManager.getInstance().addSettingsLog(settingsLog);
     }
 
     public void setCustomTagObjects(String key, Object[] values) {
@@ -416,6 +460,13 @@ public final class OmManager implements InitCallback {
             return;
         }
         mTagsMap.put(key, values);
+
+        Map<String, Object> map = new HashMap<>();
+        map.put(key, values);
+        SettingsLog settingsLog = new SettingsLog();
+        settingsLog.setTags(map);
+        settingsLog.setEventTag(LogConstants.CUSTOM_TAG_CHANGE);
+        InspectorManager.getInstance().addSettingsLog(settingsLog);
     }
 
     private boolean checkInvalidTagValue(Object value) {
@@ -441,6 +492,12 @@ public final class OmManager implements InitCallback {
         if (mTagsMap != null) {
             mTagsMap.remove(key);
         }
+        SettingsLog settingsLog = new SettingsLog();
+        Map<String, Object> map = new HashMap<>();
+        map.put(key, "");
+        settingsLog.setTags(map);
+        settingsLog.setEventTag(LogConstants.CUSTOM_TAG_REMOVE);
+        InspectorManager.getInstance().addSettingsLog(settingsLog);
     }
 
     public void clearCustomTags() {
@@ -448,6 +505,9 @@ public final class OmManager implements InitCallback {
             mTagsMap.clear();
         }
         mTagsMap = null;
+        SettingsLog settingsLog = new SettingsLog();
+        settingsLog.setEventTag(LogConstants.CUSTOM_TAG_CLEAR);
+        InspectorManager.getInstance().addSettingsLog(settingsLog);
     }
 
     /**
@@ -1065,22 +1125,158 @@ public final class OmManager implements InitCallback {
         }
     }
 
+    public int getInventorySize(String placementId) {
+        Placement placement = PlacementUtils.getPlacement(placementId);
+        if (placement == null) {
+            return -1;
+        }
+        AbstractInventoryAds manager = null;
+        int type = placement.getT();
+        switch (type) {
+            case CommonConstants.NATIVE:
+                manager = getNaManager(placementId);
+                break;
+            case CommonConstants.INTERSTITIAL:
+                manager = getIsManager(placementId);
+                break;
+            case CommonConstants.VIDEO:
+                manager = getRvManager(placementId);
+                break;
+            case CommonConstants.PROMOTION:
+                manager = getCpManager(placementId);
+                break;
+        }
+        if (manager == null) {
+            return -1;
+        }
+        return manager.getInventorySize();
+    }
+
+    public List<BaseInstance> getAvailableInstance(String placementId) {
+        Placement placement = PlacementUtils.getPlacement(placementId);
+        if (placement == null) {
+            return null;
+        }
+        AbstractInventoryAds manager = null;
+        int type = placement.getT();
+        switch (type) {
+            case CommonConstants.NATIVE:
+                manager = getNaManager(placementId);
+                break;
+            case CommonConstants.INTERSTITIAL:
+                manager = getIsManager(placementId);
+                break;
+            case CommonConstants.VIDEO:
+                manager = getRvManager(placementId);
+                break;
+            case CommonConstants.PROMOTION:
+                manager = getCpManager(placementId);
+                break;
+        }
+        if (manager == null) {
+            return null;
+        }
+        return manager.getAvailableInstance();
+    }
+
+    public int getIntervalTime(String placementId) {
+        Placement placement = PlacementUtils.getPlacement(placementId);
+        if (placement == null) {
+            return -1;
+        }
+        AbstractInventoryAds manager = null;
+        int type = placement.getT();
+        switch (type) {
+            case CommonConstants.NATIVE:
+                manager = getNaManager(placementId);
+                break;
+            case CommonConstants.INTERSTITIAL:
+                manager = getIsManager(placementId);
+                break;
+            case CommonConstants.VIDEO:
+                manager = getRvManager(placementId);
+                break;
+            case CommonConstants.PROMOTION:
+                manager = getCpManager(placementId);
+                break;
+        }
+        if (manager == null) {
+            return -1;
+        }
+        return manager.getIntervalTime();
+    }
+
     @Override
     public void onSuccess() {
+        unregisterNetworkReceiver();
         initManagerWithDefaultPlacementId();
         setListeners();
         checkHasLoadWhileInInitProgress();
         preloadAdWithAdType();
-        if (mInitCallbacks != null) {
-            for (InitCallback callback : mInitCallbacks) {
-                if (callback == null) {
-                    continue;
+
+        if (!mReInit.get()) {
+            if (mInitCallbacks != null) {
+                for (InitCallback callback : mInitCallbacks) {
+                    if (callback == null) {
+                        continue;
+                    }
+                    callback.onSuccess();
                 }
-                callback.onSuccess();
+                mInitCallbacks.clear();
             }
-            mInitCallbacks.clear();
         }
         startScheduleTaskWithPreloadType();
+    }
+
+    @Override
+    public void onError(Error result) {
+        if (!mReInit.get()) {
+            callbackErrorWhileLoadBeforeInit(result);
+            if (mInitCallbacks != null) {
+                for (InitCallback callback : mInitCallbacks) {
+                    if (callback == null) {
+                        AdLog.getSingleton().LogE(ErrorCode.ERROR_INIT_FAILED + " " + result);
+                        continue;
+                    }
+                    callback.onError(result);
+                }
+                mInitCallbacks.clear();
+            }
+            // TODO
+//            clearCacheListeners();
+        }
+        startReInitTask(false);
+    }
+
+    /**
+     * ReInit SDK
+     */
+    public void startReInitTask(final boolean force) {
+        if (isInit()) {
+            unregisterNetworkReceiver();
+            return;
+        }
+        if (!force && mReInitCount.get() >= MAX_INIT_COUNT) {
+            return;
+        }
+        WorkExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                registerNetworkReceiver();
+                if (!NetworkChecker.isAvailable(MediationUtil.getContext())) {
+                    DeveloperLog.d("Stop Re Init SDK: Network Unknown");
+                    return;
+                }
+                if (force) {
+                    InitImp.startReInitSDK(OmManager.this);
+                    return;
+                }
+                DeveloperLog.d("Init Error Execute Re Init SDK Delay : 3 seconds, retry count: " + mReInitCount.get());
+                mReInit.set(true);
+                mReInitCount.incrementAndGet();
+                InitImp.startReInitSDK(OmManager.this);
+            }
+        }, 3, TimeUnit.SECONDS);
     }
 
     private void setListeners() {
@@ -1153,22 +1349,6 @@ public final class OmManager implements InitCallback {
             }
             mMediationIsListeners.clear();
         }
-    }
-
-    @Override
-    public void onError(Error result) {
-        callbackErrorWhileLoadBeforeInit(result);
-        if (mInitCallbacks != null) {
-            for (InitCallback callback : mInitCallbacks) {
-                if (callback == null) {
-                    AdLog.getSingleton().LogE(ErrorCode.ERROR_INIT_FAILED + " " + result);
-                    continue;
-                }
-                callback.onError(result);
-            }
-            mInitCallbacks.clear();
-        }
-        clearCacheListeners();
     }
 
     private void clearCacheListeners() {
@@ -1675,5 +1855,45 @@ public final class OmManager implements InitCallback {
 
     public MetaData getMetaData() {
         return AdapterRepository.getInstance().getMetaData();
+    }
+
+    /**
+     * AD auto-loading
+     * @param autoCache autoCache
+     */
+    public void setAutoCache(boolean autoCache) {
+        mAutoCacheAd = autoCache;
+    }
+
+    public boolean getAutoCache() {
+        return mAutoCacheAd;
+    }
+
+    public void onNetworkChanged() {
+        DeveloperLog.d("Start Re Init SDK: Network Changed");
+        startReInitTask(true);
+    }
+
+    public synchronized void registerNetworkReceiver() {
+        try {
+            if (mNetworkReceiver != null) {
+                return;
+            }
+            mNetworkReceiver = new NetworkReceiver();
+            IntentFilter intentFilter = new IntentFilter(NetworkReceiver.ACTION);
+            MediationUtil.getContext().registerReceiver(mNetworkReceiver, intentFilter);
+        } catch (Throwable e) {
+        }
+    }
+
+    public synchronized void unregisterNetworkReceiver() {
+        try {
+            if (mNetworkReceiver == null) {
+                return;
+            }
+            MediationUtil.getContext().unregisterReceiver(mNetworkReceiver);
+            mNetworkReceiver = null;
+        } catch (Throwable e) {
+        }
     }
 }

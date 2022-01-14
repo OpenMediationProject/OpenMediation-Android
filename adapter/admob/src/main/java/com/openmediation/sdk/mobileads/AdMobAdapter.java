@@ -99,11 +99,6 @@ public class AdMobAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public boolean isAdNetworkInit() {
-        return InitState.INIT_SUCCESS == mInitState;
-    }
-
-    @Override
     public void setAgeRestricted(Context context, boolean restricted) {
         super.setAgeRestricted(context, restricted);
         int value = restricted ? MediationAdConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE : MediationAdConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE;
@@ -137,32 +132,8 @@ public class AdMobAdapter extends CustomAdsAdapter {
     // All calls to MobileAds must be on the main thread --> run all calls to initSDK in a thread.
     private synchronized void initSDK() {
         mInitState = InitState.INIT_PENDING;
-        String adMobAppKey = null;
-        try {
-            ApplicationInfo appInfo = MediationUtil.getContext().getPackageManager()
-                    .getApplicationInfo(MediationUtil.getContext().getPackageName(),
-                            PackageManager.GET_META_DATA);
-            Bundle bundle = appInfo.metaData;
-            adMobAppKey = bundle.getString("com.google.android.gms.ads.APPLICATION_ID");
-        } catch (Throwable e) {
-            AdLog.getSingleton().LogE("AdMob can't find APPLICATION_ID in manifest.xml ");
-        }
-
-        if (TextUtils.isEmpty(adMobAppKey)) {
-            adMobAppKey = mAppKey;
-        }
-
-        if (TextUtils.isEmpty(adMobAppKey)) {
-            MobileAds.initialize(MediationUtil.getContext());
-            onInitSuccess();
-        } else {
-            MobileAds.initialize(MediationUtil.getContext(), new OnInitializationCompleteListener() {
-                @Override
-                public void onInitializationComplete(InitializationStatus initializationStatus) {
-                    onInitSuccess();
-                }
-            });
-        }
+        MobileAds.initialize(MediationUtil.getContext());
+        onInitSuccess();
     }
 
     private void onInitSuccess() {
@@ -377,6 +348,15 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 if (callback != null) {
                     callback.onRewardedVideoAdEnded();
                     callback.onRewardedVideoAdClosed();
+                }
+            }
+
+            @Override
+            public void onAdClicked() {
+                super.onAdClicked();
+                AdLog.getSingleton().LogD("AdMobAdapter", "RewardedAd onAdClicked");
+                if (callback != null) {
+                    callback.onRewardedVideoAdClicked();
                 }
             }
         };
@@ -740,6 +720,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
         if (config.getAdMobNativeAd() == null) {
             return;
         }
+
         try {
             com.google.android.gms.ads.nativead.NativeAdView googleAdView =
                     new com.google.android.gms.ads.nativead.NativeAdView(adView.getContext());
@@ -784,7 +765,6 @@ public class AdMobAdapter extends CustomAdsAdapter {
             textView.setText("Ad");
             textView.setTextSize(10);
             textView.setTextColor(Color.argb(255, 45, 174, 201));
-//            googleAdView.addView(textView);
             googleAdView.setAdvertiserView(textView);
             googleAdView.setNativeAd(config.getAdMobNativeAd());
 
@@ -936,6 +916,15 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 AdLog.getSingleton().LogD("AdMobAdapter", "InterstitialAd onAdDismissedFullScreenContent");
                 if (callback != null) {
                     callback.onInterstitialAdClosed();
+                }
+            }
+
+            @Override
+            public void onAdClicked() {
+                super.onAdClicked();
+                AdLog.getSingleton().LogD("AdMobAdapter", "InterstitialAd onAdClicked");
+                if (callback != null) {
+                    callback.onInterstitialAdClicked();
                 }
             }
         };

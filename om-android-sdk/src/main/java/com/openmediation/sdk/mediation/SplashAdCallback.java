@@ -3,7 +3,7 @@
 
 package com.openmediation.sdk.mediation;
 
-public interface SplashAdCallback {
+public interface SplashAdCallback extends BidCallback {
     /**
      * called when third-party ad network ads init success
      */

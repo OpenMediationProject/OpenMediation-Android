@@ -26,9 +26,13 @@ public interface KeyConstants {
     String KEY_APP_CHANNEL = "AppChannel";
 
     String KEY_INIT_HOST = "InitHost";
+    String KEY_CACHE_AD_TYPE = "cache_ad_type";
+    String KEY_CACHE_INIT_CONFIG = "cache_init_config";
+    String KEY_CACHE_WATERFALL_CONFIG = "cache_waterfall_config";
 
     String KEY_DISPLAY_SCENE = "display_sceneName";
     String KEY_DISPLAY_ABT = "display_abt";
+    String KEY_DISPLAY_ABT_ID = "display_abt_id";
     /**
      * The accumulated value of the user ad revenue
      */
@@ -346,6 +350,8 @@ public interface KeyConstants {
 
         /*Instance Priority*/
         String KEY_INSTANCE_PRIORITY = "ii";
+
+        String KEY_GCY = "gcy";
     }
 
     /**

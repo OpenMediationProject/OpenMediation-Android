@@ -1,13 +1,13 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 29
-    buildToolsVersion "29.0.2"
+    compileSdkVersion rootProject.ext.version.compileSdkVersion
+    buildToolsVersion rootProject.ext.version.buildToolsVersion
 
 
     defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 29
+        minSdkVersion rootProject.ext.version.minSdkVersion
+        targetSdkVersion rootProject.ext.version.targetSdkVersion
         versionCode 1
         versionName rootProject.ext.adapterVersion.mintegral
     }
@@ -32,13 +32,10 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':om-android-sdk')
 
-    implementation 'com.mbridge.msdk.oversea:videojs:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mbridge.msdk.oversea:mbjscommon:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mbridge.msdk.oversea:playercommon:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mbridge.msdk.oversea:reward:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mbridge.msdk.oversea:videocommon:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mbridge.msdk.oversea:same:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mbridge.msdk.oversea:interstitialvideo:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mbridge.msdk.oversea:mbbanner:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mbridge.msdk.oversea:mbsplash:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mbridge.msdk.oversea:mbnative:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mbridge.msdk.oversea:mbbid:' + rootProject.ext.dependencies.mtg_version
 }

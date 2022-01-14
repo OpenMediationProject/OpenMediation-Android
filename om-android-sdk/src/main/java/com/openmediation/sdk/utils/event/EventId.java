@@ -24,6 +24,7 @@ public interface EventId {
     int NO_MORE_OFFERS = 112;
     int AVAILABLE_FROM_CACHE = 113;
     int LOAD_BLOCKED = 114;
+    int ADVANCE = 119;
 
 
     /****************************************/

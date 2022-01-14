@@ -17,42 +17,42 @@ android {
 }
 
 dependencies {
-  implementation 'com.openmediation:om-android-sdk:2.4.0'
+  implementation 'com.openmediation:om-android-sdk:2.6.1'
 
   // AdTiming-Adapter
-  implementation 'com.openmediation.adapters:adtiming:2.4.1'
+  implementation 'com.openmediation.adapters:adtiming:2.5.0'
   // AdMob-Adapter
-  implementation 'com.openmediation.adapters:admob:2.4.0'
+  implementation 'com.openmediation.adapters:admob:2.5.2'
   // Facebook-Adapter
-  implementation 'com.openmediation.adapters:facebook:2.4.0'
+  implementation 'com.openmediation.adapters:facebook:2.5.0'
   // Unity-Adapter
-  implementation 'com.openmediation.adapters:unity:2.4.0'
+  implementation 'com.openmediation.adapters:unity:2.5.1'
   // Vungle-Adapter
-  implementation 'com.openmediation.adapters:vungle:2.4.0'
+  implementation 'com.openmediation.adapters:vungle:2.5.0'
   // AdColony-Adapter
-  implementation 'com.openmediation.adapters:adcolony:2.4.0'
+  implementation 'com.openmediation.adapters:adcolony:2.6.0'
   // AppLovin-Adapter
-  implementation 'com.openmediation.adapters:applovin:2.4.1'
+  implementation 'com.openmediation.adapters:applovin:2.5.0'
   // MoPub-Adapter
-  implementation 'com.openmediation.adapters:mopub:2.4.0'
+  implementation 'com.openmediation.adapters:mopub:2.5.0'
   // Tapjoy-Adapter
-  implementation 'com.openmediation.adapters:tapjoy:2.4.0'
+  implementation 'com.openmediation.adapters:tapjoy:2.5.0'
   // Chartboost-Adapter
-  implementation 'com.openmediation.adapters:chartboost:2.4.0'
+  implementation 'com.openmediation.adapters:chartboost:2.5.0'
   // Mintegral-Adapter
-  implementation 'com.openmediation.adapters:mintegral:2.4.0'
+  implementation 'com.openmediation.adapters:mintegral:2.6.0'
   //TikTok-Adapter
-  implementation 'com.openmediation.adapters:tiktok:2.4.1'
+  implementation 'com.openmediation.adapters:tiktok:2.5.1'
   //IronSource-Adapter
-  implementation 'com.openmediation.adapters:ironsource:2.4.0'
+  implementation 'com.openmediation.adapters:ironsource:2.5.0'
   //Fyber-Adapter
-  implementation 'com.openmediation.adapters:fyber:2.4.0'
+  implementation 'com.openmediation.adapters:fyber:2.5.0'
   //Ogury-Adapter
-  implementation 'com.openmediation.adapters:ogury:2.4.0'
+  implementation 'com.openmediation.adapters:ogury:2.5.0'
   //Helium-Adapter
-  implementation 'com.openmediation.adapters:helium:2.4.0'
+  implementation 'com.openmediation.adapters:helium:2.5.0'
   // PubNative-Adapter
-  implementation 'com.openmediation.adapters:pubnative:2.4.0'
+  implementation 'com.openmediation.adapters:pubnative:2.5.0'
 }
 ```
 

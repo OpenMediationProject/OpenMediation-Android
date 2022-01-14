@@ -40,6 +40,7 @@ public class ImpressionData {
     private final static String KEY_REVENUE = "revenue";
     private final static String KEY_PRECISION = "precision";
     private final static String KEY_AB_GROUP = "ab_group";
+    private final static String KEY_AB_ID = "ab_id";
     private final static String KEY_LIFETIME_VALUE = "lifetime_value";
 
     private final JSONObject mJsonObject;
@@ -81,6 +82,7 @@ public class ImpressionData {
             mJsonObject.putOpt(KEY_PRECISION, TextUtils.isEmpty(precision) ? JSONObject.NULL : precision);
             String abTest = getAbTest(instance.getWfAbt());
             mJsonObject.putOpt(KEY_AB_GROUP, TextUtils.isEmpty(abTest) ? JSONObject.NULL : abTest);
+            mJsonObject.putOpt(KEY_AB_ID, instance.getWfAbtId());
             mJsonObject.putOpt(KEY_LIFETIME_VALUE, LifetimeRevenueData.getLifetimeRevenue());
         } catch (Exception e) {
             AdLog.getSingleton().LogE("ImpressionData", "Data conversion failed: " + e.getMessage());

@@ -4,9 +4,13 @@
 package com.openmediation.sdk.core.imp.nativead;
 
 
-import com.openmediation.sdk.core.AbstractInventoryAds;
+import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.core.InsManager;
 import com.openmediation.sdk.core.OmManager;
+import com.openmediation.sdk.core.imp.InventoryCacheManager;
+import com.openmediation.sdk.inspector.InspectorManager;
+import com.openmediation.sdk.inspector.LogConstants;
+import com.openmediation.sdk.inspector.logs.InventoryLog;
 import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.nativead.AdInfo;
@@ -23,7 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class NaManager extends AbstractInventoryAds implements NaManagerListener {
+public class NaManager extends InventoryCacheManager implements NaManagerListener {
 
     private int width = -1;
     private int height = -1;
@@ -94,13 +98,14 @@ public class NaManager extends AbstractInventoryAds implements NaManagerListener
             naInstance.initNa(mActRefs.get());
         } else {
             instance.setMediationState(BaseInstance.MEDIATION_STATE.INIT_FAILED);
-            onInsInitFailed(instance, new Error(ErrorCode.CODE_LOAD_UNKNOWN_INTERNAL_ERROR,
+            onInsInitFailed(instance, new Error(ErrorCode.CODE_LOAD_UNKNOWN_ERROR,
                     "current is not an native adUnit", -1));
         }
     }
 
     @Override
     protected void insLoad(BaseInstance instance, Map<String, Object> extras) {
+        super.insLoad(instance, extras);
         if (instance instanceof NaInstance) {
             NaInstance naInstance = (NaInstance) instance;
             naInstance.setNaManagerListener(this);
@@ -210,14 +215,20 @@ public class NaManager extends AbstractInventoryAds implements NaManagerListener
         isCallbackToUser = true;
         AdInfo info = getAdInfoByIns(instance);
         if (info == null) {
-            //TODO:
+            //TODO: load failed
             DeveloperLog.LogE("NativeAd load failed: AdInfo not found in InstancesMap, PlacementId: " + mPlacementId);
             AdLog.getSingleton().LogE("NativeAd load failed: AdInfo not found in InstancesMap, PlacementId: " + mPlacementId);
-            Error error = new Error(ErrorCode.CODE_LOAD_FAILED_IN_ADAPTER, ErrorCode.ERROR_NO_FILL, -1);
+            Error error = new Error(ErrorCode.CODE_LOAD_FAILED_IN_ADAPTER, ErrorCode.ERROR_NO_FILL + "AdInfo not found in InstancesMap", -1);
             mListenerWrapper.onNativeAdLoadFailed(mPlacementId, error);
         } else {
             mListenerWrapper.onNativeAdLoaded(mPlacementId, info);
             instance.setMediationState(BaseInstance.MEDIATION_STATE.SKIP);
+            
+            InventoryLog inventoryLog = new InventoryLog();
+            inventoryLog.setInstance(instance);
+            inventoryLog.setEventTag(LogConstants.INVENTORY_OUT);
+            InspectorManager.getInstance().addInventoryLog(isInventoryAdsType(), mPlacementId, inventoryLog);
+
             loadAds(OmManager.LOAD_TYPE.CLOSE);
         }
     }
@@ -232,5 +243,20 @@ public class NaManager extends AbstractInventoryAds implements NaManagerListener
             }
         }
         return null;
+    }
+
+    @Override
+    public void onBidSuccess(BaseInstance instance, BidResponse response) {
+        onInsC2SBidSuccess(instance, response);
+    }
+
+    @Override
+    public void onBidFailed(BaseInstance instance, String error) {
+        onInsC2SBidFailed(instance, error);
+    }
+
+    @Override
+    public void onAdExpired(BaseInstance instance) {
+        resetMediationStateAndNotifyLose(instance);
     }
 }

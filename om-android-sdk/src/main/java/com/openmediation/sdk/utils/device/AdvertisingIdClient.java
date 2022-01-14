@@ -18,6 +18,7 @@ import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.crash.CrashUtil;
 
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 public class AdvertisingIdClient {
 
@@ -105,7 +106,7 @@ public class AdvertisingIdClient {
                 throw new IllegalStateException();
             }
             this.retrieved = true;
-            return this.queue.take();
+            return this.queue.poll(1, TimeUnit.SECONDS);
         }
     }
 
@@ -116,6 +117,7 @@ public class AdvertisingIdClient {
             binder = pBinder;
         }
 
+        @Override
         public IBinder asBinder() {
             return binder;
         }

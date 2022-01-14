@@ -10,15 +10,16 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.inmobi.sdk.InMobiSdk;
+import com.openmediation.sdk.bid.BidConstance;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.BannerAdCallback;
+import com.openmediation.sdk.mediation.BidCallback;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Map;
@@ -40,8 +41,12 @@ public class InMobiAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public boolean isAdNetworkInit() {
-        return InMobiSingleTon.getInstance().isInit();
+    public void initBid(Context context, Map<String, Object> dataMap) {
+        super.initBid(context, dataMap);
+        if (!InMobiSingleTon.getInstance().isInit()) {
+            InMobiSingleTon.getInstance().init(MediationUtil.getContext(),
+                    String.valueOf(dataMap.get(BidConstance.BID_APP_KEY)), null);
+        }
     }
 
     @Override
@@ -52,7 +57,7 @@ public class InMobiAdapter extends CustomAdsAdapter {
             // Provide correct consent value to sdk which is obtained by User
             consentObject.put(InMobiSdk.IM_GDPR_CONSENT_AVAILABLE, consent);
             InMobiSdk.updateGDPRConsent(consentObject);
-        } catch (JSONException e) {
+        } catch (Throwable e) {
             e.printStackTrace();
         }
     }
@@ -149,15 +154,18 @@ public class InMobiAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        if (isInterstitialAdAvailable(adUnitId)) {
-            if (callback != null) {
-                callback.onInterstitialAdLoadSuccess();
+        try {
+            if (isInterstitialAdAvailable(adUnitId)) {
+                if (callback != null) {
+                    callback.onInterstitialAdLoadSuccess();
+                }
+            } else {
+                InMobiSingleTon.getInstance().loadInterstitial(adUnitId, callback, null);
             }
-        } else {
+        } catch (Throwable e) {
             if (callback != null) {
-                String error = InMobiSingleTon.getInstance().getError(adUnitId);
                 callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
             }
         }
     }
@@ -172,7 +180,7 @@ public class InMobiAdapter extends CustomAdsAdapter {
         super.showInterstitialAd(activity, adUnitId, callback);
         if (isInterstitialAdAvailable(adUnitId)) {
             InMobiSingleTon.getInstance().setInterstitialAdCallback(new InnerIsCallback(callback));
-            InMobiSingleTon.getInstance().showInterstitial(adUnitId);
+            InMobiSingleTon.getInstance().showInterstitial(adUnitId, callback);
         } else {
             if (callback != null) {
                 callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
@@ -228,13 +236,13 @@ public class InMobiAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        if (callback != null) {
-            String error = InMobiSingleTon.getInstance().getError(adUnitId);
-            if (TextUtils.isEmpty(error)) {
-                error = "No Fill";
+        try {
+            InMobiSingleTon.getInstance().loadRewardedVideo(adUnitId, callback, null);
+        } catch (Throwable e) {
+            if (callback != null) {
+                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
             }
-            callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
-                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
         }
     }
 
@@ -256,7 +264,7 @@ public class InMobiAdapter extends CustomAdsAdapter {
         }
         if (isRewardedVideoAvailable(adUnitId)) {
             InMobiSingleTon.getInstance().setVideoAdCallback(new InnerRvCallback(callback));
-            InMobiSingleTon.getInstance().showRewardedVideo(adUnitId);
+            InMobiSingleTon.getInstance().showRewardedVideo(adUnitId, callback);
         } else {
             if (callback != null) {
                 callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
@@ -267,7 +275,7 @@ public class InMobiAdapter extends CustomAdsAdapter {
 
     private class InnerIsCallback implements InMobiInterstitialCallback {
 
-        private InterstitialAdCallback mCallback;
+        private final InterstitialAdCallback mCallback;
 
         private InnerIsCallback(InterstitialAdCallback callback) {
             mCallback = callback;
@@ -302,9 +310,10 @@ public class InMobiAdapter extends CustomAdsAdapter {
             }
         }
     }
+
     private class InnerRvCallback implements InMobiVideoCallback {
 
-        private RewardedVideoCallback mCallback;
+        private final RewardedVideoCallback mCallback;
 
         private InnerRvCallback(RewardedVideoCallback callback) {
             mCallback = callback;
@@ -347,5 +356,11 @@ public class InMobiAdapter extends CustomAdsAdapter {
                 mCallback.onRewardedVideoAdEnded();
             }
         }
+    }
+
+    @Override
+    public void getBidResponse(Context context, Map<String, Object> dataMap, BidCallback callback) {
+        super.getBidResponse(context, dataMap, callback);
+        InMobiSingleTon.getInstance().getBidResponse(dataMap, callback);
     }
 }

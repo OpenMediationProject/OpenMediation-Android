@@ -55,11 +55,6 @@ public class KsAdAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public boolean isAdNetworkInit() {
-        return KsAdManagerHolder.isInit();
-    }
-
-    @Override
     public void initInterstitialAd(Activity activity, Map<String, Object> dataMap, final InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
         AdLog.getSingleton().LogD(TAG + " initInterstitialAd...");
@@ -92,7 +87,6 @@ public class KsAdAdapter extends CustomAdsAdapter {
     @Override
     public void loadInterstitialAd(Activity activity, final String adUnitId, Map<String, Object> extras, final InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, extras, callback);
-        AdLog.getSingleton().LogD(TAG + "loadInterstitialAd...");
         String error = check(adUnitId);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
@@ -115,36 +109,43 @@ public class KsAdAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        KsScene scene = new KsScene.Builder(adValue).build();
-        loadManager.loadFullScreenVideoAd(scene, new KsLoadManager.FullScreenVideoAdListener() {
+        try {
+            KsScene scene = new KsScene.Builder(adValue).build();
+            loadManager.loadFullScreenVideoAd(scene, new KsLoadManager.FullScreenVideoAdListener() {
 
-            @Override
-            public void onError(int code, String msg) {
-                if (mInterstitialAds.size() > 0) {
-                    mInterstitialAds.remove(adUnitId);
-                }
-                if (callback != null) {
-                    callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, code, msg));
-                }
-            }
-
-            @Override
-            public void onRequestResult(int i) {
-
-            }
-
-            @Override
-            public void onFullScreenVideoAdLoad(List<KsFullScreenVideoAd> adList) {
-                if (adList != null && adList.size() > 0) {
-                    AdLog.getSingleton().LogE(TAG + " 插屏加载成功.....");
-                    mInterstitialAds.put(adUnitId, adList.get(0));
+                @Override
+                public void onError(int code, String msg) {
+                    if (mInterstitialAds.size() > 0) {
+                        mInterstitialAds.remove(adUnitId);
+                    }
                     if (callback != null) {
-                        callback.onInterstitialAdLoadSuccess();
+                        callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, code, msg));
                     }
                 }
+
+                @Override
+                public void onRequestResult(int i) {
+
+                }
+
+                @Override
+                public void onFullScreenVideoAdLoad(List<KsFullScreenVideoAd> adList) {
+                    if (adList != null && adList.size() > 0) {
+                        AdLog.getSingleton().LogE(TAG + " onFullScreenVideoAdLoad.....");
+                        mInterstitialAds.put(adUnitId, adList.get(0));
+                        if (callback != null) {
+                            callback.onInterstitialAdLoadSuccess();
+                        }
+                    }
+                }
+            });
+        } catch (Throwable e) {
+            if (callback != null) {
+                callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
             }
-        });
+        }
     }
 
     @Override
@@ -159,58 +160,67 @@ public class KsAdAdapter extends CustomAdsAdapter {
             return;
         }
         if (!isInterstitialAdAvailable(adUnitId)) {
-            callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Not Ready"));
+            if (callback != null) {
+                callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Not Ready"));
+            }
             return;
         }
-        KsFullScreenVideoAd ksFullScreenVideoAd = mInterstitialAds.get(adUnitId);
-        if (ksFullScreenVideoAd != null) {
-            ksFullScreenVideoAd.setFullScreenVideoAdInteractionListener(new KsFullScreenVideoAd.FullScreenVideoAdInteractionListener() {
+        try {
+            KsFullScreenVideoAd ksFullScreenVideoAd = mInterstitialAds.get(adUnitId);
+            if (ksFullScreenVideoAd != null) {
+                ksFullScreenVideoAd.setFullScreenVideoAdInteractionListener(new KsFullScreenVideoAd.FullScreenVideoAdInteractionListener() {
 
-                @Override
-                public void onAdClicked() {
-                    AdLog.getSingleton().LogD(TAG + "ksFullScreenVideoAd onAdClicked.....");
-                    if (callback != null) {
-                        callback.onInterstitialAdClicked();
+                    @Override
+                    public void onAdClicked() {
+                        AdLog.getSingleton().LogD(TAG + "ksFullScreenVideoAd onAdClicked.....");
+                        if (callback != null) {
+                            callback.onInterstitialAdClicked();
+                        }
                     }
-                }
 
-                @Override
-                public void onPageDismiss() {
-                    AdLog.getSingleton().LogD(TAG + "ksFullScreenVideoAd onPageDismiss.....");
-                    mInterstitialAds.remove(adUnitId);
-                    if (callback != null) {
-                        callback.onInterstitialAdClosed();
+                    @Override
+                    public void onPageDismiss() {
+                        AdLog.getSingleton().LogD(TAG + "ksFullScreenVideoAd onPageDismiss.....");
+                        mInterstitialAds.remove(adUnitId);
+                        if (callback != null) {
+                            callback.onInterstitialAdClosed();
+                        }
                     }
-                }
 
-                @Override
-                public void onVideoPlayError(int code, int extra) {
-                    if (callback != null) {
-                        callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "ksFullScreenVideoAd onVideoPlayError code= " + code));
+                    @Override
+                    public void onVideoPlayError(int code, int extra) {
+                        if (callback != null) {
+                            callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "ksFullScreenVideoAd onVideoPlayError code= " + code));
+                        }
                     }
-                }
 
-                @Override
-                public void onVideoPlayEnd() {
-                    AdLog.getSingleton().LogD(TAG + "ksFullScreenVideoAd onVideoPlayEnd.....");
-                }
-
-                @Override
-                public void onVideoPlayStart() {
-                    AdLog.getSingleton().LogD(TAG + "ksFullScreenVideoAd onVideoPlayStart.....");
-                    if (callback != null) {
-                        callback.onInterstitialAdShowSuccess();
+                    @Override
+                    public void onVideoPlayEnd() {
+                        AdLog.getSingleton().LogD(TAG + "ksFullScreenVideoAd onVideoPlayEnd.....");
                     }
-                }
 
-                @Override
-                public void onSkippedVideo() {
-                    AdLog.getSingleton().LogD(TAG + "ksFullScreenVideoAd onSkippedVideo.....");
-                }
-            });
-            ksFullScreenVideoAd.showFullScreenVideoAd(activity, null);
+                    @Override
+                    public void onVideoPlayStart() {
+                        AdLog.getSingleton().LogD(TAG + "ksFullScreenVideoAd onVideoPlayStart.....");
+                        if (callback != null) {
+                            callback.onInterstitialAdShowSuccess();
+                        }
+                    }
+
+                    @Override
+                    public void onSkippedVideo() {
+                        AdLog.getSingleton().LogD(TAG + "ksFullScreenVideoAd onSkippedVideo.....");
+                    }
+                });
+                ksFullScreenVideoAd.showFullScreenVideoAd(activity, null);
+            }
+        } catch (Throwable e) {
+            if (callback != null) {
+                callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
+            }
         }
     }
 
@@ -280,36 +290,43 @@ public class KsAdAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        KsScene scene = new KsScene.Builder(adValue).build();
-        loadManager.loadRewardVideoAd(scene, new KsLoadManager.RewardVideoAdListener() {
-            @Override
-            public void onError(int code, String msg) {
-                if (callback != null) {
-                    AdLog.getSingleton().LogE(TAG + "RewardedVideo Load Error....." + msg);
-                    callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
-                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, code, msg));
-                }
-                if (mRewardedAds.size() > 0) {
-                    mRewardedAds.remove(adUnitId);
-                }
-            }
-
-            @Override
-            public void onRequestResult(int i) {
-
-            }
-
-            @Override
-            public void onRewardVideoAdLoad(List<KsRewardVideoAd> adList) {
-                if (adList != null && adList.size() > 0) {
-                    AdLog.getSingleton().LogD(TAG + "onRewardVideoAdLoad.....");
-                    mRewardedAds.put(adUnitId, adList.get(0));
+        try {
+            KsScene scene = new KsScene.Builder(adValue).build();
+            loadManager.loadRewardVideoAd(scene, new KsLoadManager.RewardVideoAdListener() {
+                @Override
+                public void onError(int code, String msg) {
                     if (callback != null) {
-                        callback.onRewardedVideoLoadSuccess();
+                        AdLog.getSingleton().LogE(TAG + "RewardedVideo Load Error....." + msg);
+                        callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, code, msg));
+                    }
+                    if (mRewardedAds.size() > 0) {
+                        mRewardedAds.remove(adUnitId);
                     }
                 }
+
+                @Override
+                public void onRequestResult(int i) {
+
+                }
+
+                @Override
+                public void onRewardVideoAdLoad(List<KsRewardVideoAd> adList) {
+                    if (adList != null && adList.size() > 0) {
+                        AdLog.getSingleton().LogD(TAG + "onRewardVideoAdLoad.....");
+                        mRewardedAds.put(adUnitId, adList.get(0));
+                        if (callback != null) {
+                            callback.onRewardedVideoLoadSuccess();
+                        }
+                    }
+                }
+            });
+        } catch (Throwable e) {
+            if (callback != null) {
+                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
             }
-        });
+        }
     }
 
     @Override
@@ -328,67 +345,79 @@ public class KsAdAdapter extends CustomAdsAdapter {
                     AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Not Ready"));
             return;
         }
-        KsRewardVideoAd rewardVideoAd = mRewardedAds.get(adUnitId);
-        if (rewardVideoAd != null) {
-            rewardVideoAd.setRewardAdInteractionListener(new KsRewardVideoAd.RewardAdInteractionListener() {
+        try {
+            KsRewardVideoAd rewardVideoAd = mRewardedAds.get(adUnitId);
+            if (rewardVideoAd != null) {
+                rewardVideoAd.setRewardAdInteractionListener(new KsRewardVideoAd.RewardAdInteractionListener() {
 
-                @Override
-                public void onAdClicked() {
-                    AdLog.getSingleton().LogD(TAG + "RewardedVideo onAdClicked.....");
-                    if (callback != null) {
-                        callback.onRewardedVideoAdClicked();
+                    @Override
+                    public void onAdClicked() {
+                        AdLog.getSingleton().LogD(TAG + "RewardedVideo onAdClicked.....");
+                        if (callback != null) {
+                            callback.onRewardedVideoAdClicked();
+                        }
                     }
-                }
 
-                @Override
-                public void onPageDismiss() {
-                    AdLog.getSingleton().LogD(TAG + "RewardedVideo onPageDismiss......");
-                    mRewardedAds.remove(adUnitId);
-                    if (callback != null) {
-                        callback.onRewardedVideoAdClosed();
+                    @Override
+                    public void onPageDismiss() {
+                        AdLog.getSingleton().LogD(TAG + "RewardedVideo onPageDismiss......");
+                        mRewardedAds.remove(adUnitId);
+                        if (callback != null) {
+                            callback.onRewardedVideoAdClosed();
+                        }
                     }
-                }
 
-                @Override
-                public void onVideoPlayError(int code, int extra) {
-                    AdLog.getSingleton().LogD(TAG + "RewardedVideo onVideoPlayError......");
-                    if (callback != null) {
-                        callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "onVideoError code = " + code));
+                    @Override
+                    public void onVideoPlayError(int code, int extra) {
+                        AdLog.getSingleton().LogD(TAG + "RewardedVideo onVideoPlayError......");
+                        if (callback != null) {
+                            callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "onVideoError code = " + code));
+                        }
                     }
-                }
 
-                @Override
-                public void onVideoPlayEnd() {
-                    AdLog.getSingleton().LogD(TAG + "RewardedVideo onVideoPlayEnd......");
-                    if (callback != null) {
-                        callback.onRewardedVideoAdEnded();
+                    @Override
+                    public void onVideoPlayEnd() {
+                        AdLog.getSingleton().LogD(TAG + "RewardedVideo onVideoPlayEnd......");
+                        if (callback != null) {
+                            callback.onRewardedVideoAdEnded();
+                        }
                     }
-                }
 
-                @Override
-                public void onVideoSkipToEnd(long l) {
+                    @Override
+                    public void onVideoSkipToEnd(long l) {
 
-                }
-
-                @Override
-                public void onVideoPlayStart() {
-                    AdLog.getSingleton().LogD(TAG + "RewardedVideo onVideoPlayStart.....");
-                    if (callback != null) {
-                        callback.onRewardedVideoAdShowSuccess();
-                        callback.onRewardedVideoAdStarted();
                     }
-                }
 
-                @Override
-                public void onRewardVerify() {
-                    AdLog.getSingleton().LogD(TAG + "RewardedVideo onRewardVerify.....");
-                    if (callback != null) {
-                        callback.onRewardedVideoAdRewarded();
+                    @Override
+                    public void onVideoPlayStart() {
+                        AdLog.getSingleton().LogD(TAG + "RewardedVideo onVideoPlayStart.....");
+                        if (callback != null) {
+                            callback.onRewardedVideoAdShowSuccess();
+                            callback.onRewardedVideoAdStarted();
+                        }
                     }
-                }
-            });
-            rewardVideoAd.showRewardVideoAd(activity, null);
+
+                    @Override
+                    public void onRewardVerify() {
+                        AdLog.getSingleton().LogD(TAG + "RewardedVideo onRewardVerify.....");
+                        if (callback != null) {
+                            callback.onRewardedVideoAdRewarded();
+                        }
+                    }
+
+                    @Override
+                    public void onRewardStepVerify(int taskType, int currentTaskStatus) {
+
+                    }
+                });
+                rewardVideoAd.showRewardVideoAd(activity, null);
+            }
+        } catch (Throwable e) {
+            if (callback != null) {
+                callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
+            }
         }
     }
 

@@ -10,6 +10,7 @@ public class InitConfiguration {
     private String mChannel;
     private boolean isLogEnable;
     private List<OmAds.AD_TYPE> mAdTypes;
+    private List<OmAds.CACHE_TYPE> mCacheAdTypes;
 
     private InitConfiguration(Builder builder) {
         mAppKey = builder.appKey;
@@ -17,6 +18,7 @@ public class InitConfiguration {
         mChannel = builder.channel;
         isLogEnable = builder.logEnable;
         mAdTypes = builder.mPreloadAdTypes;
+        mCacheAdTypes = builder.mUseCacheAdTypes;
     }
 
     public String getAppKey() {
@@ -39,12 +41,17 @@ public class InitConfiguration {
         return mAdTypes;
     }
 
+    public List<OmAds.CACHE_TYPE> getCacheAdTypes() {
+        return mCacheAdTypes;
+    }
+
     public static class Builder {
         private String appKey;
         private String initHost;
         private String channel;
         private boolean logEnable;
         private List<OmAds.AD_TYPE> mPreloadAdTypes;
+        private List<OmAds.CACHE_TYPE> mUseCacheAdTypes;
 
         public Builder appKey(String appKey) {
             this.appKey = appKey;
@@ -69,6 +76,12 @@ public class InitConfiguration {
         public Builder preloadAdTypes(OmAds.AD_TYPE... adTypes) {
             this.mPreloadAdTypes = new ArrayList<>();
             this.mPreloadAdTypes.addAll(Arrays.asList(adTypes));
+            return this;
+        }
+
+        public Builder useCacheAdTypes(OmAds.CACHE_TYPE... adTypes) {
+            this.mUseCacheAdTypes = new ArrayList<>();
+            this.mUseCacheAdTypes.addAll(Arrays.asList(adTypes));
             return this;
         }
 

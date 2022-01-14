@@ -6,6 +6,7 @@ package com.openmediation.sdk.core.imp.splash;
 import android.app.Activity;
 import android.view.ViewGroup;
 
+import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.core.InsManager;
 import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.mediation.SplashAdCallback;
@@ -27,20 +28,18 @@ public class SpInstance extends BaseInstance implements SplashAdCallback {
         mListener = listener;
     }
 
-    void initSplashAd(Activity activity, Map<String, Object> extras) {
+    void initSplashAd(Activity activity) {
         if (mAdapter != null) {
-            mAdapter.initSplashAd(activity, extras, this);
-            InsManager.onInsInitStart(this);
+            mAdapter.initSplashAd(activity, InsManager.getInitDataMap(this), this);
         }
     }
 
     void loadSplashAd(Activity activity, Map<String, Object> extras) {
         if (mAdapter == null) {
-            DeveloperLog.LogE("load SplashAd Error: " + getMediationId() + " key : " + getKey());
+            DeveloperLog.LogE("Load SplashAd Error: " + getMediationId() + " key : " + getKey());
             return;
         }
-        DeveloperLog.LogD("load PromotionAd : " + getMediationId() + " key : " + getKey());
-        mLoadStart = System.currentTimeMillis();
+        DeveloperLog.LogD(TAG, "Load SplashAd : " + getMediationId() + " key : " + getKey());
         mAdapter.loadSplashAd(activity, getKey(), extras, this);
     }
 
@@ -52,8 +51,8 @@ public class SpInstance extends BaseInstance implements SplashAdCallback {
     }
 
     boolean isSplashAdAvailable() {
-        return mAdapter != null && getMediationState() == MEDIATION_STATE.AVAILABLE
-                && mAdapter.isSplashAdAvailable(getKey());
+        return getMediationState() == MEDIATION_STATE.AVAILABLE &&
+                mAdapter != null && mAdapter.isSplashAdAvailable(getKey());
     }
 
     void destroySplashAd() {
@@ -96,7 +95,7 @@ public class SpInstance extends BaseInstance implements SplashAdCallback {
 
     @Override
     public void onSplashAdShowFailed(AdapterError error) {
-        DeveloperLog.LogE(TAG + "SplashAdShowFailed: " + error);
+        DeveloperLog.LogE(TAG + "SplashAd ShowFailed: " + error);
         mListener.onSplashAdShowFailed(this, error);
     }
 
@@ -116,4 +115,13 @@ public class SpInstance extends BaseInstance implements SplashAdCallback {
         mListener.onSplashAdDismissed(this);
     }
 
+    @Override
+    public void onBidSuccess(BidResponse response) {
+        mListener.onBidSuccess(this, response);
+    }
+
+    @Override
+    public void onBidFailed(String error) {
+        mListener.onBidFailed(this, error);
+    }
 }

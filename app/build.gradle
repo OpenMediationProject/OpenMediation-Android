@@ -7,8 +7,8 @@ android {
 
     defaultConfig {
         applicationId "com.openmediation.sdk.demo"
-        minSdkVersion 19
-        targetSdkVersion 28
+        minSdkVersion 21
+        targetSdkVersion rootProject.ext.version.targetSdkVersion
         versionCode 1
         versionName "1.0"
         multiDexEnabled true
@@ -32,145 +32,156 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    //fb
-    implementation(rootProject.ext.dependencies.facebook) {
-        exclude group: 'com.google.android.gms', module: 'play-services-ads'
-    }
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7'
+    implementation 'androidx.appcompat:appcompat:1.3.0'
+    implementation 'androidx.recyclerview:recyclerview:1.2.1'
+
+    // OM-SDK
+    implementation project(path: ':om-android-sdk')
+
+    //AdTiming
+    implementation rootProject.ext.dependencies.adtiming
+    implementation project(path: ':adapter:adtiming')
+
     //admob
     implementation rootProject.ext.dependencies.admob
     implementation rootProject.ext.dependencies.admob_facebook_adapter
+    implementation project(path: ':adapter:admob')
+
+    //Facebook
+    implementation rootProject.ext.dependencies.facebook
+    implementation project(path: ':adapter:facebook')
+
+    //unity
+    implementation rootProject.ext.dependencies.unity
+    implementation project(path: ':adapter:unity')
+
+    //AdColony
+    implementation rootProject.ext.dependencies.adcolony
+    implementation project(path: ':adapter:adcolony')
+
+    //Applovin
+    implementation rootProject.ext.dependencies.applovin
+    implementation project(path: ':adapter:applovin')
+
     //vungle
     implementation rootProject.ext.dependencies.vungle
     implementation rootProject.ext.dependencies.vungle_androidx
     implementation rootProject.ext.dependencies.vungle_localbroadcast
-    //AdColony
-    implementation rootProject.ext.dependencies.adcolony
-    //Applovin
-    implementation rootProject.ext.dependencies.applovin
+    implementation project(path: ':adapter:vungle')
+
     //MoPub
     implementation(rootProject.ext.dependencies.mopub) { transitive = true }
     implementation rootProject.ext.dependencies.mopub_volley
+    implementation project(path: ':adapter:mopub')
+
     //TapJoy
     implementation rootProject.ext.dependencies.tapjoy
     implementation rootProject.ext.dependencies.play_service_base
     implementation rootProject.ext.dependencies.play_service_ads_identifier
-    //chartboost
+    implementation project(path: ':adapter:tapjoy')
+
+    //Chartboost
     implementation rootProject.ext.dependencies.chartboost
     implementation rootProject.ext.dependencies.play_service_base
     implementation rootProject.ext.dependencies.play_service_ads_identifier
-    //unity
-    implementation rootProject.ext.dependencies.unity
-    //ironsource
-    implementation rootProject.ext.dependencies.ironsource
+    implementation project(path: ':adapter:chartboost')
 
-    // AdTiming
-    implementation rootProject.ext.dependencies.adtiming
     // Mintegral
-    implementation project(path: ':adapter:mintegral')
-    implementation 'com.mbridge.msdk.oversea:videojs:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mbridge.msdk.oversea:mbjscommon:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mbridge.msdk.oversea:playercommon:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mbridge.msdk.oversea:reward:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mbridge.msdk.oversea:videocommon:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mbridge.msdk.oversea:same:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mbridge.msdk.oversea:interstitialvideo:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mbridge.msdk.oversea:mbbanner:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mbridge.msdk.oversea:mbsplash:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mbridge.msdk.oversea:mbnative:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mbridge.msdk.oversea:mbbid:' + rootProject.ext.dependencies.mtg_version
+    implementation project(path: ':adapter:mintegral')
 
     // ironSource
     implementation rootProject.ext.dependencies.ironsource
     implementation rootProject.ext.dependencies.play_service_ads_identifier
     implementation 'com.google.android.gms:play-services-basement:17.6.0'
+    implementation project(path: ':adapter:ironsource')
 
     // Fyber
     implementation "com.fyber.vamp:core-sdk:${rootProject.ext.dependencies.fyber}"
     implementation "com.fyber.vamp:video-kit:${rootProject.ext.dependencies.fyber}"
     implementation "com.fyber.vamp:mraid-kit:${rootProject.ext.dependencies.fyber}"
+    implementation project(path: ':adapter:fyber')
 
-    // Helium
+    // Chartboost helium
     implementation rootProject.ext.dependencies.helium
     implementation rootProject.ext.dependencies.helium_facebook_adapter
     implementation rootProject.ext.dependencies.eventbus
-    implementation rootProject.ext.dependencies.play_service_base
-    implementation rootProject.ext.dependencies.play_service_ads_identifier
-
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'androidx.recyclerview:recyclerview:1.1.0'
-    implementation project(path: ':adapter:admob')
-    implementation project(path: ':adapter:adtiming')
-    implementation project(path: ':adapter:unity')
-    implementation project(path: ':adapter:vungle')
-    implementation project(path: ':om-android-sdk')
-    implementation project(path: ':adapter:mopub')
-    implementation project(path: ':adapter:adcolony')
-    implementation project(path: ':adapter:applovin')
-    implementation project(path: ':adapter:facebook')
-    implementation project(path: ':adapter:chartboost')
     implementation project(path: ':adapter:helium')
-    implementation project(path: ':adapter:tapjoy')
 
+    // Pangle
     implementation rootProject.ext.dependencies.pangle
     implementation rootProject.ext.dependencies.play_service_ads_identifier
     implementation project(path: ':adapter:tiktok')
-    implementation project(path: ':adapter:ironsource')
-    implementation project(path: ':adapter:fyber')
 
+    // Ogury
     implementation rootProject.ext.dependencies.ogury
     implementation project(path: ':adapter:ogury')
 
+    // PubNative
     implementation rootProject.ext.dependencies.pubnative
     implementation project(path: ':adapter:pubnative')
 
-    implementation rootProject.ext.dependencies.appsflyer
-
-    // 国内版
-    // OAID
-    implementation project(path: ':miit_mdid_1.0.10')
-    // TikTok
-//    implementation(name: 'open_ad_sdk_3.9.0.0', ext: 'aar')
-//    implementation project(path: ':adapter_cn:tiktok_cn')
-
-    // TencentAds
-    implementation rootProject.ext.dependencies.tencentad
-    implementation project(path: ':adapter_cn:tencentad_cn')
-
-    // Mintegral
-//    implementation 'com.mbridge.msdk.china:videojs:' + rootProject.ext.dependencies.mtg_china_version
-//    implementation 'com.mbridge.msdk.china:mbjscommon:' + rootProject.ext.dependencies.mtg_china_version
-//    implementation 'com.mbridge.msdk.china:playercommon:' + rootProject.ext.dependencies.mtg_china_version
-//    implementation 'com.mbridge.msdk.china:reward:' + rootProject.ext.dependencies.mtg_china_version
-//    implementation 'com.mbridge.msdk.china:videocommon:' + rootProject.ext.dependencies.mtg_china_version
-//    implementation 'com.mbridge.msdk.china:chinasame:' + rootProject.ext.dependencies.mtg_china_version
-//    implementation 'com.mbridge.msdk.china:interstitialvideo:' + rootProject.ext.dependencies.mtg_china_version
-//    implementation 'com.mbridge.msdk.china:mbbanner:' + rootProject.ext.dependencies.mtg_china_version
-//    implementation 'com.mbridge.msdk.china:mbbid:' + rootProject.ext.dependencies.mtg_china_version
-//    implementation project(path: ':adapter_cn:mintegral_cn')
-
-    // Sigmob
-    implementation(name: 'windAd-3.3.3', ext: 'aar')
-    implementation project(path: ':adapter_cn:sigmob_cn')
-    // 快手
-    implementation(name: 'kssdk-ad--3.3.13', ext: 'aar')
-    implementation project(path: ':adapter_cn:ksad_cn')
-
+    // AdMost
     implementation rootProject.ext.dependencies.admost
     implementation rootProject.ext.dependencies.admost_volley
     implementation rootProject.ext.dependencies.play_service_base
     implementation rootProject.ext.dependencies.admost_facebook_adapter
-    implementation rootProject.ext.dependencies.admost_s2sbidding_adapter
     implementation rootProject.ext.dependencies.admost_recyclerview
     implementation rootProject.ext.dependencies.admost_annotation
     implementation project(path: ':adapter:admost')
+
+    // FlatAds
+    implementation rootProject.ext.dependencies.flatads
+    implementation project(path: ':adapter:flatads')
 
     // InMobi
     implementation rootProject.ext.dependencies.inmobi
     implementation 'androidx.browser:browser:1.3.0'
     implementation project(path: ':adapter:inmobi')
 
-    // FlatAds
-    implementation rootProject.ext.dependencies.flatads
-    implementation project(path: ':adapter:flatads')
+    // 茄子快传 SAN Ads
+    implementation rootProject.ext.dependencies.sanads
+    implementation rootProject.ext.dependencies.okhttp
+    implementation project(path: ':adapter:sanads')
+
+    // 国内版
+    // Pangle
+//    implementation rootProject.ext.dependencies.pangle_cn
+//    implementation project(path: ':adapter_cn:tiktok_cn')
+
+    // TencentAd
+    implementation rootProject.ext.dependencies.tencentad
+    implementation project(path: ':adapter_cn:tencentad_cn')
+
+    // Mintegral_CN
+//    implementation 'com.mbridge.msdk.china:reward:' + rootProject.ext.dependencies.mtg_china_version
+//    implementation 'com.mbridge.msdk.china:interstitialvideo:' + rootProject.ext.dependencies.mtg_china_version
+//    implementation 'com.mbridge.msdk.china:mbbanner:' + rootProject.ext.dependencies.mtg_china_version
+//    implementation 'com.mbridge.msdk.china:mbsplash:' + rootProject.ext.dependencies.mtg_china_version
+//    implementation 'com.mbridge.msdk.china:mbnative:' + rootProject.ext.dependencies.mtg_china_version
+//    implementation 'com.mbridge.msdk.china:mbbid:' + rootProject.ext.dependencies.mtg_china_version
+//    implementation project(path: ':adapter_cn:mintegral_cn')
+
+    // Sigmob
+    implementation(name: 'sigmob-3.5.3', ext: 'aar')
+    implementation project(path: ':adapter_cn:sigmob_cn')
+
+    // 快手
+    implementation(name: 'kssdk-ad-3.3.19', ext: 'aar')
+    implementation project(path: ':adapter_cn:ksad_cn')
+
+    // AppsFlyer
+    implementation rootProject.ext.dependencies.appsflyer
+    // Firebase
     implementation 'com.google.firebase:firebase-analytics:19.0.0'
+    // OAID
+    implementation project(path: ':miit_mdid_1.0.10')
 }
 
 repositories {

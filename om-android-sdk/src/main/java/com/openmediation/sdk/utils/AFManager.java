@@ -24,7 +24,7 @@ public class AFManager {
         try {
             return com.appsflyer.AppsFlyerLib.getInstance().getAppsFlyerUID(context);
         } catch (Throwable e) {
-            DeveloperLog.LogE("getAppsFlyerUID error: " + e.getMessage());
+            DeveloperLog.LogD("getAppsFlyerUID error: " + e.getMessage());
         }
         return null;
     }

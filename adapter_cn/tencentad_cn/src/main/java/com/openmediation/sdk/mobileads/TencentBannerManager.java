@@ -49,12 +49,19 @@ public class TencentBannerManager {
     }
 
     public void loadAd(Activity activity, String adUnitId, Map<String, Object> extras, BannerAdCallback callback) {
-        InnerBannerAdListener listener = new InnerBannerAdListener(adUnitId, callback);
-        UnifiedBannerView mBannerView = new UnifiedBannerView(activity, adUnitId, listener);
-        // Disable Auto Refresh
-        mBannerView.setRefresh(0);
-        listener.setBannerView(mBannerView);
-        mBannerView.loadAD();
+        try {
+            InnerBannerAdListener listener = new InnerBannerAdListener(adUnitId, callback);
+            UnifiedBannerView mBannerView = new UnifiedBannerView(activity, adUnitId, listener);
+            // Disable Auto Refresh
+            mBannerView.setRefresh(0);
+            listener.setBannerView(mBannerView);
+            mBannerView.loadAD();
+        } catch (Throwable e) {
+            if (callback != null) {
+                callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, "TencentAdAdapter","Unknown Error, " + e.getMessage()));
+            }
+        }
     }
 
     public boolean isAdAvailable(String adUnitId) {
@@ -62,12 +69,15 @@ public class TencentBannerManager {
     }
 
     public void destroyAd(String adUnitId) {
-        if (!TextUtils.isEmpty(adUnitId) && mBannerViews.containsKey(adUnitId)) {
-            UnifiedBannerView bannerView = mBannerViews.remove(adUnitId);
-            if (bannerView != null) {
-                bannerView.destroy();
-                bannerView = null;
+        try {
+            if (!TextUtils.isEmpty(adUnitId) && mBannerViews.containsKey(adUnitId)) {
+                UnifiedBannerView bannerView = mBannerViews.remove(adUnitId);
+                if (bannerView != null) {
+                    bannerView.destroy();
+                    bannerView = null;
+                }
             }
+        } catch (Throwable ignored) {
         }
     }
 

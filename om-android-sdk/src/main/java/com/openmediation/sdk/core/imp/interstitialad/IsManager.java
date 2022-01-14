@@ -3,8 +3,9 @@
 
 package com.openmediation.sdk.core.imp.interstitialad;
 
-import com.openmediation.sdk.core.AbstractInventoryAds;
+import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.core.OmManager;
+import com.openmediation.sdk.core.imp.InventoryCacheManager;
 import com.openmediation.sdk.interstitial.InterstitialAdListener;
 import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.mediation.MediationInterstitialListener;
@@ -15,7 +16,7 @@ import com.openmediation.sdk.utils.model.PlacementInfo;
 
 import java.util.Map;
 
-public final class IsManager extends AbstractInventoryAds implements IsManagerListener {
+public final class IsManager extends InventoryCacheManager implements IsManagerListener {
 
     public IsManager() {
         super();
@@ -64,7 +65,7 @@ public final class IsManager extends AbstractInventoryAds implements IsManagerLi
         super.initInsAndSendEvent(instance);
         if (!(instance instanceof IsInstance)) {
             instance.setMediationState(BaseInstance.MEDIATION_STATE.INIT_FAILED);
-            onInsInitFailed(instance, new Error(ErrorCode.CODE_LOAD_UNKNOWN_INTERNAL_ERROR,
+            onInsInitFailed(instance, new Error(ErrorCode.CODE_LOAD_UNKNOWN_ERROR,
                     "current is not an interstitial adUnit", -1));
             return;
         }
@@ -88,6 +89,7 @@ public final class IsManager extends AbstractInventoryAds implements IsManagerLi
 
     @Override
     protected void insLoad(BaseInstance instance, Map<String, Object> extras) {
+        super.insLoad(instance, extras);
         IsInstance isInstance = (IsInstance) instance;
         isInstance.loadIs(mActRefs.get(), extras);
     }
@@ -184,5 +186,20 @@ public final class IsManager extends AbstractInventoryAds implements IsManagerLi
     @Override
     public void onInterstitialAdLoadFailed(IsInstance isInstance, AdapterError error) {
         onInsLoadFailed(isInstance, error, false);
+    }
+
+    @Override
+    public void onBidSuccess(BaseInstance instance, BidResponse response) {
+        onInsC2SBidSuccess(instance, response);
+    }
+
+    @Override
+    public void onBidFailed(BaseInstance instance, String error) {
+        onInsC2SBidFailed(instance, error);
+    }
+
+    @Override
+    public void onAdExpired(BaseInstance instance) {
+        resetMediationStateAndNotifyLose(instance);
     }
 }

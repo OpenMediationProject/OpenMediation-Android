@@ -9,6 +9,7 @@ include ':adapter:applovin', ':adapter:chartboost', ':adapter:adcolony', ':adapt
         ':adapter_cn:ksad_cn',
         ':adapter:ogury',
         ':adapter:pubnative',
+        ':adapter:sanads',
 rootProject.name = 'AdTiming-OpenMediation-Android'
 include ':adapter:admost'
 include ':adapter:flatads'

@@ -61,6 +61,7 @@ public class MainActivity extends Activity {
     private AdInfo mAdInfo;
 
     private ImpressionDataListener mDataListener;
+    private PromotionAdListener mPromotionAdListener;
 
     private final NativeAdListener mNativeAdListener = new NativeAdListener() {
         @Override
@@ -260,7 +261,7 @@ public class MainActivity extends Activity {
     }
 
     private void setPromotionListener() {
-        PromotionAd.setAdListener(new PromotionAdListener() {
+        mPromotionAdListener = new PromotionAdListener() {
             @Override
             public void onPromotionAdAvailabilityChanged(boolean available) {
                 if (available) {
@@ -288,7 +289,8 @@ public class MainActivity extends Activity {
             public void onPromotionAdClicked(Scene scene) {
                 NewApiUtils.printLog("onPromotionAdClicked " + scene);
             }
-        });
+        };
+        PromotionAd.addAdListener(mPromotionAdListener);
     }
 
     public void showRewardVideo(View view) {
@@ -320,39 +322,40 @@ public class MainActivity extends Activity {
     public void loadAndShowBanner(View view) {
         bannerButton.setEnabled(false);
         bannerButton.setText("Banner Ad Loading...");
-        if (bannerAd == null) {
-            bannerAd = new BannerAd(NewApiUtils.P_BANNER, new BannerAdListener() {
-                @Override
-                public void onBannerAdLoaded(String placementId, View view) {
-                    try {
-                        if (null != view.getParent()) {
-                            ((ViewGroup) view.getParent()).removeView(view);
-                        }
-                        adContainer.removeAllViews();
-                        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
-                                RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-                        layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
-                        adContainer.addView(view, layoutParams);
-                    } catch (Exception e) {
-                        Log.e("AdtDebug", e.getLocalizedMessage());
-                    }
-                    bannerButton.setEnabled(true);
-                    bannerButton.setText("Load And Show Banner Ad");
-                }
-
-                @Override
-                public void onBannerAdLoadFailed(String placementId, Error error) {
-                    bannerButton.setEnabled(true);
-                    bannerButton.setText("Banner Load Failed, Try Again");
-                }
-
-                @Override
-                public void onBannerAdClicked(String placementId) {
-
-                }
-
-            });
+        if (bannerAd != null) {
+            bannerAd.destroy();
         }
+        bannerAd = new BannerAd(NewApiUtils.P_BANNER, new BannerAdListener() {
+            @Override
+            public void onBannerAdLoaded(String placementId, View view) {
+                try {
+                    if (null != view.getParent()) {
+                        ((ViewGroup) view.getParent()).removeView(view);
+                    }
+                    adContainer.removeAllViews();
+                    RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
+                            RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+                    layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+                    adContainer.addView(view, layoutParams);
+                } catch (Exception e) {
+                    Log.e("AdtDebug", e.getLocalizedMessage());
+                }
+                bannerButton.setEnabled(true);
+                bannerButton.setText("Load And Show Banner Ad");
+            }
+
+            @Override
+            public void onBannerAdLoadFailed(String placementId, Error error) {
+                bannerButton.setEnabled(true);
+                bannerButton.setText("Banner Load Failed, Try Again");
+            }
+
+            @Override
+            public void onBannerAdClicked(String placementId) {
+
+            }
+
+        });
         bannerAd.setAdSize(AdSize.BANNER);
         bannerAd.loadAd();
     }
@@ -453,5 +456,6 @@ public class MainActivity extends Activity {
         if (mDataListener != null) {
             OmAds.removeImpressionDataListener(mDataListener);
         }
+        PromotionAd.removeAdListener(mPromotionAdListener);
     }
 }

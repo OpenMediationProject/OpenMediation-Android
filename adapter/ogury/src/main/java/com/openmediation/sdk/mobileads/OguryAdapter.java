@@ -59,11 +59,6 @@ public class OguryAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public boolean isAdNetworkInit() {
-        return hasInit.get();
-    }
-
-    @Override
     public boolean isInterstitialAdAvailable(String adUnitId) {
         if (TextUtils.isEmpty(adUnitId)) {
             return false;
@@ -94,19 +89,25 @@ public class OguryAdapter extends CustomAdsAdapter {
     @Override
     public void loadInterstitialAd(Activity activity, final String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, extras, callback);
-        AdLog.getSingleton().LogD(TAG + "loadInterstitialAd... ");
-        String error = check(adUnitId);
-        if (!TextUtils.isEmpty(error)) {
-            if (callback != null) {
-                callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
-                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
+        try {
+            String error = check(adUnitId);
+            if (!TextUtils.isEmpty(error)) {
+                if (callback != null) {
+                    callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
+                }
+                return;
             }
-            return;
+            OguryInterstitialAd interstitialPlacement = new OguryInterstitialAd(MediationUtil.getContext(), adUnitId);
+            mInterstitialAds.put(adUnitId, interstitialPlacement);
+            interstitialPlacement.setListener(createInterstitialListener(adUnitId, callback));
+            interstitialPlacement.load();
+        } catch (Throwable e) {
+            if (callback != null) {
+                callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
+            }
         }
-        OguryInterstitialAd interstitialPlacement = new OguryInterstitialAd(MediationUtil.getContext(), adUnitId);
-        mInterstitialAds.put(adUnitId, interstitialPlacement);
-        interstitialPlacement.setListener(createInterstitialListener(adUnitId, callback));
-        interstitialPlacement.load();
     }
 
     private OguryInterstitialAdListener createInterstitialListener(final String adUnitId, final InterstitialAdCallback callback) {
@@ -172,17 +173,24 @@ public class OguryAdapter extends CustomAdsAdapter {
         if (!isInterstitialAdAvailable(adUnitId)) {
             if (callback != null) {
                 callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "ad not ready"));
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Ad Not Ready"));
             }
             return;
         }
-        OguryInterstitialAd ad = mInterstitialAds.get(adUnitId);
-        if (ad != null) {
-            ad.show();
-        } else {
+        try {
+            OguryInterstitialAd ad = mInterstitialAds.get(adUnitId);
+            if (ad != null) {
+                ad.show();
+            } else {
+                if (callback != null) {
+                    callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Ad Not Ready"));
+                }
+            }
+        } catch (Throwable e) {
             if (callback != null) {
                 callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "ad not ready"));
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
             }
         }
     }
@@ -218,19 +226,25 @@ public class OguryAdapter extends CustomAdsAdapter {
     @Override
     public void loadRewardedVideo(final Activity activity, final String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
-        AdLog.getSingleton().LogD(TAG + "loadRewardedVideo...");
-        String error = check(adUnitId);
-        if (!TextUtils.isEmpty(error)) {
-            if (callback != null) {
-                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
-                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
+        try {
+            String error = check(adUnitId);
+            if (!TextUtils.isEmpty(error)) {
+                if (callback != null) {
+                    callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
+                }
+                return;
             }
-            return;
+            OguryOptinVideoAd rewardedPlacement = new OguryOptinVideoAd(MediationUtil.getContext(), adUnitId);
+            rewardedPlacement.setListener(createRvLoadListener(adUnitId, callback));
+            mRewardedAds.put(adUnitId, rewardedPlacement);
+            rewardedPlacement.load();
+        } catch (Throwable e) {
+            if (callback != null) {
+                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
+            }
         }
-        OguryOptinVideoAd rewardedPlacement = new OguryOptinVideoAd(MediationUtil.getContext(), adUnitId);
-        rewardedPlacement.setListener(createRvLoadListener(adUnitId, callback));
-        mRewardedAds.put(adUnitId, rewardedPlacement);
-        rewardedPlacement.load();
     }
 
     private synchronized void initSdk() {
@@ -259,13 +273,20 @@ public class OguryAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        OguryOptinVideoAd ad = mRewardedAds.get(adUnitId);
-        if (ad != null) {
-            ad.show();
-        } else {
+        try {
+            OguryOptinVideoAd ad = mRewardedAds.get(adUnitId);
+            if (ad != null) {
+                ad.show();
+            } else {
+                if (callback != null) {
+                    callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Ad Not Ready"));
+                }
+            }
+        } catch (Throwable e) {
             if (callback != null) {
                 callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Not Ready"));
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
             }
         }
     }

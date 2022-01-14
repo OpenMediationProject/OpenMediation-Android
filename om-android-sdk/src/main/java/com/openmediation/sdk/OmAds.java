@@ -8,6 +8,7 @@ import android.app.Activity;
 import com.openmediation.sdk.core.OmManager;
 import com.openmediation.sdk.utils.AFManager;
 import com.openmediation.sdk.utils.AdLog;
+import com.openmediation.sdk.utils.constant.CommonConstants;
 
 import java.util.Map;
 
@@ -223,6 +224,15 @@ public abstract class OmAds {
     }
 
     /**
+     * auto load inventory ad
+     * default true
+     * @param autoCache autoCache
+     */
+    public static void setAutoCache(boolean autoCache) {
+        OmManager.getInstance().setAutoCache(autoCache);
+    }
+
+    /**
      * According to the CCPA
      * true : If the user has opted out of "sale" of personal information
      * false : If "sale" of personal information is permitted
@@ -330,5 +340,33 @@ public abstract class OmAds {
             return this.mValue;
         }
 
+    }
+
+    /**
+     * SDK supported cache Ad types
+     */
+    public enum CACHE_TYPE {
+        /*Ad type Banner*/
+        BANNER(CommonConstants.BANNER),
+        /*Ad type Native*/
+        NATIVE(CommonConstants.NATIVE),
+        /*Ad type Rewarded_Video*/
+        REWARDED_VIDEO(CommonConstants.VIDEO),
+        /*Ad type Interstitial*/
+        INTERSTITIAL(CommonConstants.INTERSTITIAL),
+        /*Ad type Splash*/
+        SPLASH(CommonConstants.SPLASH),
+        /*Ad type CrossPromotion*/
+        CROSS_PROMOTION(CommonConstants.PROMOTION);
+
+        private int mValue;
+
+        CACHE_TYPE(int value) {
+            this.mValue = value;
+        }
+
+        public int getType() {
+            return mValue;
+        }
     }
 }

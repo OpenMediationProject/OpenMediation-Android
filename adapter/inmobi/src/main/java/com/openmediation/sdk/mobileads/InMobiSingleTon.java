@@ -19,7 +19,16 @@ import com.inmobi.ads.listeners.BannerAdEventListener;
 import com.inmobi.ads.listeners.InterstitialAdEventListener;
 import com.inmobi.sdk.InMobiSdk;
 import com.inmobi.sdk.SdkInitializationListener;
+import com.openmediation.sdk.banner.AdSize;
+import com.openmediation.sdk.bid.BidConstance;
+import com.openmediation.sdk.bid.BidResponse;
+import com.openmediation.sdk.mediation.AdapterError;
+import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.BannerAdCallback;
+import com.openmediation.sdk.mediation.BidCallback;
+import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationUtil;
+import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.openmediation.sdk.utils.AdLog;
 
 import java.util.List;
@@ -30,9 +39,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class InMobiSingleTon {
     private static final String TAG = "InMobiSingleTon";
-    private static final String DESC_LEADERBOARD = "LEADERBOARD";
-    private static final String DESC_RECTANGLE = "RECTANGLE";
-    private static final String DESC_SMART = "SMART";
 
     enum InitState {
         /**
@@ -51,8 +57,6 @@ public class InMobiSingleTon {
 
     private volatile InitState mInitState = InitState.NOT_INIT;
     private final List<InMobiInitCallback> mInitCallbacks = new CopyOnWriteArrayList<>();
-    private final ConcurrentMap<String, InMobiBidCallback> mBidCallbacks;
-    private final ConcurrentMap<String, String> mBidError;
 
     private final ConcurrentMap<String, InMobiInterstitial> mRvAds;
     private final ConcurrentMap<String, InMobiInterstitial> mIsAds;
@@ -72,8 +76,6 @@ public class InMobiSingleTon {
         mIsAds = new ConcurrentHashMap<>();
         mBnAds = new ConcurrentHashMap<>();
         mBnViewAds = new ConcurrentHashMap<>();
-        mBidCallbacks = new ConcurrentHashMap<>();
-        mBidError = new ConcurrentHashMap<>();
         mBannerCallbacks = new ConcurrentHashMap<>();
     }
 
@@ -128,7 +130,7 @@ public class InMobiSingleTon {
                     mInitCallbacks.clear();
                 }
             });
-        } catch (Exception e) {
+        } catch (Throwable e) {
             mInitState = InitState.NOT_INIT;
             AdLog.getSingleton().LogE("OM-InMobi", e.getMessage());
             for (InMobiInitCallback callback : mInitCallbacks) {
@@ -144,6 +146,66 @@ public class InMobiSingleTon {
         return mInitState == InitState.INIT_SUCCESS;
     }
 
+    public void getBidResponse(Map<String, Object> dataMap, BidCallback callback) {
+        if (isInit()) {
+            executeBid(dataMap, callback);
+            return;
+        }
+        String appKey = "";
+        if (dataMap.get(BidConstance.BID_APP_KEY) != null) {
+            appKey = String.valueOf(dataMap.get(BidConstance.BID_APP_KEY));
+        }
+        init(MediationUtil.getContext(), appKey, new InMobiInitCallback() {
+            @Override
+            public void initSuccess() {
+                executeBid(dataMap, callback);
+            }
+
+            @Override
+            public void initFailed(String error) {
+                if (callback != null) {
+                    callback.onBidFailed("InMobi SDK init error: " + error);
+                }
+            }
+        });
+    }
+
+    /**
+     * execute c2s bid
+     *
+     * @param dataMap PlacementId
+     * @param dataMap BidCallback
+     */
+    void executeBid(Map<String, Object> dataMap, BidCallback callback) {
+        try {
+            int adType = (int) dataMap.get(BidConstance.BID_AD_TYPE);
+            String adUnitId = (String) dataMap.get(BidConstance.BID_PLACEMENT_ID);
+            if (adType == BidConstance.INTERSTITIAL) {
+                loadInterstitial(adUnitId, null, callback);
+            } else if (adType == BidConstance.VIDEO) {
+                loadRewardedVideo(adUnitId, null, callback);
+            } else if (adType == BidConstance.BANNER) {
+                AdSize adSize = (AdSize) dataMap.get(BidConstance.BID_BANNER_SIZE);
+                int[] size;
+                if (adSize == null) {
+                    size = new int[]{320, 50};
+                } else {
+                    String bannerDesc = adSize.getDescription();
+                    size = getAdSize(bannerDesc);
+                }
+                loadBanner(adUnitId, size, null, callback);
+            } else {
+                if (callback != null) {
+                    callback.onBidFailed("unSupport bid type");
+                }
+            }
+        } catch (Throwable e) {
+            if (callback != null) {
+                callback.onBidFailed("Bid Failed: " + e.getMessage());
+            }
+        }
+    }
+
     void setInterstitialAdCallback(InMobiInterstitialCallback callback) {
         mInterstitialAdCallback = callback;
     }
@@ -152,32 +214,12 @@ public class InMobiSingleTon {
         mVideoAdCallback = callback;
     }
 
-    void addBidCallback(String placementId, InMobiBidCallback callback) {
-        if (!TextUtils.isEmpty(placementId) && callback != null) {
-            mBidCallbacks.put(placementId, callback);
-        }
-    }
-
-    void removeBidCallback(String placementId) {
-        if (!TextUtils.isEmpty(placementId)) {
-            mBidCallbacks.remove(placementId);
-        }
-    }
-
-    String getError(String adUnitId) {
-        if (!TextUtils.isEmpty(adUnitId)) {
-            return mBidError.get(adUnitId);
-        }
-        return "No Fill";
-    }
-
-    void loadBanner(String adUnitId, com.openmediation.sdk.banner.AdSize adSize) {
+    void loadBanner(String adUnitId, int[] size, BannerAdCallback adCallback, BidCallback bidCallback) {
         MediationUtil.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 InMobiBanner banner = new InMobiBanner(MediationUtil.getContext(), Long.parseLong(adUnitId));
-                int[] size = getAdSize(adSize);
-                BnListener listener = new BnListener(adUnitId);
+                BnListener listener = new BnListener(adUnitId, adCallback, bidCallback);
                 banner.setListener(listener);
                 banner.setBannerSize(size[0], size[1]);
                 banner.setRefreshInterval(0);
@@ -195,8 +237,12 @@ public class InMobiSingleTon {
         return mBnViewAds.get(adUnitId);
     }
 
+    InMobiBanner removeBannerAd(String adUnitId) {
+        return mBnViewAds.remove(adUnitId);
+    }
+
     boolean isBannerAdAvailable(String adUnitId) {
-       return !TextUtils.isEmpty(adUnitId) && mBnViewAds.containsKey(adUnitId);
+        return !TextUtils.isEmpty(adUnitId) && mBnViewAds.containsKey(adUnitId);
     }
 
     void destroyBanner(String adUnitId) {
@@ -207,8 +253,8 @@ public class InMobiSingleTon {
         mBnViewAds.remove(adUnitId);
     }
 
-    void loadRewardedVideo(String adUnitId) {
-        RvListener listener = new RvListener(adUnitId);
+    void loadRewardedVideo(String adUnitId, RewardedVideoCallback adCallback, BidCallback bidCallback) {
+        RvListener listener = new RvListener(adUnitId, adCallback, bidCallback);
         InMobiInterstitial interstitialAd = new InMobiInterstitial(MediationUtil.getContext(), Long.parseLong(adUnitId),
                 listener);
         interstitialAd.load();
@@ -222,20 +268,27 @@ public class InMobiSingleTon {
         return interstitialAd != null && interstitialAd.isReady();
     }
 
-    void showRewardedVideo(String adUnitId) {
+    void showRewardedVideo(String adUnitId, RewardedVideoCallback callback) {
         MediationUtil.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                InMobiInterstitial interstitialAd = mRvAds.remove(adUnitId);
-                if (interstitialAd != null) {
-                    interstitialAd.show();
+                try {
+                    InMobiInterstitial interstitialAd = mRvAds.remove(adUnitId);
+                    if (interstitialAd != null) {
+                        interstitialAd.show();
+                    }
+                } catch (Throwable e) {
+                    if (callback != null) {
+                        callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, "InMobiAdapter", "Unknown Error, " + e.getMessage()));
+                    }
                 }
             }
         });
     }
 
-    void loadInterstitial(String adUnitId) {
-        IsListener listener = new IsListener(adUnitId);
+    void loadInterstitial(String adUnitId, InterstitialAdCallback adCallback, BidCallback bidCallback) {
+        IsListener listener = new IsListener(adUnitId, adCallback, bidCallback);
         InMobiInterstitial interstitialAd = new InMobiInterstitial(MediationUtil.getContext(), Long.parseLong(adUnitId),
                 listener);
         interstitialAd.load();
@@ -249,13 +302,20 @@ public class InMobiSingleTon {
         return interstitialAd != null && interstitialAd.isReady();
     }
 
-    void showInterstitial(String adUnitId) {
+    void showInterstitial(String adUnitId, InterstitialAdCallback callback) {
         MediationUtil.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                InMobiInterstitial interstitialAd = mIsAds.remove(adUnitId);
-                if (interstitialAd != null) {
-                    interstitialAd.show();
+                try {
+                    InMobiInterstitial interstitialAd = mIsAds.remove(adUnitId);
+                    if (interstitialAd != null) {
+                        interstitialAd.show();
+                    }
+                } catch (Throwable e) {
+                    if (callback != null) {
+                        callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, "InMobiAdapter", "Unknown Error, " + e.getMessage()));
+                    }
                 }
             }
         });
@@ -274,27 +334,44 @@ public class InMobiSingleTon {
     }
 
     private class BnListener extends BannerAdEventListener {
-        private String mAdUnitId;
+        private final String mAdUnitId;
+        private final BannerAdCallback mAdCallback;
+        private final BidCallback mBidCallback;
 
-        private BnListener(String adUnitId) {
+        private BnListener(String adUnitId, BannerAdCallback adCallback, BidCallback bidCallback) {
             mAdUnitId = adUnitId;
+            mAdCallback = adCallback;
+            mBidCallback = bidCallback;
         }
 
         @Override
         public void onAdLoadSucceeded(InMobiBanner inMobiBanner, AdMetaInfo adMetaInfo) {
             super.onAdLoadSucceeded(inMobiBanner, adMetaInfo);
             AdLog.getSingleton().LogD(TAG, "InMobi Banner onAdLoaded : " + mAdUnitId);
-            if (inMobiBanner != null) {
-                mBnViewAds.put(mAdUnitId, inMobiBanner);
+            if (mAdCallback != null) {
+                onBidSuccess(adMetaInfo, mAdCallback);
+                mAdCallback.onBannerAdLoadSuccess(inMobiBanner);
             }
-            bidSuccess(mAdUnitId, adMetaInfo);
+            if (mBidCallback != null) {
+                mBnViewAds.put(mAdUnitId, inMobiBanner);
+                onBidSuccess(adMetaInfo, mBidCallback);
+            }
         }
 
         @Override
-        public void onAdLoadFailed(InMobiBanner inMobiBanner, InMobiAdRequestStatus inMobiAdRequestStatus) {
-            super.onAdLoadFailed(inMobiBanner, inMobiAdRequestStatus);
-            AdLog.getSingleton().LogE(TAG, "InMobi Banner LoadFailed : " + inMobiAdRequestStatus.getMessage());
-            bidFailed(mAdUnitId, inMobiAdRequestStatus.getMessage());
+        public void onAdLoadFailed(InMobiBanner inMobiBanner, InMobiAdRequestStatus status) {
+            super.onAdLoadFailed(inMobiBanner, status);
+            String error = "InMobi Banner LoadFailed : " + status.getMessage();
+            AdLog.getSingleton().LogE(TAG, error);
+            if (mAdCallback != null) {
+                onBidFailed(error, mAdCallback);
+                AdapterError adapterError = AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, "InMobiAdapter", error);
+                mAdCallback.onBannerAdLoadFailed(adapterError);
+            }
+            if (mBidCallback != null) {
+                onBidFailed(error, mBidCallback);
+            }
         }
 
         @Override
@@ -319,10 +396,14 @@ public class InMobiSingleTon {
     }
 
     private class IsListener extends InterstitialAdEventListener {
-        private String mAdUnitId;
+        private final String mAdUnitId;
+        private final InterstitialAdCallback mAdCallback;
+        private final BidCallback mBidCallback;
 
-        private IsListener(String adUnitId) {
+        private IsListener(String adUnitId, InterstitialAdCallback adCallback, BidCallback bidCallback) {
             mAdUnitId = adUnitId;
+            mAdCallback = adCallback;
+            mBidCallback = bidCallback;
         }
 
         @Override
@@ -330,7 +411,13 @@ public class InMobiSingleTon {
             super.onAdLoadSucceeded(inMobiInterstitial, adMetaInfo);
             AdLog.getSingleton().LogD(TAG, "InMobi InterstitialAd onAdLoadSucceeded PlacementId : " + mAdUnitId);
             mIsAds.put(mAdUnitId, inMobiInterstitial);
-            bidSuccess(mAdUnitId, adMetaInfo);
+            if (mAdCallback != null) {
+                onBidSuccess(adMetaInfo, mAdCallback);
+                mAdCallback.onInterstitialAdLoadSuccess();
+            }
+            if (mBidCallback != null) {
+                onBidSuccess(adMetaInfo, mBidCallback);
+            }
         }
 
         @Override
@@ -338,7 +425,16 @@ public class InMobiSingleTon {
             super.onAdLoadFailed(inMobiInterstitial, status);
             AdLog.getSingleton().LogE(TAG, "InMobi InterstitialAd onAdLoadFailed : " + status.getMessage());
             mIsAds.remove(mAdUnitId);
-            bidFailed(mAdUnitId, "InterstitialAd onAdLoadFailed : " + status.getMessage());
+            String error = "InterstitialAd onAdLoadFailed : " + status.getMessage();
+            if (mAdCallback != null) {
+                onBidFailed(error, mAdCallback);
+                AdapterError adapterError = AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, "InMobiAdapter", status.getMessage());
+                mAdCallback.onInterstitialAdLoadFailed(adapterError);
+            }
+            if (mBidCallback != null) {
+                onBidFailed(error, mBidCallback);
+            }
         }
 
         @Override
@@ -379,10 +475,14 @@ public class InMobiSingleTon {
     }
 
     private class RvListener extends InterstitialAdEventListener {
-        private String mAdUnitId;
+        private final String mAdUnitId;
+        private final RewardedVideoCallback mAdCallback;
+        private final BidCallback mBidCallback;
 
-        private RvListener(String adUnitId) {
+        private RvListener(String adUnitId, RewardedVideoCallback adCallback, BidCallback bidCallback) {
             mAdUnitId = adUnitId;
+            mAdCallback = adCallback;
+            mBidCallback = bidCallback;
         }
 
         @Override
@@ -390,7 +490,13 @@ public class InMobiSingleTon {
             super.onAdLoadSucceeded(inMobiInterstitial, adMetaInfo);
             AdLog.getSingleton().LogD(TAG, "InMobi RewardedVideo onAdLoadSucceeded PlacementId : " + mAdUnitId);
             mRvAds.put(mAdUnitId, inMobiInterstitial);
-            bidSuccess(mAdUnitId, adMetaInfo);
+            if (mAdCallback != null) {
+                onBidSuccess(adMetaInfo, mAdCallback);
+                mAdCallback.onRewardedVideoLoadSuccess();
+            }
+            if (mBidCallback != null) {
+                onBidSuccess(adMetaInfo, mBidCallback);
+            }
         }
 
         @Override
@@ -398,7 +504,16 @@ public class InMobiSingleTon {
             super.onAdLoadFailed(inMobiInterstitial, status);
             AdLog.getSingleton().LogE(TAG, "InMobi RewardedVideo onAdLoadFailed : " + status.getMessage());
             mRvAds.remove(mAdUnitId);
-            bidFailed(mAdUnitId, "RewardedVideo onAdLoadFailed : " + status.getMessage());
+            String error = "RewardedVideo onAdLoadFailed : " + status.getMessage();
+            if (mAdCallback != null) {
+                onBidFailed(error, mAdCallback);
+                AdapterError adapterError = AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, "InMobiAdapter", status.getMessage());
+                mAdCallback.onRewardedVideoLoadFailed(adapterError);
+            }
+            if (mBidCallback != null) {
+                onBidFailed(error, mBidCallback);
+            }
         }
 
         @Override
@@ -447,38 +562,30 @@ public class InMobiSingleTon {
         }
     }
 
-    private void bidSuccess(String adUnitId, AdMetaInfo info) {
-        if (mBidCallbacks.containsKey(adUnitId)) {
-            mBidCallbacks.get(adUnitId).onBidSuccess(adUnitId, info.getBid());
-        }
-        mBidError.remove(adUnitId);
+    private void onBidSuccess(AdMetaInfo info, BidCallback callback) {
+        BidResponse bidResponse = new BidResponse();
+        bidResponse.setPrice(info.getBid());
+        callback.onBidSuccess(bidResponse);
     }
 
-    private void bidFailed(String adUnitId, String error) {
-        if (mBidCallbacks.containsKey(adUnitId)) {
-            mBidCallbacks.get(adUnitId).onBidFailed(adUnitId, error);
-        }
-        mBidError.put(adUnitId, error);
+    private void onBidFailed(String error, BidCallback callback) {
+        callback.onBidFailed(error);
     }
 
-    private int[] getAdSize(com.openmediation.sdk.banner.AdSize adSize) {
-        if (adSize == null) {
-            return new int[] {320, 50};
-        }
-        String bannerDesc = adSize.getDescription();
-        switch (bannerDesc) {
-            case DESC_LEADERBOARD:
-                return new int[] {728, 90};
-            case DESC_RECTANGLE:
-                return new int[] {300, 250};
-            case DESC_SMART:
+    int[] getAdSize(String desc) {
+        switch (desc) {
+            case MediationUtil.DESC_LEADERBOARD:
+                return new int[]{728, 90};
+            case MediationUtil.DESC_RECTANGLE:
+                return new int[]{300, 250};
+            case MediationUtil.DESC_SMART:
                 if (MediationUtil.isLargeScreen(MediationUtil.getContext())) {
-                    return new int[] {728, 90};
+                    return new int[]{728, 90};
                 } else {
-                    return new int[] {320, 50};
+                    return new int[]{320, 50};
                 }
             default:
-                return new int[] {320, 50};
+                return new int[]{320, 50};
         }
     }
 }

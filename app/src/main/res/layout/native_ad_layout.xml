@@ -8,7 +8,7 @@
     <com.openmediation.sdk.nativead.MediaView
         android:id="@+id/ad_media"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="180dp"
         android:layout_centerHorizontal="true" />
 
     <com.openmediation.sdk.nativead.AdIconView
@@ -45,5 +45,10 @@
         android:padding="10dp"
         android:text="calltoaction"
         android:textAllCaps="false" />
+    <ImageView
+        android:id="@+id/ad_badge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ad_badge" />
 </RelativeLayout>
 

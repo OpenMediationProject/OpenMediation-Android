@@ -58,21 +58,28 @@ public class MintegralBannerManager {
     }
 
     public void loadAd(Context context, String adUnitId, Map<String, Object> extras, BannerAdCallback callback) {
-        String payload = "";
-        if (extras.containsKey(PAY_LOAD) && extras.get(PAY_LOAD) != null) {
-            payload = extras.get(PAY_LOAD).toString();
-        }
-        MBBannerView bannerView = new MBBannerView(context.getApplicationContext());
-        BannerSize adSize = getAdSize(context, extras);
-        bannerView.init(adSize, "", adUnitId);
-        bannerView.setLayoutParams(new RelativeLayout.LayoutParams(dip2px(context, adSize.getWidth()), dip2px(context, adSize.getHeight())));
-        bannerView.setRefreshTime(0);
-        InnerBannerAdListener listener = new InnerBannerAdListener(bannerView, adUnitId, callback);
-        bannerView.setBannerAdListener(listener);
-        if (TextUtils.isEmpty(payload)) {
-            bannerView.load();
-        } else {
-            bannerView.loadFromBid(payload);
+        try {
+            String payload = "";
+            if (extras.containsKey(PAY_LOAD) && extras.get(PAY_LOAD) != null) {
+                payload = extras.get(PAY_LOAD).toString();
+            }
+            MBBannerView bannerView = new MBBannerView(context.getApplicationContext());
+            BannerSize adSize = getAdSize(context, extras);
+            bannerView.init(adSize, "", adUnitId);
+            bannerView.setLayoutParams(new RelativeLayout.LayoutParams(dip2px(context, adSize.getWidth()), dip2px(context, adSize.getHeight())));
+            bannerView.setRefreshTime(0);
+            InnerBannerAdListener listener = new InnerBannerAdListener(bannerView, adUnitId, callback);
+            bannerView.setBannerAdListener(listener);
+            if (TextUtils.isEmpty(payload)) {
+                bannerView.load();
+            } else {
+                bannerView.loadFromBid(payload);
+            }
+        } catch (Throwable e) {
+            if (callback != null) {
+                callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_BANNER, "MintegralAdapter", "Unknown Error, " + e.getMessage()));
+            }
         }
     }
 

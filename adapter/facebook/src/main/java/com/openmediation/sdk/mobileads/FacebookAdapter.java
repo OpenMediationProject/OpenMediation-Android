@@ -17,6 +17,7 @@ import com.facebook.ads.AdSettings;
 import com.facebook.ads.AdSize;
 import com.facebook.ads.AdView;
 import com.facebook.ads.AudienceNetworkAds;
+import com.facebook.ads.BidderTokenProvider;
 import com.facebook.ads.BuildConfig;
 import com.facebook.ads.InterstitialAd;
 import com.facebook.ads.InterstitialAdExtendedListener;
@@ -86,8 +87,18 @@ public class FacebookAdapter extends CustomAdsAdapter {
     }
 
     @Override
-    public boolean isAdNetworkInit() {
-        return mDidInitSuccess != null && mDidInitSuccess;
+    public boolean isS2S() {
+        return true;
+    }
+
+    @Override
+    public boolean needPayload() {
+        return true;
+    }
+
+    @Override
+    public String getBiddingToken(Context context) {
+        return BidderTokenProvider.getBidderToken(MediationUtil.getContext());
     }
 
     @Override
@@ -367,7 +378,7 @@ public class FacebookAdapter extends CustomAdsAdapter {
                 config.getNativeAd().unregisterView();
                 config.getNativeAd().destroy();
             }
-        } catch (Exception ignored) {
+        } catch (Throwable ignored) {
         }
     }
 

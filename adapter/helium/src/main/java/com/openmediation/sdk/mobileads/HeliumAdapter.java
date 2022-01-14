@@ -9,7 +9,9 @@ import android.text.TextUtils;
 
 import com.chartboost.heliumsdk.HeliumSdk;
 import com.chartboost.heliumsdk.ad.HeliumAdError;
+import com.openmediation.sdk.bid.BidConstance;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.BidCallback;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
@@ -44,6 +46,18 @@ public class HeliumAdapter extends CustomAdsAdapter implements HeliumInterstitia
     @Override
     public int getAdNetworkId() {
         return MediationInfo.MEDIATION_ID_17;
+    }
+
+    @Override
+    public void initBid(Context context, Map<String, Object> dataMap) {
+        super.initBid(context, dataMap);
+        if (MediationUtil.getContext() == null) {
+            return;
+        }
+        HeliumSingleTon.InitState initState = HeliumSingleTon.getInstance().getInitState();
+        if (initState == HeliumSingleTon.InitState.NOT_INIT) {
+            HeliumSingleTon.getInstance().init(MediationUtil.getContext(), String.valueOf(dataMap.get(BidConstance.BID_APP_KEY)), null);
+        }
     }
 
     @Override
@@ -112,28 +126,26 @@ public class HeliumAdapter extends CustomAdsAdapter implements HeliumInterstitia
     }
 
     private void realLoadRvAd(String adUnitId, RewardedVideoCallback callback) {
-        String checkError = check(adUnitId);
-        if (TextUtils.isEmpty(checkError)) {
-            if (isRewardedVideoAvailable(adUnitId)) {
-                if (callback != null) {
-                    callback.onRewardedVideoLoadSuccess();
+        try {
+            String checkError = check(adUnitId);
+            if (TextUtils.isEmpty(checkError)) {
+                if (isRewardedVideoAvailable(adUnitId)) {
+                    if (callback != null) {
+                        callback.onRewardedVideoLoadSuccess();
+                    }
+                } else {
+                    HeliumSingleTon.getInstance().loadRewardedVideo(adUnitId, callback, null);
                 }
             } else {
                 if (callback != null) {
-                    HeliumAdError error = HeliumSingleTon.getInstance().getError(adUnitId);
-                    if (error != null) {
-                        callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
-                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error.code, error.message));
-                    } else {
-                        callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
-                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "No Fill"));
-                    }
+                    callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, checkError));
                 }
             }
-        } else {
+        } catch (Throwable e) {
             if (callback != null) {
-                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
-                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, checkError));
+                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
             }
         }
     }
@@ -141,22 +153,29 @@ public class HeliumAdapter extends CustomAdsAdapter implements HeliumInterstitia
     @Override
     public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
-        String checkError = check(adUnitId);
-        if (TextUtils.isEmpty(checkError)) {
-            if (isRewardedVideoAvailable(adUnitId)) {
-                if (callback != null) {
-                    mRvCallbacks.put(adUnitId, callback);
+        try {
+            String checkError = check(adUnitId);
+            if (TextUtils.isEmpty(checkError)) {
+                if (isRewardedVideoAvailable(adUnitId)) {
+                    if (callback != null) {
+                        mRvCallbacks.put(adUnitId, callback);
+                    }
+                    HeliumSingleTon.getInstance().setVideoAdCallback(this);
+                    HeliumSingleTon.getInstance().showRewardedVideo(adUnitId);
+                } else {
+                    callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Ad Not Ready"));
                 }
-                HeliumSingleTon.getInstance().setVideoAdCallback(this);
-                HeliumSingleTon.getInstance().showRewardedVideo(adUnitId);
             } else {
-                callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "ad not ready"));
+                if (callback != null) {
+                    callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, checkError));
+                }
             }
-        } else {
+        } catch (Throwable e) {
             if (callback != null) {
                 callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, checkError));
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
             }
         }
     }
@@ -206,28 +225,26 @@ public class HeliumAdapter extends CustomAdsAdapter implements HeliumInterstitia
     }
 
     private void realLoadIsAd(String adUnitId, InterstitialAdCallback callback) {
-        String checkError = check(adUnitId);
-        if (TextUtils.isEmpty(checkError)) {
-            if (isInterstitialAdAvailable(adUnitId)) {
-                if (callback != null) {
-                    callback.onInterstitialAdLoadSuccess();
+        try {
+            String checkError = check(adUnitId);
+            if (TextUtils.isEmpty(checkError)) {
+                if (isInterstitialAdAvailable(adUnitId)) {
+                    if (callback != null) {
+                        callback.onInterstitialAdLoadSuccess();
+                    }
+                } else {
+                    HeliumSingleTon.getInstance().loadInterstitial(adUnitId, callback, null);
                 }
             } else {
                 if (callback != null) {
-                    HeliumAdError error = HeliumSingleTon.getInstance().getError(adUnitId);
-                    if (error != null) {
-                        callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error.code, error.message));
-                    } else {
-                        callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                                AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "No Fill"));
-                    }
+                    callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, checkError));
                 }
             }
-        } else {
+        } catch (Throwable e) {
             if (callback != null) {
-                callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
-                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, checkError));
+                callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
             }
         }
     }
@@ -235,22 +252,29 @@ public class HeliumAdapter extends CustomAdsAdapter implements HeliumInterstitia
     @Override
     public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
-        String checkError = check(adUnitId);
-        if (TextUtils.isEmpty(checkError)) {
-            if (isInterstitialAdAvailable(adUnitId)) {
-                if (callback != null) {
-                    mIsCallbacks.put(adUnitId, callback);
+        try {
+            String checkError = check(adUnitId);
+            if (TextUtils.isEmpty(checkError)) {
+                if (isInterstitialAdAvailable(adUnitId)) {
+                    if (callback != null) {
+                        mIsCallbacks.put(adUnitId, callback);
+                    }
+                    HeliumSingleTon.getInstance().setInterstitialAdCallback(this);
+                    HeliumSingleTon.getInstance().showInterstitial(adUnitId);
+                } else {
+                    callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Ad Not Ready"));
                 }
-                HeliumSingleTon.getInstance().setInterstitialAdCallback(this);
-                HeliumSingleTon.getInstance().showInterstitial(adUnitId);
             } else {
-                callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "ad not ready"));
+                if (callback != null) {
+                    callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, checkError));
+                }
             }
-        } else {
+        } catch (Throwable e) {
             if (callback != null) {
                 callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, checkError));
+                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
             }
         }
     }
@@ -337,4 +361,45 @@ public class HeliumAdapter extends CustomAdsAdapter implements HeliumInterstitia
         }
     }
 
+    @Override
+    public void getBidResponse(Context context, final Map<String, Object> dataMap, final BidCallback callback) {
+        super.getBidResponse(context, dataMap, callback);
+        String appKey = "";
+        if (dataMap.get(BidConstance.BID_APP_KEY) != null) {
+            appKey = String.valueOf(dataMap.get(BidConstance.BID_APP_KEY));
+        }
+        HeliumSingleTon.getInstance().init(MediationUtil.getContext(), appKey, new HeliumInitCallback() {
+            @Override
+            public void initSuccess() {
+                executeBid(dataMap, callback);
+            }
+
+            @Override
+            public void initFailed(String error) {
+                if (callback != null) {
+                    callback.onBidFailed("Helium SDK init error: " + error);
+                }
+            }
+        });
+    }
+
+    private void executeBid(Map<String, Object> dataMap, BidCallback callback) {
+        try {
+            int adType = (int) dataMap.get(BidConstance.BID_AD_TYPE);
+            String adUnitId = (String) dataMap.get(BidConstance.BID_PLACEMENT_ID);
+            if (adType == BidConstance.INTERSTITIAL) {
+                HeliumSingleTon.getInstance().loadInterstitial(adUnitId, null, callback);
+            } else if (adType == BidConstance.VIDEO) {
+                HeliumSingleTon.getInstance().loadRewardedVideo(adUnitId, null, callback);
+            } else {
+                if (callback != null) {
+                    callback.onBidFailed("unSupport bid type");
+                }
+            }
+        } catch (Throwable e) {
+            if (callback != null) {
+                callback.onBidFailed("Bid Failed: " + e.getMessage());
+            }
+        }
+    }
 }

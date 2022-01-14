@@ -3,8 +3,9 @@
 
 package com.openmediation.sdk.core.imp.rewardedvideo;
 
-import com.openmediation.sdk.core.AbstractInventoryAds;
+import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.core.OmManager;
+import com.openmediation.sdk.core.imp.InventoryCacheManager;
 import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.mediation.MediationRewardVideoListener;
 import com.openmediation.sdk.utils.SceneUtil;
@@ -22,7 +23,7 @@ import java.util.Map;
 /**
  *
  */
-public final class RvManager extends AbstractInventoryAds implements RvManagerListener {
+public final class RvManager extends InventoryCacheManager implements RvManagerListener {
     private Map<String, String> mExtIds = new HashMap<>();
 
     public RvManager() {
@@ -79,7 +80,7 @@ public final class RvManager extends AbstractInventoryAds implements RvManagerLi
         super.initInsAndSendEvent(instance);
         if (!(instance instanceof RvInstance)) {
             instance.setMediationState(BaseInstance.MEDIATION_STATE.INIT_FAILED);
-            onInsInitFailed(instance, new Error(ErrorCode.CODE_LOAD_UNKNOWN_INTERNAL_ERROR,
+            onInsInitFailed(instance, new Error(ErrorCode.CODE_LOAD_UNKNOWN_ERROR,
                     "current is not an rewardedVideo adUnit", -1));
             return;
         }
@@ -103,6 +104,7 @@ public final class RvManager extends AbstractInventoryAds implements RvManagerLi
 
     @Override
     protected void insLoad(BaseInstance instance, Map<String, Object> extras) {
+        super.insLoad(instance, extras);
         RvInstance rvInstance = (RvInstance) instance;
         rvInstance.loadRv(mActRefs.get(), extras);
     }
@@ -215,5 +217,20 @@ public final class RvManager extends AbstractInventoryAds implements RvManagerLi
     public void onRewardedVideoAdClicked(RvInstance rvInstance) {
         onInsClicked(rvInstance, mScene);
         mListenerWrapper.onRewardedVideoAdClicked(mScene);
+    }
+
+    @Override
+    public void onBidSuccess(BaseInstance instance, BidResponse response) {
+        onInsC2SBidSuccess(instance, response);
+    }
+
+    @Override
+    public void onBidFailed(BaseInstance instance, String error) {
+        onInsC2SBidFailed(instance, error);
+    }
+
+    @Override
+    public void onAdExpired(BaseInstance instance) {
+        resetMediationStateAndNotifyLose(instance);
     }
 }

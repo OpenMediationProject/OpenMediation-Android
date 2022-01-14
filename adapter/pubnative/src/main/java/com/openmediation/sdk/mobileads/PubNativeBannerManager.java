@@ -10,6 +10,7 @@ import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.MediationUtil;
 
+import net.pubnative.lite.sdk.models.AdSize;
 import net.pubnative.lite.sdk.views.HyBidAdView;
 
 import java.util.Map;
@@ -47,22 +48,11 @@ public class PubNativeBannerManager {
         });
     }
 
-    public void loadAd(final String adUnitId, Map<String, Object> extras, final BannerAdCallback callback) {
+    public void loadAd(final String adUnitId, final Map<String, Object> extras, final BannerAdCallback callback) {
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
-                HyBidAdView adView = PubNativeSingleTon.getInstance().getBannerAd(adUnitId);
-                if (adView == null) {
-                    String error = PubNativeSingleTon.getInstance().getError(adUnitId);
-                    if (TextUtils.isEmpty(error)) {
-                        error = "No Fill";
-                    }
-                    if (callback != null) {
-                        callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                                AdapterErrorBuilder.AD_UNIT_BANNER, "PubNativeAdapter", error));
-                    }
-                    return;
-                }
+                PubNativeSingleTon.getInstance().removeBannerListener(adUnitId);
                 PubNativeSingleTon.getInstance().addBannerListener(adUnitId, new PubNativeBannerListener() {
                     @Override
                     public void onAdImpression(String placementId) {
@@ -78,10 +68,18 @@ public class PubNativeBannerManager {
                         }
                     }
                 });
-                adView.show();
-                if (callback != null) {
-                    callback.onBannerAdLoadSuccess(adView);
+                HyBidAdView adView = PubNativeSingleTon.getInstance().removeBannerAd(adUnitId);
+                if (adView != null) {
+                    adView.show();
+                    if (callback != null) {
+                        callback.onBannerAdLoadSuccess(adView);
+                    }
+                    return;
                 }
+
+                // load waterfall banner
+                AdSize adSize = PubNativeSingleTon.getInstance().getAdSize(MediationUtil.getBannerDesc(extras));
+                PubNativeSingleTon.getInstance().loadBanner(adUnitId, adSize, callback, null);
             }
         };
         MediationUtil.runOnUiThread(runnable);

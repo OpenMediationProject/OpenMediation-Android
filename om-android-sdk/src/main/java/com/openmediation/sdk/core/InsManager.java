@@ -1,5 +1,6 @@
 package com.openmediation.sdk.core;
 
+import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.SparseArray;
 
@@ -7,6 +8,9 @@ import com.openmediation.sdk.ImpressionManager;
 import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.core.imp.nativead.NaInstance;
 import com.openmediation.sdk.core.runnable.LoadTimeoutRunnable;
+import com.openmediation.sdk.inspector.InspectorManager;
+import com.openmediation.sdk.inspector.LogConstants;
+import com.openmediation.sdk.inspector.logs.InventoryLog;
 import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.MediationInfo;
@@ -98,6 +102,7 @@ public class InsManager {
                 JsonUtil.put(jsonObject, "cs", placement.getCs());
             }
             JsonUtil.put(jsonObject, "abt", insFields.getWfAbt());
+            JsonUtil.put(jsonObject, "abtId", insFields.getWfAbtId());
             if (insFields.getHb() == 1) {
                 JsonUtil.put(jsonObject, "bid", 1);
             }
@@ -196,6 +201,7 @@ public class InsManager {
         if (insFields == null) {
             return;
         }
+        cancelInsLoadTimer(insFields);
         insFields.setMediationState(BaseInstance.MEDIATION_STATE.INITIATED);
         JSONObject data = buildReportData(insFields);
         if (insFields.getInitStart() > 0) {
@@ -215,6 +221,7 @@ public class InsManager {
         if (insFields == null) {
             return;
         }
+        cancelInsLoadTimer(insFields);
         insFields.setMediationState(BaseInstance.MEDIATION_STATE.INIT_FAILED);
         JSONObject data = buildReportData(insFields);
         if (error != null) {
@@ -230,12 +237,24 @@ public class InsManager {
     }
 
     /**
+     * On ins load start.
+     */
+    public static void onInsLoadStart(BaseInstance insFields) {
+        if (insFields == null) {
+            return;
+        }
+        insFields.setLoadStart(System.currentTimeMillis());
+        insFields.setLoadSuccessTime(0);
+    }
+
+    /**
      * On ins load success.
      */
     public static void onInsLoadSuccess(BaseInstance insFields, boolean reload) {
         if (insFields == null) {
             return;
         }
+        insFields.setLoadSuccessTime(SystemClock.elapsedRealtime());
         insFields.setLastLoadStatus(null);
         cancelInsLoadTimer(insFields);
         insFields.setMediationState(BaseInstance.MEDIATION_STATE.AVAILABLE);
@@ -245,7 +264,10 @@ public class InsManager {
             JsonUtil.put(data, "duration", dur);
         }
         if (insFields.getHb() == 1) {
-            EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_PAYLOAD_SUCCESS, data);
+            CustomAdsAdapter adapter = insFields.getAdapter();
+            if (adapter != null && adapter.needPayload()) {
+                EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_PAYLOAD_SUCCESS, data);
+            }
         } else {
             if (reload) {
                 EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_RELOAD_SUCCESS, data);
@@ -272,7 +294,10 @@ public class InsManager {
             JsonUtil.put(data, "duration", dur);
         }
         if (insFields.getHb() == 1) {
-            EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_PAYLOAD_FAILED, data);
+            CustomAdsAdapter adapter = insFields.getAdapter();
+            if (adapter != null && adapter.needPayload()) {
+                EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_PAYLOAD_FAILED, data);
+            }
         } else {
             if (error != null && error.getMessage().contains(ErrorCode.ERROR_TIMEOUT)) {
                 EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_LOAD_TIMEOUT, data);
@@ -285,6 +310,65 @@ public class InsManager {
             }
         }
         setLoadStatus(insFields, dur, error);
+    }
+
+    /**
+     * C2S Bid Instance start bid
+     *
+     * @param bidInstance bidInstance
+     */
+    public static void onInsBidStart(BaseInstance bidInstance) {
+        if (bidInstance == null) {
+            return;
+        }
+        bidInstance.setBidState(BaseInstance.BID_STATE.BID_PENDING);
+        bidInstance.setC2SBidStart(System.currentTimeMillis());
+        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_BID_REQUEST, InsManager.buildReportData(bidInstance));
+    }
+
+    /**
+     * C2S Bid Instance bid success
+     *
+     * @param bidInstance bidInstance
+     */
+    public static void onInsBidSuccess(BaseInstance bidInstance, BidResponse response) {
+        if (bidInstance == null || response == null) {
+            DeveloperLog.LogD(" InsManager onInsBidSuccess: BidInstance = " + bidInstance + " ,BidResponse = " + response);
+            return;
+        }
+        bidInstance.setBidState(BaseInstance.BID_STATE.BID_SUCCESS);
+
+        response.setIid(bidInstance.getId());
+        bidInstance.setRevenue(response.getPrice());
+        bidInstance.setRevenuePrecision(1);
+        bidInstance.setBidResponse(response);
+        bidInstance.setObject(response.getObject());
+
+        JSONObject jsonObject = InsManager.buildReportData(bidInstance);
+        JsonUtil.put(jsonObject, "duration", (System.currentTimeMillis() - bidInstance.getC2SBidStart()) / 1000);
+        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_BID_RESPONSE, jsonObject);
+    }
+
+    /**
+     * C2S Bid Instance bid failed
+     *
+     * @param bidInstance bidInstance
+     * @param error       error reason
+     */
+    public static void onInsBidFailed(BaseInstance bidInstance, String error) {
+        if (bidInstance == null) {
+            return;
+        }
+        bidInstance.setBidState(BaseInstance.BID_STATE.BID_FAILED);
+
+        // reset BidResponse and Object
+        bidInstance.setBidResponse(null);
+        bidInstance.setObject(null);
+
+        JSONObject jsonObject = InsManager.buildReportData(bidInstance);
+        JsonUtil.put(jsonObject, "msg", error);
+        JsonUtil.put(jsonObject, "duration", (System.currentTimeMillis() - bidInstance.getC2SBidStart()) / 1000);
+        EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_BID_FAILED, jsonObject);
     }
 
     private static void setLoadStatus(BaseInstance insFields, long duration, AdapterError error) {
@@ -316,7 +400,7 @@ public class InsManager {
         EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_SHOW, buildReportDataWithScene(insFields, scene));
     }
 
-    public static void onInsClosed(BaseInstance insFields, Scene scene) {
+    public static void onInsClosed(boolean isInventoryAdsType, BaseInstance insFields, Scene scene) {
         if (insFields == null) {
             return;
         }
@@ -330,6 +414,11 @@ public class InsManager {
         }
         EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_CLOSED, data);
         insFields.setBidResponse(null);
+
+        InventoryLog inventoryLog = new InventoryLog();
+        inventoryLog.setInstance(insFields);
+        inventoryLog.setEventTag(LogConstants.INVENTORY_OUT);
+        InspectorManager.getInstance().addInventoryLog(isInventoryAdsType, insFields.getPlacementId(), inventoryLog);
     }
 
     public static void onInsClick(BaseInstance insFields, Scene scene) {
@@ -453,9 +542,6 @@ public class InsManager {
                     state == BaseInstance.MEDIATION_STATE.CAPPED ||
                     state == BaseInstance.MEDIATION_STATE.SKIP) {
                 in.setMediationState(BaseInstance.MEDIATION_STATE.NOT_AVAILABLE);
-            } else if (state == BaseInstance.MEDIATION_STATE.NOT_AVAILABLE) {
-                // TODO
-//                in.setObject(null);
             }
         }
     }
@@ -614,20 +700,37 @@ public class InsManager {
 
         list.addAll(wfInstances);
         for (BaseInstance instance : c2sInstances) {
-            int size = list.size();
-            boolean hasInsert = false;
-            for (int i = 0; i < size; i++) {
-                if (instance.getRevenue() > list.get(i).getRevenue()) {
-                    list.add(i, instance);
-                    hasInsert = true;
-                    break;
-                }
-            }
-            if (!hasInsert) {
-                list.add(instance);
-            }
+            addC2SInstance(list, instance);
         }
         return list;
+    }
+
+    private static void addC2SInstance(List<BaseInstance> list, BaseInstance instance) {
+        int size = list.size();
+        boolean hasInsert = false;
+        for (int i = 0; i < size; i++) {
+            if (instance.getRevenue() > list.get(i).getRevenue()) {
+                list.add(i, instance);
+                hasInsert = true;
+                break;
+            }
+        }
+        if (!hasInsert) {
+            list.add(instance);
+        }
+    }
+
+    public static List<BaseInstance> sort(List<BaseInstance> totalIns, BaseInstance instance) {
+        if (instance == null) {
+            return totalIns;
+        }
+        if (totalIns.isEmpty()) {
+            totalIns.add(instance);
+            return totalIns;
+        }
+        totalIns.remove(instance);
+        addC2SInstance(totalIns, instance);
+        return totalIns;
     }
 
     /**
@@ -657,6 +760,7 @@ public class InsManager {
             BaseInstance instance = getInsWithAdType(placement, insId, insMap);
             if (instance != null) {
                 instance.setWfAbt(abt);
+                instance.setWfAbtId(clInfo.optInt("abtId"));
                 instance.setMediationRule(mediationRule);
                 instance.setReqId(reqId);
                 instance.setRevenue(0);
@@ -710,12 +814,13 @@ public class InsManager {
 
         MediationRule mediationRule = WaterFallHelper.getMediationRule(clInfo);
         int abt = clInfo.optInt("abt");
+        int abtId = clInfo.optInt("abtId");
 
         boolean cacheAds = PlacementUtils.isCacheAdsType(placement.getT());
         List<BaseInstance> instancesList = new ArrayList<>();
         for (int i = 0; i < insArray.length(); i++) {
             JSONObject insObject = insArray.optJSONObject(i);
-            BaseInstance instance = getInstance(reqId, placement, insObject, insMap, mediationRule, abt);
+            BaseInstance instance = getInstance(reqId, placement, insObject, insMap, mediationRule, abt, abtId);
             if (instance != null) {
                 if (!cacheAds || instance.getMediationState() != BaseInstance.MEDIATION_STATE.AVAILABLE) {
                     instance.setBidResponse(null);
@@ -755,13 +860,14 @@ public class InsManager {
     }
 
     private static BaseInstance getInstance(String reqId, Placement placement, JSONObject insObject,
-                                            SparseArray<BaseInstance> insMap, MediationRule mediationRule, int abt) {
+                                            SparseArray<BaseInstance> insMap, MediationRule mediationRule, int abt, int abtId) {
         if (insObject != null) {
             int insId = insObject.optInt("id");
             BaseInstance ins = getInsWithAdType(placement, insId, insMap);
             if (ins != null) {
                 if (ins.getMediationState() != BaseInstance.MEDIATION_STATE.AVAILABLE) {
                     ins.setWfAbt(abt);
+                    ins.setWfAbtId(abtId);
                     ins.setMediationRule(mediationRule);
                     ins.setReqId(reqId);
                     ins.setRevenue(insObject.optDouble("r", 0d));
@@ -779,7 +885,7 @@ public class InsManager {
                                                  SparseArray<BaseInstance> insMap) {
         BaseInstance ins = insMap.get(insId);
         if (ins != null) {
-            //TODO:
+            //TODO: copy native instance
             if (placement.getT() == CommonConstants.NATIVE && ins.getMediationState() != BaseInstance.MEDIATION_STATE.AVAILABLE) {
                 BaseInstance naIns = new NaInstance();
                 naIns = ins.copy(naIns);
@@ -848,4 +954,5 @@ public class InsManager {
         }
         EventUploadManager.getInstance().uploadEvent(EventId.INSTANCE_NOT_FOUND, jsonObject);
     }
+
 }

@@ -8,6 +8,7 @@ import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.MediationUtil;
 import com.vungle.warren.AdConfig;
+import com.vungle.warren.BannerAdConfig;
 import com.vungle.warren.Banners;
 import com.vungle.warren.LoadAdCallback;
 import com.vungle.warren.PlayAdCallback;
@@ -41,7 +42,7 @@ public class VungleBannerManager {
             banner.finishAd();
         }
         InnerBannerAdListener listener = new InnerBannerAdListener(adSize, adUnitId, callback);
-        Banners.loadBanner(adUnitId, adSize, listener);
+        Banners.loadBanner(adUnitId, new BannerAdConfig(adSize), listener);
     }
 
     public boolean isAdAvailable(String adUnitId) {
@@ -73,7 +74,7 @@ public class VungleBannerManager {
                 bannerRemove.destroyAd();
             }
             InnerPlayAdCallback adCallback = new InnerPlayAdCallback(mAdCallback);
-            com.vungle.warren.VungleBanner banner = Banners.getBanner(id, mAdSize, adCallback);
+            com.vungle.warren.VungleBanner banner = Banners.getBanner(id, new BannerAdConfig(mAdSize), adCallback);
             if (banner != null) {
                 ViewGroup.LayoutParams layoutParams = banner.getLayoutParams();
                 if (layoutParams == null) {
