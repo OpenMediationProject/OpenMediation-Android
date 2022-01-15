@@ -107,7 +107,7 @@ ext {
             'adtiming'    : '2.5.0',
             'admob'       : '2.5.2',
             'facebook'    : '2.5.0',
-            'unity'       : '2.5.1',
+            'unity'       : '2.5.2',
             'vungle'      : '2.5.0',
             'adcolony'    : '2.6.0',
             'applovin'    : '2.5.0',
