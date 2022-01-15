@@ -26,7 +26,7 @@ dependencies {
   // Facebook-Adapter
   implementation 'com.openmediation.adapters:facebook:2.5.0'
   // Unity-Adapter
-  implementation 'com.openmediation.adapters:unity:2.5.1'
+  implementation 'com.openmediation.adapters:unity:2.5.2'
   // Vungle-Adapter
   implementation 'com.openmediation.adapters:vungle:2.5.0'
   // AdColony-Adapter
