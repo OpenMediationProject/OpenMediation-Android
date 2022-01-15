@@ -179,6 +179,7 @@ public class UnityAdapter extends CustomAdsAdapter {
         }
         if (isRewardedVideoAvailable(adUnitId)) {
             try {
+                mLoadedIds.remove(adUnitId);
                 UnityAds.show(activity, adUnitId, new IUnityAdsShowListener() {
                     @Override
                     public void onUnityAdsShowFailure(String placementId, UnityAds.UnityAdsShowError error, String message) {
@@ -326,6 +327,7 @@ public class UnityAdapter extends CustomAdsAdapter {
                 }
                 return;
             }
+            mLoadedIds.remove(adUnitId);
             UnityAds.show(activity, adUnitId, new IUnityAdsShowListener() {
                 @Override
                 public void onUnityAdsShowFailure(String placementId, UnityAds.UnityAdsShowError error, String message) {
