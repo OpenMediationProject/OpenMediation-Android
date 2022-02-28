@@ -271,8 +271,15 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
             return;
         }
         for (BaseInstance in : mTotalIns) {
+            if (in == null) {
+                continue;
+            }
+            if (in.getMediationState() == BaseInstance.MEDIATION_STATE.INIT_PENDING ||
+                    in.getMediationState() == BaseInstance.MEDIATION_STATE.LOAD_PENDING) {
+                continue;
+            }
             if (!isInsAvailable(in)) {
-                resetMediationStateAndNotifyLose(in);
+                resetMediationStateAndNotifyLose(in, EventId.INSTANCE_PAYLOAD_NOT_AVAILABLE);
                 continue;
             }
             setActRef();
@@ -300,7 +307,7 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
         }
         for (BaseInstance in : mTotalIns) {
             if (!isInsAvailable(in)) {
-                resetMediationStateAndNotifyLose(in);
+                resetMediationStateAndNotifyLose(in, EventId.INSTANCE_PAYLOAD_NOT_AVAILABLE);
                 continue;
             }
             return true;
@@ -475,12 +482,12 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
             }
             if (instance.isExpired()) {
                 DeveloperLog.LogD("AbstractInventoryAds, Instance has expired: " + instance);
-                resetMediationStateAndNotifyLose(instance);
+                resetMediationStateAndNotifyLose(instance, EventId.INSTANCE_PAYLOAD_EXPIRED);
                 continue;
             }
             if (!isInsAvailable(instance)) {
                 DeveloperLog.LogD("AbstractInventoryAds, Instance is not available: " + instance);
-                resetMediationStateAndNotifyLose(instance);
+                resetMediationStateAndNotifyLose(instance, EventId.INSTANCE_PAYLOAD_NOT_AVAILABLE);
             }
         }
     }
@@ -678,12 +685,12 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
             if (bidResponse != null && bidResponse.isExpired()) {
                 AdsUtil.advanceEventReport(instance, AdvanceEventId.CODE_BID_RESPONSE_EXPIRED,
                         AdvanceEventId.MSG_BID_RESPONSE_EXPIRED);
-                resetMediationStateAndNotifyLose(instance);
+                resetMediationStateAndNotifyLose(instance, EventId.INSTANCE_PAYLOAD_EXPIRED);
             }
         }
     }
 
-    protected void resetMediationStateAndNotifyLose(BaseInstance instance) {
+    protected void resetMediationStateAndNotifyLose(BaseInstance instance, int eventId) {
         if (instance.getMediationState() == BaseInstance.MEDIATION_STATE.AVAILABLE) {
             instance.setMediationState(BaseInstance.MEDIATION_STATE.NOT_AVAILABLE);
             AdsUtil.advanceEventReport(instance, AdvanceEventId.CODE_AD_EXPIRED,
@@ -693,6 +700,9 @@ public abstract class AbstractInventoryAds extends AbstractAdsApi {
             inventoryLog.setInstance(instance);
             inventoryLog.setEventTag(LogConstants.INVENTORY_OUT);
             InspectorManager.getInstance().addInventoryLog(isInventoryAdsType(), mPlacementId, inventoryLog);
+        }
+        if (instance.isBid() && instance.getBidResponse() != null) {
+            InsManager.reportInsEvent(instance, eventId);
         }
         BidUtil.notifyLose(instance, BidLoseReason.INVENTORY_DID_NOT_MATERIALISE.getValue());
     }

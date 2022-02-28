@@ -12,9 +12,17 @@ import android.util.DisplayMetrics;
 import android.util.TypedValue;
 
 import com.openmediation.sdk.core.AdapterRepository;
-import com.openmediation.sdk.utils.lifecycle.ActLifecycle;
+import com.openmediation.sdk.core.InsManager;
 import com.openmediation.sdk.utils.AdtUtil;
 import com.openmediation.sdk.utils.HandlerUtil;
+import com.openmediation.sdk.utils.JsonUtil;
+import com.openmediation.sdk.utils.PlacementUtils;
+import com.openmediation.sdk.utils.event.EventUploadManager;
+import com.openmediation.sdk.utils.lifecycle.ActLifecycle;
+import com.openmediation.sdk.utils.model.BaseInstance;
+import com.openmediation.sdk.utils.model.Placement;
+
+import org.json.JSONObject;
 
 import java.util.Map;
 
@@ -67,5 +75,33 @@ public class MediationUtil {
 
     public static Map<String, Object> getPolicySettings() {
         return AdapterRepository.getInstance().getPolicySettings();
+    }
+
+    public static void event(int eventId, Map<String, Object> extras, int mid) {
+        JSONObject object = new JSONObject();
+        if (extras != null) {
+            Placement placement = null;
+            if (extras.containsKey("PlacementId")) {
+                String pid = (String) extras.get("PlacementId");
+                placement = PlacementUtils.getPlacement(pid);
+            }
+            BaseInstance ins = null;
+            if (placement != null && extras.containsKey("InstanceId")) {
+                String instanceId = (String) extras.get("InstanceId");
+                ins = InsManager.getInsById(placement, instanceId);
+            }
+            if (ins != null) {
+                object = InsManager.buildReportData(ins);
+            } else {
+                JsonUtil.put(object, "pid", extras.get("PlacementId"));
+                JsonUtil.put(object, "iid", extras.get("InstanceId"));
+                JsonUtil.put(object, "bid", extras.get("Bid"));
+                JsonUtil.put(object, "mid", mid);
+            }
+            if (extras.containsKey("pay_load")) {
+                JsonUtil.put(object, "payload", String.valueOf(extras.get("pay_load")));
+            }
+        }
+        EventUploadManager.getInstance().uploadEvent(eventId, object);
     }
 }

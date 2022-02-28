@@ -24,6 +24,8 @@ public class SpManager extends HybridCacheManager implements SpManagerListener {
 
     private int mWidth, mHeight;
 
+    private ViewGroup viewGroup;
+
     void setLoadTimeout(long timeout) {
         mLoadTimeout = timeout;
     }
@@ -60,6 +62,11 @@ public class SpManager extends HybridCacheManager implements SpManagerListener {
         super.loadAds(type);
     }
 
+    public void loadAds(OmManager.LOAD_TYPE type, ViewGroup container) {
+        this.viewGroup = container;
+        super.loadAds(type);
+    }
+
     @Override
     protected void initInsAndSendEvent(BaseInstance instance) {
         super.initInsAndSendEvent(instance);
@@ -82,6 +89,7 @@ public class SpManager extends HybridCacheManager implements SpManagerListener {
             extras.put("Timeout", String.valueOf(mLoadTimeout));
             extras.put("Width", String.valueOf(mWidth));
             extras.put("Height", String.valueOf(mHeight));
+            extras.put("ViewGroup", viewGroup);
             splashInstance.loadSplashAd(mActRefs.get(), extras);
         }
     }

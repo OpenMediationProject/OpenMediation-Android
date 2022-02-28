@@ -33,7 +33,7 @@ dependencies {
     implementation project(':om-android-sdk')
 
     implementation 'com.mbridge.msdk.oversea:reward:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mbridge.msdk.oversea:interstitialvideo:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mbridge.msdk.oversea:newinterstitial:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mbridge.msdk.oversea:mbbanner:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mbridge.msdk.oversea:mbsplash:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mbridge.msdk.oversea:mbnative:' + rootProject.ext.dependencies.mtg_version

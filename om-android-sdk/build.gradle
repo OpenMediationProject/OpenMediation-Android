@@ -35,9 +35,14 @@ android.libraryVariants.all { variant ->
 }
 
 dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation project(path: ':miit_mdid_1.0.10')
+    implementation(name: 'oaid_sdk_1.0.30', ext: 'aar')
+//    implementation 'com.huawei.hms:ads-identifier:3.4.39.302'
     implementation rootProject.ext.dependencies.appsflyer
-
     implementation 'com.google.firebase:firebase-analytics:19.0.0'
+}
+
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
 }

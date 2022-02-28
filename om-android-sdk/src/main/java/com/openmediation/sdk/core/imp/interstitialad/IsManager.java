@@ -11,6 +11,7 @@ import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.mediation.MediationInterstitialListener;
 import com.openmediation.sdk.utils.error.Error;
 import com.openmediation.sdk.utils.error.ErrorCode;
+import com.openmediation.sdk.utils.event.EventId;
 import com.openmediation.sdk.utils.model.BaseInstance;
 import com.openmediation.sdk.utils.model.PlacementInfo;
 
@@ -200,6 +201,6 @@ public final class IsManager extends InventoryCacheManager implements IsManagerL
 
     @Override
     public void onAdExpired(BaseInstance instance) {
-        resetMediationStateAndNotifyLose(instance);
+        resetMediationStateAndNotifyLose(instance, EventId.INSTANCE_PAYLOAD_EXPIRED);
     }
 }

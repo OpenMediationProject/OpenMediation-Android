@@ -308,9 +308,9 @@ public final class InitImp {
                     DataCache.getInstance().set(KeyConstants.RequestBody.KEY_GAID, gaid);
                     requestConfig(initConfiguration, callback);
                 } else {
-                    OaidHelper.getOaid(AdtUtil.getInstance().getApplicationContext(), new OaidHelper.oaidListener() {
+                    OaidHelper.getOaid(AdtUtil.getInstance().getApplicationContext(), new OaidHelper.OnGetOaidCallback() {
                         @Override
-                        public void onGetOaid(String oaid) {
+                        public void result() {
                             requestConfig(initConfiguration, callback);
                         }
                     });

@@ -140,12 +140,25 @@ public class FacebookAdapter extends CustomAdsAdapter {
             configBuilder.withAdListener(new FbRvListener(mRvCallbacks.get(adUnitId)));
 
             if (rewardedVideoAd.isAdLoaded()) {
+                try {
+                    MediationUtil.event(701, extras, getAdNetworkId());
+                } catch (Throwable ignored) {
+                }
                 if (callback != null) {
                     callback.onRewardedVideoLoadSuccess();
                 }
             } else {
                 if (extras != null && extras.containsKey(PAY_LOAD)) {
+                    try {
+                        MediationUtil.event(702, extras, getAdNetworkId());
+                    } catch (Throwable ignored) {
+                    }
                     configBuilder.withBid(String.valueOf(extras.get(PAY_LOAD)));
+                } else {
+                    try {
+                        MediationUtil.event(703, extras, getAdNetworkId());
+                    } catch (Throwable ignored) {
+                    }
                 }
                 rewardedVideoAd.loadAd(configBuilder.build());
             }
@@ -218,16 +231,26 @@ public class FacebookAdapter extends CustomAdsAdapter {
             InterstitialAd.InterstitialAdLoadConfigBuilder configBuilder = interstitialAd.buildLoadAdConfig();
             configBuilder.withAdListener(new FbIsAdListener(mIsCallbacks.get(adUnitId)));
             if (interstitialAd.isAdLoaded()) {
+                try {
+                    MediationUtil.event(701, extras, getAdNetworkId());
+                } catch (Throwable ignored) {
+                }
                 if (callback != null) {
                     callback.onInterstitialAdLoadSuccess();
                 }
             } else {
-
-                //Auction will never return null serverData (AdMarkup) for bidder
                 if (extras != null && extras.containsKey(PAY_LOAD)) {
+                    try {
+                        MediationUtil.event(702, extras, getAdNetworkId());
+                    } catch (Throwable ignored) {
+                    }
                     configBuilder.withBid(String.valueOf(extras.get(PAY_LOAD)));
+                } else {
+                    try {
+                        MediationUtil.event(703, extras, getAdNetworkId());
+                    } catch (Throwable ignored) {
+                    }
                 }
-
                 interstitialAd.loadAd(configBuilder.build());
             }
         } else {

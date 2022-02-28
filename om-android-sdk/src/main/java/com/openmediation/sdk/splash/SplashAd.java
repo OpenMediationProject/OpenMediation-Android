@@ -20,7 +20,11 @@ public class SplashAd {
     }
 
     public static void loadAd(String placementId) {
-        SpAdManager.getInstance().load(placementId);
+        SpAdManager.getInstance().load(placementId, null);
+    }
+
+    public static void loadAd(String placementId, ViewGroup container) {
+        SpAdManager.getInstance().load(placementId, container);
     }
 
     public static void setSize(String placementId, int width, int height) {
