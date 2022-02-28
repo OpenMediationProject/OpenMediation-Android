@@ -75,7 +75,7 @@ public class AppLovinSingleTon {
             mInitState = InitState.NOT_INIT;
             for (InitCallback callback : mCallbacks) {
                 if (callback != null) {
-                    listener.onFailed("Init Failed: " + e.getMessage());
+                    callback.onFailed("Init Failed: " + e.getMessage());
                 }
             }
             mCallbacks.clear();

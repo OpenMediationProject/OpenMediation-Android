@@ -127,13 +127,13 @@ public class TapjoyAdapter extends CustomAdsAdapter implements TJConnectListener
         super.initRewardedVideo(activity, dataMap, callback);
         String error = check(activity);
         if (TextUtils.isEmpty(error)) {
+            Tapjoy.setActivity(activity);
             switch (mInitState) {
                 case NOT_INIT:
                     try {
                         if (dataMap.get("pid") != null && callback != null) {
                             mVideoCallbacks.put(requestVideoAd((String) dataMap.get("pid")), callback);
                         }
-                        Tapjoy.setActivity(activity);
                         initSDK(activity);
                     } catch (Throwable e) {
                         if (callback != null) {
@@ -167,8 +167,9 @@ public class TapjoyAdapter extends CustomAdsAdapter implements TJConnectListener
     public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras, RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
         try {
-            String error = check(adUnitId);
+            String error = check(activity, adUnitId);
             if (TextUtils.isEmpty(error)) {
+                Tapjoy.setActivity(activity);
                 if (!Tapjoy.isLimitedConnected()) {
                     if (callback != null) {
                         callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
@@ -250,13 +251,13 @@ public class TapjoyAdapter extends CustomAdsAdapter implements TJConnectListener
         super.initInterstitialAd(activity, dataMap, callback);
         String error = check(activity);
         if (TextUtils.isEmpty(error)) {
+            Tapjoy.setActivity(activity);
             switch (mInitState) {
                 case NOT_INIT:
                     try {
                         if (dataMap.get("pid") != null && callback != null) {
                             mInterstitialAdCallbacks.put(requestInterstitialAd((String) dataMap.get("pid")), callback);
                         }
-                        Tapjoy.setActivity(activity);
                         initSDK(activity);
                     } catch (Throwable e) {
                         if (callback != null) {
@@ -290,8 +291,9 @@ public class TapjoyAdapter extends CustomAdsAdapter implements TJConnectListener
     public void loadInterstitialAd(Activity activity, String adUnitId, Map<String, Object> extras, InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, extras, callback);
         try {
-            String error = check(adUnitId);
+            String error = check(activity, adUnitId);
             if (TextUtils.isEmpty(error)) {
+                Tapjoy.setActivity(activity);
                 if (!Tapjoy.isLimitedConnected()) {
                     if (callback != null) {
                         callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(

@@ -57,7 +57,7 @@ public class SpAdManager {
         splashManager.setLoadTimeout(timeout);
     }
 
-    public void load(String placementId) {
+    public void load(String placementId, ViewGroup container) {
         AdsUtil.callActionReport(placementId, 0, EventId.CALLED_LOAD);
         SpManager splashManager = getSplashAd(placementId);
         if (splashManager == null) {
@@ -68,7 +68,7 @@ public class SpAdManager {
             }
             return;
         }
-        splashManager.loadAds(OmManager.LOAD_TYPE.MANUAL);
+        splashManager.loadAds(OmManager.LOAD_TYPE.MANUAL, container);
     }
 
     public boolean isReady(String placementId) {

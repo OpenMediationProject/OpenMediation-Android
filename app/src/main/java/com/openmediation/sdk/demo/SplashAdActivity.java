@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.ViewGroup;
 
+import com.openmediation.sdk.OmAds;
 import com.openmediation.sdk.demo.utils.NewApiUtils;
 import com.openmediation.sdk.splash.SplashAd;
 import com.openmediation.sdk.splash.SplashAdListener;
@@ -67,6 +68,18 @@ public class SplashAdActivity extends Activity implements SplashAdListener {
     public void onSplashAdDismissed(String placementId) {
         Log.e("SplashAdActivity", "----------- onSplashAdDismissed ----------");
         finish();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        OmAds.onPause(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        OmAds.onResume(this);
     }
 
     @Override

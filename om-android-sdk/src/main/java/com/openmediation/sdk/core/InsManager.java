@@ -129,7 +129,7 @@ public class InsManager {
         return jsonObject;
     }
 
-    public static void reportInsLoad(BaseInstance insFields, int eventId) {
+    public static void reportInsEvent(BaseInstance insFields, int eventId) {
         if (insFields == null) {
             return;
         }

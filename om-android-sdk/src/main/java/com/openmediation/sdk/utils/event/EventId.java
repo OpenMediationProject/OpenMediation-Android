@@ -54,6 +54,8 @@ public interface EventId {
     int INSTANCE_PAYLOAD_REQUEST = 275;
     int INSTANCE_PAYLOAD_SUCCESS = 276;
     int INSTANCE_PAYLOAD_FAILED = 277;
+    int INSTANCE_PAYLOAD_EXPIRED = 278;
+    int INSTANCE_PAYLOAD_NOT_AVAILABLE = 279;
 
 
     /****************************************/
@@ -113,4 +115,8 @@ public interface EventId {
     int REPORT_UAR_TOP40 = 633;
     // Firebase Report UAR Top50%
     int REPORT_UAR_TOP50 = 634;
+
+    int ADAPTER_AD_LOADED = 701;
+    int ADAPTER_AD_LOAD_WITH_BID = 702;
+    int ADAPTER_AD_LOAD = 703;
 }

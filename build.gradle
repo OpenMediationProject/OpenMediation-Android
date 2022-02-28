@@ -34,7 +34,7 @@ ext {
 //support 包相关包的引用
     dependencies = [
             // http://helpcenter.adtiming.com/
-            "adtiming"                   : 'com.adtiming:adnetwork:6.9.4@aar',
+            "adtiming"                   : 'com.adtiming:adnetwork:6.9.5@aar',
             //fb https://developers.facebook.com/docs/audience-network/changelog-android/
             "facebook"                   : 'com.facebook.android:audience-network-sdk:6.8.0',
             //admob https://developers.google.com/admob/android/rel-notes
@@ -62,8 +62,8 @@ ext {
             //gp-ads-identifier
             "play_service_ads_identifier": 'com.google.android.gms:play-services-ads-identifier:17.1.0',
             //Mintegral http://cdn-adn.rayjump.com/cdn-adn/v2/markdown_v2/index.html?file=sdk-m_sdk-android&lang=en
-            "mtg_version"                : '15.8.01',
-            "mtg_china_version"          : '15.8.02',
+            "mtg_version"                : '16.0.11',
+            "mtg_china_version"          : '16.0.12',
             // IronSource https://developers.ironsrc.com/ironsource-mobile/android/sdk-change-log/
             "ironsource"                 : 'com.ironsource.sdk:mediationsdk:7.1.12.2',
             // https://developer.fyber.com/hc/en-us/articles/360010822437-Integrating-the-Android-SDK
@@ -98,25 +98,30 @@ ext {
             "pangle_cn"                  : 'com.pangle.cn:ads-sdk-pro:4.1.0.6',
 
             // https://dev.appsflyer.com/hc/docs/install-android-sdk
-            "appsflyer"                  : 'com.appsflyer:af-android-sdk:6.4.0'
+            "appsflyer"                  : 'com.appsflyer:af-android-sdk:6.4.0',
             // 快手      https://ssp.e.kuaishou.com/#/login
             // sigmob    https://m.sigmob.com/#/monitezation/monitezation_doc
+
+            // 华为广告服务
+            // https://developer.huawei.com/consumer/cn/doc/distribution/monetize/androidappsdk-0000001053440624
+            // https://developer.huawei.com/consumer/cn/doc/development/HMSCore-References/android-error-code-0000001130129080
+            "hwads"                      : 'com.huawei.hms:ads-lite:13.4.51.300',
     ]
 
     adapterVersion = [
             'adtiming'    : '2.5.0',
             'admob'       : '2.5.2',
-            'facebook'    : '2.5.0',
+            'facebook'    : '2.6.2',
             'unity'       : '2.5.2',
             'vungle'      : '2.5.0',
             'adcolony'    : '2.6.0',
-            'applovin'    : '2.5.0',
+            'applovin'    : '2.5.1',
             'mopub'       : '2.5.0',
-            'tapjoy'      : '2.5.0',
+            'tapjoy'      : '2.5.1',
             'chartboost'  : '2.5.0',
             'helium'      : '2.5.0',
             'tiktok'      : '2.5.1',
-            'mintegral'   : '2.6.0',
+            'mintegral'   : '2.6.1',
             'ironsource'  : '2.5.0',
             'fyber'       : '2.5.0',
             'ogury'       : '2.5.0',
@@ -125,9 +130,10 @@ ext {
             'flatads'     : '2.5.0',
             'inmobi'      : '2.5.0',
             'sanads'      : '2.5.0',
+            'hwads'       : '2.6.0',
             'tiktok_cn'   : '2.5.1',
             'tencentad_cn': '2.5.0',
-            'mintegral_cn': '2.6.0',
+            'mintegral_cn': '2.6.1',
             'sigmob_cn'   : '2.5.0',
             'ksad_cn'     : '2.5.1',
     ]
@@ -171,6 +177,11 @@ allprojects {
         }
         maven {
             url 'https://dl.openmediation.com/omcenter/'
+        }
+        maven { url 'https://developer.huawei.com/repo/' }
+
+        flatDir {
+            dirs project(':om-android-sdk').file('libs')
         }
     }
 }

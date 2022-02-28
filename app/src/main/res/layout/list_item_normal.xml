@@ -12,7 +12,7 @@
         android:layout_centerHorizontal="true"
         android:gravity="center"
         android:textSize="14sp"
-        android:textColor="@color/black"
+        android:textColor="#000"
         android:text="普通的view" />
 
 </RelativeLayout>

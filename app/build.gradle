@@ -6,7 +6,7 @@ android {
 
 
     defaultConfig {
-        applicationId "com.openmediation.sdk.demo"
+        applicationId "com.example.oaidtest2"
         minSdkVersion 21
         targetSdkVersion rootProject.ext.version.targetSdkVersion
         versionCode 1
@@ -89,7 +89,7 @@ dependencies {
 
     // Mintegral
     implementation 'com.mbridge.msdk.oversea:reward:' + rootProject.ext.dependencies.mtg_version
-    implementation 'com.mbridge.msdk.oversea:interstitialvideo:' + rootProject.ext.dependencies.mtg_version
+    implementation 'com.mbridge.msdk.oversea:newinterstitial:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mbridge.msdk.oversea:mbbanner:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mbridge.msdk.oversea:mbsplash:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mbridge.msdk.oversea:mbnative:' + rootProject.ext.dependencies.mtg_version
@@ -161,7 +161,7 @@ dependencies {
 
     // Mintegral_CN
 //    implementation 'com.mbridge.msdk.china:reward:' + rootProject.ext.dependencies.mtg_china_version
-//    implementation 'com.mbridge.msdk.china:interstitialvideo:' + rootProject.ext.dependencies.mtg_china_version
+//    implementation 'com.mbridge.msdk.china:newinterstitial:' + rootProject.ext.dependencies.mtg_china_version
 //    implementation 'com.mbridge.msdk.china:mbbanner:' + rootProject.ext.dependencies.mtg_china_version
 //    implementation 'com.mbridge.msdk.china:mbsplash:' + rootProject.ext.dependencies.mtg_china_version
 //    implementation 'com.mbridge.msdk.china:mbnative:' + rootProject.ext.dependencies.mtg_china_version
@@ -176,12 +176,16 @@ dependencies {
     implementation(name: 'kssdk-ad-3.3.19', ext: 'aar')
     implementation project(path: ':adapter_cn:ksad_cn')
 
+    // 华为
+    implementation rootProject.ext.dependencies.hwads
+    implementation project(path: ':adapter:hwads')
+
     // AppsFlyer
     implementation rootProject.ext.dependencies.appsflyer
     // Firebase
     implementation 'com.google.firebase:firebase-analytics:19.0.0'
-    // OAID
-    implementation project(path: ':miit_mdid_1.0.10')
+    // 华为广告标识符
+//    implementation 'com.huawei.hms:ads-identifier:3.4.39.302'
 }
 
 repositories {

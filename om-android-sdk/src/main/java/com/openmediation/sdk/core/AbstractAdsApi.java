@@ -315,7 +315,7 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
         if (instance.getHb() == 1) {
             CustomAdsAdapter adapter = instance.getAdapter();
             if (adapter.needPayload()) {//standard c2s/s2s
-                InsManager.reportInsLoad(instance, EventId.INSTANCE_PAYLOAD_REQUEST);
+                InsManager.reportInsEvent(instance, EventId.INSTANCE_PAYLOAD_REQUEST);
             } else {
                 // non-standard C2S bid instance in wf queue
                 if (instance.getBidResponse() == null) {
@@ -324,7 +324,7 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
                 }
             }
         } else {
-            InsManager.reportInsLoad(instance, EventId.INSTANCE_LOAD);
+            InsManager.reportInsEvent(instance, EventId.INSTANCE_LOAD);
             LrReportHelper.report(instance, isInventoryAdsType() ? mLoadType.getValue()
                             : (isReload() ? OmManager.LOAD_TYPE.INTERVAL.getValue()
                             : OmManager.LOAD_TYPE.MANUAL.getValue()), mPlacement.getWfAbt(), mPlacement.getWfAbtId()

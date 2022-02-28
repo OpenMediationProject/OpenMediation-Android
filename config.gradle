@@ -21,6 +21,7 @@ ext {
             'flatads'     : '2.5.0',
             'inmobi'      : '2.5.0',
             'sanads'      : '2.5.0',
+            'hwads'       : '2.6.0',
             'tiktok_cn'   : '2.5.1',
             'tencentad_cn': '2.5.0',
             'mintegral_cn': '2.6.0',

@@ -30,7 +30,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':om-android-sdk')
     implementation 'com.mbridge.msdk.china:reward:' + rootProject.ext.dependencies.mtg_china_version
-    implementation 'com.mbridge.msdk.china:interstitialvideo:' + rootProject.ext.dependencies.mtg_china_version
+    implementation 'com.mbridge.msdk.china:newinterstitial:' + rootProject.ext.dependencies.mtg_china_version
     implementation 'com.mbridge.msdk.china:mbbanner:' + rootProject.ext.dependencies.mtg_china_version
     implementation 'com.mbridge.msdk.china:mbsplash:' + rootProject.ext.dependencies.mtg_china_version
     implementation 'com.mbridge.msdk.china:mbnative:' + rootProject.ext.dependencies.mtg_china_version
