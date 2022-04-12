@@ -75,7 +75,7 @@ public class BidS2SManager {
                                     AdvanceEventId.MSG_S2S_NO_ADAPTER);
                             continue;
                         }
-                        // TODO 判断是否 s2s
+                        // 判断是否 s2s
                         if (!adapter.isS2S()) {
                             continue;
                         }
@@ -139,6 +139,8 @@ public class BidS2SManager {
     private synchronized void bidFailed(BaseInstance instance, String error) {
         DeveloperLog.LogD(instance + " S2S Bid Failed: " + error);
         instance.setBidState(BaseInstance.BID_STATE.BID_FAILED);
+        // reset BidResponse
+        instance.setBidResponse(null);
     }
 
     private synchronized void callbackBidResult(String placementId) {

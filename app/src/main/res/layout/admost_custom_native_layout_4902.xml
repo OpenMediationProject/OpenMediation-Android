@@ -1,7 +1,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="250dp"
-    android:background="@color/AMRNativeBackground">
+    android:background="#FFF">
 
     <ImageView
         android:id="@+id/admost_ad_back"
@@ -23,8 +23,6 @@
             android:paddingLeft="10dp"
             android:paddingTop="3dp"
             android:paddingBottom="3dp"
-            android:text="@string/AMR_text_sponsored"
-            android:textColor="@color/AMRNativeAdSponsoredColor"
             android:textSize="12sp" />
 
         <ImageView
@@ -73,8 +71,8 @@
                         android:ellipsize="end"
                         android:gravity="center_vertical"
                         android:maxLines="1"
-                        android:text="@string/AMR_text_ad_all_caps"
-                        android:textColor="@color/AMRNativeAdTitleColor"
+                        android:text="AD"
+                        android:textColor="#000000"
                         android:textSize="14sp"
                         android:textStyle="bold"
                         android:typeface="normal" />
@@ -108,7 +106,6 @@
 
                 <Button
                     android:id="@+id/admost_ad_call_to_action"
-                    style="@style/AMRButton"
                     android:layout_width="wrap_content"
                     android:layout_height="30dp"
                     android:layout_alignParentRight="true"
@@ -127,5 +124,5 @@
         android:paddingTop="2dp"
         android:paddingRight="2dp"
         android:paddingBottom="8dp"
-        android:src="@drawable/ad_mopub_daa" />
+        android:src="@drawable/admost_mopub_daa" />
 </RelativeLayout>

@@ -10,7 +10,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:776685236929:android:935f6aa89ea43132649a40",
         "android_client_info": {
-          "package_name": "com.example.oaidtest2"
+          "package_name": "com.openmediation.sdk.demo"
         }
       },
       "oauth_client": [

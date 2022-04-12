@@ -24,13 +24,6 @@ android.libraryVariants.all { variant ->
     }
 }
 dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation project(':om-android-sdk')
     implementation rootProject.ext.dependencies.pangle_cn
-}
-
-repositories {
-    flatDir {
-        dirs 'libs'
-    }
 }

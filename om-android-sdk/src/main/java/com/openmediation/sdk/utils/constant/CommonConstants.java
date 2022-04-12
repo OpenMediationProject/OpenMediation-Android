@@ -11,7 +11,7 @@ public interface CommonConstants {
     int API_VERSION = 1;
     int API_VERSION_V4 = 4;
 
-    String SDK_VERSION_NAME = "2.6.2";
+    String SDK_VERSION_NAME = "2.6.3";
 
     String ADTYPE_BANNER = "Banner";
     String ADTYPE_NATIVE = "Native";
@@ -21,6 +21,10 @@ public interface CommonConstants {
     String ADTYPE_CROSS_PROMOTION = "CrossPromotion";
 
     int WATERFALL_READY = 3;
+    /**
+     * 一次 waterfall 中有 instance 加载成功
+     */
+    int WATERFALL_LOAD_SUCCESS = 14;
     int INSTANCE_LOAD = 4;
     int INSTANCE_READY = 5;
     int INSTANCE_IMPR = 6;

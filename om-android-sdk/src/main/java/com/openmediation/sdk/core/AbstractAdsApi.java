@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class AbstractAdsApi implements InitCallback, BidResponseCallback, Request.OnRequestCallback {
     protected WeakReference<Activity> mActRefs = new WeakReference<>(null);
@@ -89,6 +90,8 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
     protected WaterfallLog mWfLog;
     protected Map<BaseInstance, InstanceLog> mInsLogs;
     private boolean isWfFailed = true;
+
+    private final AtomicBoolean wfLoadSuccessReported = new AtomicBoolean(false);
 
     public abstract boolean isInventoryAdsType();
 
@@ -193,6 +196,7 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
             mInsLogs.clear();
         }
         isWfFailed = true;
+        wfLoadSuccessReported.set(false);
         if (getPlacementType() == CommonConstants.PROMOTION) {
             startLoadAdsImpl(null, InsManager.getInstanceList(mPlacement));
             return;
@@ -319,7 +323,7 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
             } else {
                 // non-standard C2S bid instance in wf queue
                 if (instance.getBidResponse() == null) {
-                    //TODO:上报bidRequest
+                    // 上报bidRequest
                     onInsC2SBidStart(instance);
                 }
             }
@@ -347,7 +351,7 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
     }
 
     protected synchronized void onInsC2SBidSuccess(BaseInstance instance, BidResponse response) {
-        //TODO:价格重排序，但hybrid不重排，加埋点上报
+        // 价格重排序，但hybrid不重排，加埋点上报
         InsManager.onInsBidSuccess(instance, response);
         DeveloperLog.LogD(instance + " C2S Bid Success: " + response);
     }
@@ -385,6 +389,15 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
                     CommonConstants.INSTANCE_READY, 0);
         }
         InsManager.onInsLoadSuccess(instance, reload);
+
+        // repost waterfall ins load success
+        if (!wfLoadSuccessReported.get()) {
+            wfLoadSuccessReported.set(true);
+            LrReportHelper.report(instance.getReqId(), mRuleId, mPlacement.getId(),
+                    mLoadType.getValue(), mPlacement.getWfAbt(), mPlacement.getWfAbtId(),
+                    CommonConstants.WATERFALL_LOAD_SUCCESS, 0);
+        }
+
         InstanceLog log = mInsLogs.get(instance);
         if (log != null) {
             if (instance.getHb() == 1) {
@@ -548,7 +561,7 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
                 return;
             }
             String responseString = response.body().string();
-            // TODO save wf data
+            // save wf data
             OmCacheManager.getInstance().saveWaterfallData(mPlacement.getId(), mPlacement.getT(), responseString);
             if (mReadWfFromLocal) {
                 return;
@@ -599,7 +612,7 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
 
         mPlacement.setWfAbt(wfInfo.optInt("abt"));
         mPlacement.setWfAbtId(wfInfo.optInt("abtId"));
-        // TODO report Waterfall Ready
+        // report Waterfall Ready
         if (!mReadWfFromLocal && isInventoryAdsType()) {
             inventoryAdsReportAReady();
         }
@@ -641,18 +654,6 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
             return ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
                     , ErrorCode.ERROR_PLACEMENT_ID, ErrorCode.CODE_INTERNAL_REQUEST_PLACEMENTID);
         }
-        //activity effective?
-//        if (!checkActRef()) {
-//            return ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST
-//                    , ErrorCode.ERROR_ACTIVITY, ErrorCode.CODE_INTERNAL_REQUEST_ACTIVITY);
-//        }
-
-//        //network available?
-//        if (!NetworkChecker.isAvailable(mActRef.get())) {
-//            callbackAdErrorOnUiThread(ErrorCode.ERROR_NETWORK_NOT_AVAILABLE);
-//            return ErrorBuilder.build(ErrorCode.CODE_LOAD_NETWORK_ERROR
-//                    , ErrorCode.MSG_LOAD_INVALID_REQUEST, ErrorCode.CODE_INTERNAL_UNKNOWN_OTHER);
-//        }
 
         if (isDestroyed) {
             return ErrorBuilder.build(ErrorCode.CODE_LOAD_INVALID_REQUEST

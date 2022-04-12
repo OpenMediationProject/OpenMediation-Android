@@ -24,8 +24,6 @@ public class AppApplication extends Application {
         NewApiUtils.printLog("start init sdk");
         InitConfiguration configuration = new InitConfiguration.Builder()
                 .appKey(NewApiUtils.APPKEY)
-                // TODO
-//                .preloadAdTypes(OmAds.AD_TYPE.REWARDED_VIDEO)
                 .logEnable(true)
                 .build();
         OmAds.init(configuration, new InitCallback() {

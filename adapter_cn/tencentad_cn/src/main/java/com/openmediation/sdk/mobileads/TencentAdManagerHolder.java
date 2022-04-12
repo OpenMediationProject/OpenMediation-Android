@@ -5,7 +5,7 @@ package com.openmediation.sdk.mobileads;
 
 import android.content.Context;
 
-import com.qq.e.comm.managers.GDTADManager;
+import com.qq.e.comm.managers.GDTAdSdk;
 
 public class TencentAdManagerHolder {
 
@@ -15,8 +15,9 @@ public class TencentAdManagerHolder {
         if (context == null) {
             return false;
         }
-        isInit = GDTADManager.getInstance().initWith(context.getApplicationContext(), appKey);
-        return isInit;
+        GDTAdSdk.init(context.getApplicationContext(), appKey);
+        isInit = true;
+        return true;
     }
 
     static boolean isInit() {

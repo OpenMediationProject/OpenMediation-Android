@@ -26,7 +26,6 @@ android.libraryVariants.all { variant ->
     }
 }
 dependencies {
-    //TapJoy
     implementation rootProject.ext.dependencies.tapjoy
     implementation project(':om-android-sdk')
 }

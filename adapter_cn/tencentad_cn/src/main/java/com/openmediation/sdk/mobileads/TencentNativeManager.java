@@ -162,16 +162,6 @@ public class TencentNativeManager {
         }
 
         @Override
-        public void onADOpenOverlay(NativeExpressADView adView) {
-
-        }
-
-        @Override
-        public void onADCloseOverlay(NativeExpressADView adView) {
-            AdLog.getSingleton().LogD("TencentNative onADCloseOverlay: " + mAdUnitId);
-        }
-
-        @Override
         public void onNoAD(AdError adError) {
             if (mAdCallback != null) {
                 mAdCallback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(

@@ -1242,7 +1242,6 @@ public final class OmManager implements InitCallback {
                 }
                 mInitCallbacks.clear();
             }
-            // TODO
 //            clearCacheListeners();
         }
         startReInitTask(false);

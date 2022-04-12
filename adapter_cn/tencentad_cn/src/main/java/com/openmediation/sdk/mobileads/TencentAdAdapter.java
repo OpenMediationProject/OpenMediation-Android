@@ -5,7 +5,6 @@ package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
 import android.content.Context;
-import android.os.SystemClock;
 import android.text.TextUtils;
 import android.view.ViewGroup;
 
@@ -165,7 +164,7 @@ public class TencentAdAdapter extends CustomAdsAdapter {
             return false;
         }
         RewardVideoAD videoAD = mRvAds.get(adUnitId);
-        return videoAD != null && !videoAD.hasShown() && SystemClock.elapsedRealtime() < (videoAD.getExpireTimestamp() - 1000);
+        return videoAD != null && !videoAD.hasShown() && videoAD.isValid();
     }
 
     @Override
@@ -529,6 +528,7 @@ public class TencentAdAdapter extends CustomAdsAdapter {
 
         @Override
         public void onADExpose() {
+            AdLog.getSingleton().LogD(TAG + "RewardVideoAd onADExpose : " + mAdUnitId);
             RewardedVideoCallback callback = mRvCallbacks.get(mAdUnitId);
             if (callback != null) {
                 callback.onRewardedVideoAdShowSuccess();
@@ -564,6 +564,7 @@ public class TencentAdAdapter extends CustomAdsAdapter {
 
         @Override
         public void onADClose() {
+            AdLog.getSingleton().LogD(TAG + "RewardVideoAd onADClose : " + mAdUnitId);
             RewardedVideoCallback callback = mRvCallbacks.get(mAdUnitId);
             if (callback != null) {
                 callback.onRewardedVideoAdClosed();
@@ -572,6 +573,7 @@ public class TencentAdAdapter extends CustomAdsAdapter {
 
         @Override
         public void onError(AdError adError) {
+            AdLog.getSingleton().LogD(TAG + "RewardVideoAd onError : " + adError);
             RewardedVideoCallback callback = mRvCallbacks.get(mAdUnitId);
             if (callback != null) {
                 callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(

@@ -7,11 +7,12 @@ import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.openmediation.sdk.mediation.BidCallback;
+import com.flatads.sdk.callback.InitListener;
 import com.openmediation.sdk.bid.BidConstance;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.AdnAdInfo;
 import com.openmediation.sdk.mediation.BannerAdCallback;
+import com.openmediation.sdk.mediation.BidCallback;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationInfo;
@@ -60,14 +61,12 @@ public class FlatAdsAdapter extends CustomAdsAdapter {
     public void onResume(Activity activity) {
         super.onResume(activity);
         FlatAdsSingleTon.getInstance().onResume();
-        FlatAdsNativeManager.getInstance().onResume();
     }
 
     @Override
     public void onPause(Activity activity) {
         super.onPause(activity);
         FlatAdsSingleTon.getInstance().onPause();
-        FlatAdsNativeManager.getInstance().onPause();
     }
 
     @Override
@@ -132,19 +131,19 @@ public class FlatAdsAdapter extends CustomAdsAdapter {
     @Override
     public void initInterstitialAd(Activity activity, Map<String, Object> extras, InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, extras, callback);
-        FlatAdsSingleTon.getInstance().init(mAppKey, new FlatAdsSingleTon.InitListener() {
+        FlatAdsSingleTon.getInstance().init(mAppKey, new InitListener() {
             @Override
-            public void initSuccess() {
+            public void onSuccess() {
                 if (callback != null) {
                     callback.onInterstitialAdInitSuccess();
                 }
             }
 
             @Override
-            public void initFailed(String error) {
+            public void onFailure(int code, String msg) {
                 if (callback != null) {
                     callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildInitError(
-                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, code, msg));
                 }
             }
         });
@@ -186,25 +185,25 @@ public class FlatAdsAdapter extends CustomAdsAdapter {
     @Override
     public void showInterstitialAd(Activity activity, String adUnitId, InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
-        FlatAdsSingleTon.getInstance().showInterstitialAd(adUnitId, new InnerInterstitialCallback(callback));
+        FlatAdsSingleTon.getInstance().showInterstitialAd(adUnitId, callback);
     }
 
     @Override
     public void initRewardedVideo(Activity activity, Map<String, Object> extras, RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, extras, callback);
-        FlatAdsSingleTon.getInstance().init(mAppKey, new FlatAdsSingleTon.InitListener() {
+        FlatAdsSingleTon.getInstance().init(mAppKey, new InitListener() {
             @Override
-            public void initSuccess() {
+            public void onSuccess() {
                 if (callback != null) {
                     callback.onRewardedVideoInitSuccess();
                 }
             }
 
             @Override
-            public void initFailed(String error) {
+            public void onFailure(int code, String msg) {
                 if (callback != null) {
                     callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
-                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, code, msg));
                 }
             }
         });
@@ -248,97 +247,11 @@ public class FlatAdsAdapter extends CustomAdsAdapter {
     public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
         if (isRewardedVideoAvailable(adUnitId)) {
-            InnerVideoCallback videoCallback = new InnerVideoCallback(callback);
-            FlatAdsSingleTon.getInstance().showRewardedVideo(adUnitId, videoCallback);
+            FlatAdsSingleTon.getInstance().showRewardedVideo(adUnitId, callback);
         } else {
             if (callback != null) {
                 callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
                         AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "FlatAds RewardedVideo is not ready"));
-            }
-        }
-    }
-
-    private class InnerInterstitialCallback implements FlatAdsInterstitialCallback {
-
-        InterstitialAdCallback mCallback;
-
-        InnerInterstitialCallback(InterstitialAdCallback callback) {
-            mCallback = callback;
-        }
-
-        @Override
-        public void onInterstitialOpened(String adUnitId) {
-            if (mCallback != null) {
-                mCallback.onInterstitialAdShowSuccess();
-            }
-        }
-
-        @Override
-        public void onInterstitialShowFailed(String adUnitId, String error) {
-            if (mCallback != null) {
-                mCallback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
-            }
-        }
-
-        @Override
-        public void onInterstitialDismissed(String adUnitId) {
-            if (mCallback != null) {
-                mCallback.onInterstitialAdClosed();
-            }
-        }
-
-        @Override
-        public void onInterstitialClick(String adUnitId) {
-            if (mCallback != null) {
-                mCallback.onInterstitialAdClicked();
-            }
-        }
-    }
-
-    private class InnerVideoCallback implements FlatAdsVideoCallback {
-
-        RewardedVideoCallback mCallback;
-
-        InnerVideoCallback(RewardedVideoCallback videoCallback) {
-            mCallback = videoCallback;
-        }
-
-        @Override
-        public void onRewardedOpened(String adUnitId) {
-            if (mCallback != null) {
-                mCallback.onRewardedVideoAdShowSuccess();
-                mCallback.onRewardedVideoAdStarted();
-            }
-        }
-
-        @Override
-        public void onRewardedClosed(String adUnitId) {
-            if (mCallback != null) {
-                mCallback.onRewardedVideoAdEnded();
-                mCallback.onRewardedVideoAdClosed();
-            }
-        }
-
-        @Override
-        public void onRewardedReward(String adUnitId) {
-            if (mCallback != null) {
-                mCallback.onRewardedVideoAdRewarded();
-            }
-        }
-
-        @Override
-        public void onRewardedShowFailed(String adUnitId, String error) {
-            if (mCallback != null) {
-                mCallback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
-            }
-        }
-
-        @Override
-        public void onRewardedClicked(String adUnitId) {
-            if (mCallback != null) {
-                mCallback.onRewardedVideoAdClicked();
             }
         }
     }

@@ -16,6 +16,7 @@ import com.openmediation.sdk.mediation.BidCallback;
 import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
+import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.openmediation.sdk.utils.AdLog;
 
@@ -66,7 +67,7 @@ public class HeliumSingleTon {
         return CbtHolder.INSTANCE;
     }
 
-    public void init(Context context, String appKey, final HeliumInitCallback cbtCallback) {
+    public void init(final Context context, String appKey, final HeliumInitCallback cbtCallback) {
         try {
             if (TextUtils.isEmpty(appKey)) {
                 if (cbtCallback != null) {
@@ -89,29 +90,35 @@ public class HeliumSingleTon {
             }
             mInitState = InitState.INIT_PENDING;
             String[] tmp = appKey.split("#");
-            String appId = tmp[0];
-            String signature = tmp[1];
-            HeliumSdk.start(context, appId, signature, new HeliumSdk.HeliumSdkListener() {
+            final String appId = tmp[0];
+            final String signature = tmp[1];
+
+            MediationUtil.runOnUiThread(new Runnable() {
                 @Override
-                public void didInitialize(Error error) {
-                    if (error == null) {
-                        mInitState = InitState.INIT_SUCCESS;
-                        AdLog.getSingleton().LogD("Helium SDK initialized successfully");
-                        for (HeliumInitCallback callback : mCallbacks) {
-                            if (callback != null) {
-                                callback.initSuccess();
+                public void run() {
+                    HeliumSdk.start(context, appId, signature, new HeliumSdk.HeliumSdkListener() {
+                        @Override
+                        public void didInitialize(Error error) {
+                            if (error == null) {
+                                mInitState = InitState.INIT_SUCCESS;
+                                AdLog.getSingleton().LogD("Helium SDK initialized successfully");
+                                for (HeliumInitCallback callback : mCallbacks) {
+                                    if (callback != null) {
+                                        callback.initSuccess();
+                                    }
+                                }
+                            } else {
+                                mInitState = InitState.NOT_INIT;
+                                AdLog.getSingleton().LogD("Helium SDK initialized failed");
+                                for (HeliumInitCallback callback : mCallbacks) {
+                                    if (callback != null) {
+                                        callback.initFailed(error.getMessage());
+                                    }
+                                }
                             }
+                            mCallbacks.clear();
                         }
-                    } else {
-                        mInitState = InitState.NOT_INIT;
-                        AdLog.getSingleton().LogD("Helium SDK initialized failed");
-                        for (HeliumInitCallback callback : mCallbacks) {
-                            if (callback != null) {
-                                callback.initFailed(error.getMessage());
-                            }
-                        }
-                    }
-                    mCallbacks.clear();
+                    });
                 }
             });
         } catch (Throwable e) {
@@ -347,10 +354,17 @@ public class HeliumSingleTon {
             callback.onBidFailed("Helium bid failed cause no bid response");
             return;
         }
-        String price = map.get("price");
         BidResponse bidResponse = new BidResponse();
+        try {
+            if (map.containsKey("price")) {
+                String price = map.get("price");
+                if (price != null && !TextUtils.isEmpty(price) && !price.equalsIgnoreCase("NaN")) {
+                    bidResponse.setPrice(Double.parseDouble(price));
+                }
+            }
+        } catch (Exception ignored) {
+        }
         bidResponse.setOriginal(map.toString());
-        bidResponse.setPrice(Double.parseDouble(price));
         callback.onBidSuccess(bidResponse);
     }
 

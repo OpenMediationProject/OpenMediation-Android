@@ -29,9 +29,7 @@ android.libraryVariants.all { variant ->
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':om-android-sdk')
-
     implementation 'com.mbridge.msdk.oversea:reward:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mbridge.msdk.oversea:newinterstitial:' + rootProject.ext.dependencies.mtg_version
     implementation 'com.mbridge.msdk.oversea:mbbanner:' + rootProject.ext.dependencies.mtg_version

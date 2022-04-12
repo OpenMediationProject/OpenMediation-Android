@@ -47,7 +47,7 @@ public class OguryBannerManager {
             }
             OguryBannerAdView bannerAdView = new OguryBannerAdView(context);
             bannerAdView.setAdUnit(adUnitId);
-            bannerAdView.setAdSize(OguryBannerAdSize.SMALL_BANNER_320x50);
+            bannerAdView.setAdSize(size);
             InnerBannerAdListener listener = new InnerBannerAdListener(bannerAdView, adUnitId, callback);
             bannerAdView.setListener(listener);
             bannerAdView.loadAd();

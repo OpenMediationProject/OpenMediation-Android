@@ -49,7 +49,7 @@ public class BaseInstance extends Frequency implements Comparable<BaseInstance> 
     // Ad load success time
     protected long mLoadSuccessTime;
     // Ad survive time,
-    // TODO 时间单位
+    // 时间单位 秒
     protected long mAdExpiredTime;
 
     /**

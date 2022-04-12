@@ -27,13 +27,6 @@ android.libraryVariants.all { variant ->
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':om-android-sdk')
     implementation rootProject.ext.dependencies.adtiming
-}
-
-repositories {
-    flatDir {
-        dirs 'libs'
-    }
 }

@@ -25,8 +25,6 @@ android.libraryVariants.all { variant ->
     }
 }
 dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
-    //MoPub
     implementation(rootProject.ext.dependencies.mopub) { transitive = true }
     implementation rootProject.ext.dependencies.mopub_volley
     implementation project(':om-android-sdk')

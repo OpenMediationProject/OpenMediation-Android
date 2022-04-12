@@ -17,7 +17,7 @@ android {
 }
 
 dependencies {
-  implementation 'com.openmediation:om-android-sdk:2.6.2@aar'
+  implementation 'com.openmediation:om-android-sdk:2.6.3@aar'
 
   // AdTiming-Adapter
   implementation 'com.openmediation.adapters:adtiming:2.5.0@aar'
@@ -36,7 +36,7 @@ dependencies {
   // MoPub-Adapter
   implementation 'com.openmediation.adapters:mopub:2.5.0@aar'
   // Tapjoy-Adapter
-  implementation 'com.openmediation.adapters:tapjoy:2.5.1@aar'
+  implementation 'com.openmediation.adapters:tapjoy:2.6.0@aar'
   // Chartboost-Adapter
   implementation 'com.openmediation.adapters:chartboost:2.5.0@aar'
   // Mintegral-Adapter
@@ -48,9 +48,9 @@ dependencies {
   //Fyber-Adapter
   implementation 'com.openmediation.adapters:fyber:2.5.0@aar'
   //Ogury-Adapter
-  implementation 'com.openmediation.adapters:ogury:2.5.0@aar'
+  implementation 'com.openmediation.adapters:ogury:2.5.1@aar'
   //Helium-Adapter
-  implementation 'com.openmediation.adapters:helium:2.5.0@aar'
+  implementation 'com.openmediation.adapters:helium:2.6.0@aar'
   // PubNative-Adapter
   implementation 'com.openmediation.adapters:pubnative:2.5.0@aar'
 }

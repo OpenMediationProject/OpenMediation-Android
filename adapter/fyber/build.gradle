@@ -25,16 +25,8 @@ android.libraryVariants.all { variant ->
     }
 }
 dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation project(':om-android-sdk')
-
     implementation "com.fyber.vamp:core-sdk:${rootProject.ext.dependencies.fyber}"
     implementation "com.fyber.vamp:video-kit:${rootProject.ext.dependencies.fyber}"
     implementation "com.fyber.vamp:mraid-kit:${rootProject.ext.dependencies.fyber}"
-}
-
-repositories {
-    flatDir {
-        dirs 'libs'
-    }
 }

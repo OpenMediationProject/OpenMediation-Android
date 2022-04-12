@@ -6,15 +6,12 @@ android {
 
 
     defaultConfig {
-        applicationId "com.example.oaidtest2"
+        applicationId "com.openmediation.sdk.demo"
         minSdkVersion 21
         targetSdkVersion rootProject.ext.version.targetSdkVersion
         versionCode 1
         versionName "1.0"
         multiDexEnabled true
-
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
     }
 
     buildTypes {
@@ -28,12 +25,16 @@ android {
         targetCompatibility = rootProject.ext.compileOptions.targetCompatibility
     }
 
+    packagingOptions {
+        exclude("META-INF/*.kotlin_module")
+    }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7'
-    implementation 'androidx.appcompat:appcompat:1.3.0'
+    implementation 'androidx.appcompat:appcompat:1.3.1'
+    implementation 'androidx.core:core:1.6.0'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
 
     // OM-SDK
@@ -43,7 +44,7 @@ dependencies {
     implementation rootProject.ext.dependencies.adtiming
     implementation project(path: ':adapter:adtiming')
 
-    //admob
+    //AdMob
     implementation rootProject.ext.dependencies.admob
     implementation rootProject.ext.dependencies.admob_facebook_adapter
     implementation project(path: ':adapter:admob')
@@ -52,7 +53,7 @@ dependencies {
     implementation rootProject.ext.dependencies.facebook
     implementation project(path: ':adapter:facebook')
 
-    //unity
+    //Unity
     implementation rootProject.ext.dependencies.unity
     implementation project(path: ':adapter:unity')
 
@@ -64,7 +65,7 @@ dependencies {
     implementation rootProject.ext.dependencies.applovin
     implementation project(path: ':adapter:applovin')
 
-    //vungle
+    //Vungle
     implementation rootProject.ext.dependencies.vungle
     implementation rootProject.ext.dependencies.vungle_androidx
     implementation rootProject.ext.dependencies.vungle_localbroadcast
@@ -108,16 +109,17 @@ dependencies {
     implementation "com.fyber.vamp:mraid-kit:${rootProject.ext.dependencies.fyber}"
     implementation project(path: ':adapter:fyber')
 
-    // Chartboost helium
+    // Chartboost Helium
     implementation rootProject.ext.dependencies.helium
     implementation rootProject.ext.dependencies.helium_facebook_adapter
+    implementation rootProject.ext.dependencies.helium_androidx_core
     implementation rootProject.ext.dependencies.eventbus
     implementation project(path: ':adapter:helium')
 
     // Pangle
-    implementation rootProject.ext.dependencies.pangle
-    implementation rootProject.ext.dependencies.play_service_ads_identifier
-    implementation project(path: ':adapter:tiktok')
+//    implementation rootProject.ext.dependencies.pangle
+//    implementation rootProject.ext.dependencies.play_service_ads_identifier
+//    implementation project(path: ':adapter:tiktok')
 
     // Ogury
     implementation rootProject.ext.dependencies.ogury
@@ -152,8 +154,8 @@ dependencies {
 
     // 国内版
     // Pangle
-//    implementation rootProject.ext.dependencies.pangle_cn
-//    implementation project(path: ':adapter_cn:tiktok_cn')
+    implementation rootProject.ext.dependencies.pangle_cn
+    implementation project(path: ':adapter_cn:tiktok_cn')
 
     // TencentAd
     implementation rootProject.ext.dependencies.tencentad
@@ -169,11 +171,11 @@ dependencies {
 //    implementation project(path: ':adapter_cn:mintegral_cn')
 
     // Sigmob
-    implementation(name: 'sigmob-3.5.3', ext: 'aar')
+    implementation(name: 'sigmob-3.5.6', ext: 'aar')
     implementation project(path: ':adapter_cn:sigmob_cn')
 
     // 快手
-    implementation(name: 'kssdk-ad-3.3.19', ext: 'aar')
+    implementation(name: 'kssdk-ad-3.3.21', ext: 'aar')
     implementation project(path: ':adapter_cn:ksad_cn')
 
     // 华为
@@ -186,6 +188,22 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics:19.0.0'
     // 华为广告标识符
 //    implementation 'com.huawei.hms:ads-identifier:3.4.39.302'
+}
+
+configurations.all {
+    resolutionStrategy {
+        force 'androidx.core:core:1.6.0'
+    }
+
+    resolutionStrategy.eachDependency {
+        DependencyResolveDetails details ->
+            def requested = details.requested
+            if (requested.group == "androidx.appcompat") {
+                if (requested.name == "appcompat") {
+                    details.useVersion "1.3.1"
+                }
+            }
+    }
 }
 
 repositories {

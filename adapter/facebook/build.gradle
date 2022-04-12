@@ -25,16 +25,6 @@ android.libraryVariants.all { variant ->
     }
 }
 dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
-    //fb
-    implementation(rootProject.ext.dependencies.facebook) {
-        exclude group: 'com.google.android.gms', module: 'play-services-ads'
-    }
+    implementation rootProject.ext.dependencies.facebook
     implementation project(':om-android-sdk')
-}
-
-repositories {
-    flatDir {
-        dirs 'libs'
-    }
 }

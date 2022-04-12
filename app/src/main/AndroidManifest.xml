@@ -4,9 +4,8 @@
     package="com.openmediation.sdk.demo">
 
     <application
-        android:hardwareAccelerated="true"
         android:name="com.openmediation.sdk.demo.AppApplication"
-        android:allowBackup="true"
+        android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_adtiming"
         android:label="@string/app_name"
         android:networkSecurityConfig="@xml/app_network_security_config"
@@ -37,9 +36,12 @@
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-8244307161105625~9398130412" />
 
-        <meta-data android:name="com.san.APP_KEY"
-            android:value="a05fe3ad-f16f-47d8-936f-612c29dddc6c"/>
-
+        <meta-data
+            android:name="com.san.APP_KEY"
+            android:value="a05fe3ad-f16f-47d8-936f-612c29dddc6c" />
+        <meta-data
+            android:name="applovin.sdk.key"
+            android:value="F7fJ_5utbn2PDof722NBMDQaeUq0XSRvBrSocmpSIRCfnA5poU405QCcg2PTTiM0N-Rbn__zqlQi3PcVH6nQa0" />
     </application>
 
 </manifest>

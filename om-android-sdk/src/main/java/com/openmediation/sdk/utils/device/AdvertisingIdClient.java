@@ -106,7 +106,7 @@ public class AdvertisingIdClient {
                 throw new IllegalStateException();
             }
             this.retrieved = true;
-            return this.queue.poll(1, TimeUnit.SECONDS);
+            return this.queue.poll(2500, TimeUnit.MILLISECONDS);
         }
     }
 

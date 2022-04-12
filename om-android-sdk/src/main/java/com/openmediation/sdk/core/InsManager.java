@@ -885,7 +885,7 @@ public class InsManager {
                                                  SparseArray<BaseInstance> insMap) {
         BaseInstance ins = insMap.get(insId);
         if (ins != null) {
-            //TODO: copy native instance
+            // copy native instance
             if (placement.getT() == CommonConstants.NATIVE && ins.getMediationState() != BaseInstance.MEDIATION_STATE.AVAILABLE) {
                 BaseInstance naIns = new NaInstance();
                 naIns = ins.copy(naIns);

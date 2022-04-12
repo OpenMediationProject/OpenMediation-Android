@@ -138,17 +138,6 @@ public class TencentBannerManager {
         public void onADLeftApplication() {
 
         }
-
-        @Override
-        public void onADOpenOverlay() {
-
-        }
-
-        @Override
-        public void onADCloseOverlay() {
-
-        }
-
     }
 
 }
