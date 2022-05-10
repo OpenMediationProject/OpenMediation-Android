@@ -16,8 +16,9 @@ android {
         targetSdkVersion rootProject.ext.version.targetSdkVersion
         versionCode rootProject.ext.version.versionCode
         versionName rootProject.ext.adapterVersion.inmobi
+        buildConfigField "int", 'VERSION_CODE', String.valueOf(rootProject.ext.version.versionCode)
+        buildConfigField 'String', 'VERSION_NAME', "\"" + rootProject.ext.adapterVersion.inmobi + "\""
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
     }
 

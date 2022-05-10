@@ -9,6 +9,8 @@ android {
         targetSdkVersion rootProject.ext.version.targetSdkVersion
         versionCode rootProject.ext.version.versionCode
         versionName rootProject.ext.adapterVersion.ogury
+        buildConfigField "int", 'VERSION_CODE', String.valueOf(rootProject.ext.version.versionCode)
+        buildConfigField 'String', 'VERSION_NAME', "\"" + rootProject.ext.adapterVersion.ogury + "\""
     }
 
     buildTypes {

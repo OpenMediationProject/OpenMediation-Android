@@ -1,15 +1,12 @@
-include ':adapter:applovin', ':adapter:chartboost', ':adapter:adcolony', ':adapter:mintegral', ':adapter:adtiming',
-        ':adapter:tapjoy', ':adapter:vungle', ':adapter:tiktok', ':adapter:ironsource',
-        ':adapter:unity', ':adapter:facebook', ':adapter:mopub', ':adapter:fyber',
-        ':om-android-sdk', ':adapter:admob', ':app',
-        ':adapter_cn:tiktok_cn', ':adapter_cn:tencentad_cn', ':adapter_cn:mintegral_cn', ':adapter:helium',
-        ':adapter_cn:sigmob_cn',
-        ':adapter_cn:ksad_cn',
-        ':adapter:ogury',
-        ':adapter:pubnative',
-        ':adapter:sanads',
-        ':adapter:hwads',
+include ':om-android-sdk',
+        ':adapter:applovin', ':adapter:chartboost', ':adapter:adcolony',
+        ':adapter:mintegral', ':adapter:adtiming', ':adapter:tapjoy',
+        ':adapter:vungle', ':adapter:tiktok', ':adapter:ironsource',
+        ':adapter:unity', ':adapter:facebook', ':adapter:fyber',
+        ':adapter:admob', ':adapter_cn:tiktok_cn', ':adapter_cn:tencentad_cn',
+        ':adapter_cn:mintegral_cn', ':adapter:helium', ':adapter_cn:sigmob_cn',
+        ':adapter_cn:ksad_cn', ':adapter:ogury', ':adapter:pubnative',
+        ':adapter:sanads', ':adapter:hwads', ':adapter:admost',
+        ':adapter:flatads', ':adapter:inmobi'
+include ':app'
 rootProject.name = 'AdTiming-OpenMediation-Android'
-include ':adapter:admost'
-include ':adapter:flatads'
-include ':adapter:inmobi'

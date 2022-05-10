@@ -10,7 +10,7 @@ import android.app.Application;
 import com.openmediation.sdk.InitCallback;
 import com.openmediation.sdk.InitConfiguration;
 import com.openmediation.sdk.OmAds;
-import com.openmediation.sdk.demo.utils.NewApiUtils;
+import com.openmediation.sdk.demo.utils.Constants;
 import com.openmediation.sdk.utils.error.Error;
 
 public class AppApplication extends Application {
@@ -21,20 +21,20 @@ public class AppApplication extends Application {
     }
 
     private void initSDK() {
-        NewApiUtils.printLog("start init sdk");
+        Constants.printLog("start init sdk");
         InitConfiguration configuration = new InitConfiguration.Builder()
-                .appKey(NewApiUtils.APPKEY)
+                .appKey(Constants.APPKEY)
                 .logEnable(true)
                 .build();
         OmAds.init(configuration, new InitCallback() {
             @Override
             public void onSuccess() {
-                NewApiUtils.printLog("init success");
+                Constants.printLog("init success");
             }
 
             @Override
             public void onError(Error result) {
-                NewApiUtils.printLog("init failed " + result.toString());
+                Constants.printLog("init failed " + result.toString());
             }
         });
     }

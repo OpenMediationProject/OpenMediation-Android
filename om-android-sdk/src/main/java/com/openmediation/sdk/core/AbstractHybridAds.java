@@ -278,7 +278,6 @@ public abstract class AbstractHybridAds extends AbstractAdsApi {
     protected void onInsLoadFailed(BaseInstance instance, AdapterError error, boolean reload) {
         super.onInsLoadFailed(instance, error, reload);
 
-        //MoPubBanner registered a receiver, we need to take care of it
         destroyAdEvent(instance);
         DeveloperLog.LogD("load ins : " + instance.toString() + " error : " + error);
 

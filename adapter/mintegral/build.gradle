@@ -10,6 +10,8 @@ android {
         targetSdkVersion rootProject.ext.version.targetSdkVersion
         versionCode 1
         versionName rootProject.ext.adapterVersion.mintegral
+        buildConfigField "int", 'VERSION_CODE', String.valueOf(rootProject.ext.version.versionCode)
+        buildConfigField 'String', 'VERSION_NAME', "\"" + rootProject.ext.adapterVersion.mintegral + "\""
     }
 
     buildTypes {

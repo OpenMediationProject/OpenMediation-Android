@@ -71,11 +71,6 @@ dependencies {
     implementation rootProject.ext.dependencies.vungle_localbroadcast
     implementation project(path: ':adapter:vungle')
 
-    //MoPub
-    implementation(rootProject.ext.dependencies.mopub) { transitive = true }
-    implementation rootProject.ext.dependencies.mopub_volley
-    implementation project(path: ':adapter:mopub')
-
     //TapJoy
     implementation rootProject.ext.dependencies.tapjoy
     implementation rootProject.ext.dependencies.play_service_base
@@ -117,9 +112,9 @@ dependencies {
     implementation project(path: ':adapter:helium')
 
     // Pangle
-//    implementation rootProject.ext.dependencies.pangle
-//    implementation rootProject.ext.dependencies.play_service_ads_identifier
-//    implementation project(path: ':adapter:tiktok')
+    implementation rootProject.ext.dependencies.pangle
+    implementation rootProject.ext.dependencies.play_service_ads_identifier
+    implementation project(path: ':adapter:tiktok')
 
     // Ogury
     implementation rootProject.ext.dependencies.ogury
@@ -154,8 +149,8 @@ dependencies {
 
     // 国内版
     // Pangle
-    implementation rootProject.ext.dependencies.pangle_cn
-    implementation project(path: ':adapter_cn:tiktok_cn')
+//    implementation rootProject.ext.dependencies.pangle_cn
+//    implementation project(path: ':adapter_cn:tiktok_cn')
 
     // TencentAd
     implementation rootProject.ext.dependencies.tencentad
@@ -171,11 +166,12 @@ dependencies {
 //    implementation project(path: ':adapter_cn:mintegral_cn')
 
     // Sigmob
-    implementation(name: 'sigmob-3.5.6', ext: 'aar')
+    implementation(name: 'sigmob-common-1.2.0', ext: 'aar')
+    implementation(name: 'sigmob-sdk-4.1.0', ext: 'aar')
     implementation project(path: ':adapter_cn:sigmob_cn')
 
     // 快手
-    implementation(name: 'kssdk-ad-3.3.21', ext: 'aar')
+    implementation(name: 'kssdk-ad-3.3.23', ext: 'aar')
     implementation project(path: ':adapter_cn:ksad_cn')
 
     // 华为
@@ -185,25 +181,9 @@ dependencies {
     // AppsFlyer
     implementation rootProject.ext.dependencies.appsflyer
     // Firebase
-    implementation 'com.google.firebase:firebase-analytics:19.0.0'
+    implementation 'com.google.firebase:firebase-analytics:20.1.2'
     // 华为广告标识符
 //    implementation 'com.huawei.hms:ads-identifier:3.4.39.302'
-}
-
-configurations.all {
-    resolutionStrategy {
-        force 'androidx.core:core:1.6.0'
-    }
-
-    resolutionStrategy.eachDependency {
-        DependencyResolveDetails details ->
-            def requested = details.requested
-            if (requested.group == "androidx.appcompat") {
-                if (requested.name == "appcompat") {
-                    details.useVersion "1.3.1"
-                }
-            }
-    }
 }
 
 repositories {

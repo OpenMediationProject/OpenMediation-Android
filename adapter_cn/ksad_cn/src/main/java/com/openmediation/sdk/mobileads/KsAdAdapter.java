@@ -87,6 +87,7 @@ public class KsAdAdapter extends CustomAdsAdapter {
     @Override
     public void loadInterstitialAd(Activity activity, final String adUnitId, Map<String, Object> extras, final InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, extras, callback);
+        AdLog.getSingleton().LogD(TAG + " initInterstitialAd..." + adUnitId);
         String error = check(adUnitId);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
@@ -125,14 +126,14 @@ public class KsAdAdapter extends CustomAdsAdapter {
                 }
 
                 @Override
-                public void onRequestResult(int i) {
-
+                public void onFullScreenVideoResult(List<KsFullScreenVideoAd> list) {
+                    AdLog.getSingleton().LogE(TAG + " onFullScreenVideoResult...");
                 }
 
                 @Override
                 public void onFullScreenVideoAdLoad(List<KsFullScreenVideoAd> adList) {
                     if (adList != null && adList.size() > 0) {
-                        AdLog.getSingleton().LogE(TAG + " onFullScreenVideoAdLoad.....");
+                        AdLog.getSingleton().LogE(TAG + " onFullScreenVideoAdLoad...");
                         mInterstitialAds.put(adUnitId, adList.get(0));
                         if (callback != null) {
                             callback.onInterstitialAdLoadSuccess();
@@ -173,7 +174,7 @@ public class KsAdAdapter extends CustomAdsAdapter {
 
                     @Override
                     public void onAdClicked() {
-                        AdLog.getSingleton().LogD(TAG + "ksFullScreenVideoAd onAdClicked.....");
+                        AdLog.getSingleton().LogD(TAG + "ksFullScreenVideoAd onAdClicked...");
                         if (callback != null) {
                             callback.onInterstitialAdClicked();
                         }
@@ -181,7 +182,7 @@ public class KsAdAdapter extends CustomAdsAdapter {
 
                     @Override
                     public void onPageDismiss() {
-                        AdLog.getSingleton().LogD(TAG + "ksFullScreenVideoAd onPageDismiss.....");
+                        AdLog.getSingleton().LogD(TAG + "ksFullScreenVideoAd onPageDismiss...");
                         mInterstitialAds.remove(adUnitId);
                         if (callback != null) {
                             callback.onInterstitialAdClosed();
@@ -190,6 +191,7 @@ public class KsAdAdapter extends CustomAdsAdapter {
 
                     @Override
                     public void onVideoPlayError(int code, int extra) {
+                        AdLog.getSingleton().LogD(TAG + "ksFullScreenVideoAd onVideoPlayError...");
                         if (callback != null) {
                             callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
                                     AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "ksFullScreenVideoAd onVideoPlayError code= " + code));
@@ -198,12 +200,12 @@ public class KsAdAdapter extends CustomAdsAdapter {
 
                     @Override
                     public void onVideoPlayEnd() {
-                        AdLog.getSingleton().LogD(TAG + "ksFullScreenVideoAd onVideoPlayEnd.....");
+                        AdLog.getSingleton().LogD(TAG + "ksFullScreenVideoAd onVideoPlayEnd...");
                     }
 
                     @Override
                     public void onVideoPlayStart() {
-                        AdLog.getSingleton().LogD(TAG + "ksFullScreenVideoAd onVideoPlayStart.....");
+                        AdLog.getSingleton().LogD(TAG + "ksFullScreenVideoAd onVideoPlayStart...");
                         if (callback != null) {
                             callback.onInterstitialAdShowSuccess();
                         }
@@ -211,7 +213,7 @@ public class KsAdAdapter extends CustomAdsAdapter {
 
                     @Override
                     public void onSkippedVideo() {
-                        AdLog.getSingleton().LogD(TAG + "ksFullScreenVideoAd onSkippedVideo.....");
+                        AdLog.getSingleton().LogD(TAG + "ksFullScreenVideoAd onSkippedVideo...");
                     }
                 });
                 ksFullScreenVideoAd.showFullScreenVideoAd(activity, null);
@@ -233,7 +235,6 @@ public class KsAdAdapter extends CustomAdsAdapter {
         return screenVideoAd.isAdEnable();
     }
 
-    /*********************************RewardedVideoAd***********************************/
     @Override
     public void initRewardedVideo(Activity activity, Map<String, Object> dataMap, final RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
@@ -267,7 +268,7 @@ public class KsAdAdapter extends CustomAdsAdapter {
     @Override
     public void loadRewardedVideo(Activity activity, final String adUnitId, Map<String, Object> extras, final RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
-        AdLog.getSingleton().LogD(TAG + "loadRewardedVideo...");
+        AdLog.getSingleton().LogD(TAG + "loadRewardedVideo..." + adUnitId);
         String error = check(adUnitId);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
@@ -296,7 +297,7 @@ public class KsAdAdapter extends CustomAdsAdapter {
                 @Override
                 public void onError(int code, String msg) {
                     if (callback != null) {
-                        AdLog.getSingleton().LogE(TAG + "RewardedVideo Load Error....." + msg);
+                        AdLog.getSingleton().LogE(TAG + "RewardedVideo Load Error..." + msg);
                         callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
                                 AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, code, msg));
                     }
@@ -306,14 +307,14 @@ public class KsAdAdapter extends CustomAdsAdapter {
                 }
 
                 @Override
-                public void onRequestResult(int i) {
-
+                public void onRewardVideoResult(List<KsRewardVideoAd> list) {
+                    AdLog.getSingleton().LogD(TAG + "onRewardVideoResult...");
                 }
 
                 @Override
                 public void onRewardVideoAdLoad(List<KsRewardVideoAd> adList) {
                     if (adList != null && adList.size() > 0) {
-                        AdLog.getSingleton().LogD(TAG + "onRewardVideoAdLoad.....");
+                        AdLog.getSingleton().LogD(TAG + "onRewardVideoAdLoad...");
                         mRewardedAds.put(adUnitId, adList.get(0));
                         if (callback != null) {
                             callback.onRewardedVideoLoadSuccess();
@@ -352,7 +353,7 @@ public class KsAdAdapter extends CustomAdsAdapter {
 
                     @Override
                     public void onAdClicked() {
-                        AdLog.getSingleton().LogD(TAG + "RewardedVideo onAdClicked.....");
+                        AdLog.getSingleton().LogD(TAG + "RewardedVideo onAdClicked...");
                         if (callback != null) {
                             callback.onRewardedVideoAdClicked();
                         }
@@ -360,7 +361,7 @@ public class KsAdAdapter extends CustomAdsAdapter {
 
                     @Override
                     public void onPageDismiss() {
-                        AdLog.getSingleton().LogD(TAG + "RewardedVideo onPageDismiss......");
+                        AdLog.getSingleton().LogD(TAG + "RewardedVideo onPageDismiss...");
                         mRewardedAds.remove(adUnitId);
                         if (callback != null) {
                             callback.onRewardedVideoAdClosed();
@@ -369,7 +370,7 @@ public class KsAdAdapter extends CustomAdsAdapter {
 
                     @Override
                     public void onVideoPlayError(int code, int extra) {
-                        AdLog.getSingleton().LogD(TAG + "RewardedVideo onVideoPlayError......");
+                        AdLog.getSingleton().LogD(TAG + "RewardedVideo onVideoPlayError...");
                         if (callback != null) {
                             callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
                                     AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "onVideoError code = " + code));
@@ -378,7 +379,7 @@ public class KsAdAdapter extends CustomAdsAdapter {
 
                     @Override
                     public void onVideoPlayEnd() {
-                        AdLog.getSingleton().LogD(TAG + "RewardedVideo onVideoPlayEnd......");
+                        AdLog.getSingleton().LogD(TAG + "RewardedVideo onVideoPlayEnd...");
                         if (callback != null) {
                             callback.onRewardedVideoAdEnded();
                         }
@@ -391,7 +392,7 @@ public class KsAdAdapter extends CustomAdsAdapter {
 
                     @Override
                     public void onVideoPlayStart() {
-                        AdLog.getSingleton().LogD(TAG + "RewardedVideo onVideoPlayStart.....");
+                        AdLog.getSingleton().LogD(TAG + "RewardedVideo onVideoPlayStart...");
                         if (callback != null) {
                             callback.onRewardedVideoAdShowSuccess();
                             callback.onRewardedVideoAdStarted();
@@ -400,7 +401,7 @@ public class KsAdAdapter extends CustomAdsAdapter {
 
                     @Override
                     public void onRewardVerify() {
-                        AdLog.getSingleton().LogD(TAG + "RewardedVideo onRewardVerify.....");
+                        AdLog.getSingleton().LogD(TAG + "RewardedVideo onRewardVerify...");
                         if (callback != null) {
                             callback.onRewardedVideoAdRewarded();
                         }

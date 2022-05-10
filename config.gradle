@@ -7,9 +7,8 @@ ext {
             'vungle'      : '2.5.0',
             'adcolony'    : '2.6.0',
             'applovin'    : '2.5.1',
-            'mopub'       : '2.5.0',
             'tapjoy'      : '2.6.0',
-            'chartboost'  : '2.5.0',
+            'chartboost'  : '2.5.1',
             'helium'      : '2.6.0',
             'tiktok'      : '2.5.1',
             'mintegral'   : '2.6.1',
@@ -25,7 +24,7 @@ ext {
             'tiktok_cn'   : '2.5.1',
             'tencentad_cn': '2.5.1',
             'mintegral_cn': '2.6.1',
-            'sigmob_cn'   : '2.5.0',
-            'ksad_cn'     : '2.5.1',
+            'sigmob_cn'   : '2.6.0',
+            'ksad_cn'     : '2.6.0',
     ]
 }

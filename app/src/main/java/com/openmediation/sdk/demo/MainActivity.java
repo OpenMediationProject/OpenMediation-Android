@@ -27,7 +27,7 @@ import com.openmediation.sdk.OmAds;
 import com.openmediation.sdk.banner.AdSize;
 import com.openmediation.sdk.banner.BannerAd;
 import com.openmediation.sdk.banner.BannerAdListener;
-import com.openmediation.sdk.demo.utils.NewApiUtils;
+import com.openmediation.sdk.demo.utils.Constants;
 import com.openmediation.sdk.interstitial.InterstitialAd;
 import com.openmediation.sdk.interstitial.InterstitialAdListener;
 import com.openmediation.sdk.nativead.AdIconView;
@@ -92,7 +92,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        NewApiUtils.ENABLE_LOG = true;
+        Constants.ENABLE_LOG = true;
         setContentView(R.layout.activity_main);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Window window = getWindow();
@@ -135,32 +135,32 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         OmAds.onResume(this);
-        NativeAd.addAdListener(NewApiUtils.P_NATIVE, mNativeAdListener);
+        NativeAd.addAdListener(Constants.P_NATIVE, mNativeAdListener);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         OmAds.onPause(this);
-        NativeAd.removeAdListener(NewApiUtils.P_NATIVE, mNativeAdListener);
+        NativeAd.removeAdListener(Constants.P_NATIVE, mNativeAdListener);
     }
 
     private void initSDK() {
-        NewApiUtils.printLog("start init sdk");
+        Constants.printLog("start init sdk");
         InitConfiguration configuration = new InitConfiguration.Builder()
-                .appKey(NewApiUtils.APPKEY)
+                .appKey(Constants.APPKEY)
                 .logEnable(true)
                 .build();
         OmAds.init(this, configuration, new InitCallback() {
             @Override
             public void onSuccess() {
-                NewApiUtils.printLog("init success");
+                Constants.printLog("init success");
                 setButtonEnable(true);
             }
 
             @Override
             public void onError(Error result) {
-                NewApiUtils.printLog("init failed " + result.toString());
+                Constants.printLog("init failed " + result.toString());
             }
         });
     }
@@ -176,14 +176,14 @@ public class MainActivity extends Activity {
             }
         };
         OmAds.addImpressionDataListener(mDataListener);
-        NativeAd.addAdListener(NewApiUtils.P_NATIVE, mNativeAdListener);
+        NativeAd.addAdListener(Constants.P_NATIVE, mNativeAdListener);
     }
 
     private void setVideoListener() {
         RewardedVideoAd.setAdListener(new RewardedVideoListener() {
             @Override
             public void onRewardedVideoAvailabilityChanged(boolean available) {
-                NewApiUtils.printLog("MainActivity----onRewardedVideoAvailabilityChanged----" + available);
+                Constants.printLog("MainActivity----onRewardedVideoAvailabilityChanged----" + available);
 
                 if (available) {
                     setRewardVideoButtonStat(true);
@@ -192,37 +192,37 @@ public class MainActivity extends Activity {
 
             @Override
             public void onRewardedVideoAdShowed(Scene scene) {
-                NewApiUtils.printLog("onRewardedVideoAdShowed " + scene);
+                Constants.printLog("onRewardedVideoAdShowed " + scene);
             }
 
             @Override
             public void onRewardedVideoAdShowFailed(Scene scene, Error error) {
-                NewApiUtils.printLog("onRewardedVideoAdShowFailed " + scene);
+                Constants.printLog("onRewardedVideoAdShowFailed " + scene);
             }
 
             @Override
             public void onRewardedVideoAdClicked(Scene scene) {
-                NewApiUtils.printLog("onRewardedVideoAdClicked " + scene);
+                Constants.printLog("onRewardedVideoAdClicked " + scene);
             }
 
             @Override
             public void onRewardedVideoAdClosed(Scene scene) {
-                NewApiUtils.printLog("onRewardedVideoAdClosed " + scene);
+                Constants.printLog("onRewardedVideoAdClosed " + scene);
             }
 
             @Override
             public void onRewardedVideoAdStarted(Scene scene) {
-                NewApiUtils.printLog("onRewardedVideoAdStarted " + scene);
+                Constants.printLog("onRewardedVideoAdStarted " + scene);
             }
 
             @Override
             public void onRewardedVideoAdEnded(Scene scene) {
-                NewApiUtils.printLog("onRewardedVideoAdEnded " + scene);
+                Constants.printLog("onRewardedVideoAdEnded " + scene);
             }
 
             @Override
             public void onRewardedVideoAdRewarded(Scene scene) {
-                NewApiUtils.printLog("onRewardedVideoAdRewarded " + scene);
+                Constants.printLog("onRewardedVideoAdRewarded " + scene);
             }
         });
     }
@@ -232,7 +232,7 @@ public class MainActivity extends Activity {
         InterstitialAd.setAdListener(new InterstitialAdListener() {
             @Override
             public void onInterstitialAdAvailabilityChanged(boolean available) {
-                NewApiUtils.printLog("MainActivity----onInterstitialAdAvailabilityChanged----" + available);
+                Constants.printLog("MainActivity----onInterstitialAdAvailabilityChanged----" + available);
                 if (available) {
                     setInterstitialButtonStat(true);
                 }
@@ -240,22 +240,22 @@ public class MainActivity extends Activity {
 
             @Override
             public void onInterstitialAdShowed(Scene scene) {
-                NewApiUtils.printLog("onInterstitialAdShowed " + scene);
+                Constants.printLog("onInterstitialAdShowed " + scene);
             }
 
             @Override
             public void onInterstitialAdShowFailed(Scene scene, Error error) {
-                NewApiUtils.printLog("onInterstitialAdShowFailed " + error);
+                Constants.printLog("onInterstitialAdShowFailed " + error);
             }
 
             @Override
             public void onInterstitialAdClosed(Scene scene) {
-                NewApiUtils.printLog("onInterstitialAdClosed " + scene);
+                Constants.printLog("onInterstitialAdClosed " + scene);
             }
 
             @Override
             public void onInterstitialAdClicked(Scene scene) {
-                NewApiUtils.printLog("onInterstitialAdClicked " + scene);
+                Constants.printLog("onInterstitialAdClicked " + scene);
             }
         });
     }
@@ -267,27 +267,27 @@ public class MainActivity extends Activity {
                 if (available) {
                     setPromotionButtonStat(true);
                 }
-                NewApiUtils.printLog("onPromotionAdAvailabilityChanged " + available);
+                Constants.printLog("onPromotionAdAvailabilityChanged " + available);
             }
 
             @Override
             public void onPromotionAdShowed(Scene scene) {
-                NewApiUtils.printLog("onPromotionAdShowed " + scene);
+                Constants.printLog("onPromotionAdShowed " + scene);
             }
 
             @Override
             public void onPromotionAdShowFailed(Scene scene, Error error) {
-                NewApiUtils.printLog("onPromotionAdShowFailed " + scene);
+                Constants.printLog("onPromotionAdShowFailed " + scene);
             }
 
             @Override
             public void onPromotionAdHidden(Scene scene) {
-                NewApiUtils.printLog("onPromotionAdHidden " + scene);
+                Constants.printLog("onPromotionAdHidden " + scene);
             }
 
             @Override
             public void onPromotionAdClicked(Scene scene) {
-                NewApiUtils.printLog("onPromotionAdClicked " + scene);
+                Constants.printLog("onPromotionAdClicked " + scene);
             }
         };
         PromotionAd.addAdListener(mPromotionAdListener);
@@ -325,7 +325,7 @@ public class MainActivity extends Activity {
         if (bannerAd != null) {
             bannerAd.destroy();
         }
-        bannerAd = new BannerAd(NewApiUtils.P_BANNER, new BannerAdListener() {
+        bannerAd = new BannerAd(Constants.P_BANNER, new BannerAdListener() {
             @Override
             public void onBannerAdLoaded(String placementId, View view) {
                 try {
@@ -399,12 +399,12 @@ public class MainActivity extends Activity {
         nativeButton.setEnabled(false);
         nativeButton.setText("Native Ad Loading...");
         if (mAdInfo != null) {
-            NativeAd.destroy(NewApiUtils.P_NATIVE, mAdInfo);
+            NativeAd.destroy(Constants.P_NATIVE, mAdInfo);
         }
         adContainer.removeAllViews();
         // for TikTok and TencentAd in China traffic
-        NativeAd.setDisplayParams(NewApiUtils.P_NATIVE, 300, 0);
-        NativeAd.loadAd(NewApiUtils.P_NATIVE);
+        NativeAd.setDisplayParams(Constants.P_NATIVE, 300, 0);
+        NativeAd.loadAd(Constants.P_NATIVE);
     }
 
     private void setRewardVideoButtonStat(boolean isEnable) {
@@ -451,7 +451,7 @@ public class MainActivity extends Activity {
             bannerAd.destroy();
         }
         if (mAdInfo != null) {
-            NativeAd.destroy(NewApiUtils.P_NATIVE, mAdInfo);
+            NativeAd.destroy(Constants.P_NATIVE, mAdInfo);
         }
         if (mDataListener != null) {
             OmAds.removeImpressionDataListener(mDataListener);

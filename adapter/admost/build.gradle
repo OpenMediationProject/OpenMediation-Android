@@ -2,10 +2,7 @@
  * // Copyright 2021 ADTIMING TECHNOLOGY COMPANY LIMITED
  * // Licensed under the GNU Lesser General Public License Version 3
  */
-
-plugins {
-    id 'com.android.library'
-}
+apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion rootProject.ext.version.compileSdkVersion
@@ -16,8 +13,8 @@ android {
         targetSdkVersion rootProject.ext.version.targetSdkVersion
         versionCode rootProject.ext.version.versionCode
         versionName rootProject.ext.adapterVersion.admost
-
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField "int", 'VERSION_CODE', String.valueOf(rootProject.ext.version.versionCode)
+        buildConfigField 'String', 'VERSION_NAME', "\"" + rootProject.ext.adapterVersion.admost + "\""
         consumerProguardFiles "consumer-rules.pro"
     }
 

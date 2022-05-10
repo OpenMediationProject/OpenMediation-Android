@@ -5,7 +5,7 @@ package com.openmediation.sdk.demo.utils;
 
 import android.util.Log;
 
-public class NewApiUtils {
+public class Constants {
 
     public static final String TAG = "OmDebug";
     public static boolean ENABLE_LOG = false;
