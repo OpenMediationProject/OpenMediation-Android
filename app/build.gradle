@@ -111,10 +111,10 @@ dependencies {
     implementation project(path: ':adapter:fyber')
 
     // Chartboost Helium
-    implementation rootProject.ext.dependencies.helium
-    implementation rootProject.ext.dependencies.helium_facebook_adapter
-    implementation rootProject.ext.dependencies.eventbus
-    implementation project(path: ':adapter:helium')
+//    implementation rootProject.ext.dependencies.helium
+//    implementation rootProject.ext.dependencies.helium_facebook_adapter
+//    implementation rootProject.ext.dependencies.eventbus
+//    implementation project(path: ':adapter:helium')
 
     // Pangle
     implementation rootProject.ext.dependencies.pangle
