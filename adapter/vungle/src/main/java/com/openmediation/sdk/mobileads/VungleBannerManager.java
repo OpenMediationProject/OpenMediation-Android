@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.BannerAdCallback;
 import com.openmediation.sdk.mediation.MediationUtil;
+import com.openmediation.sdk.utils.AdLog;
 import com.vungle.warren.AdConfig;
 import com.vungle.warren.BannerAdConfig;
 import com.vungle.warren.Banners;
@@ -20,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class VungleBannerManager {
 
-    private ConcurrentHashMap<String, com.vungle.warren.VungleBanner> mBannerAds;
+    private final ConcurrentHashMap<String, com.vungle.warren.VungleBanner> mBannerAds;
 
     private static class Holder {
         private static final VungleBannerManager INSTANCE = new VungleBannerManager();
@@ -104,8 +105,8 @@ public class VungleBannerManager {
         }
     }
 
-    private class InnerPlayAdCallback implements PlayAdCallback {
-        private BannerAdCallback mAdCallback;
+    private static class InnerPlayAdCallback implements PlayAdCallback {
+        private final BannerAdCallback mAdCallback;
 
         private InnerPlayAdCallback(BannerAdCallback callback) {
             this.mAdCallback = callback;
@@ -118,9 +119,7 @@ public class VungleBannerManager {
 
         @Override
         public void onAdStart(String id) {
-            if (mAdCallback != null) {
-                mAdCallback.onBannerAdImpression();
-            }
+            AdLog.getSingleton().LogD("VungleBannerManager", "onAdStart: " + id);
         }
 
         @Override
@@ -156,6 +155,7 @@ public class VungleBannerManager {
 
         @Override
         public void onAdViewed(String id) {
+            AdLog.getSingleton().LogD("VungleBannerManager", "onAdViewed: " + id);
             if (mAdCallback != null) {
                 mAdCallback.onBannerAdImpression();
             }

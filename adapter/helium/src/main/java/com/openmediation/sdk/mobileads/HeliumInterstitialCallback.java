@@ -12,4 +12,6 @@ interface HeliumInterstitialCallback {
     void didInterstitialShowFailed(String placementId, HeliumAdError error);
 
     void didInterstitialClosed(String placementId);
+
+    void didInterstitialClicked(String placementId);
 }

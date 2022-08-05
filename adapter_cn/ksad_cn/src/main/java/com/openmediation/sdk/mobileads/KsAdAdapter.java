@@ -12,6 +12,7 @@ import com.kwad.sdk.api.KsFullScreenVideoAd;
 import com.kwad.sdk.api.KsLoadManager;
 import com.kwad.sdk.api.KsRewardVideoAd;
 import com.kwad.sdk.api.KsScene;
+import com.kwad.sdk.api.KsVideoPlayConfig;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.CustomAdsAdapter;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
@@ -99,7 +100,7 @@ public class KsAdAdapter extends CustomAdsAdapter {
         long adValue;
         try {
             adValue = Long.parseLong(adUnitId);
-        } catch(Exception e) {
+        } catch (Exception e) {
             adValue = 0L;
         }
         KsLoadManager loadManager = KsAdSDK.getLoadManager();
@@ -216,7 +217,7 @@ public class KsAdAdapter extends CustomAdsAdapter {
                         AdLog.getSingleton().LogD(TAG + "ksFullScreenVideoAd onSkippedVideo...");
                     }
                 });
-                ksFullScreenVideoAd.showFullScreenVideoAd(activity, null);
+                ksFullScreenVideoAd.showFullScreenVideoAd(activity, new KsVideoPlayConfig.Builder().build());
             }
         } catch (Throwable e) {
             if (callback != null) {
@@ -280,7 +281,7 @@ public class KsAdAdapter extends CustomAdsAdapter {
         long adValue;
         try {
             adValue = Long.parseLong(adUnitId);
-        } catch(Exception e) {
+        } catch (Exception e) {
             adValue = 0L;
         }
         KsLoadManager loadManager = KsAdSDK.getLoadManager();
@@ -411,8 +412,13 @@ public class KsAdAdapter extends CustomAdsAdapter {
                     public void onRewardStepVerify(int taskType, int currentTaskStatus) {
 
                     }
+
+                    @Override
+                    public void onExtraRewardVerify(int i) {
+
+                    }
                 });
-                rewardVideoAd.showRewardVideoAd(activity, null);
+                rewardVideoAd.showRewardVideoAd(activity, new KsVideoPlayConfig.Builder().build());
             }
         } catch (Throwable e) {
             if (callback != null) {

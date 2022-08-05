@@ -323,6 +323,14 @@ public class HeliumAdapter extends CustomAdsAdapter implements HeliumInterstitia
     }
 
     @Override
+    public void didRewardedClicked(String placementId) {
+        RewardedVideoCallback listener = mRvCallbacks.get(placementId);
+        if (listener != null) {
+            listener.onRewardedVideoAdClicked();
+        }
+    }
+
+    @Override
     public void didInterstitialShowed(String placementId) {
         InterstitialAdCallback listener = mIsCallbacks.get(placementId);
         if (listener == null) {
@@ -346,6 +354,14 @@ public class HeliumAdapter extends CustomAdsAdapter implements HeliumInterstitia
         InterstitialAdCallback listener = mIsCallbacks.get(placementId);
         if (listener != null) {
             listener.onInterstitialAdClosed();
+        }
+    }
+
+    @Override
+    public void didInterstitialClicked(String placementId) {
+        InterstitialAdCallback listener = mIsCallbacks.get(placementId);
+        if (listener != null) {
+            listener.onInterstitialAdClicked();
         }
     }
 

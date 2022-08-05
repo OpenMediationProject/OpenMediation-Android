@@ -14,4 +14,6 @@ interface HeliumVideoCallback {
     void didRewardedClosed(String placementId);
 
     void didRewardedRewarded(String placementId);
+
+    void didRewardedClicked(String placementId);
 }

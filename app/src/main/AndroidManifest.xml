@@ -33,18 +33,6 @@
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.DeviceDefault.NoActionBar" />
 
-        <!-- 快手 -->
-        <activity
-            android:name="com.kwad.sdk.api.proxy.app.BaseFragmentActivity$RequestInstallPermissionActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize"
-            android:theme="@style/TransparentDialogActivity"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="intent.action.requestInstallPermission" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-
         <!-- SanAds EX -->
         <service
             android:name="san.g.toString"
@@ -72,6 +60,17 @@
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
+
+
+        <!-- Mintegral 国内版添加 -->
+        <!--<receiver android:name="com.mbridge.msdk.click.AppReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_ADDED" />
+
+                <data android:scheme="package" />
+            </intent-filter>
+        </receiver>-->
 
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"

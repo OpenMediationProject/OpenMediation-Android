@@ -146,7 +146,7 @@ public class MainActivity extends Activity {
     }
 
     private void initSDK() {
-        Constants.printLog("start init sdk");
+        Constants.printLog("om start init sdk");
         InitConfiguration configuration = new InitConfiguration.Builder()
                 .appKey(Constants.APPKEY)
                 .logEnable(true)
@@ -377,16 +377,15 @@ public class MainActivity extends Activity {
             btn.setText(info.getCallToActionText());
             MediaView mediaView = adView.findViewById(R.id.ad_media);
             NativeAdView nativeAdView = new NativeAdView(MainActivity.this);
-            AdIconView adIconView = adView.findViewById(R.id.ad_icon_media);
+            AdIconView iconView = adView.findViewById(R.id.ad_icon_media);
             nativeAdView.addView(adView);
             nativeAdView.setTitleView(title);
             nativeAdView.setDescView(desc);
-            nativeAdView.setAdIconView(adIconView);
+            nativeAdView.setAdIconView(iconView);
             nativeAdView.setCallToActionView(btn);
             nativeAdView.setMediaView(mediaView);
 
             NativeAd.registerNativeAdView(placementId, nativeAdView, info);
-
             RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
                     RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
             adContainer.addView(nativeAdView, layoutParams);

@@ -37,6 +37,8 @@ dependencies {
     implementation 'androidx.core:core:1.6.0'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
 
+    implementation 'com.google.android.exoplayer:exoplayer-ui:2.16.0'
+
     // OM-SDK
     implementation project(path: ':om-android-sdk')
 
@@ -48,6 +50,10 @@ dependencies {
     implementation rootProject.ext.dependencies.admob
     implementation rootProject.ext.dependencies.admob_facebook_adapter
     implementation project(path: ':adapter:admob')
+
+    // Google Ad Manager ReklamUp
+    implementation rootProject.ext.dependencies.admob
+    implementation project(path: ':adapter:gam_reklamup')
 
     //Facebook
     implementation rootProject.ext.dependencies.facebook
@@ -95,7 +101,7 @@ dependencies {
     // ironSource
     implementation rootProject.ext.dependencies.ironsource
     implementation rootProject.ext.dependencies.play_service_ads_identifier
-    implementation 'com.google.android.gms:play-services-basement:17.6.0'
+    implementation 'com.google.android.gms:play-services-basement:18.1.0'
     implementation project(path: ':adapter:ironsource')
 
     // Fyber
@@ -105,11 +111,10 @@ dependencies {
     implementation project(path: ':adapter:fyber')
 
     // Chartboost Helium
-    implementation rootProject.ext.dependencies.helium
-    implementation rootProject.ext.dependencies.helium_facebook_adapter
-    implementation rootProject.ext.dependencies.helium_androidx_core
-    implementation rootProject.ext.dependencies.eventbus
-    implementation project(path: ':adapter:helium')
+//    implementation rootProject.ext.dependencies.helium
+//    implementation rootProject.ext.dependencies.helium_facebook_adapter
+//    implementation rootProject.ext.dependencies.eventbus
+//    implementation project(path: ':adapter:helium')
 
     // Pangle
     implementation rootProject.ext.dependencies.pangle
@@ -124,7 +129,7 @@ dependencies {
     implementation rootProject.ext.dependencies.pubnative
     implementation project(path: ':adapter:pubnative')
 
-    // AdMost
+    // Admost
     implementation rootProject.ext.dependencies.admost
     implementation rootProject.ext.dependencies.admost_volley
     implementation rootProject.ext.dependencies.play_service_base
@@ -166,12 +171,12 @@ dependencies {
 //    implementation project(path: ':adapter_cn:mintegral_cn')
 
     // Sigmob
-    implementation(name: 'sigmob-common-1.2.0', ext: 'aar')
-    implementation(name: 'sigmob-sdk-4.1.0', ext: 'aar')
+    implementation(name: 'sigmob-common-1.3.4', ext: 'aar')
+    implementation(name: 'sigmob-sdk-4.4.0', ext: 'aar')
     implementation project(path: ':adapter_cn:sigmob_cn')
 
     // 快手
-    implementation(name: 'kssdk-ad-3.3.23', ext: 'aar')
+    implementation(name: 'kssdk-ad-3.3.27', ext: 'aar')
     implementation project(path: ':adapter_cn:ksad_cn')
 
     // 华为

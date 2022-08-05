@@ -5,11 +5,10 @@ package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.Configuration;
 import android.text.TextUtils;
+import android.view.ViewGroup;
 
 import com.bytedance.sdk.openadsdk.AdSlot;
-import com.bytedance.sdk.openadsdk.TTAdConstant;
 import com.bytedance.sdk.openadsdk.TTAdManager;
 import com.bytedance.sdk.openadsdk.TTAdNative;
 import com.bytedance.sdk.openadsdk.TTAdSdk;
@@ -24,6 +23,7 @@ import com.openmediation.sdk.mediation.MediationInfo;
 import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.mediation.NativeAdCallback;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
+import com.openmediation.sdk.mediation.SplashAdCallback;
 import com.openmediation.sdk.nativead.NativeAdView;
 import com.openmediation.sdk.utils.AdLog;
 
@@ -92,7 +92,7 @@ public class TikTokAdapter extends CustomAdsAdapter {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
         try {
             loadRvAd(adUnitId, callback);
-        } catch(Throwable e) {
+        } catch (Throwable e) {
             if (callback != null) {
                 callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
                         AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
@@ -146,7 +146,7 @@ public class TikTokAdapter extends CustomAdsAdapter {
                                     AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "TikTok RewardedVideo is not ready"));
                         }
                     }
-                } catch(Throwable e) {
+                } catch (Throwable e) {
                     if (callback != null) {
                         callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
                                 AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
@@ -199,7 +199,7 @@ public class TikTokAdapter extends CustomAdsAdapter {
         super.loadInterstitialAd(activity, adUnitId, extras, callback);
         try {
             loadInterstitial(MediationUtil.getContext(), adUnitId, callback);
-        } catch(Throwable e) {
+        } catch (Throwable e) {
             if (callback != null) {
                 callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
                         AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
@@ -252,7 +252,7 @@ public class TikTokAdapter extends CustomAdsAdapter {
                                     AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "TikTok InterstitialAd is not ready"));
                         }
                     }
-                } catch(Throwable e) {
+                } catch (Throwable e) {
                     if (callback != null) {
                         callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
                                 AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, "Unknown Error, " + e.getMessage()));
@@ -349,6 +349,30 @@ public class TikTokAdapter extends CustomAdsAdapter {
         TikTokNativeManager.getInstance().destroyAd(adUnitId, adInfo);
     }
 
+    @Override
+    public void initSplashAd(Activity activity, Map<String, Object> extras, SplashAdCallback callback) {
+        super.initSplashAd(activity, extras, callback);
+        TikTokSplashManager.getInstance().initAd(MediationUtil.getContext(), extras, mUserConsent, mAgeRestricted, callback);
+    }
+
+    @Override
+    public void loadSplashAd(Activity activity, String adUnitId, Map<String, Object> extras, SplashAdCallback callback) {
+        super.loadSplashAd(activity, adUnitId, extras, callback);
+        TikTokSplashManager.getInstance().loadAd(MediationUtil.getContext(), adUnitId, extras, callback);
+    }
+
+    @Override
+    public void showSplashAd(Activity activity, String adUnitId, ViewGroup viewGroup, SplashAdCallback callback) {
+        super.showSplashAd(activity, adUnitId, viewGroup, callback);
+        TikTokSplashManager.getInstance().showAd(adUnitId, activity, callback);
+    }
+
+    @Override
+    public void destroySplashAd(String adUnitId) {
+        super.destroySplashAd(adUnitId);
+        TikTokSplashManager.getInstance().destroyAd(adUnitId);
+    }
+
     private void initSdk(TTAdManagerHolder.InitCallback callback) {
         TTAdManagerHolder.getInstance().init(MediationUtil.getContext(), mAppKey, mUserConsent, mAgeRestricted, callback);
     }
@@ -443,15 +467,10 @@ public class TikTokAdapter extends CustomAdsAdapter {
             TTAdManager adManager = TTAdManagerHolder.getInstance().getAdManager();
             mTTAdNative = adManager.createAdNative(context.getApplicationContext());
         }
-        int orientation = TTAdConstant.HORIZONTAL;
-        if (context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            orientation = TTAdConstant.VERTICAL;
-        }
         int[] screenPx = TTAdManagerHolder.getScreenPx(context);
         return new AdSlot.Builder()
                 .setCodeId(adUnitId)
                 .setImageAcceptedSize(screenPx[0], screenPx[1])
-                .setOrientation(orientation)
                 .build();
     }
 

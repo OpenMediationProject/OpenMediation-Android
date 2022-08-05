@@ -1,39 +1,34 @@
-// Copyright 2020 ADTIMING TECHNOLOGY COMPANY LIMITED
+// Copyright 2022 ADTIMING TECHNOLOGY COMPANY LIMITED
 // Licensed under the GNU Lesser General Public License Version 3
 
 package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.text.TextUtils;
-import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
-import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
-import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.OnUserEarnedRewardListener;
 import com.google.android.gms.ads.RequestConfiguration;
+import com.google.android.gms.ads.admanager.AdManagerAdRequest;
+import com.google.android.gms.ads.admanager.AdManagerAdView;
+import com.google.android.gms.ads.admanager.AdManagerInterstitialAd;
+import com.google.android.gms.ads.admanager.AdManagerInterstitialAdLoadCallback;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
-import com.google.android.gms.ads.nativead.NativeAd;
 import com.google.android.gms.ads.nativead.NativeAdOptions;
 import com.google.android.gms.ads.rewarded.RewardItem;
 import com.google.android.gms.ads.rewarded.RewardedAd;
@@ -55,18 +50,18 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public class AdMobAdapter extends CustomAdsAdapter {
+public class GAMReklamUpAdapter extends CustomAdsAdapter {
 
     private final ConcurrentMap<String, RewardedAd> mRewardedAds;
-    private final ConcurrentMap<String, InterstitialAd> mInterstitialAds;
-    private final ConcurrentMap<String, AdView> mBannerAds;
+    private final ConcurrentMap<String, AdManagerInterstitialAd> mInterstitialAds;
+    private final ConcurrentMap<String, AdManagerAdView> mBannerAds;
     private final ConcurrentMap<String, RewardedVideoCallback> mRvInitCallbacks;
     private final ConcurrentMap<String, InterstitialAdCallback> mIsInitCallbacks;
     private final ConcurrentMap<String, BannerAdCallback> mBnInitCallbacks;
     private final ConcurrentMap<String, NativeAdCallback> mNaInitCallbacks;
     private volatile InitState mInitState = InitState.NOT_INIT;
 
-    public AdMobAdapter() {
+    public GAMReklamUpAdapter() {
         mRewardedAds = new ConcurrentHashMap<>();
         mInterstitialAds = new ConcurrentHashMap<>();
         mBannerAds = new ConcurrentHashMap<>();
@@ -83,12 +78,12 @@ public class AdMobAdapter extends CustomAdsAdapter {
 
     @Override
     public String getAdapterVersion() {
-        return com.openmediation.sdk.mobileads.admob.BuildConfig.VERSION_NAME;
+        return com.openmediation.sdk.mobileads.gamreklamup.BuildConfig.VERSION_NAME;
     }
 
     @Override
     public int getAdNetworkId() {
-        return MediationInfo.MEDIATION_ID_2;
+        return MediationInfo.MEDIATION_ID_31;
     }
 
     @Override
@@ -107,8 +102,8 @@ public class AdMobAdapter extends CustomAdsAdapter {
         setAgeRestricted(context, age < 13);
     }
 
-    private AdRequest createAdRequest() {
-        AdRequest.Builder builder = new AdRequest.Builder();
+    private AdManagerAdRequest createAdRequest() {
+        AdManagerAdRequest.Builder builder = new AdManagerAdRequest.Builder();
         if (mUserConsent != null || mUSPrivacyLimit != null) {
             Bundle extras = new Bundle();
             if (mUserConsent != null && !mUserConsent) {
@@ -122,7 +117,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
         return builder.build();
     }
 
-    private synchronized void initSDK() {
+    private void initSDK() {
         mInitState = InitState.INIT_PENDING;
         MobileAds.initialize(MediationUtil.getContext());
         onInitSuccess();
@@ -147,43 +142,36 @@ public class AdMobAdapter extends CustomAdsAdapter {
         }
         mNaInitCallbacks.clear();
 
-        AdMobSplashManager.getInstance().onInitSuccess();
+        GAMReklamUpSplashManager.getInstance().onInitSuccess();
     }
 
+    /*********************************RewardedVideoAd***********************************/
     @Override
     public void initRewardedVideo(final Activity activity, final Map<String, Object> dataMap, final RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        MediationUtil.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    String error = check();
-                    if (TextUtils.isEmpty(error)) {
-                        switch (mInitState) {
-                            case NOT_INIT:
-                                if (dataMap.get("pid") != null && callback != null) {
-                                    mRvInitCallbacks.put((String) dataMap.get("pid"), callback);
-                                }
-                                initSDK();
-                                break;
-                            case INIT_PENDING:
-                                if (dataMap.get("pid") != null && callback != null) {
-                                    mRvInitCallbacks.put((String) dataMap.get("pid"), callback);
-                                }
-                                break;
-                            case INIT_SUCCESS:
-                                if (callback != null) {
-                                    callback.onRewardedVideoInitSuccess();
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-                    } else {
-                        if (callback != null) {
-                            callback.onRewardedVideoInitFailed(AdapterErrorBuilder.buildInitError(
-                                    AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
-                        }
+                    switch (mInitState) {
+                        case NOT_INIT:
+                            if (dataMap.get("pid") != null && callback != null) {
+                                mRvInitCallbacks.put((String) dataMap.get("pid"), callback);
+                            }
+                            initSDK();
+                            break;
+                        case INIT_PENDING:
+                            if (dataMap.get("pid") != null && callback != null) {
+                                mRvInitCallbacks.put((String) dataMap.get("pid"), callback);
+                            }
+                            break;
+                        case INIT_SUCCESS:
+                            if (callback != null) {
+                                callback.onRewardedVideoInitSuccess();
+                            }
+                            break;
+                        default:
+                            break;
                     }
                 } catch (Throwable e) {
                     if (callback != null) {
@@ -198,7 +186,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
     @Override
     public void loadRewardedVideo(final Activity activity, final String adUnitId, Map<String, Object> extras, final RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        MediationUtil.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -228,7 +216,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
     @Override
     public void showRewardedVideo(final Activity activity, final String adUnitId
             , final RewardedVideoCallback callback) {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        MediationUtil.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -271,7 +259,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
         rewardedAd.show(activity, new OnUserEarnedRewardListener() {
             @Override
             public void onUserEarnedReward(@NonNull RewardItem rewardItem) {
-                AdLog.getSingleton().LogD("AdMobAdapter", "RewardedAd onUserEarnedReward");
+                AdLog.getSingleton().LogD("GAMReklamUpAdapter", "RewardedAd onUserEarnedReward");
                 if (callback != null) {
                     callback.onRewardedVideoAdRewarded();
                 }
@@ -315,7 +303,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
             @Override
             public void onAdFailedToShowFullScreenContent(AdError adError) {
                 super.onAdFailedToShowFullScreenContent(adError);
-                AdLog.getSingleton().LogE("AdMobAdapter", "RewardedAd onAdFailedToShowFullScreenContent");
+                AdLog.getSingleton().LogE("GAMReklamUpAdapter", "RewardedAd onAdFailedToShowFullScreenContent");
                 if (callback != null) {
                     callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
                             AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, adError.getCode(), adError.getMessage()));
@@ -325,7 +313,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
             @Override
             public void onAdShowedFullScreenContent() {
                 super.onAdShowedFullScreenContent();
-                AdLog.getSingleton().LogD("AdMobAdapter", "RewardedAd onAdShowedFullScreenContent");
+                AdLog.getSingleton().LogD("GAMReklamUpAdapter", "RewardedAd onAdShowedFullScreenContent");
                 if (callback != null) {
                     callback.onRewardedVideoAdShowSuccess();
                     callback.onRewardedVideoAdStarted();
@@ -335,7 +323,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
             @Override
             public void onAdDismissedFullScreenContent() {
                 super.onAdDismissedFullScreenContent();
-                AdLog.getSingleton().LogD("AdMobAdapter", "RewardedAd onAdDismissedFullScreenContent");
+                AdLog.getSingleton().LogD("GAMReklamUpAdapter", "RewardedAd onAdDismissedFullScreenContent");
                 if (callback != null) {
                     callback.onRewardedVideoAdEnded();
                     callback.onRewardedVideoAdClosed();
@@ -345,7 +333,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
             @Override
             public void onAdClicked() {
                 super.onAdClicked();
-                AdLog.getSingleton().LogD("AdMobAdapter", "RewardedAd onAdClicked");
+                AdLog.getSingleton().LogD("GAMReklamUpAdapter", "RewardedAd onAdClicked");
                 if (callback != null) {
                     callback.onRewardedVideoAdClicked();
                 }
@@ -357,37 +345,29 @@ public class AdMobAdapter extends CustomAdsAdapter {
     @Override
     public void initInterstitialAd(final Activity activity, final Map<String, Object> dataMap, final InterstitialAdCallback callback) {
         super.initInterstitialAd(activity, dataMap, callback);
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        MediationUtil.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    String error = check();
-                    if (TextUtils.isEmpty(error)) {
-                        switch (mInitState) {
-                            case NOT_INIT:
-                                if (dataMap.get("pid") != null && callback != null) {
-                                    mIsInitCallbacks.put((String) dataMap.get("pid"), callback);
-                                }
-                                initSDK();
-                                break;
-                            case INIT_PENDING:
-                                if (dataMap.get("pid") != null && callback != null) {
-                                    mIsInitCallbacks.put((String) dataMap.get("pid"), callback);
-                                }
-                                break;
-                            case INIT_SUCCESS:
-                                if (callback != null) {
-                                    callback.onInterstitialAdInitSuccess();
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-                    } else {
-                        if (callback != null) {
-                            callback.onInterstitialAdInitFailed(AdapterErrorBuilder.buildInitError(
-                                    AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, error));
-                        }
+                    switch (mInitState) {
+                        case NOT_INIT:
+                            if (dataMap.get("pid") != null && callback != null) {
+                                mIsInitCallbacks.put((String) dataMap.get("pid"), callback);
+                            }
+                            initSDK();
+                            break;
+                        case INIT_PENDING:
+                            if (dataMap.get("pid") != null && callback != null) {
+                                mIsInitCallbacks.put((String) dataMap.get("pid"), callback);
+                            }
+                            break;
+                        case INIT_SUCCESS:
+                            if (callback != null) {
+                                callback.onInterstitialAdInitSuccess();
+                            }
+                            break;
+                        default:
+                            break;
                     }
                 } catch (Throwable e) {
                     if (callback != null) {
@@ -402,7 +382,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
     @Override
     public void loadInterstitialAd(final Activity activity, final String adUnitId, Map<String, Object> extras, final InterstitialAdCallback callback) {
         super.loadInterstitialAd(activity, adUnitId, extras, callback);
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        MediationUtil.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -420,7 +400,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                         }
                         return;
                     }
-                    InterstitialAd.load(MediationUtil.getContext(), adUnitId, createAdRequest(), createInterstitialListener(adUnitId, callback));
+                    AdManagerInterstitialAd.load(MediationUtil.getContext(), adUnitId, createAdRequest(), createInterstitialListener(adUnitId, callback));
                 } catch (Throwable e) {
                     if (callback != null) {
                         callback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
@@ -434,7 +414,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
     @Override
     public void showInterstitialAd(final Activity activity, final String adUnitId, final InterstitialAdCallback callback) {
         super.showInterstitialAd(activity, adUnitId, callback);
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        MediationUtil.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -484,37 +464,29 @@ public class AdMobAdapter extends CustomAdsAdapter {
     @Override
     public void initBannerAd(final Activity activity, final Map<String, Object> dataMap, final BannerAdCallback callback) {
         super.initBannerAd(activity, dataMap, callback);
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        MediationUtil.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    String error = check();
-                    if (TextUtils.isEmpty(error)) {
-                        switch (mInitState) {
-                            case NOT_INIT:
-                                if (dataMap.get("pid") != null && callback != null) {
-                                    mBnInitCallbacks.put((String) dataMap.get("pid"), callback);
-                                }
-                                initSDK();
-                                break;
-                            case INIT_PENDING:
-                                if (dataMap.get("pid") != null && callback != null) {
-                                    mBnInitCallbacks.put((String) dataMap.get("pid"), callback);
-                                }
-                                break;
-                            case INIT_SUCCESS:
-                                if (callback != null) {
-                                    callback.onBannerAdInitSuccess();
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-                    } else {
-                        if (callback != null) {
-                            callback.onBannerAdInitFailed(AdapterErrorBuilder.buildInitError(
-                                    AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, error));
-                        }
+                    switch (mInitState) {
+                        case NOT_INIT:
+                            if (dataMap.get("pid") != null && callback != null) {
+                                mBnInitCallbacks.put((String) dataMap.get("pid"), callback);
+                            }
+                            initSDK();
+                            break;
+                        case INIT_PENDING:
+                            if (dataMap.get("pid") != null && callback != null) {
+                                mBnInitCallbacks.put((String) dataMap.get("pid"), callback);
+                            }
+                            break;
+                        case INIT_SUCCESS:
+                            if (callback != null) {
+                                callback.onBannerAdInitSuccess();
+                            }
+                            break;
+                        default:
+                            break;
                     }
                 } catch (Throwable e) {
                     if (callback != null) {
@@ -529,7 +501,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
     @Override
     public void loadBannerAd(final Activity activity, final String adUnitId, final Map<String, Object> extras, final BannerAdCallback callback) {
         super.loadBannerAd(activity, adUnitId, extras, callback);
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        MediationUtil.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -541,7 +513,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                         }
                         return;
                     }
-                    AdView adView = new AdView(MediationUtil.getContext());
+                    AdManagerAdView adView = new AdManagerAdView(MediationUtil.getContext());
                     adView.setAdUnitId(adUnitId);
                     AdSize adSize = getAdSize(extras);
                     if (adSize != null) {
@@ -567,7 +539,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
             return;
         }
         try {
-            AdView view = mBannerAds.remove(adUnitId);
+            AdManagerAdView view = mBannerAds.remove(adUnitId);
             if (view != null) {
                 view.destroy();
             }
@@ -578,37 +550,29 @@ public class AdMobAdapter extends CustomAdsAdapter {
     @Override
     public void initNativeAd(final Activity activity, final Map<String, Object> dataMap, final NativeAdCallback callback) {
         super.initNativeAd(activity, dataMap, callback);
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        MediationUtil.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    String error = check();
-                    if (TextUtils.isEmpty(error)) {
-                        switch (mInitState) {
-                            case NOT_INIT:
-                                if (dataMap.get("pid") != null && callback != null) {
-                                    mNaInitCallbacks.put((String) dataMap.get("pid"), callback);
-                                }
-                                initSDK();
-                                break;
-                            case INIT_PENDING:
-                                if (dataMap.get("pid") != null && callback != null) {
-                                    mNaInitCallbacks.put((String) dataMap.get("pid"), callback);
-                                }
-                                break;
-                            case INIT_SUCCESS:
-                                if (callback != null) {
-                                    callback.onNativeAdInitSuccess();
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-                    } else {
-                        if (callback != null) {
-                            callback.onNativeAdInitFailed(AdapterErrorBuilder.buildInitError(
-                                    AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, error));
-                        }
+                    switch (mInitState) {
+                        case NOT_INIT:
+                            if (dataMap.get("pid") != null && callback != null) {
+                                mNaInitCallbacks.put((String) dataMap.get("pid"), callback);
+                            }
+                            initSDK();
+                            break;
+                        case INIT_PENDING:
+                            if (dataMap.get("pid") != null && callback != null) {
+                                mNaInitCallbacks.put((String) dataMap.get("pid"), callback);
+                            }
+                            break;
+                        case INIT_SUCCESS:
+                            if (callback != null) {
+                                callback.onNativeAdInitSuccess();
+                            }
+                            break;
+                        default:
+                            break;
                     }
                 } catch (Throwable e) {
                     if (callback != null) {
@@ -623,54 +587,47 @@ public class AdMobAdapter extends CustomAdsAdapter {
     @Override
     public void loadNativeAd(final Activity activity, final String adUnitId, final Map<String, Object> extras, final NativeAdCallback callback) {
         super.loadNativeAd(activity, adUnitId, extras, callback);
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    String error = check(adUnitId);
-                    if (!TextUtils.isEmpty(error)) {
-                        if (callback != null) {
-                            callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
-                                    AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, error));
-                        }
-                        return;
-                    }
-                    final AdMobNativeAdsConfig config = new AdMobNativeAdsConfig();
-                    AdLoader.Builder builder = new AdLoader.Builder(MediationUtil.getContext(), adUnitId);
-                    builder.forNativeAd(new NativeAd.OnNativeAdLoadedListener() {
-                        @Override
-                        public void onNativeAdLoaded(NativeAd nativeAd) {
-                            try {
-                                config.setAdMobNativeAd(nativeAd);
-                                AdnAdInfo info = new AdnAdInfo();
-                                info.setAdnNativeAd(config);
-                                info.setType(getAdNetworkId());
-                                info.setTitle(nativeAd.getHeadline());
-                                info.setDesc(nativeAd.getBody());
-                                info.setCallToActionText(nativeAd.getCallToAction());
-                                if (callback != null) {
-                                    callback.onNativeAdLoadSuccess(info);
-                                }
-                            } catch (Throwable e) {
-                                if (callback != null) {
-                                    callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                                            AdapterErrorBuilder.AD_UNIT_NATIVE, "AdMobAdapter", e.getMessage()));
-                                }
-                            }
-                        }
-                    });
-                    NativeAdOptions.Builder nativeAdOptionsBuilder = new NativeAdOptions.Builder();
-                    //single image
-                    nativeAdOptionsBuilder.setRequestMultipleImages(false);
-                    AdLoader loader = builder.withNativeAdOptions(nativeAdOptionsBuilder.build())
-                            .withAdListener(createNativeAdListener(callback)).build();
-                    config.setAdLoader(loader);
-                    loader.loadAd(createAdRequest());
-                } catch (Throwable e) {
+        MediationUtil.runOnUiThread(() -> {
+            try {
+                String error = check(adUnitId);
+                if (!TextUtils.isEmpty(error)) {
                     if (callback != null) {
-                        callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                                AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, "Unknown Error, " + e.getMessage()));
+                        callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                                AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, error));
                     }
+                    return;
+                }
+                final GAMReklamUpNativeAdsConfig config = new GAMReklamUpNativeAdsConfig();
+                AdLoader.Builder builder = new AdLoader.Builder(MediationUtil.getContext(), adUnitId);
+                builder.forNativeAd(nativeAd -> {
+                    try {
+                        config.setAdMobNativeAd(nativeAd);
+                        AdnAdInfo info = new AdnAdInfo();
+                        info.setAdnNativeAd(config);
+                        info.setType(getAdNetworkId());
+                        info.setTitle(nativeAd.getHeadline());
+                        info.setDesc(nativeAd.getBody());
+                        info.setCallToActionText(nativeAd.getCallToAction());
+                        if (callback != null) {
+                            callback.onNativeAdLoadSuccess(info);
+                        }
+                    } catch (Throwable e) {
+                        if (callback != null) {
+                            callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                                    AdapterErrorBuilder.AD_UNIT_NATIVE, "GAMReklamUpAdapter", e.getMessage()));
+                        }
+                    }
+                });
+                NativeAdOptions.Builder nativeAdOptionsBuilder = new NativeAdOptions.Builder();
+                //single image
+                nativeAdOptionsBuilder.setRequestMultipleImages(false);
+                AdLoader loader = builder.withNativeAdOptions(nativeAdOptionsBuilder.build())
+                        .withAdListener(createNativeAdListener(callback)).build();
+                loader.loadAd(createAdRequest());
+            } catch (Throwable e) {
+                if (callback != null) {
+                    callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                            AdapterErrorBuilder.AD_UNIT_NATIVE, mAdapterName, "Unknown Error, " + e.getMessage()));
                 }
             }
         });
@@ -679,10 +636,10 @@ public class AdMobAdapter extends CustomAdsAdapter {
     @Override
     public void destroyNativeAd(String adUnitId, AdnAdInfo adnAdInfo) {
         super.destroyNativeAd(adUnitId, adnAdInfo);
-        if (adnAdInfo == null || !(adnAdInfo.getAdnNativeAd() instanceof AdMobNativeAdsConfig)) {
+        if (adnAdInfo == null || !(adnAdInfo.getAdnNativeAd() instanceof GAMReklamUpNativeAdsConfig)) {
             return;
         }
-        AdMobNativeAdsConfig config = (AdMobNativeAdsConfig) adnAdInfo.getAdnNativeAd();
+        GAMReklamUpNativeAdsConfig config = (GAMReklamUpNativeAdsConfig) adnAdInfo.getAdnNativeAd();
         if (config == null) {
             return;
         }
@@ -701,10 +658,10 @@ public class AdMobAdapter extends CustomAdsAdapter {
     @Override
     public void registerNativeAdView(String adUnitId, NativeAdView adView, AdnAdInfo adnAdInfo, NativeAdCallback callback) {
         super.registerNativeAdView(adUnitId, adView, adnAdInfo, callback);
-        if (adnAdInfo == null || !(adnAdInfo.getAdnNativeAd() instanceof AdMobNativeAdsConfig)) {
+        if (adnAdInfo == null || !(adnAdInfo.getAdnNativeAd() instanceof GAMReklamUpNativeAdsConfig)) {
             return;
         }
-        AdMobNativeAdsConfig config = (AdMobNativeAdsConfig) adnAdInfo.getAdnNativeAd();
+        GAMReklamUpNativeAdsConfig config = (GAMReklamUpNativeAdsConfig) adnAdInfo.getAdnNativeAd();
         if (config == null) {
             return;
         }
@@ -747,19 +704,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 googleAdView.setIconView(adView.getAdIconView());
             }
 
-            TextView textView = new TextView(adView.getContext());
-            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(50, 35);
-            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-            textView.setLayoutParams(layoutParams);
-            textView.setBackgroundColor(Color.argb(255, 234, 234, 234));
-            textView.setGravity(Gravity.CENTER);
-            textView.setText("Ad");
-            textView.setTextSize(10);
-            textView.setTextColor(Color.argb(255, 45, 174, 201));
-            googleAdView.setAdvertiserView(textView);
             googleAdView.setNativeAd(config.getAdMobNativeAd());
-
-            textView.bringToFront();
             if (googleAdView.getAdChoicesView() != null) {
                 googleAdView.getAdChoicesView().bringToFront();
             }
@@ -772,40 +717,32 @@ public class AdMobAdapter extends CustomAdsAdapter {
                 adView.addView(googleAdView);
             }
         } catch (Throwable e) {
-            AdLog.getSingleton().LogE("AdMobAdapter registerNativeAdView error: " + e.getMessage());
+            AdLog.getSingleton().LogE("GAMReklamUpAdapter registerNativeAdView error: " + e.getMessage());
         }
     }
 
     @Override
     public void initSplashAd(final Activity activity, final Map<String, Object> extras, final SplashAdCallback callback) {
         super.initSplashAd(activity, extras, callback);
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        MediationUtil.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    String error = check();
-                    if (TextUtils.isEmpty(error)) {
-                        switch (mInitState) {
-                            case NOT_INIT:
-                                AdMobSplashManager.getInstance().addAdCallback(callback);
-                                initSDK();
-                                break;
-                            case INIT_PENDING:
-                                AdMobSplashManager.getInstance().addAdCallback(callback);
-                                break;
-                            case INIT_SUCCESS:
-                                if (callback != null) {
-                                    callback.onSplashAdInitSuccess();
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-                    } else {
-                        if (callback != null) {
-                            callback.onSplashAdInitFailed(AdapterErrorBuilder.buildInitError(
-                                    AdapterErrorBuilder.AD_UNIT_SPLASH, mAdapterName, error));
-                        }
+                    switch (mInitState) {
+                        case NOT_INIT:
+                            GAMReklamUpSplashManager.getInstance().addAdCallback(callback);
+                            initSDK();
+                            break;
+                        case INIT_PENDING:
+                            GAMReklamUpSplashManager.getInstance().addAdCallback(callback);
+                            break;
+                        case INIT_SUCCESS:
+                            if (callback != null) {
+                                callback.onSplashAdInitSuccess();
+                            }
+                            break;
+                        default:
+                            break;
                     }
                 } catch (Throwable e) {
                     if (callback != null) {
@@ -828,12 +765,12 @@ public class AdMobAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        AdMobSplashManager.getInstance().loadAd(MediationUtil.getContext(), adUnitId, extras, mUserConsent, mUSPrivacyLimit, callback);
+        GAMReklamUpSplashManager.getInstance().loadAd(MediationUtil.getContext(), adUnitId, extras, mUserConsent, mUSPrivacyLimit, callback);
     }
 
     @Override
     public boolean isSplashAdAvailable(String adUnitId) {
-        return AdMobSplashManager.getInstance().isAdAvailable(adUnitId);
+        return GAMReklamUpSplashManager.getInstance().isAdAvailable(adUnitId);
     }
 
     @Override
@@ -847,19 +784,19 @@ public class AdMobAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        AdMobSplashManager.getInstance().showAd(activity, adUnitId, viewGroup, callback);
+        GAMReklamUpSplashManager.getInstance().showAd(activity, adUnitId, viewGroup, callback);
     }
 
     @Override
     public void destroySplashAd(String adUnitId) {
         super.destroySplashAd(adUnitId);
-        AdMobSplashManager.getInstance().destroyAd(adUnitId);
+        GAMReklamUpSplashManager.getInstance().destroyAd(adUnitId);
     }
 
-    private InterstitialAdLoadCallback createInterstitialListener(final String adUnitId, final InterstitialAdCallback callback) {
-        return new InterstitialAdLoadCallback() {
+    private AdManagerInterstitialAdLoadCallback createInterstitialListener(final String adUnitId, final InterstitialAdCallback callback) {
+        return new AdManagerInterstitialAdLoadCallback() {
             @Override
-            public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
+            public void onAdLoaded(@NonNull AdManagerInterstitialAd interstitialAd) {
                 super.onAdLoaded(interstitialAd);
                 mInterstitialAds.put(adUnitId, interstitialAd);
                 if (callback != null) {
@@ -885,7 +822,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
             @Override
             public void onAdFailedToShowFullScreenContent(AdError adError) {
                 super.onAdFailedToShowFullScreenContent(adError);
-                AdLog.getSingleton().LogE("AdMobAdapter", "InterstitialAd onAdFailedToShowFullScreenContent");
+                AdLog.getSingleton().LogE("GAMReklamUpAdapter", "InterstitialAd onAdFailedToShowFullScreenContent");
                 if (callback != null) {
                     callback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
                             AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, mAdapterName, adError.getCode(), adError.getMessage()));
@@ -895,7 +832,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
             @Override
             public void onAdShowedFullScreenContent() {
                 super.onAdShowedFullScreenContent();
-                AdLog.getSingleton().LogD("AdMobAdapter", "InterstitialAd onAdShowedFullScreenContent");
+                AdLog.getSingleton().LogD("GAMReklamUpAdapter", "InterstitialAd onAdShowedFullScreenContent");
                 if (callback != null) {
                     callback.onInterstitialAdShowSuccess();
                 }
@@ -904,7 +841,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
             @Override
             public void onAdDismissedFullScreenContent() {
                 super.onAdDismissedFullScreenContent();
-                AdLog.getSingleton().LogD("AdMobAdapter", "InterstitialAd onAdDismissedFullScreenContent");
+                AdLog.getSingleton().LogD("GAMReklamUpAdapter", "InterstitialAd onAdDismissedFullScreenContent");
                 if (callback != null) {
                     callback.onInterstitialAdClosed();
                 }
@@ -913,7 +850,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
             @Override
             public void onAdClicked() {
                 super.onAdClicked();
-                AdLog.getSingleton().LogD("AdMobAdapter", "InterstitialAd onAdClicked");
+                AdLog.getSingleton().LogD("GAMReklamUpAdapter", "InterstitialAd onAdClicked");
                 if (callback != null) {
                     callback.onInterstitialAdClicked();
                 }
@@ -922,12 +859,12 @@ public class AdMobAdapter extends CustomAdsAdapter {
 
     }
 
-    private AdListener createBannerAdListener(final AdView adView, final BannerAdCallback callback) {
+    private AdListener createBannerAdListener(final AdManagerAdView adView, final BannerAdCallback callback) {
         return new AdListener() {
             @Override
             public void onAdLoaded() {
                 super.onAdLoaded();
-                AdLog.getSingleton().LogD("AdMobAdapter", "BannerAd onAdLoaded");
+                AdLog.getSingleton().LogD("GAMReklamUpAdapter", "BannerAd onAdLoaded");
                 if (callback != null) {
                     callback.onBannerAdLoadSuccess(adView);
                 }
@@ -936,7 +873,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
             @Override
             public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                 super.onAdFailedToLoad(loadAdError);
-                AdLog.getSingleton().LogE("AdMobAdapter", "BannerAd onAdFailedToLoad : " + loadAdError.toString());
+                AdLog.getSingleton().LogE("GAMReklamUpAdapter", "BannerAd onAdFailedToLoad : " + loadAdError.toString());
                 if (callback != null) {
                     callback.onBannerAdLoadFailed(AdapterErrorBuilder.buildLoadError(
                             AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, loadAdError.getCode(), loadAdError.getMessage()));
@@ -946,13 +883,13 @@ public class AdMobAdapter extends CustomAdsAdapter {
             @Override
             public void onAdClicked() {
                 super.onAdClicked();
-                AdLog.getSingleton().LogD("AdMobAdapter", "BannerAd onAdClicked");
+                AdLog.getSingleton().LogD("GAMReklamUpAdapter", "BannerAd onAdClicked");
             }
 
             @Override
             public void onAdImpression() {
                 super.onAdImpression();
-                AdLog.getSingleton().LogD("AdMobAdapter", "BannerAd onAdImpression");
+                AdLog.getSingleton().LogD("GAMReklamUpAdapter", "BannerAd onAdImpression");
                 if (callback != null) {
                     callback.onBannerAdImpression();
                 }
@@ -961,7 +898,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
             @Override
             public void onAdOpened() {
                 super.onAdOpened();
-                AdLog.getSingleton().LogD("AdMobAdapter", "BannerAd onAdOpened");
+                AdLog.getSingleton().LogD("GAMReklamUpAdapter", "BannerAd onAdOpened");
                 if (callback != null) {
                     callback.onBannerAdAdClicked();
                 }
@@ -970,7 +907,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
             @Override
             public void onAdClosed() {
                 super.onAdClosed();
-                AdLog.getSingleton().LogD("AdMobAdapter", "BannerAd onAdClosed");
+                AdLog.getSingleton().LogD("GAMReklamUpAdapter", "BannerAd onAdClosed");
             }
         };
     }
