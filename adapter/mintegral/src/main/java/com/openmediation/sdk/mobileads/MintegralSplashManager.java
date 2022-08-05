@@ -153,7 +153,7 @@ public class MintegralSplashManager {
         if (container == null) {
             if (callback != null) {
                 callback.onSplashAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_SPLASH, "MintegralAdapter", "Splash container is null, please use \"SplashAd.showAd(ViewGroup)\""));
+                        AdapterErrorBuilder.AD_UNIT_SPLASH, "MintegralAdapter", "Splash container is null, please use \"SplashAd.showAd(String placementId, ViewGroup container)\""));
             }
             return;
         }

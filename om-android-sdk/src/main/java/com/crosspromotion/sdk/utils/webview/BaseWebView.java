@@ -21,7 +21,6 @@ public class BaseWebView extends android.webkit.WebView {
         settings.setBlockNetworkImage(false);
         settings.setBlockNetworkLoads(false);
         settings.setBuiltInZoomControls(false);
-        settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         settings.setDatabaseEnabled(false);
         settings.setDisplayZoomControls(false);
 

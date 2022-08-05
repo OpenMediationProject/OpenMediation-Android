@@ -9,7 +9,7 @@ import android.util.Log;
 import android.view.ViewGroup;
 
 import com.openmediation.sdk.OmAds;
-import com.openmediation.sdk.demo.utils.NewApiUtils;
+import com.openmediation.sdk.demo.utils.Constants;
 import com.openmediation.sdk.splash.SplashAd;
 import com.openmediation.sdk.splash.SplashAdListener;
 import com.openmediation.sdk.utils.error.Error;
@@ -23,20 +23,20 @@ public class SplashAdActivity extends Activity implements SplashAdListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ad_splash);
         mSplashContainer = findViewById(R.id.splash_container);
-        SplashAd.setSplashAdListener(NewApiUtils.P_SPLASH, this);
+        SplashAd.setSplashAdListener(Constants.P_SPLASH, this);
         mSplashContainer.post(() -> {
             int width = mSplashContainer.getWidth();
             int height = mSplashContainer.getHeight();
-            SplashAd.setSize(NewApiUtils.P_SPLASH, width, height);
-            SplashAd.setLoadTimeout(NewApiUtils.P_SPLASH, 3000);
-            SplashAd.loadAd(NewApiUtils.P_SPLASH);
+            SplashAd.setSize(Constants.P_SPLASH, width, height);
+//            SplashAd.setLoadTimeout(Constants.P_SPLASH, 3000);
+            SplashAd.loadAd(Constants.P_SPLASH);
         });
     }
 
     @Override
     public void onSplashAdLoaded(String placementId) {
         Log.e("SplashAdActivity", "----------- onSplashAdLoad ----------");
-        SplashAd.showAd(NewApiUtils.P_SPLASH, mSplashContainer);
+        SplashAd.showAd(Constants.P_SPLASH, mSplashContainer);
     }
 
     @Override
@@ -84,7 +84,7 @@ public class SplashAdActivity extends Activity implements SplashAdListener {
 
     @Override
     protected void onDestroy() {
-        SplashAd.setSplashAdListener(NewApiUtils.P_SPLASH, null);
+        SplashAd.setSplashAdListener(Constants.P_SPLASH, null);
         super.onDestroy();
     }
 }

@@ -84,7 +84,7 @@ public class SpInstance extends BaseInstance implements SplashAdCallback {
 
     @Override
     public void onSplashAdLoadFailed(AdapterError error) {
-        DeveloperLog.LogE(TAG + "Splash Ad Load Failed: " + error.toString());
+        DeveloperLog.LogE(TAG + "Splash Ad Load Failed: " + error.toString() + ", " + this);
         mListener.onSplashAdLoadFailed(this, error);
     }
 

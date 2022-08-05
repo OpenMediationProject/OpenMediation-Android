@@ -21,7 +21,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.openmediation.sdk.demo.utils.NewApiUtils;
+import com.openmediation.sdk.demo.utils.Constants;
 import com.openmediation.sdk.demo.view.ILoadMoreListener;
 import com.openmediation.sdk.demo.view.LoadMoreRecyclerView;
 import com.openmediation.sdk.demo.view.LoadMoreView;
@@ -49,7 +49,7 @@ public class NativeRecyclerActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_native_recycler);
-        NativeAd.addAdListener(NewApiUtils.P_NATIVE, mNativeAdListener);
+        NativeAd.addAdListener(Constants.P_NATIVE, mNativeAdListener);
         initListView();
     }
 
@@ -119,17 +119,17 @@ public class NativeRecyclerActivity extends Activity {
 
     private void loadNativeAd() {
         // for TikTok and TencentAd in China traffic
-        NativeAd.setDisplayParams(NewApiUtils.P_NATIVE, 320, 0);
-        NativeAd.loadAd(NewApiUtils.P_NATIVE);
+        NativeAd.setDisplayParams(Constants.P_NATIVE, 320, 0);
+        NativeAd.loadAd(Constants.P_NATIVE);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        NativeAd.removeAdListener(NewApiUtils.P_NATIVE, mNativeAdListener);
+        NativeAd.removeAdListener(Constants.P_NATIVE, mNativeAdListener);
         for (AdInfo info : mData) {
             if (info != null) {
-                NativeAd.destroy(NewApiUtils.P_NATIVE, info);
+                NativeAd.destroy(Constants.P_NATIVE, info);
             }
         }
         mHandler.removeCallbacksAndMessages(null);
@@ -168,7 +168,7 @@ public class NativeRecyclerActivity extends Activity {
             if (holder instanceof NativeAdViewHolder) {
                 holder.itemView.setBackgroundColor(Color.WHITE);
                 NativeAdViewHolder adViewHolder = (NativeAdViewHolder) holder;
-                adViewHolder.setData(NewApiUtils.P_NATIVE, mData.get(position));
+                adViewHolder.setData(Constants.P_NATIVE, mData.get(position));
             } else if (holder instanceof NormalViewHolder) {
                 NormalViewHolder normalViewHolder = (NormalViewHolder) holder;
                 normalViewHolder.textView.setText("Recycler Item " + position);

@@ -6,6 +6,7 @@ package com.openmediation.sdk.mobileads;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.ViewGroup;
 
@@ -488,17 +489,12 @@ public class TikTokAdapter extends CustomAdsAdapter {
             TTAdManager adManager = TTAdManagerHolder.getInstance().getAdManager();
             mTTAdNative = adManager.createAdNative(context.getApplicationContext());
         }
-        int orientation = TTAdConstant.HORIZONTAL;
-        if (context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            orientation = TTAdConstant.VERTICAL;
-        }
         int[] screenPx = TTAdManagerHolder.getScreenPx(context);
         float[] screenDp = TTAdManagerHolder.getScreenDp(context);
         return new AdSlot.Builder()
                 .setCodeId(adUnitId)
                 .setImageAcceptedSize(screenPx[0], screenPx[1])
                 .setExpressViewAcceptedSize(screenDp[0], screenDp[1])
-                .setOrientation(orientation)
                 .build();
     }
 
@@ -597,6 +593,18 @@ public class TikTokAdapter extends CustomAdsAdapter {
             if (callback != null && rewardVerify) {
                 callback.onRewardedVideoAdRewarded();
             }
+        }
+
+        /**
+         * 激励视频播放完毕，验证是否有效发放奖励的回调 4400版本新增
+         *
+         * @param isRewardValid 奖励有效
+         * @param rewardType 奖励类型，0:基础奖励 >0:进阶奖励
+         * @param extraInfo 奖励的额外参数
+         */
+        @Override
+        public void onRewardArrived(boolean isRewardValid, int rewardType, Bundle extraInfo){
+
         }
 
         @Override

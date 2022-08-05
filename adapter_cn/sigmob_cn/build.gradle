@@ -8,6 +8,8 @@ android {
         targetSdkVersion rootProject.ext.version.targetSdkVersion
         versionCode rootProject.ext.version.versionCode
         versionName rootProject.ext.adapterVersion.sigmob_cn
+        buildConfigField "int", 'VERSION_CODE', String.valueOf(rootProject.ext.version.versionCode)
+        buildConfigField 'String', 'VERSION_NAME', "\"" + rootProject.ext.adapterVersion.sigmob_cn + "\""
     }
 
     buildTypes {
@@ -26,7 +28,8 @@ android.libraryVariants.all { variant ->
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation project(':om-android-sdk')
-    implementation(name: 'sigmob-3.5.6', ext: 'aar')
+    implementation(name: 'sigmob-common-1.3.4', ext: 'aar')
+    implementation(name: 'sigmob-sdk-4.4.0', ext: 'aar')
 }
 
 repositories {

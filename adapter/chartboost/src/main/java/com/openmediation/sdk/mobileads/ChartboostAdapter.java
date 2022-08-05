@@ -13,6 +13,7 @@ import com.chartboost.sdk.Chartboost;
 import com.chartboost.sdk.ChartboostDelegate;
 import com.chartboost.sdk.Model.CBError;
 import com.chartboost.sdk.Privacy.model.CCPA;
+import com.chartboost.sdk.Privacy.model.COPPA;
 import com.chartboost.sdk.Privacy.model.DataUseConsent;
 import com.chartboost.sdk.Privacy.model.GDPR;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
@@ -116,11 +117,13 @@ public class ChartboostAdapter extends CustomAdsAdapter {
         super.setGDPRConsent(context, consent);
         if (context != null) {
             try {
+                DataUseConsent dataUseConsent;
                 if (consent) {
-                    Chartboost.addDataUseConsent(context, new GDPR(GDPR.GDPR_CONSENT.BEHAVIORAL));
+                    dataUseConsent = new GDPR(GDPR.GDPR_CONSENT.BEHAVIORAL);
                 } else {
-                    Chartboost.addDataUseConsent(context, new GDPR(GDPR.GDPR_CONSENT.NON_BEHAVIORAL));
+                    dataUseConsent = new GDPR(GDPR.GDPR_CONSENT.NON_BEHAVIORAL);
                 }
+                Chartboost.addDataUseConsent(context, dataUseConsent);
             } catch (Throwable ignored) {
             }
         }
@@ -137,6 +140,19 @@ public class ChartboostAdapter extends CustomAdsAdapter {
                 } else {
                     dataUseConsent = new CCPA(CCPA.CCPA_CONSENT.OPT_IN_SALE);
                 }
+                Chartboost.addDataUseConsent(context, dataUseConsent);
+            } catch (Throwable ignored) {
+            }
+        }
+    }
+
+
+    @Override
+    public void setAgeRestricted(Context context, boolean restricted) {
+        super.setAgeRestricted(context, restricted);
+        if (context != null) {
+            try {
+                DataUseConsent dataUseConsent = new COPPA(restricted);
                 Chartboost.addDataUseConsent(context, dataUseConsent);
             } catch (Throwable ignored) {
             }

@@ -5,8 +5,6 @@ package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -32,8 +30,6 @@ import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.OnUserEarnedRewardListener;
 import com.google.android.gms.ads.RequestConfiguration;
-import com.google.android.gms.ads.initialization.InitializationStatus;
-import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationAdConfiguration;
@@ -82,10 +78,7 @@ public class AdMobAdapter extends CustomAdsAdapter {
 
     @Override
     public String getMediationVersion() {
-        if (InitState.INIT_SUCCESS == mInitState) {
-            return MobileAds.getVersionString();
-        }
-        return "";
+        return MobileAds.getVersion().toString();
     }
 
     @Override
@@ -129,7 +122,6 @@ public class AdMobAdapter extends CustomAdsAdapter {
         return builder.build();
     }
 
-    // All calls to MobileAds must be on the main thread --> run all calls to initSDK in a thread.
     private synchronized void initSDK() {
         mInitState = InitState.INIT_PENDING;
         MobileAds.initialize(MediationUtil.getContext());
@@ -158,7 +150,6 @@ public class AdMobAdapter extends CustomAdsAdapter {
         AdMobSplashManager.getInstance().onInitSuccess();
     }
 
-    /*********************************RewardedVideoAd***********************************/
     @Override
     public void initRewardedVideo(final Activity activity, final Map<String, Object> dataMap, final RewardedVideoCallback callback) {
         super.initRewardedVideo(activity, dataMap, callback);

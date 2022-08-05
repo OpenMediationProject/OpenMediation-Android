@@ -80,9 +80,6 @@ public class AdTimingSingleTon implements InitCallback {
         void onError(AdTimingError adTimingError);
     }
 
-    /**
-     * MoPub sdk init state
-     */
     enum InitState {
         /**
          *

@@ -13,7 +13,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="android:networkSecurityConfig">
-        <activity android:name="com.openmediation.sdk.demo.MainActivity">
+        <activity android:name="com.openmediation.sdk.demo.MainActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -31,6 +32,45 @@
             android:configChanges="keyboardHidden|screenSize|orientation"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.DeviceDefault.NoActionBar" />
+
+        <!-- SanAds EX -->
+        <service
+            android:name="san.g.toString"
+            android:multiprocess="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="${applicationId}.ALIVE_NOTIFY_SERVICE" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name="com.san.ex.reserve.service.getErrorCode"
+            android:multiprocess="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="${applicationId}.RESERVE_NOTIFY_SERVICE" />
+            </intent-filter>
+        </service>
+        <service
+            android:name="san.f.getErrorCode"
+            android:multiprocess="true"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
+
+        <!-- Mintegral 国内版添加 -->
+        <!--<receiver android:name="com.mbridge.msdk.click.AppReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_ADDED" />
+
+                <data android:scheme="package" />
+            </intent-filter>
+        </receiver>-->
 
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"

@@ -371,6 +371,7 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
     }
 
     protected synchronized void onInsInitFailed(BaseInstance instance, Error error) {
+        DeveloperLog.LogW("Instance init failed, instance: " + instance + ", error: " + error.toString());
         InstanceLog log = mInsLogs.get(instance);
         if (log != null) {
             if (instance.getHb() == 1) {
@@ -383,6 +384,7 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
     }
 
     protected synchronized void onInsLoadSuccess(BaseInstance instance, boolean reload) {
+        DeveloperLog.LogD("Instance load success, instance: " + instance + ", reload: " + reload);
         isWfFailed = false;
         if (instance.getHb() != 1) {
             LrReportHelper.report(instance, mLoadType.getValue(), mPlacement.getWfAbt(), mPlacement.getWfAbtId(),
@@ -414,6 +416,7 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
     }
 
     protected synchronized void onInsLoadFailed(BaseInstance instance, AdapterError error, boolean reload) {
+        DeveloperLog.LogW("Instance load failed, instance: " + instance + ", error: " + error + ", reload: " + reload);
         notifyLoadFailedInsBidLose(instance);
         InsManager.onInsLoadFailed(instance, error, reload);
         InstanceLog log = mInsLogs.get(instance);
@@ -428,6 +431,7 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
     }
 
     protected void onInsShowSuccess(BaseInstance instance, Scene scene) {
+        DeveloperLog.LogD("Instance show success, instance: " + instance + ", scene: " + scene);
         int bid = 0;
         if (instance.getHb() == 1) {
             bid = 1;
@@ -440,10 +444,12 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
     }
 
     protected void onInsShowFailed(BaseInstance instance, AdapterError error, Scene scene) {
+        DeveloperLog.LogW("Instance show failed, instance: " + instance + ", error: " + error + ", scene: " + scene);
         InsManager.onInsShowFailed(instance, error, scene);
     }
 
     protected void onInsClicked(BaseInstance instance, Scene scene) {
+        DeveloperLog.LogD("Instance clicked, instance: " + instance + ", scene: " + scene);
         InsManager.onInsClick(instance, scene);
         int bid = 0;
         if (instance.getHb() == 1) {
@@ -456,6 +462,7 @@ public abstract class AbstractAdsApi implements InitCallback, BidResponseCallbac
     }
 
     protected void onInsClosed(BaseInstance instance, Scene scene) {
+        DeveloperLog.LogD("Instance closed, instance: " + instance + ", scene: " + scene);
         InsManager.onInsClosed(isInventoryAdsType(), instance, scene);
     }
 
