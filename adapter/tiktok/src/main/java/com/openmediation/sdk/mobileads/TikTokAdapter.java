@@ -368,6 +368,11 @@ public class TikTokAdapter extends CustomAdsAdapter {
     }
 
     @Override
+    public boolean isSplashAdAvailable(String adUnitId) {
+        return TikTokSplashManager.getInstance().isAdAvailable(adUnitId);
+    }
+
+    @Override
     public void destroySplashAd(String adUnitId) {
         super.destroySplashAd(adUnitId);
         TikTokSplashManager.getInstance().destroyAd(adUnitId);
