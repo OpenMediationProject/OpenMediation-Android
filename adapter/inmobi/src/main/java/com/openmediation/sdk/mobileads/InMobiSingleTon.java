@@ -378,17 +378,21 @@ public class InMobiSingleTon {
         public void onAdDisplayed(@NonNull InMobiBanner inMobiBanner) {
             super.onAdDisplayed(inMobiBanner);
             AdLog.getSingleton().LogD(TAG, "InMobi Banner onAdDisplayed : " + mAdUnitId);
-        }
-
-        @Override
-        public void onAdImpression(@NonNull InMobiBanner inMobiBanner) {
-            super.onAdImpression(inMobiBanner);
-            AdLog.getSingleton().LogD(TAG, "InMobi Banner onAdImpression : " + mAdUnitId);
             InMobiBannerCallback callback = mBannerCallbacks.get(mAdUnitId);
             if (callback != null) {
-                callback.onAdImpression(mAdUnitId);
+                callback.onAdDisplayed(mAdUnitId);
             }
         }
+
+//        @Override
+//        public void onAdImpression(@NonNull InMobiBanner inMobiBanner) {
+//            super.onAdImpression(inMobiBanner);
+//            AdLog.getSingleton().LogD(TAG, "InMobi Banner onAdImpression : " + mAdUnitId);
+//            InMobiBannerCallback callback = mBannerCallbacks.get(mAdUnitId);
+//            if (callback != null) {
+//                callback.onAdImpression(mAdUnitId);
+//            }
+//        }
 
         @Override
         public void onAdClicked(InMobiBanner inMobiBanner, Map<Object, Object> map) {
@@ -450,12 +454,6 @@ public class InMobiSingleTon {
             if (mInterstitialAdCallback != null) {
                 mInterstitialAdCallback.onAdDisplayed(mAdUnitId);
             }
-        }
-
-        @Override
-        public void onAdImpression(@NonNull InMobiInterstitial inMobiInterstitial) {
-            super.onAdImpression(inMobiInterstitial);
-            AdLog.getSingleton().LogD(TAG, "InMobi InterstitialAd onAdImpression");
         }
 
         @Override
@@ -535,12 +533,6 @@ public class InMobiSingleTon {
             if (mVideoAdCallback != null) {
                 mVideoAdCallback.onAdDisplayed(mAdUnitId);
             }
-        }
-
-        @Override
-        public void onAdImpression(@NonNull InMobiInterstitial inMobiInterstitial) {
-            super.onAdImpression(inMobiInterstitial);
-            AdLog.getSingleton().LogD(TAG, "InMobi RewardedVideo onAdImpression");
         }
 
         @Override

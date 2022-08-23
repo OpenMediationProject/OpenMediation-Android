@@ -261,6 +261,10 @@ public class BnManager extends HybridCacheManager implements BnManagerListener, 
         }
         try {
             int rlw = mPlacement.getRlw();
+            if (rlw <= 0) {
+                DeveloperLog.LogE("BnManager, stop RefreshTask: Interval is 0");
+                return;
+            }
 
             if (mRefreshTask == null) {
                 mRefreshTask = new RefreshTask(rlw);
@@ -295,6 +299,12 @@ public class BnManager extends HybridCacheManager implements BnManagerListener, 
                 if (mPlacement != null && mPlacement.getRlw() > 0) {
                     mInterval = mPlacement.getRlw();
                 }
+
+                if (mInterval <= 0) {
+                    DeveloperLog.LogE("BnManager, RefreshTask stop: Interval is 0");
+                    return;
+                }
+
                 mRlwHandler.postDelayed(mRefreshTask, mInterval * 1000);
                 // not in foreground, stop load AD
                 if (!OmManager.getInstance().isInForeground()) {

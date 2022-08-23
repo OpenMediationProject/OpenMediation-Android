@@ -8,6 +8,7 @@
         android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_adtiming"
         android:label="@string/app_name"
+        android:usesCleartextTraffic="true"
         android:networkSecurityConfig="@xml/app_network_security_config"
         android:roundIcon="@mipmap/ic_adtiming"
         android:supportsRtl="true"
@@ -60,17 +61,6 @@
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
-
-
-        <!-- Mintegral 国内版添加 -->
-        <!--<receiver android:name="com.mbridge.msdk.click.AppReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.intent.action.PACKAGE_ADDED" />
-
-                <data android:scheme="package" />
-            </intent-filter>
-        </receiver>-->
 
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"

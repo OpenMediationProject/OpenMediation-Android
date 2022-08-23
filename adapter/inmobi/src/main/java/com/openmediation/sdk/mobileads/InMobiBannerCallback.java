@@ -4,7 +4,7 @@
 package com.openmediation.sdk.mobileads;
 
 interface InMobiBannerCallback {
-    void onAdImpression(String placementId);
+    void onAdDisplayed(String placementId);
 
     void onAdClick(String placementId);
 }

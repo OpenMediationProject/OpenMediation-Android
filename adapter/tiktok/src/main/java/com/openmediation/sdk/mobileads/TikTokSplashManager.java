@@ -9,9 +9,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 
-import com.bytedance.sdk.openadsdk.AdSlot;
-import com.bytedance.sdk.openadsdk.TTAdNative;
-import com.bytedance.sdk.openadsdk.TTAppOpenAd;
+import com.bytedance.sdk.openadsdk.api.open.PAGAppOpenAd;
+import com.bytedance.sdk.openadsdk.api.open.PAGAppOpenAdInteractionListener;
+import com.bytedance.sdk.openadsdk.api.open.PAGAppOpenAdLoadListener;
+import com.bytedance.sdk.openadsdk.api.open.PAGAppOpenRequest;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.SplashAdCallback;
 import com.openmediation.sdk.utils.AdLog;
@@ -20,13 +21,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TikTokSplashManager {
-    private static final String TAG = "TikTok: ";
+    private static final String TAG = "TikTokAdapter: ";
 
     private static final String CONFIG_TIMEOUT = "Timeout";
 
-    private TTAdNative mTTAdNative;
-
-    private final ConcurrentHashMap<String, TTAppOpenAd> mSplashAds;
+    private final ConcurrentHashMap<String, PAGAppOpenAd> mSplashAds;
 
     private static class Holder {
         private static final TikTokSplashManager INSTANCE = new TikTokSplashManager();
@@ -40,9 +39,9 @@ public class TikTokSplashManager {
         return Holder.INSTANCE;
     }
 
-    public void initAd(Context context, Map<String, Object> extras, Boolean consent, Boolean ageRestricted, final SplashAdCallback callback) {
+    public void initAd(Context context, Map<String, Object> extras, Boolean consent, Boolean ageRestricted, Boolean privacyLimit, final SplashAdCallback callback) {
         String appKey = (String) extras.get("AppKey");
-        TTAdManagerHolder.getInstance().init(context, appKey, consent, ageRestricted, new TTAdManagerHolder.InitCallback() {
+        TTAdManagerHolder.getInstance().init(context, appKey, consent, ageRestricted, privacyLimit, new TTAdManagerHolder.InitCallback() {
             @Override
             public void onSuccess() {
                 if (callback != null) {
@@ -61,25 +60,47 @@ public class TikTokSplashManager {
     }
 
     public void loadAd(final Context context, String adUnitId, final Map<String, Object> config, SplashAdCallback callback) {
+        PAGAppOpenRequest request = new PAGAppOpenRequest();
         int fetchDelay;
         try {
+            //App Open ad timeout recommended >=3000ms
             fetchDelay = Integer.parseInt(config.get(CONFIG_TIMEOUT).toString());
+            request.setTimeout(fetchDelay);
         } catch (Throwable ignored) {
-            fetchDelay = 0;
         }
-        AdSlot adSlot = new AdSlot.Builder()
-                .setCodeId(adUnitId)
-                .build();
-        if (mTTAdNative == null) {
-            mTTAdNative = TTAdManagerHolder.getInstance().getAdManager().createAdNative(context);
-        }
-        InnerSplashAdListener listener = new InnerSplashAdListener(adUnitId, callback);
-        mTTAdNative.loadAppOpenAd(adSlot, listener, Math.max(fetchDelay, 0));
+
+        PAGAppOpenAd.loadAd(adUnitId, request, new PAGAppOpenAdLoadListener() {
+            @Override
+            public void onError(int code, String message) {
+                AdLog.getSingleton().LogD("TikTokAdapter, SplashAd load onError code: " + code + ", message: " + message);
+                if (callback != null) {
+                    callback.onSplashAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                            AdapterErrorBuilder.AD_UNIT_SPLASH, "TikTokAdapter", code, message));
+                }
+            }
+
+            @Override
+            public void onAdLoaded(PAGAppOpenAd appOpenAd) {
+                AdLog.getSingleton().LogD("TikTokAdapter, SplashAd onAdLoaded: " + appOpenAd);
+                if (appOpenAd == null) {
+                    if (callback != null) {
+                        callback.onSplashAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                                AdapterErrorBuilder.AD_UNIT_SPLASH, "TikTokAdapter", "Splash ad Load Failed: TTSplashAd is null"));
+                    }
+                    return;
+                }
+                AdLog.getSingleton().LogD(TAG + "Splash ad onSplashAdLoad: " + adUnitId);
+                mSplashAds.put(adUnitId, appOpenAd);
+                if (callback != null) {
+                    callback.onSplashAdLoadSuccess(null);
+                }
+            }
+        });
     }
 
     public void destroyAd(String adUnitId) {
         if (!TextUtils.isEmpty(adUnitId)) {
-            TTAppOpenAd ttSplashAd = mSplashAds.remove(adUnitId);
+            PAGAppOpenAd ttSplashAd = mSplashAds.remove(adUnitId);
             ttSplashAd = null;
         }
     }
@@ -96,10 +117,33 @@ public class TikTokSplashManager {
             @Override
             public void run() {
                 try {
-                    TTAppOpenAd ttSplashAd = mSplashAds.remove(adUnitId);
-                    SplashAdAdInteractionListener listener = new SplashAdAdInteractionListener(callback);
-                    ttSplashAd.setOpenAdInteractionListener(listener);
-                    ttSplashAd.showAppOpenAd(activity);
+                    PAGAppOpenAd ttSplashAd = mSplashAds.remove(adUnitId);
+                    ttSplashAd.setAdInteractionListener(new PAGAppOpenAdInteractionListener() {
+                        @Override
+                        public void onAdShowed() {
+                            AdLog.getSingleton().LogD(TAG + "Splash ad onAdShow");
+                            if (callback != null) {
+                                callback.onSplashAdShowSuccess();
+                            }
+                        }
+
+                        @Override
+                        public void onAdClicked() {
+                            AdLog.getSingleton().LogD(TAG + "Splash ad onADClicked");
+                            if (callback != null) {
+                                callback.onSplashAdAdClicked();
+                            }
+                        }
+
+                        @Override
+                        public void onAdDismissed() {
+                            AdLog.getSingleton().LogD(TAG + "Splash ad onAdDismissed");
+                            if (callback != null) {
+                                callback.onSplashAdDismissed();
+                            }
+                        }
+                    });
+                    ttSplashAd.show(activity);
                 } catch (Throwable e) {
                     if (callback != null) {
                         callback.onSplashAdShowFailed(AdapterErrorBuilder.buildShowError(
@@ -112,82 +156,6 @@ public class TikTokSplashManager {
 
     public boolean isAdAvailable(String adUnitId) {
         return !TextUtils.isEmpty(adUnitId) && mSplashAds.containsKey(adUnitId);
-    }
-
-    private class InnerSplashAdListener implements TTAdNative.AppOpenAdListener {
-
-        private final String mAdUnitId;
-        private final SplashAdCallback mAdCallback;
-
-        private InnerSplashAdListener(String adUnitId, SplashAdCallback callback) {
-            this.mAdUnitId = adUnitId;
-            this.mAdCallback = callback;
-        }
-
-        @Override
-        public void onError(int code, String message) {
-            if (mAdCallback != null) {
-                mAdCallback.onSplashAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                        AdapterErrorBuilder.AD_UNIT_SPLASH, "TikTokAdapter", code, message));
-            }
-        }
-
-        @Override
-        public void onAppOpenAdLoaded(TTAppOpenAd ttAppOpenAd) {
-            if (ttAppOpenAd == null) {
-                if (mAdCallback != null) {
-                    mAdCallback.onSplashAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                            AdapterErrorBuilder.AD_UNIT_SPLASH, "TikTokAdapter", "Splash ad Load Failed: TTSplashAd is null"));
-                }
-                return;
-            }
-            AdLog.getSingleton().LogD(TAG + "Splash ad onSplashAdLoad: " + mAdUnitId);
-            mSplashAds.put(mAdUnitId, ttAppOpenAd);
-            if (mAdCallback != null) {
-                mAdCallback.onSplashAdLoadSuccess(null);
-            }
-        }
-    }
-
-    private static class SplashAdAdInteractionListener implements TTAppOpenAd.AppOpenAdInteractionListener {
-        private final SplashAdCallback mAdCallback;
-
-        private SplashAdAdInteractionListener(SplashAdCallback callback) {
-            this.mAdCallback = callback;
-        }
-
-        @Override
-        public void onAdShow() {
-            AdLog.getSingleton().LogD(TAG + "Splash ad onAdShow");
-            if (mAdCallback != null) {
-                mAdCallback.onSplashAdShowSuccess();
-            }
-        }
-
-        @Override
-        public void onAdClicked() {
-            AdLog.getSingleton().LogD(TAG + "Splash ad onADClicked");
-            if (mAdCallback != null) {
-                mAdCallback.onSplashAdAdClicked();
-            }
-        }
-
-        @Override
-        public void onAdSkip() {
-            AdLog.getSingleton().LogD(TAG + "Splash ad onAdSkip");
-            if (mAdCallback != null) {
-                mAdCallback.onSplashAdDismissed();
-            }
-        }
-
-        @Override
-        public void onAdCountdownToZero() {
-            AdLog.getSingleton().LogD(TAG + "Splash ad onAdCountdownToZero");
-            if (mAdCallback != null) {
-                mAdCallback.onSplashAdDismissed();
-            }
-        }
-
     }
 
 }

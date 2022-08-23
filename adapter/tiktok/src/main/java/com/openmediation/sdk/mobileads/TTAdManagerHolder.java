@@ -6,9 +6,8 @@ package com.openmediation.sdk.mobileads;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.bytedance.sdk.openadsdk.TTAdConfig;
-import com.bytedance.sdk.openadsdk.TTAdManager;
-import com.bytedance.sdk.openadsdk.TTAdSdk;
+import com.bytedance.sdk.openadsdk.api.init.PAGConfig;
+import com.bytedance.sdk.openadsdk.api.init.PAGSdk;
 import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.utils.AdLog;
 
@@ -31,21 +30,17 @@ public class TTAdManagerHolder {
         return Holder.INSTANCE;
     }
 
-    public TTAdManager getAdManager() {
-        return TTAdSdk.getAdManager();
-    }
-
-    public void init(Context context, String appId, Boolean consent, Boolean ageRestricted, InitCallback callback) {
+    public void init(Context context, String appId, Boolean consent, Boolean ageRestricted, Boolean privacyLimit, InitCallback callback) {
         if (context == null || TextUtils.isEmpty(appId)) {
             if (callback != null) {
                 callback.onFailed(-1, "Context or AppId is null");
             }
             return;
         }
-        doInit(context, appId, consent, ageRestricted, callback);
+        doInit(context, appId, consent, ageRestricted, privacyLimit, callback);
     }
 
-    private void doInit(final Context context, final String appId, final Boolean consent, final Boolean ageRestricted, final InitCallback callback) {
+    private void doInit(final Context context, final String appId, final Boolean consent, final Boolean ageRestricted, final Boolean privacyLimit, final InitCallback callback) {
         if (InitState.INIT_SUCCESS == mInitState) {
             if (callback != null) {
                 callback.onSuccess();
@@ -59,7 +54,7 @@ public class TTAdManagerHolder {
             return;
         }
         mInitState = InitState.INIT_PENDING;
-        final TTAdSdk.InitCallback initCallback = new TTAdSdk.InitCallback() {
+        final PAGSdk.PAGInitCallback initCallback = new PAGSdk.PAGInitCallback() {
 
             @Override
             public void success() {
@@ -67,37 +62,40 @@ public class TTAdManagerHolder {
             }
 
             @Override
-            public void fail(int code, String msg) {
-                onInitFailed(code, msg);
+            public void fail(int code, String message) {
+                onInitFailed(code, message);
             }
         };
 
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
-                TTAdSdk.init(context, buildConfig(appId, consent, ageRestricted), initCallback);
+                PAGSdk.init(context, buildConfig(appId, consent, ageRestricted, privacyLimit), initCallback);
             }
         };
         MediationUtil.runOnUiThread(runnable);
     }
 
-    private static TTAdConfig buildConfig(String appId, Boolean consent, Boolean ageRestricted) {
-        TTAdConfig.Builder builder = new TTAdConfig.Builder()
-                .appId(appId)
-                .useTextureView(true);
+    private static PAGConfig buildConfig(String appId, Boolean consent, Boolean ageRestricted, Boolean privacyLimit) {
+        PAGConfig.Builder builder = new PAGConfig.Builder()
+                .appId(appId);
         if (consent != null) {
-            // 0 close GDRP Privacy protection ，1: open GDRP Privacy protection
-            builder.setGDPR(consent ? 1 : 0);
+            // 0:User doesn't grant consent, 1: User has granted the consent
+            builder.setGDPRConsent(consent ? 1 : 0);
         }
         if (ageRestricted != null) {
             // 0:adult ，1:child
-            builder.coppa(ageRestricted ? 1 : 0);
+            builder.setChildDirected(ageRestricted ? 1 : 0);
+        }
+        if (privacyLimit != null) {
+            // 0: "sale" of personal information is permitted, 1: user has opted out of "sale" of personal information
+            builder.setDoNotSell(privacyLimit ? 1 : 0);
         }
         return builder.build();
     }
 
     private void onInitFinish() {
-        AdLog.getSingleton().LogD("TikTok SDK Init Success");
+        AdLog.getSingleton().LogD("TikTokAdapter SDK Init Success");
         mInitState = InitState.INIT_SUCCESS;
         for (InitCallback callback : mCallbacks) {
             if (callback != null) {
@@ -109,21 +107,13 @@ public class TTAdManagerHolder {
 
     private void onInitFailed(int code, String msg) {
         mInitState = InitState.NOT_INIT;
-        AdLog.getSingleton().LogE("TikTok SDK Init Failed, code: " + code + ", msg: " + msg);
+        AdLog.getSingleton().LogE("TikTokAdapter SDK Init Failed, code: " + code + ", msg: " + msg);
         for (InitCallback callback : mCallbacks) {
             if (callback != null) {
                 callback.onFailed(code, msg);
             }
         }
         mCallbacks.clear();
-    }
-
-    boolean isInit() {
-        return mInitState == InitState.INIT_SUCCESS;
-    }
-
-    public static int[] getScreenPx(Context context) {
-        return new int[]{context.getResources().getDisplayMetrics().widthPixels, context.getResources().getDisplayMetrics().heightPixels};
     }
 
     public interface InitCallback {

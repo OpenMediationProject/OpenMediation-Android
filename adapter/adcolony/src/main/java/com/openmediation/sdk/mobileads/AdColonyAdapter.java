@@ -23,7 +23,6 @@ import com.openmediation.sdk.mediation.RewardedVideoCallback;
 import com.openmediation.sdk.mobileads.adcolony.BuildConfig;
 import com.openmediation.sdk.utils.AdLog;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -170,17 +169,7 @@ public class AdColonyAdapter extends CustomAdsAdapter implements AdColonyRewardL
 
     private synchronized void initAdColony(Map<String, Object> dataMap) {
         if (!mDidInited) {
-            List<String> idList = null;
-            if (dataMap.get("zoneIds") instanceof List) {
-                idList = (List<String>) dataMap.get("zoneIds");
-            }
-            String[] zoneIds;
-            if (idList != null) {
-                zoneIds = idList.toArray(new String[idList.size()]);
-                AdColony.configure(MediationUtil.getApplication(), mAdColonyOptions, mAppKey, zoneIds);
-            } else {
-                AdColony.configure(MediationUtil.getApplication(), mAdColonyOptions, mAppKey);
-            }
+            AdColony.configure(MediationUtil.getApplication(), mAdColonyOptions, mAppKey);
             mDidInited = true;
         }
     }

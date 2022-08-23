@@ -120,7 +120,7 @@ public class ListenerWrapper {
     }
 
     public void onRewardedVideoAvailabilityChanged(final boolean available) {
-        DeveloperLog.LogD("onRewardedVideoAvailabilityChanged : " + available);
+        DeveloperLog.LogD("onRewardedVideoAvailabilityChanged : " + mPlacementId + ", available: " + available);
         if (canSendListCallback(mRvListeners)) {
             sendCallback(new Runnable() {
 
@@ -141,7 +141,7 @@ public class ListenerWrapper {
 
 
     public void onRewardedVideoLoadSuccess() {
-        DeveloperLog.LogD("onRewardedVideoLoadSuccess");
+        DeveloperLog.LogD("onRewardedVideoLoadSuccess: " + mPlacementId);
         if (canSendCallback(mMediationRvListener)) {
             sendCallback(new Runnable() {
                 @Override
@@ -155,7 +155,7 @@ public class ListenerWrapper {
 
 
     public void onRewardedVideoLoadFailed(final Error error) {
-        DeveloperLog.LogD("onRewardedVideoLoadFailed : " + error);
+        DeveloperLog.LogD("onRewardedVideoLoadFailed : " + mPlacementId + ", error: " + error);
         if (canSendCallback(mMediationRvListener)) {
             sendCallback(new Runnable() {
 
@@ -170,7 +170,7 @@ public class ListenerWrapper {
 
 
     public void onRewardedVideoAdShowed(final Scene scene) {
-        DeveloperLog.LogD("onRewardedVideoAdShowed");
+        DeveloperLog.LogD("onRewardedVideoAdShowed: " + mPlacementId);
         if (canSendListCallback(mRvListeners)) {
             sendCallback(new Runnable() {
 
@@ -197,7 +197,7 @@ public class ListenerWrapper {
 
 
     public void onRewardedVideoAdShowFailed(final Scene scene, final Error error) {
-        DeveloperLog.LogD("onRewardedVideoAdShowFailed : " + error);
+        DeveloperLog.LogD("onRewardedVideoAdShowFailed : " + mPlacementId + ",error:" + error);
         if (canSendListCallback(mRvListeners)) {
             sendCallback(new Runnable() {
 
@@ -224,7 +224,7 @@ public class ListenerWrapper {
 
 
     public void onRewardedVideoAdClicked(final Scene scene) {
-        DeveloperLog.LogD("onRewardedVideoAdClicked");
+        DeveloperLog.LogD("onRewardedVideoAdClicked : " + mPlacementId);
         if (canSendListCallback(mRvListeners)) {
             sendCallback(new Runnable() {
 
@@ -251,7 +251,7 @@ public class ListenerWrapper {
 
 
     public void onRewardedVideoAdClosed(final Scene scene) {
-        DeveloperLog.LogD("onRewardedVideoAdClosed");
+        DeveloperLog.LogD("onRewardedVideoAdClosed : " + mPlacementId);
         if (canSendListCallback(mRvListeners)) {
             sendCallback(new Runnable() {
 
@@ -278,7 +278,7 @@ public class ListenerWrapper {
 
 
     public void onRewardedVideoAdStarted(final Scene scene) {
-        DeveloperLog.LogD("onRewardedVideoAdStarted");
+        DeveloperLog.LogD("onRewardedVideoAdStarted : " + mPlacementId);
         if (canSendListCallback(mRvListeners)) {
             sendCallback(new Runnable() {
 
@@ -304,7 +304,7 @@ public class ListenerWrapper {
 
 
     public void onRewardedVideoAdEnded(final Scene scene) {
-        DeveloperLog.LogD("onRewardedVideoAdEnded : ");
+        DeveloperLog.LogD("onRewardedVideoAdEnded : " + mPlacementId);
         if (canSendListCallback(mRvListeners)) {
             sendCallback(new Runnable() {
 
@@ -330,7 +330,7 @@ public class ListenerWrapper {
 
 
     public void onRewardedVideoAdRewarded(final Scene scene) {
-        DeveloperLog.LogD("onRewardedVideoAdRewarded");
+        DeveloperLog.LogD("onRewardedVideoAdRewarded : " + mPlacementId);
         if (canSendListCallback(mRvListeners)) {
             sendCallback(new Runnable() {
                 @Override
@@ -354,7 +354,7 @@ public class ListenerWrapper {
     }
 
     public void onInterstitialAdAvailabilityChanged(final boolean available) {
-        DeveloperLog.LogD("onInterstitialAdAvailabilityChanged : " + available);
+        DeveloperLog.LogD("onInterstitialAdAvailabilityChanged : " + mPlacementId + ", available: " + available);
         if (canSendListCallback(mIsListeners)) {
             sendCallback(new Runnable() {
 
@@ -375,7 +375,7 @@ public class ListenerWrapper {
 
 
     public void onInterstitialAdLoadSuccess() {
-        DeveloperLog.LogD("onInterstitialAdLoadSuccess");
+        DeveloperLog.LogD("onInterstitialAdLoadSuccess: " + mPlacementId);
         if (canSendCallback(mMediationIsListener)) {
             sendCallback(new Runnable() {
 
@@ -390,7 +390,7 @@ public class ListenerWrapper {
 
 
     public void onInterstitialAdLoadFailed(final Error error) {
-        DeveloperLog.LogD("onInterstitialAdLoadFailed: " + error);
+        DeveloperLog.LogD("onInterstitialAdLoadFailed: " + mPlacementId + ",error: " + error);
         if (canSendCallback(mMediationIsListener)) {
             sendCallback(new Runnable() {
 
@@ -405,7 +405,7 @@ public class ListenerWrapper {
 
 
     public void onInterstitialAdShowed(final Scene scene) {
-        DeveloperLog.LogD("onInterstitialAdShowed");
+        DeveloperLog.LogD("onInterstitialAdShowed : " + mPlacementId);
         if (canSendListCallback(mIsListeners)) {
             sendCallback(new Runnable() {
 
@@ -433,7 +433,7 @@ public class ListenerWrapper {
 
 
     public void onInterstitialAdShowFailed(final Scene scene, final Error error) {
-        DeveloperLog.LogD("onInterstitialAdShowFailed");
+        DeveloperLog.LogD("onInterstitialAdShowFailed : " + mPlacementId + ", error : " + error);
         if (canSendListCallback(mIsListeners)) {
             sendCallback(new Runnable() {
 
@@ -460,7 +460,7 @@ public class ListenerWrapper {
 
 
     public void onInterstitialAdClosed(final Scene scene) {
-        DeveloperLog.LogD("onInterstitialAdClosed");
+        DeveloperLog.LogD("onInterstitialAdClosed : " + mPlacementId);
         if (canSendListCallback(mIsListeners)) {
             sendCallback(new Runnable() {
 
@@ -488,7 +488,7 @@ public class ListenerWrapper {
 
 
     public void onInterstitialAdClicked(final Scene scene) {
-        DeveloperLog.LogD("onInterstitialAdClicked");
+        DeveloperLog.LogD("onInterstitialAdClicked : " + mPlacementId);
         if (canSendListCallback(mIsListeners)) {
             sendCallback(new Runnable() {
 
@@ -515,7 +515,7 @@ public class ListenerWrapper {
     }
 
     public void onPromotionAdAvailabilityChanged(final boolean available) {
-        DeveloperLog.LogD("onPromotionAdAvailabilityChanged : " + available);
+        DeveloperLog.LogD("onPromotionAdAvailabilityChanged : " + mPlacementId + ", available: " + available);
         if (canSendListCallback(mCpListeners)) {
             sendCallback(new Runnable() {
 
@@ -535,7 +535,7 @@ public class ListenerWrapper {
     }
 
     public void onPromotionAdClicked(final Scene scene) {
-        DeveloperLog.LogD("onPromotionAdClicked");
+        DeveloperLog.LogD("onPromotionAdClicked " + mPlacementId);
         if (canSendListCallback(mCpListeners)) {
             sendCallback(new Runnable() {
 
@@ -551,7 +551,7 @@ public class ListenerWrapper {
     }
 
     public void onPromotionAdShowed(final Scene scene) {
-        DeveloperLog.LogD("onPromotionAdShowed");
+        DeveloperLog.LogD("onPromotionAdShowed " + mPlacementId);
         if (canSendListCallback(mCpListeners)) {
             sendCallback(new Runnable() {
 
@@ -567,7 +567,7 @@ public class ListenerWrapper {
     }
 
     public void onPromotionAdShowFailed(final Scene scene, final Error error) {
-        DeveloperLog.LogD("onPromotionAdShowFailed");
+        DeveloperLog.LogD("onPromotionAdShowFailed, " + mPlacementId + ", error: " + error);
         if (canSendListCallback(mCpListeners)) {
             sendCallback(new Runnable() {
 
@@ -583,7 +583,7 @@ public class ListenerWrapper {
     }
 
     public void onPromotionAdHidden(final Scene scene) {
-        DeveloperLog.LogD("onPromotionAdHidden");
+        DeveloperLog.LogD("onPromotionAdHidden : " + mPlacementId);
         if (canSendListCallback(mCpListeners)) {
             sendCallback(new Runnable() {
 
@@ -697,7 +697,7 @@ public class ListenerWrapper {
     }
 
     public void onBannerAdLoaded(final String placementId, final View view) {
-        DeveloperLog.LogD("onBannerAdLoaded");
+        DeveloperLog.LogD("onBannerAdLoaded, placementId: " + placementId);
         if (canSendCallback(mBnListener)) {
             sendCallback(new Runnable() {
 
@@ -711,7 +711,7 @@ public class ListenerWrapper {
     }
 
     public void onBannerAdLoadFailed(final String placementId, final Error error) {
-        DeveloperLog.LogD("onBannerAdLoadFailed");
+        DeveloperLog.LogD("onBannerAdLoadFailed, placementId: " + placementId + ", error: " + error);
         if (canSendCallback(mBnListener)) {
             sendCallback(new Runnable() {
 
@@ -725,7 +725,7 @@ public class ListenerWrapper {
     }
 
     public void onBannerAdClicked(final String placementId) {
-        DeveloperLog.LogD("onBannerAdClicked");
+        DeveloperLog.LogD("onBannerAdClicked, placementId: " + placementId);
         if (canSendCallback(mBnListener)) {
             sendCallback(new Runnable() {
 
@@ -739,7 +739,7 @@ public class ListenerWrapper {
     }
 
     public void onNativeAdLoaded(final String placementId, final AdInfo info) {
-        DeveloperLog.LogD("onNativeAdLoaded");
+        DeveloperLog.LogD("onNativeAdLoaded, placementId: " + placementId);
         if (canSendListCallback(mNaListeners)) {
             sendCallback(new Runnable() {
 
@@ -755,7 +755,7 @@ public class ListenerWrapper {
     }
 
     public void onNativeAdLoadFailed(final String placementId, final Error error) {
-        DeveloperLog.LogD("onNativeAdLoadFailed");
+        DeveloperLog.LogD("onNativeAdLoadFailed, placementId: " + placementId + ", error: " + error);
         if (canSendListCallback(mNaListeners)) {
             sendCallback(new Runnable() {
 

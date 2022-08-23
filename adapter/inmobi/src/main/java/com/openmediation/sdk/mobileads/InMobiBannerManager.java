@@ -56,7 +56,7 @@ public class InMobiBannerManager {
                 InMobiSingleTon.getInstance().addBannerListener(adUnitId, new InMobiBannerCallback() {
 
                     @Override
-                    public void onAdImpression(String placementId) {
+                    public void onAdDisplayed(String placementId) {
                         if (callback != null) {
                             callback.onBannerAdImpression();
                         }

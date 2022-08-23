@@ -44,7 +44,6 @@
                 android:layout_marginTop="20dp"
                 android:background="@drawable/btn_background"
                 android:enabled="false"
-                android:onClick="showRewardVideo"
                 android:text="Reward Video Ad Loading..."
                 android:textAllCaps="false"
                 android:textSize="20sp" />
@@ -57,45 +56,31 @@
                 android:layout_marginTop="20dp"
                 android:background="@drawable/btn_background"
                 android:enabled="false"
-                android:onClick="showInterstitial"
                 android:text="Interstitial Ad Loading..."
                 android:textAllCaps="false"
                 android:textSize="20sp" />
-            android:background="@drawable/btn_background"/>
 
             <Button
+                android:enabled="false"
                 android:id="@+id/btn_splash"
                 android:layout_width="300dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginTop="20dp"
                 android:background="@drawable/btn_background"
-                android:onClick="showSplash"
                 android:text="Show Splash Ad"
                 android:textAllCaps="false"
                 android:textSize="20sp" />
 
             <Button
+                android:enabled="false"
                 android:id="@+id/btn_banner"
                 android:layout_width="300dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginTop="20dp"
                 android:background="@drawable/btn_background"
-                android:onClick="loadAndShowBanner"
                 android:text="Load And Show Banner Ad"
-                android:textAllCaps="false"
-                android:textSize="20sp" />
-
-            <Button
-                android:id="@+id/btn_native"
-                android:layout_width="300dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginTop="20dp"
-                android:background="@drawable/btn_background"
-                android:onClick="loadAndShowNative"
-                android:text="Load And Show Native Ad"
                 android:textAllCaps="false"
                 android:textSize="20sp" />
 
@@ -107,12 +92,12 @@
                 android:layout_marginTop="20dp"
                 android:background="@drawable/btn_background"
                 android:enabled="false"
-                android:onClick="showPromotion"
                 android:text="Promotion Ad Loading..."
                 android:textAllCaps="false"
                 android:textSize="20sp" />
 
             <Button
+                android:enabled="false"
                 android:id="@+id/btn_native_list"
                 android:layout_width="300dp"
                 android:layout_height="wrap_content"
@@ -130,7 +115,6 @@
                 android:gravity="center"
                 android:orientation="horizontal"
                 android:padding="20dp"></LinearLayout>
-
 
         </LinearLayout>
 

@@ -8,8 +8,6 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -17,7 +15,6 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import com.openmediation.sdk.ImpressionData;
 import com.openmediation.sdk.ImpressionDataListener;
@@ -30,12 +27,6 @@ import com.openmediation.sdk.banner.BannerAdListener;
 import com.openmediation.sdk.demo.utils.Constants;
 import com.openmediation.sdk.interstitial.InterstitialAd;
 import com.openmediation.sdk.interstitial.InterstitialAdListener;
-import com.openmediation.sdk.nativead.AdIconView;
-import com.openmediation.sdk.nativead.AdInfo;
-import com.openmediation.sdk.nativead.MediaView;
-import com.openmediation.sdk.nativead.NativeAd;
-import com.openmediation.sdk.nativead.NativeAdListener;
-import com.openmediation.sdk.nativead.NativeAdView;
 import com.openmediation.sdk.promotion.PromotionAd;
 import com.openmediation.sdk.promotion.PromotionAdListener;
 import com.openmediation.sdk.promotion.PromotionAdRect;
@@ -44,50 +35,24 @@ import com.openmediation.sdk.utils.model.Scene;
 import com.openmediation.sdk.video.RewardedVideoAd;
 import com.openmediation.sdk.video.RewardedVideoListener;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements View.OnClickListener {
 
     private static String TAG = "MainActivity";
 
     private Button rewardVideoButton;
     private Button interstitialButton;
     private Button bannerButton;
-    private Button nativeButton;
+    private Button splashButton;
     private Button promotionButton;
+    private Button nativeRecyclerView;
     private boolean isShowPromotion = false;
 
     private LinearLayout adContainer;
 
     private BannerAd bannerAd;
-    private AdInfo mAdInfo;
 
     private ImpressionDataListener mDataListener;
     private PromotionAdListener mPromotionAdListener;
-
-    private final NativeAdListener mNativeAdListener = new NativeAdListener() {
-        @Override
-        public void onNativeAdLoaded(String placementId, AdInfo info) {
-            Log.d(TAG, "onNativeAdLoaded, placementId: " + placementId + ", AdInfo : " + info);
-            mAdInfo = info;
-            onNativeAdLoadSuccess(placementId, info);
-        }
-
-        @Override
-        public void onNativeAdLoadFailed(String placementId, Error error) {
-            Log.d(TAG, "onNativeAdLoadFailed, placementId: " + placementId + ", error : " + error);
-            nativeButton.setEnabled(true);
-            nativeButton.setText("Native Load Failed, Try Again");
-        }
-
-        @Override
-        public void onNativeAdImpression(String placementId, AdInfo info) {
-            Log.d(TAG, "onNativeAdImpression, placementId: " + placementId + ", info : " + info);
-        }
-
-        @Override
-        public void onNativeAdClicked(String placementId, AdInfo info) {
-            Log.d(TAG, "onNativeAdClicked, placementId: " + placementId + ", info : " + info);
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,9 +68,17 @@ public class MainActivity extends Activity {
         interstitialButton = findViewById(R.id.btn_interstitial);
         promotionButton = findViewById(R.id.btn_promotion);
         bannerButton = findViewById(R.id.btn_banner);
-        nativeButton = findViewById(R.id.btn_native);
+        splashButton = findViewById(R.id.btn_splash);
         adContainer = findViewById(R.id.ad_container);
-        setButtonEnable(false);
+        nativeRecyclerView = findViewById(R.id.btn_native_list);
+
+        rewardVideoButton.setOnClickListener(this);
+        interstitialButton.setOnClickListener(this);
+        promotionButton.setOnClickListener(this);
+        bannerButton.setOnClickListener(this);
+        splashButton.setOnClickListener(this);
+        nativeRecyclerView.setOnClickListener(this);
+
         initSDK();
         setListener();
         if (RewardedVideoAd.isReady()) {
@@ -117,32 +90,49 @@ public class MainActivity extends Activity {
         if (PromotionAd.isReady()) {
             setPromotionButtonStat(true);
         }
-
-        findViewById(R.id.btn_native_list).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, NativeRecyclerActivity.class));
-            }
-        });
     }
 
     private void setButtonEnable(boolean enable) {
         bannerButton.setEnabled(enable);
-        nativeButton.setEnabled(enable);
+        nativeRecyclerView.setEnabled(enable);
+        splashButton.setEnabled(enable);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         OmAds.onResume(this);
-        NativeAd.addAdListener(Constants.P_NATIVE, mNativeAdListener);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         OmAds.onPause(this);
-        NativeAd.removeAdListener(Constants.P_NATIVE, mNativeAdListener);
+    }
+
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.btn_reward_video:
+                showRewardVideo();
+                break;
+            case R.id.btn_interstitial:
+                showInterstitial();
+                break;
+            case R.id.btn_banner:
+                loadAndShowBanner();
+                break;
+            case R.id.btn_splash:
+                showSplash();
+                break;
+            case R.id.btn_promotion:
+                showPromotion();
+                break;
+            case R.id.btn_native_list:
+                startActivity(new Intent(MainActivity.this, NativeRecyclerActivity.class));
+                break;
+        }
     }
 
     private void initSDK() {
@@ -176,7 +166,6 @@ public class MainActivity extends Activity {
             }
         };
         OmAds.addImpressionDataListener(mDataListener);
-        NativeAd.addAdListener(Constants.P_NATIVE, mNativeAdListener);
     }
 
     private void setVideoListener() {
@@ -293,17 +282,17 @@ public class MainActivity extends Activity {
         PromotionAd.addAdListener(mPromotionAdListener);
     }
 
-    public void showRewardVideo(View view) {
+    public void showRewardVideo() {
         RewardedVideoAd.showAd();
         setRewardVideoButtonStat(false);
     }
 
-    public void showInterstitial(View view) {
+    public void showInterstitial() {
         InterstitialAd.showAd();
         setInterstitialButtonStat(false);
     }
 
-    public void showPromotion(View view) {
+    public void showPromotion() {
         if (PromotionAd.isReady()) {
             PromotionAdRect adRect = new PromotionAdRect();
             adRect.setWidth(132);
@@ -315,11 +304,11 @@ public class MainActivity extends Activity {
         }
     }
 
-    public void showSplash(View view) {
+    public void showSplash() {
         startActivity(new Intent(MainActivity.this, SplashAdActivity.class));
     }
 
-    public void loadAndShowBanner(View view) {
+    public void loadAndShowBanner() {
         bannerButton.setEnabled(false);
         bannerButton.setText("Banner Ad Loading...");
         if (bannerAd != null) {
@@ -358,52 +347,6 @@ public class MainActivity extends Activity {
         });
         bannerAd.setAdSize(AdSize.BANNER);
         bannerAd.loadAd();
-    }
-
-    private void onNativeAdLoadSuccess(String placementId, AdInfo info) {
-        adContainer.removeAllViews();
-        if (info.isTemplateRender()) {
-            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
-                    RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-            layoutParams.addRule(Gravity.CENTER);
-            adContainer.addView(info.getView(), layoutParams);
-        } else {
-            View adView = LayoutInflater.from(MainActivity.this).inflate(R.layout.native_ad_layout, null);
-            TextView title = adView.findViewById(R.id.ad_title);
-            title.setText(info.getTitle());
-            TextView desc = adView.findViewById(R.id.ad_desc);
-            desc.setText(info.getDesc());
-            Button btn = adView.findViewById(R.id.ad_btn);
-            btn.setText(info.getCallToActionText());
-            MediaView mediaView = adView.findViewById(R.id.ad_media);
-            NativeAdView nativeAdView = new NativeAdView(MainActivity.this);
-            AdIconView iconView = adView.findViewById(R.id.ad_icon_media);
-            nativeAdView.addView(adView);
-            nativeAdView.setTitleView(title);
-            nativeAdView.setDescView(desc);
-            nativeAdView.setAdIconView(iconView);
-            nativeAdView.setCallToActionView(btn);
-            nativeAdView.setMediaView(mediaView);
-
-            NativeAd.registerNativeAdView(placementId, nativeAdView, info);
-            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
-                    RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-            adContainer.addView(nativeAdView, layoutParams);
-        }
-        nativeButton.setEnabled(true);
-        nativeButton.setText("Load And Show Native Ad");
-    }
-
-    public void loadAndShowNative(View view) {
-        nativeButton.setEnabled(false);
-        nativeButton.setText("Native Ad Loading...");
-        if (mAdInfo != null) {
-            NativeAd.destroy(Constants.P_NATIVE, mAdInfo);
-        }
-        adContainer.removeAllViews();
-        // for TikTok and TencentAd in China traffic
-        NativeAd.setDisplayParams(Constants.P_NATIVE, 300, 0);
-        NativeAd.loadAd(Constants.P_NATIVE);
     }
 
     private void setRewardVideoButtonStat(boolean isEnable) {
@@ -449,12 +392,10 @@ public class MainActivity extends Activity {
         if (bannerAd != null) {
             bannerAd.destroy();
         }
-        if (mAdInfo != null) {
-            NativeAd.destroy(Constants.P_NATIVE, mAdInfo);
-        }
         if (mDataListener != null) {
             OmAds.removeImpressionDataListener(mDataListener);
         }
         PromotionAd.removeAdListener(mPromotionAdListener);
     }
+
 }

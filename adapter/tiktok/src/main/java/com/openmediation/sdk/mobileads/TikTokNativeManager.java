@@ -9,12 +9,13 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
-import com.bytedance.sdk.openadsdk.AdSlot;
-import com.bytedance.sdk.openadsdk.TTAdNative;
-import com.bytedance.sdk.openadsdk.TTFeedAd;
-import com.bytedance.sdk.openadsdk.TTImage;
-import com.bytedance.sdk.openadsdk.TTNativeAd;
-import com.bytedance.sdk.openadsdk.adapter.MediationAdapterUtil;
+import com.bytedance.sdk.openadsdk.api.nativeAd.PAGImageItem;
+import com.bytedance.sdk.openadsdk.api.nativeAd.PAGMediaView;
+import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeAd;
+import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeAdData;
+import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeAdInteractionListener;
+import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeAdLoadListener;
+import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeRequest;
 import com.crosspromotion.sdk.utils.Cache;
 import com.crosspromotion.sdk.utils.ImageUtils;
 import com.crosspromotion.sdk.utils.ResDownloader;
@@ -36,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 
 public class TikTokNativeManager {
-    private TTAdNative mTTAdNative;
 
     private static class Holder {
         private static final TikTokNativeManager INSTANCE = new TikTokNativeManager();
@@ -49,9 +49,9 @@ public class TikTokNativeManager {
         return Holder.INSTANCE;
     }
 
-    public void initAd(Context context, Map<String, Object> extras, Boolean consent, Boolean ageRestricted, final NativeAdCallback callback) {
+    public void initAd(Context context, Map<String, Object> extras, Boolean consent, Boolean ageRestricted, Boolean privacyLimit, final NativeAdCallback callback) {
         String appKey = (String) extras.get("AppKey");
-        TTAdManagerHolder.getInstance().init(context, appKey, consent, ageRestricted, new TTAdManagerHolder.InitCallback() {
+        TTAdManagerHolder.getInstance().init(context, appKey, consent, ageRestricted, privacyLimit, new TTAdManagerHolder.InitCallback() {
             @Override
             public void onSuccess() {
                 if (callback != null) {
@@ -71,15 +71,36 @@ public class TikTokNativeManager {
 
     public void loadAd(final Context context, final String adUnitId, Map<String, Object> extras, final NativeAdCallback callback) {
         try {
-            if (mTTAdNative == null) {
-                mTTAdNative = TTAdManagerHolder.getInstance().getAdManager().createAdNative(context);
-            }
-            AdSlot adSlot = new AdSlot.Builder()
-                    .setCodeId(adUnitId)
-                    .setAdCount(1) //ad count from 1 to 3
-                    .build();
-            mTTAdNative.loadFeedAd(adSlot, new InnerAdListener(adUnitId, callback));
-        } catch(Throwable e) {
+            PAGNativeRequest request = new PAGNativeRequest();
+            PAGNativeAd.loadAd(adUnitId, request, new PAGNativeAdLoadListener() {
+                @Override
+                public void onError(int code, String message) {
+                    AdLog.getSingleton().LogD("TikTokAdapter, NativeAd load onError code: " + code + ", message: " + message);
+                    if (callback != null) {
+                        callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                                AdapterErrorBuilder.AD_UNIT_NATIVE, "TikTokAdapter", code, message));
+                    }
+                }
+
+                @Override
+                public void onAdLoaded(PAGNativeAd pagNativeAd) {
+                    AdLog.getSingleton().LogD("TikTokAdapter, NativeAd onAdLoaded: " + pagNativeAd);
+                    if (pagNativeAd == null) {
+                        if (callback != null) {
+                            callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                                    AdapterErrorBuilder.AD_UNIT_NATIVE, "TikTokAdapter", "No Fill"));
+                        }
+                        return;
+                    }
+                    WorkExecutor.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            downloadRes(pagNativeAd, callback);
+                        }
+                    });
+                }
+            });
+        } catch (Throwable e) {
             if (callback != null) {
                 callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
                         AdapterErrorBuilder.AD_UNIT_NATIVE, "TikTokAdapter", "Unknown Error"));
@@ -98,16 +119,16 @@ public class TikTokNativeManager {
 
     private void innerRegisterView(String adUnitId, NativeAdView adView, AdnAdInfo adInfo, final NativeAdCallback callback) {
         try {
-            if (adInfo == null || !(adInfo.getAdnNativeAd() instanceof TTFeedAd)) {
+            if (adInfo == null || !(adInfo.getAdnNativeAd() instanceof PAGNativeAd)) {
                 return;
             }
-            TTFeedAd feedAd = (TTFeedAd) adInfo.getAdnNativeAd();
+            PAGNativeAd nativeAd = (PAGNativeAd) adInfo.getAdnNativeAd();
+            PAGNativeAdData adData = nativeAd.getNativeAdData();
             MediaView mediaView = adView.getMediaView();
             ArrayList<View> images = new ArrayList<>();
             if (mediaView != null) {
-                com.bytedance.sdk.openadsdk.adapter.MediaView adnMediaView = new com.bytedance.sdk.openadsdk.adapter.MediaView(adView.getContext());
-                /** Add Native Feed Main View */
-                MediationAdapterUtil.addNativeFeedMainView(adView.getContext(), feedAd.getImageMode(), adnMediaView, feedAd.getAdView(), feedAd.getImageList());
+                PAGMediaView adnMediaView = adData.getMediaView();
+//                MediationAdapterUtil.addNativeFeedMainView(adView.getContext(), nativeAd.getImageMode(), adnMediaView, feedAd.getAdView(), feedAd.getImageList());
                 mediaView.removeAllViews();
                 RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,
                         RelativeLayout.LayoutParams.WRAP_CONTENT);
@@ -116,8 +137,8 @@ public class TikTokNativeManager {
                 mediaView.addView(adnMediaView);
                 images.add(adnMediaView);
             }
-            TTImage icon = feedAd.getIcon();
-            if (icon != null && icon.isValid() && adView.getAdIconView() != null) {
+            PAGImageItem icon = adData.getIcon();
+            if (icon != null && icon.getImageUrl() != null && adView.getAdIconView() != null) {
                 AdIconView iconView = adView.getAdIconView();
                 iconView.removeAllViews();
                 ImageView adnIconView = new ImageView(adView.getContext());
@@ -136,76 +157,38 @@ public class TikTokNativeManager {
             if (adView.getCallToActionView() != null) {
                 creativeViewList.add(adView.getCallToActionView());
             }
-            //notice! This involves advertising billing and must be called correctly. convertView must use ViewGroup.
-            feedAd.registerViewForInteraction(adView, images, clickViewList, creativeViewList, null, new TTNativeAd.AdInteractionListener() {
-
+            nativeAd.registerViewForInteraction(adView, clickViewList, creativeViewList, null, new PAGNativeAdInteractionListener() {
                 @Override
-                public void onAdClicked(View view, TTNativeAd ttNativeAd) {
+                public void onAdShowed() {
+                    AdLog.getSingleton().LogD("TikTokAdapter NativeAd onAdShowed");
+                    if (callback != null) {
+                        callback.onNativeAdImpression();
+                    }
                 }
 
                 @Override
-                public void onAdCreativeClick(View view, TTNativeAd ttNativeAd) {
+                public void onAdClicked() {
+                    AdLog.getSingleton().LogD("TikTokAdapter NativeAd onAdClicked");
                     if (callback != null) {
                         callback.onNativeAdAdClicked();
                     }
                 }
 
                 @Override
-                public void onAdShow(TTNativeAd ttNativeAd) {
-                    AdLog.getSingleton().LogD("TikTok NativeAd onAdShow");
-                    if (callback != null) {
-                        callback.onNativeAdImpression();
-                    }
+                public void onAdDismissed() {
+                    AdLog.getSingleton().LogD("TikTokAdapter, NativeAd onAdDismissed");
                 }
             });
-        } catch(Throwable e) {
+        } catch (Throwable e) {
             AdLog.getSingleton().LogE("TikTokNativeManager", "Native register error: " + e.getMessage());
         }
     }
 
-    public void destroyAd(String adUnitId, AdnAdInfo adInfo) {
-    }
-
-    private class InnerAdListener implements TTAdNative.FeedAdListener {
-
-        private String mAdUnitId;
-        private NativeAdCallback mAdCallback;
-
-        private InnerAdListener(String adUnitId, NativeAdCallback callback) {
-            this.mAdUnitId = adUnitId;
-            this.mAdCallback = callback;
-        }
-
-        @Override
-        public void onError(int i, String s) {
-            if (mAdCallback != null) {
-                mAdCallback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                        AdapterErrorBuilder.AD_UNIT_NATIVE, "TikTokAdapter", i, s));
-            }
-        }
-
-        @Override
-        public void onFeedAdLoad(final List<TTFeedAd> list) {
-            if (list == null || list.isEmpty() || list.get(0) == null) {
-                if (mAdCallback != null) {
-                    mAdCallback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                            AdapterErrorBuilder.AD_UNIT_NATIVE, "TikTokAdapter", "No Fill"));
-                }
-                return;
-            }
-            WorkExecutor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    downloadRes(mAdUnitId, list.get(0), mAdCallback);
-                }
-            });
-        }
-    }
-
-    private void downloadRes(String adUnitId, final TTFeedAd ad, final NativeAdCallback callback) {
+    private void downloadRes(final PAGNativeAd ad, final NativeAdCallback callback) {
         try {
-            TTImage icon = ad.getIcon();
-            if (icon != null && icon.isValid()) {
+            PAGNativeAdData adData = ad.getNativeAdData();
+            PAGImageItem icon = adData.getIcon();
+            if (icon != null && icon.getImageUrl() != null) {
                 File file = ResDownloader.downloadFile(icon.getImageUrl());
                 if (file == null || !file.exists()) {
                     if (callback != null) {
@@ -218,19 +201,22 @@ public class TikTokNativeManager {
             }
             AdnAdInfo adInfo = new AdnAdInfo();
             adInfo.setAdnNativeAd(ad);
-            adInfo.setDesc(ad.getDescription());
+            adInfo.setDesc(adData.getDescription());
             adInfo.setType(MediationInfo.MEDIATION_ID_13);
-            adInfo.setTitle(ad.getTitle());
-            adInfo.setCallToActionText(ad.getButtonText());
+            adInfo.setTitle(adData.getTitle());
+            adInfo.setCallToActionText(adData.getButtonText());
             if (callback != null) {
                 callback.onNativeAdLoadSuccess(adInfo);
             }
-        } catch(Throwable e) {
+        } catch (Throwable e) {
             if (callback != null) {
                 callback.onNativeAdLoadFailed(AdapterErrorBuilder.buildLoadError(
                         AdapterErrorBuilder.AD_UNIT_NATIVE, "TikTokAdapter", "NativeAd Load Failed: " + e.getMessage()));
             }
         }
+    }
+
+    public void destroyAd(String adUnitId, AdnAdInfo adInfo) {
     }
 
 }

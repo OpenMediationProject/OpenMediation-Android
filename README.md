@@ -17,30 +17,30 @@ android {
 }
 
 dependencies {
-  implementation 'com.openmediation:om-android-sdk:2.6.3@aar'
+  implementation 'com.openmediation:om-android-sdk:2.6.5@aar'
 
   // AdTiming-Adapter
   implementation 'com.openmediation.adapters:adtiming:2.5.0@aar'
   // AdMob-Adapter
-  implementation 'com.openmediation.adapters:admob:2.5.2@aar'
+  implementation 'com.openmediation.adapters:admob:2.5.4@aar'
   // Facebook-Adapter
   implementation 'com.openmediation.adapters:facebook:2.6.2@aar'
   // Unity-Adapter
   implementation 'com.openmediation.adapters:unity:2.5.2@aar'
   // Vungle-Adapter
-  implementation 'com.openmediation.adapters:vungle:2.5.0@aar'
+  implementation 'com.openmediation.adapters:vungle:2.5.1@aar'
   // AdColony-Adapter
-  implementation 'com.openmediation.adapters:adcolony:2.6.0@aar'
+  implementation 'com.openmediation.adapters:adcolony:2.6.1@aar'
   // AppLovin-Adapter
   implementation 'com.openmediation.adapters:applovin:2.5.1@aar'
   // Tapjoy-Adapter
   implementation 'com.openmediation.adapters:tapjoy:2.6.0@aar'
   // Chartboost-Adapter
-  implementation 'com.openmediation.adapters:chartboost:2.5.1@aar'
+  implementation 'com.openmediation.adapters:chartboost:2.6.0@aar'
   // Mintegral-Adapter
-  implementation 'com.openmediation.adapters:mintegral:2.6.1@aar'
+  implementation 'com.openmediation.adapters:mintegral:2.6.2@aar'
   //TikTok-Adapter
-  implementation 'com.openmediation.adapters:tiktok:2.5.1@aar'
+  implementation 'com.openmediation.adapters:tiktok:2.6.4@aar'
   //IronSource-Adapter
   implementation 'com.openmediation.adapters:ironsource:2.5.0@aar'
   //Fyber-Adapter
@@ -48,7 +48,7 @@ dependencies {
   //Ogury-Adapter
   implementation 'com.openmediation.adapters:ogury:2.5.1@aar'
   //Helium-Adapter
-  implementation 'com.openmediation.adapters:helium:2.6.0@aar'
+  implementation 'com.openmediation.adapters:helium:2.6.1@aar'
   // PubNative-Adapter
   implementation 'com.openmediation.adapters:pubnative:2.5.0@aar'
 }

@@ -57,13 +57,13 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -72,10 +72,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  * The type Om manager.
  */
 public final class OmManager implements InitCallback {
-    private final Map<String, IsManager> mIsManagers;
-    private final Map<String, RvManager> mRvManagers;
-    private final Map<String, CpManager> mCpManagers;
-    private final Map<String, NaManager> mNaManagers;
+    private final ConcurrentMap<String, IsManager> mIsManagers;
+    private final ConcurrentMap<String, RvManager> mRvManagers;
+    private final ConcurrentMap<String, CpManager> mCpManagers;
+    private final ConcurrentMap<String, NaManager> mNaManagers;
     private ConcurrentMap<String, Set<InterstitialAdListener>> mIsListeners;
     private ConcurrentMap<String, Set<RewardedVideoListener>> mRvListeners;
     private ConcurrentMap<String, Set<PromotionAdListener>> mCpListeners;
@@ -160,10 +160,10 @@ public final class OmManager implements InitCallback {
     }
 
     private OmManager() {
-        mIsManagers = new HashMap<>();
-        mRvManagers = new HashMap<>();
-        mCpManagers = new HashMap<>();
-        mNaManagers = new HashMap<>();
+        mIsManagers = new ConcurrentHashMap<>();
+        mRvManagers = new ConcurrentHashMap<>();
+        mCpManagers = new ConcurrentHashMap<>();
+        mNaManagers = new ConcurrentHashMap<>();
 
         mIsListeners = new ConcurrentHashMap<>();
         mRvListeners = new ConcurrentHashMap<>();
@@ -561,7 +561,7 @@ public final class OmManager implements InitCallback {
             }
             Set<InterstitialAdListener> isListeners = mIsListeners.get(placementId);
             if (isListeners == null) {
-                isListeners = new HashSet<>();
+                isListeners = new CopyOnWriteArraySet<>();
             }
             isListeners.add(listener);
             mIsListeners.put(placementId, isListeners);
@@ -736,7 +736,7 @@ public final class OmManager implements InitCallback {
             }
             Set<RewardedVideoListener> rvListeners = mRvListeners.get(placementId);
             if (rvListeners == null) {
-                rvListeners = new HashSet<>();
+                rvListeners = new CopyOnWriteArraySet<>();
             }
             rvListeners.add(listener);
             mRvListeners.put(placementId, rvListeners);
@@ -897,7 +897,7 @@ public final class OmManager implements InitCallback {
             }
             Set<PromotionAdListener> listeners = mCpListeners.get(placementId);
             if (listeners == null) {
-                listeners = new HashSet<>();
+                listeners = new CopyOnWriteArraySet<>();
             }
             listeners.add(listener);
             mCpListeners.put(placementId, listeners);
@@ -1036,7 +1036,7 @@ public final class OmManager implements InitCallback {
             }
             Set<NativeAdListener> listeners = mNaListeners.get(placementId);
             if (listeners == null) {
-                listeners = new HashSet<>();
+                listeners = new CopyOnWriteArraySet<>();
             }
             listeners.add(listener);
             mNaListeners.put(placementId, listeners);
