@@ -11,11 +11,11 @@ ext {
             'fyber'         : '2.5.0',
             'gam_reklamup'  : '2.6.0',
             'googlead'      : '2.6.0',
-            'helium'        : '2.6.1',
+            'helium'        : '2.6.2',
             'hwads'         : '2.6.0',
-            'inmobi'        : '2.5.0',
+            'inmobi'        : '2.5.2',
             'ironsource'    : '2.5.0',
-            'mintegral'     : '2.6.2',
+            'mintegral'     : '2.6.3',
             'ogury'         : '2.5.1',
             'pubnative'     : '2.5.0',
             'sanads'        : '2.5.0',
@@ -27,6 +27,6 @@ ext {
             'mintegral_cn'  : '2.6.2',
             'sigmob_cn'     : '2.6.0',
             'tencentad_cn'  : '2.5.1',
-            'tiktok_cn'     : '2.6.0',
+            'tiktok_cn'     : '2.6.1',
     ]
 }

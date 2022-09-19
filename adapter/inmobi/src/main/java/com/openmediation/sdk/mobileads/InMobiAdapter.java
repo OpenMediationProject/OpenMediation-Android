@@ -57,25 +57,39 @@ public class InMobiAdapter extends CustomAdsAdapter {
             // Provide correct consent value to sdk which is obtained by User
             consentObject.put(InMobiSdk.IM_GDPR_CONSENT_AVAILABLE, consent);
             InMobiSdk.updateGDPRConsent(consentObject);
-        } catch (Throwable e) {
-            e.printStackTrace();
+        } catch (Throwable ignored) {
+        }
+    }
+
+    @Override
+    public void setAgeRestricted(Context context, boolean restricted) {
+        super.setAgeRestricted(context, restricted);
+        try {
+            InMobiSdk.setIsAgeRestricted(restricted);
+        } catch (Throwable ignored) {
         }
     }
 
     @Override
     public void setUserGender(Context context, String gender) {
         super.setUserGender(context, gender);
-        if (gender.equalsIgnoreCase("female")) {
-            InMobiSdk.setGender(InMobiSdk.Gender.FEMALE);
-        } else if (gender.equalsIgnoreCase("male")) {
-            InMobiSdk.setGender(InMobiSdk.Gender.MALE);
+        try {
+            if (gender.equalsIgnoreCase("female")) {
+                InMobiSdk.setGender(InMobiSdk.Gender.FEMALE);
+            } else if (gender.equalsIgnoreCase("male")) {
+                InMobiSdk.setGender(InMobiSdk.Gender.MALE);
+            }
+        } catch (Throwable ignored) {
         }
     }
 
     @Override
     public void setUserAge(Context context, int age) {
         super.setUserAge(context, age);
-        InMobiSdk.setAge(age);
+        try {
+            InMobiSdk.setAge(age);
+        } catch (Throwable ignored) {
+        }
     }
 
     @Override

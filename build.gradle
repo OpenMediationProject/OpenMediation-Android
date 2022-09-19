@@ -39,7 +39,7 @@ ext {
             "facebook"                   : 'com.facebook.android:audience-network-sdk:6.11.0',
             //admob https://developers.google.com/admob/android/rel-notes
             //google ad manager https://developers.google.com/ad-manager/mobile-ads-sdk/android/quick-start
-            "admob"                      : 'com.google.android.gms:play-services-ads:21.1.0',
+            "admob"                      : 'com.google.android.gms:play-services-ads:21.2.0',
             "admob_facebook_adapter"     : 'com.google.ads.mediation:facebook:6.11.0.1',
             //vungle https://github.com/Vungle/Android-SDK/blob/master/CHANGELOG.md
             "vungle"                     : 'com.vungle:publisher-sdk-android:6.12.0',
@@ -51,29 +51,29 @@ ext {
             //AdColony https://github.com/AdColony/AdColony-Android-SDK/blob/master/CHANGELOG.md
             "adcolony"                   : 'com.adcolony:sdk:4.8.0',
             //AppLovin https://dash.applovin.com/documentation/mediation/android/changelog
-            "applovin"                   : 'com.applovin:applovin-sdk:11.4.4',
+            "applovin"                   : 'com.applovin:applovin-sdk:11.4.6',
             //TapJoy https://dev.tapjoy.com/en/android-sdk/Changelog
             "tapjoy"                     : 'com.tapjoy:tapjoy-android-sdk:12.10.0@aar',
             //chartboost https://answers.chartboost.com/en-us/child_article/android-amazon
             "chartboost"                 : 'com.chartboost:chartboost-sdk:9.0.0',
             //unity https://github.com/Unity-Technologies/unity-ads-android/releases
-            "unity"                      : 'com.unity3d.ads:unity-ads:4.3.0',
+            "unity"                      : 'com.unity3d.ads:unity-ads:4.4.0',
             //gp-base.
             "play_service_base"          : 'com.google.android.gms:play-services-base:18.1.0',
             //gp-ads-identifier
             "play_service_ads_identifier": 'com.google.android.gms:play-services-ads-identifier:18.0.1',
             //Mintegral http://cdn-adn.rayjump.com/cdn-adn/v2/markdown_v2/index.html?file=sdk-m_sdk-android&lang=en
-            "mtg_version"                : '16.2.11',
-            "mtg_china_version"          : '16.2.12',
-            // IronSource https://developers.ironsrc.com/ironsource-mobile/android/sdk-change-log/
-            "ironsource"                 : 'com.ironsource.sdk:mediationsdk:7.2.4',
+            "mtg_version"                : '16.2.31',
+            "mtg_china_version"          : '16.2.32',
+            // ironSource https://developers.ironsrc.com/ironsource-mobile/android/sdk-change-log/
+            "ironsource"                 : 'com.ironsource.sdk:mediationsdk:7.2.4.1',
             // https://developer.fyber.com/hc/en-us/articles/360010822437-Integrating-the-Android-SDK
             "fyber"                      : '7.8.4',
             // https://www.pangleglobal.com/
             "pangle"                     : 'com.pangle.global:ads-sdk:4.6.0.4',
             // https://helium.chartboost.com/
-            "helium"                     : 'com.chartboost:helium:2.11.0',
-            "helium_facebook_adapter"    : 'com.chartboost:helium-facebook:2.11.0.0',
+            "helium"                     : 'com.chartboost:helium:3.0.0',
+            "helium_facebook_adapter"    : 'com.chartboost:helium-facebook:3.0.0.0',
             "eventbus"                   : 'org.greenrobot:eventbus:3.3.1',
             // https://developers.adnet.qq.com/doc/android/access_doc
             // https://adnet.qq.com/resource/sdk
@@ -81,11 +81,11 @@ ext {
             // https://ogury-ltd.gitbook.io/release-notes/android
             "ogury"                      : 'co.ogury:ogury-sdk:5.3.0',
             // https://github.com/pubnative/pubnative-hybid-android-sdk/wiki/HyBid-Configuration
-            "pubnative"                  : 'net.pubnative:hybid.sdk:2.15.0',
+            "pubnative"                  : 'net.pubnative:hybid.sdk:2.15.1',
             // https://admost.github.io/amrandroid/
-            "admost"                     : 'com.admost.sdk:amr:2.6.2',
+            "admost"                     : 'com.admost.sdk:amr:2.6.4',
             "admost_volley"              : 'com.android.volley:volley:1.2.1',
-            "admost_facebook_adapter"    : 'com.admost.sdk:facebook-adapter:6.11.0.a31',
+            "admost_facebook_adapter"    : 'com.admost.sdk:facebook-adapter:6.11.0.1.a31',
             "admost_recyclerview"        : 'androidx.recyclerview:recyclerview:1.1.0',
             "admost_annotation"          : 'androidx.annotation:annotation:1.2.0',
             //FlatAds https://github.com/flatads/document
@@ -93,15 +93,15 @@ ext {
             //InMobi https://support.inmobi.com/monetize/android-guidelines/
             "inmobi"                     : 'com.inmobi.monetization:inmobi-ads:10.0.7',
             // SHAREit https://github.com/san-sdk/sample/wiki/Integrate-the-SAN-SDK
-            "sanads"                     : 'com.myadsget:san-sdk:3.11.5',
+            "sanads"                     : 'com.myadsget:san-sdk:3.12.1',
             "okhttp"                     : 'com.squareup.okhttp3:okhttp:3.14.9',
             // 穿山甲国内 https://www.pangle.cn/
-            "pangle_cn"                  : 'com.pangle.cn:ads-sdk-pro:4.6.0.7',
+            "pangle_cn"                  : 'com.pangle.cn:ads-sdk-pro:4.7.1.2',
 
             // https://dev.appsflyer.com/hc/docs/install-android-sdk
             "appsflyer"                  : 'com.appsflyer:af-android-sdk:6.4.0',
             // 快手      https://ssp.e.kuaishou.com/#/login
-            // sigmob    https://m.sigmob.com/#/monitezation/monitezation_doc
+            // sigmob   https://m.sigmob.com/#/monitezation/monitezation_doc
 
             // 华为广告服务
             // https://developer.huawei.com/consumer/cn/doc/distribution/monetize/androidappsdk-0000001053440624
@@ -122,11 +122,11 @@ ext {
             'fyber'         : '2.5.0',
             'gam_reklamup'  : '2.6.0',
             'googlead'      : '2.6.0',
-            'helium'        : '2.6.1',
+            'helium'        : '2.6.2',
             'hwads'         : '2.6.0',
-            'inmobi'        : '2.5.1',
+            'inmobi'        : '2.5.2',
             'ironsource'    : '2.5.0',
-            'mintegral'     : '2.6.2',
+            'mintegral'     : '2.6.3',
             'ogury'         : '2.5.1',
             'pubnative'     : '2.5.0',
             'sanads'        : '2.5.0',
@@ -138,7 +138,7 @@ ext {
             'mintegral_cn'  : '2.6.2',
             'sigmob_cn'     : '2.6.0',
             'tencentad_cn'  : '2.5.1',
-            'tiktok_cn'     : '2.6.0',
+            'tiktok_cn'     : '2.6.1',
     ]
 }
 

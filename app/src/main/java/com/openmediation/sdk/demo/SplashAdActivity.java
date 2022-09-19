@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 
 import com.openmediation.sdk.OmAds;
 import com.openmediation.sdk.demo.utils.Constants;
@@ -28,7 +29,10 @@ public class SplashAdActivity extends Activity implements SplashAdListener {
             int width = mSplashContainer.getWidth();
             int height = mSplashContainer.getHeight();
             SplashAd.setSize(Constants.P_SPLASH, width, height);
-//            SplashAd.setLoadTimeout(Constants.P_SPLASH, 3000);
+            // setLoadTimeout only for Tencent/Mintegral/Pangle Splash Ad
+            // SplashAd.setLoadTimeout(Constants.P_SPLASH, 3000);
+            // TODO
+            // for using HUAWEI Splash Ad, please use SplashAd.loadAd(Constants.P_SPLASH, mSplashContainer);
             SplashAd.loadAd(Constants.P_SPLASH);
         });
     }
@@ -84,6 +88,7 @@ public class SplashAdActivity extends Activity implements SplashAdListener {
 
     @Override
     protected void onDestroy() {
+        mSplashContainer.removeAllViews();
         SplashAd.setSplashAdListener(Constants.P_SPLASH, null);
         super.onDestroy();
     }

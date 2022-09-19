@@ -107,17 +107,27 @@ public class MintegralAdapter extends CustomAdsAdapter {
     public void setGDPRConsent(final Context context, final boolean consent) {
         super.setGDPRConsent(context, consent);
         if (context != null) {
-            MBridgeSDK sdk = MBridgeSDKFactory.getMBridgeSDK();
-            int consentStatus = consent ? MBridgeConstans.IS_SWITCH_ON : MBridgeConstans.IS_SWITCH_OFF;
-            sdk.setConsentStatus(context, consentStatus);
+            MediationUtil.runOnUiThread(() -> {
+                try {
+                    MBridgeSDK sdk = MBridgeSDKFactory.getMBridgeSDK();
+                    int consentStatus = consent ? MBridgeConstans.IS_SWITCH_ON : MBridgeConstans.IS_SWITCH_OFF;
+                    sdk.setConsentStatus(context, consentStatus);
+                } catch (Throwable ignored) {
+                }
+            });
         }
     }
 
     @Override
     public void setUSPrivacyLimit(Context context, boolean value) {
         super.setUSPrivacyLimit(context, value);
-        MBridgeSDK sdk = MBridgeSDKFactory.getMBridgeSDK();
-        sdk.setDoNotTrackStatus(value);
+        MediationUtil.runOnUiThread(() -> {
+            try {
+                MBridgeSDK sdk = MBridgeSDKFactory.getMBridgeSDK();
+                sdk.setDoNotTrackStatus(value);
+            } catch (Throwable ignored) {
+            }
+        });
     }
 
     @Override
