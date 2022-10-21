@@ -37,7 +37,7 @@ public class MintegralBannerManager {
         return BannerHolder.INSTANCE;
     }
 
-    public void initAd(Context context, Map<String, Object> extras, final BannerAdCallback callback) {
+    public void initAd(Context context, Map<String, Object> extras, final BannerAdCallback callback, Boolean userConsent, Boolean ageRestricted) {
         String appKey = (String) extras.get("AppKey");
         MintegralSingleTon.getInstance().initSDK(context, appKey, new MintegralSingleTon.InitCallback() {
             @Override
@@ -54,7 +54,7 @@ public class MintegralBannerManager {
                             AdapterErrorBuilder.AD_UNIT_BANNER, "MintegralAdapter", msg));
                 }
             }
-        });
+        }, userConsent, ageRestricted);
     }
 
     public void loadAd(Context context, String adUnitId, Map<String, Object> extras, BannerAdCallback callback) {

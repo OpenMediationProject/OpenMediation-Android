@@ -11,6 +11,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.bytedance.sdk.openadsdk.AdSlot;
+import com.bytedance.sdk.openadsdk.CSJAdError;
+import com.bytedance.sdk.openadsdk.CSJSplashAd;
+import com.bytedance.sdk.openadsdk.TTAdLoadType;
 import com.bytedance.sdk.openadsdk.TTAdNative;
 import com.bytedance.sdk.openadsdk.TTSplashAd;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
@@ -29,7 +32,7 @@ public class TikTokSplashManager {
 
     private TTAdNative mTTAdNative;
 
-    private final ConcurrentHashMap<String, TTSplashAd> mSplashAds;
+    private final ConcurrentHashMap<String, CSJSplashAd> mSplashAds;
 
     private static class Holder {
         private static final TikTokSplashManager INSTANCE = new TikTokSplashManager();
@@ -88,15 +91,15 @@ public class TikTokSplashManager {
         }
         AdSlot adSlot = new AdSlot.Builder()
                 .setCodeId(adUnitId)
-                .setSupportDeepLink(true)
                 .setImageAcceptedSize(width, height)
+                .setAdLoadType(TTAdLoadType.PRELOAD)
                 .build();
         if (mTTAdNative == null) {
             mTTAdNative = TTAdManagerHolder.getInstance().getAdManager().createAdNative(context);
         }
         InnerSplashAdListener listener = new InnerSplashAdListener(adUnitId, callback);
         if (fetchDelay <= 0) {
-            mTTAdNative.loadSplashAd(adSlot, listener);
+            mTTAdNative.loadSplashAd(adSlot, listener, 3000);
         } else {
             mTTAdNative.loadSplashAd(adSlot, listener, fetchDelay);
         }
@@ -104,7 +107,7 @@ public class TikTokSplashManager {
 
     public void destroyAd(String adUnitId) {
         if (!TextUtils.isEmpty(adUnitId)) {
-            TTSplashAd ttSplashAd = mSplashAds.remove(adUnitId);
+            CSJSplashAd ttSplashAd = mSplashAds.remove(adUnitId);
             ttSplashAd = null;
         }
     }
@@ -128,16 +131,17 @@ public class TikTokSplashManager {
             @Override
             public void run() {
                 try {
-                    TTSplashAd ttSplashAd = mSplashAds.remove(adUnitId);
+                    CSJSplashAd ttSplashAd = mSplashAds.remove(adUnitId);
                     SplashAdAdInteractionListener listener = new SplashAdAdInteractionListener(adUnitId, callback);
-                    ttSplashAd.setSplashInteractionListener(listener);
-                    View splashView = ttSplashAd.getSplashView();
-                    if (splashView.getParent() instanceof ViewGroup) {
-                        ViewGroup viewGroup = (ViewGroup) splashView.getParent();
-                        viewGroup.removeView(splashView);
-                    }
-                    container.removeAllViews();
-                    container.addView(splashView);
+                    ttSplashAd.setSplashAdListener(listener);
+//                    View splashView = ttSplashAd.getSplashView();
+                    ttSplashAd.showSplashView(container);
+//                    if (splashView.getParent() instanceof ViewGroup) {
+//                        ViewGroup viewGroup = (ViewGroup) splashView.getParent();
+//                        viewGroup.removeView(splashView);
+//                    }
+//                    container.removeAllViews();
+//                    container.addView(splashView);
                 } catch(Throwable e) {
                     if (callback != null) {
                         callback.onSplashAdShowFailed(AdapterErrorBuilder.buildShowError(
@@ -152,7 +156,7 @@ public class TikTokSplashManager {
         return !TextUtils.isEmpty(adUnitId) && mSplashAds.containsKey(adUnitId);
     }
 
-    private class InnerSplashAdListener implements TTAdNative.SplashAdListener {
+    private class InnerSplashAdListener implements TTAdNative.CSJSplashAdListener {
 
         private final String mAdUnitId;
         private final SplashAdCallback mAdCallback;
@@ -163,39 +167,39 @@ public class TikTokSplashManager {
         }
 
         @Override
-        public void onError(int code, String message) {
+        public void onSplashLoadSuccess() {
+            AdLog.getSingleton().LogD(TAG + "Splash ad onSplashLoadSuccess: " + mAdUnitId);
+        }
+
+        @Override
+        public void onSplashLoadFail(CSJAdError csjAdError) {
+            AdLog.getSingleton().LogD(TAG + "Splash ad onSplashLoadFail: " + csjAdError);
             if (mAdCallback != null) {
                 mAdCallback.onSplashAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                        AdapterErrorBuilder.AD_UNIT_SPLASH, "TikTokAdapter", code, message));
+                        AdapterErrorBuilder.AD_UNIT_SPLASH, "TikTokAdapter", csjAdError.getCode(), csjAdError.getMsg()));
             }
         }
 
         @Override
-        public void onTimeout() {
-            if (mAdCallback != null) {
-                mAdCallback.onSplashAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                        AdapterErrorBuilder.AD_UNIT_SPLASH, "TikTokAdapter", "Splash ad load failed: timeout"));
-            }
-        }
-
-        @Override
-        public void onSplashAdLoad(com.bytedance.sdk.openadsdk.TTSplashAd ttSplashAd) {
-            if (ttSplashAd == null) {
-                if (mAdCallback != null) {
-                    mAdCallback.onSplashAdLoadFailed(AdapterErrorBuilder.buildLoadError(
-                            AdapterErrorBuilder.AD_UNIT_SPLASH, "TikTokAdapter", "Splash ad Load Failed: TTSplashAd is null"));
-                }
-                return;
-            }
-            AdLog.getSingleton().LogD(TAG + "Splash ad onSplashAdLoad: " + mAdUnitId);
-            mSplashAds.put(mAdUnitId, ttSplashAd);
+        public void onSplashRenderSuccess(CSJSplashAd csjSplashAd) {
+            AdLog.getSingleton().LogD(TAG + "Splash ad onSplashRenderSuccess: " + mAdUnitId);
+            mSplashAds.put(mAdUnitId, csjSplashAd);
             if (mAdCallback != null) {
                 mAdCallback.onSplashAdLoadSuccess(null);
             }
         }
+
+        @Override
+        public void onSplashRenderFail(CSJSplashAd csjSplashAd, CSJAdError csjAdError) {
+            AdLog.getSingleton().LogD(TAG + "Splash ad onSplashRenderFail: " + csjAdError);
+            if (mAdCallback != null) {
+                mAdCallback.onSplashAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_SPLASH, "TikTokAdapter", csjAdError.getCode(), csjAdError.getMsg()));
+            }
+        }
     }
 
-    private static class SplashAdAdInteractionListener implements TTSplashAd.AdInteractionListener {
+    private static class SplashAdAdInteractionListener implements CSJSplashAd.SplashAdListener {
         private final String mAdUnitId;
         private final SplashAdCallback mAdCallback;
 
@@ -205,32 +209,24 @@ public class TikTokSplashManager {
         }
 
         @Override
-        public void onAdClicked(View view, int i) {
-            AdLog.getSingleton().LogD(TAG + "Splash ad onADClicked");
-            if (mAdCallback != null) {
-                mAdCallback.onSplashAdAdClicked();
-            }
-        }
-
-        @Override
-        public void onAdShow(View view, int i) {
-            AdLog.getSingleton().LogD(TAG + "Splash ad onAdShow");
+        public void onSplashAdShow(CSJSplashAd csjSplashAd) {
+            AdLog.getSingleton().LogD(TAG + "Splash ad onSplashAdShow");
             if (mAdCallback != null) {
                 mAdCallback.onSplashAdShowSuccess();
             }
         }
 
         @Override
-        public void onAdSkip() {
-            AdLog.getSingleton().LogD(TAG + "Splash ad onAdSkip");
+        public void onSplashAdClick(CSJSplashAd csjSplashAd) {
+            AdLog.getSingleton().LogD(TAG + "Splash ad onSplashAdClick");
             if (mAdCallback != null) {
-                mAdCallback.onSplashAdDismissed();
+                mAdCallback.onSplashAdAdClicked();
             }
         }
 
         @Override
-        public void onAdTimeOver() {
-            AdLog.getSingleton().LogD(TAG + "Splash ad onAdTimeOver");
+        public void onSplashAdClose(CSJSplashAd csjSplashAd, int i) {
+            AdLog.getSingleton().LogD(TAG + "Splash ad onSplashAdClose");
             if (mAdCallback != null) {
                 mAdCallback.onSplashAdDismissed();
             }

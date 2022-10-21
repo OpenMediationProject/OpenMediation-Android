@@ -29,5 +29,10 @@ dependencies {
     implementation rootProject.ext.dependencies.vungle
     implementation rootProject.ext.dependencies.vungle_androidx
     implementation rootProject.ext.dependencies.vungle_localbroadcast
+    implementation rootProject.ext.dependencies.play_services_base
+    implementation rootProject.ext.dependencies.play_services_basement
+    implementation rootProject.ext.dependencies.play_services_ads_identifier
+    implementation rootProject.ext.dependencies.play_services_tasks
+    implementation rootProject.ext.dependencies.play_services_appset
     implementation project(':om-android-sdk')
 }

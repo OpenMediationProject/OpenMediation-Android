@@ -28,7 +28,7 @@ android.libraryVariants.all { variant ->
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation project(':om-android-sdk')
-    implementation(name: 'kssdk-ad-3.3.27', ext: 'aar')
+    implementation(name: 'kssdk-ad-3.3.31', ext: 'aar')
 }
 
 repositories {

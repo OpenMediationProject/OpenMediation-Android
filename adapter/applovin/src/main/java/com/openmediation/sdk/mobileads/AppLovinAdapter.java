@@ -139,11 +139,9 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
     private AppLovinIncentivizedInterstitial getVideo(String adUnitId) {
         AppLovinIncentivizedInterstitial videoAd = mRvAds.get(adUnitId);
         if (videoAd == null) {
-            AppLovinSdk sdk = AppLovinSingleTon.getInstance().getAppLovinSdk();
-            if (sdk != null) {
-                videoAd = AppLovinIncentivizedInterstitial.create(adUnitId, sdk);
-                mRvAds.put(adUnitId, videoAd);
-            }
+            AppLovinSdk sdk = AppLovinSdk.getInstance(MediationUtil.getContext());
+            videoAd = AppLovinIncentivizedInterstitial.create(adUnitId, sdk);
+            mRvAds.put(adUnitId, videoAd);
         }
         return videoAd;
     }
@@ -151,20 +149,15 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
     @Override
     public void loadRewardedVideo(Activity activity, String adUnitId, Map<String, Object> extras, final RewardedVideoCallback callback) {
         super.loadRewardedVideo(activity, adUnitId, extras, callback);
-        String error = check(adUnitId);
-        if (TextUtils.isEmpty(error)) {
-            AppLovinIncentivizedInterstitial videoAd = getVideo(adUnitId);
-            if (videoAd == null) {
-                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
-                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Ad LoadFailed"));
-                return;
-            }
-            if (videoAd.isAdReadyToDisplay()) {
-                if (callback != null) {
-                    callback.onRewardedVideoLoadSuccess();
-                }
-            } else {
-                try {
+        try {
+            String error = check(adUnitId);
+            if (TextUtils.isEmpty(error)) {
+                AppLovinIncentivizedInterstitial videoAd = getVideo(adUnitId);
+                if (videoAd.isAdReadyToDisplay()) {
+                    if (callback != null) {
+                        callback.onRewardedVideoLoadSuccess();
+                    }
+                } else {
                     videoAd.preload(new AppLovinAdLoadListener() {
                         @Override
                         public void adReceived(AppLovinAd appLovinAd) {
@@ -184,17 +177,17 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
                         }
                     });
                     mRvCallbacks.put(adUnitId, callback);
-                } catch (Throwable e) {
-                    if (callback != null) {
-                        callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
-                                AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
-                    }
+                }
+            } else {
+                if (callback != null) {
+                    callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
                 }
             }
-        } else {
+        } catch (Throwable e) {
             if (callback != null) {
-                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadCheckError(
-                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, error));
+                callback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
             }
         }
     }
@@ -202,7 +195,7 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
     @Override
     public void showRewardedVideo(Activity activity, String adUnitId, RewardedVideoCallback callback) {
         super.showRewardedVideo(activity, adUnitId, callback);
-        String error = check(adUnitId);
+        String error = check(MediationUtil.getActivity(), adUnitId);
         if (!TextUtils.isEmpty(error)) {
             if (callback != null) {
                 callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
@@ -211,30 +204,24 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
             return;
         }
         AppLovinIncentivizedInterstitial videoAd = getVideo(adUnitId);
-        if (videoAd == null) {
+        if (!isRewardedVideoAvailable(adUnitId)) {
             if (callback != null) {
                 callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "AppLovin video get fail when show"));
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "AppLovin video not ready when show"));
             }
-        } else {
-            if (!isRewardedVideoAvailable(adUnitId)) {
-                if (callback != null) {
-                    callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "AppLovin video not ready when show"));
-                }
-                return;
+            return;
+        }
+        try {
+            if (callback != null) {
+                mRvCallbacks.put(adUnitId, callback);
             }
-            try {
-                if (callback != null) {
-                    mRvCallbacks.put(adUnitId, callback);
-                }
-                videoAd.show(MediationUtil.getContext(), null, this,
-                        this, this);
-            } catch (Throwable e) {
-                if (callback != null) {
-                    callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
-                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
-                }
+            mRvAds.remove(adUnitId);
+            videoAd.show(MediationUtil.getActivity(), null, this,
+                    this, this);
+        } catch (Throwable e) {
+            if (callback != null) {
+                callback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                        AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, mAdapterName, "Unknown Error, " + e.getMessage()));
             }
         }
     }
@@ -418,7 +405,7 @@ public class AppLovinAdapter extends CustomAdsAdapter implements AppLovinAdVideo
                         AdapterErrorBuilder.AD_UNIT_BANNER, mAdapterName, "unsupported banner size"));
                 return;
             }
-            AppLovinSdk sdk = AppLovinSingleTon.getInstance().getAppLovinSdk();
+            AppLovinSdk sdk = AppLovinSdk.getInstance(MediationUtil.getContext());
             final AppLovinAdView appLovinAdView = new AppLovinAdView(sdk, adSize, adUnitId, MediationUtil.getContext());
             int width = 320, height = 50;
             if (AppLovinAdSize.LEADER == adSize) {

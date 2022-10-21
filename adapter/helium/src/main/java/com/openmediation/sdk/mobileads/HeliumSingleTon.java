@@ -6,18 +6,15 @@ package com.openmediation.sdk.mobileads;
 import android.content.Context;
 import android.text.TextUtils;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
 import com.chartboost.heliumsdk.HeliumSdk;
 import com.chartboost.heliumsdk.ad.HeliumAdError;
 import com.chartboost.heliumsdk.ad.HeliumInterstitialAd;
 import com.chartboost.heliumsdk.ad.HeliumInterstitialAdListener;
 import com.chartboost.heliumsdk.ad.HeliumRewardedAd;
 import com.chartboost.heliumsdk.ad.HeliumRewardedAdListener;
-import com.openmediation.sdk.mediation.BidCallback;
 import com.openmediation.sdk.bid.BidResponse;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
+import com.openmediation.sdk.mediation.BidCallback;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
@@ -253,16 +250,16 @@ public class HeliumSingleTon {
                 return;
             }
             if (error != null) {
-                AdLog.getSingleton().LogE("Helium RewardedAd didCache ad error : " + placementId + " " + error.toString());
+                AdLog.getSingleton().LogE("Helium RewardedAd didShow ad error : " + placementId + " " + error.toString());
                 mVideoAdCallback.didRewardedShowFailed(placementId, error);
                 return;
             }
-            AdLog.getSingleton().LogD("Helium RewardVideo ad display: " + placementId);
+            AdLog.getSingleton().LogD("Helium RewardVideo ad didShow: " + placementId);
             mVideoAdCallback.didRewardedShowed(placementId);
         }
 
         @Override
-        public void didClick(@NonNull String placementId, @Nullable HeliumAdError heliumAdError) {
+        public void didClick(String placementId, HeliumAdError heliumAdError) {
             AdLog.getSingleton().LogD("Helium RewardVideo ad click: " + placementId);
             if (mVideoAdCallback != null) {
                 mVideoAdCallback.didRewardedClicked(placementId);
@@ -283,6 +280,11 @@ public class HeliumSingleTon {
             if (mVideoAdCallback != null) {
                 mVideoAdCallback.didRewardedRewarded(placementId);
             }
+        }
+
+        @Override
+        public void didRecordImpression(String placementId) {
+            AdLog.getSingleton().LogD("Helium RewardVideo ad didRecordImpression: " + placementId);
         }
     }
 
@@ -349,7 +351,7 @@ public class HeliumSingleTon {
         }
 
         @Override
-        public void didClick(@NonNull String placementId, @Nullable HeliumAdError heliumAdError) {
+        public void didClick(String placementId, HeliumAdError heliumAdError) {
             AdLog.getSingleton().LogD("Helium Interstitial ad click: " + placementId);
             if (mInterstitialAdCallback != null) {
                 mInterstitialAdCallback.didInterstitialClicked(placementId);
@@ -362,6 +364,11 @@ public class HeliumSingleTon {
             if (mInterstitialAdCallback != null) {
                 mInterstitialAdCallback.didInterstitialClosed(placementId);
             }
+        }
+
+        @Override
+        public void didRecordImpression(String placementId) {
+            AdLog.getSingleton().LogD("Helium Interstitial ad didRecordImpression: " + placementId);
         }
     }
 

@@ -52,7 +52,7 @@ public class MintegralNativeManager {
         return Holder.INSTANCE;
     }
 
-    public void initAd(Context context, Map<String, Object> extras, final NativeAdCallback callback) {
+    public void initAd(Context context, Map<String, Object> extras, final NativeAdCallback callback, Boolean userConsent, Boolean ageRestricted) {
         String appKey = (String) extras.get("AppKey");
         MintegralSingleTon.getInstance().initSDK(context, appKey, new MintegralSingleTon.InitCallback() {
             @Override
@@ -69,7 +69,7 @@ public class MintegralNativeManager {
                             AdapterErrorBuilder.AD_UNIT_NATIVE, "MintegralAdapter", msg));
                 }
             }
-        });
+        }, userConsent, ageRestricted);
     }
 
     public void loadAd(final Context context, final String adUnitId, Map<String, Object> extras, final NativeAdCallback callback) {

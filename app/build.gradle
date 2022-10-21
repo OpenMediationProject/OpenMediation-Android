@@ -74,20 +74,23 @@ dependencies {
     implementation rootProject.ext.dependencies.vungle
     implementation rootProject.ext.dependencies.vungle_androidx
     implementation rootProject.ext.dependencies.vungle_localbroadcast
+    implementation rootProject.ext.dependencies.play_services_base
+    implementation rootProject.ext.dependencies.play_services_basement
+    implementation rootProject.ext.dependencies.play_services_ads_identifier
     implementation rootProject.ext.dependencies.play_services_tasks
     implementation rootProject.ext.dependencies.play_services_appset
     implementation project(path: ':adapter:vungle')
 
     //TapJoy
     implementation rootProject.ext.dependencies.tapjoy
-    implementation rootProject.ext.dependencies.play_service_base
-    implementation rootProject.ext.dependencies.play_service_ads_identifier
+    implementation rootProject.ext.dependencies.play_services_base
+    implementation rootProject.ext.dependencies.play_services_ads_identifier
     implementation project(path: ':adapter:tapjoy')
 
     //Chartboost
     implementation rootProject.ext.dependencies.chartboost
-    implementation rootProject.ext.dependencies.play_service_base
-    implementation rootProject.ext.dependencies.play_service_ads_identifier
+    implementation rootProject.ext.dependencies.play_services_base
+    implementation rootProject.ext.dependencies.play_services_ads_identifier
     implementation project(path: ':adapter:chartboost')
 
     // Mintegral
@@ -101,9 +104,10 @@ dependencies {
 
     // ironSource
     implementation rootProject.ext.dependencies.ironsource
-    implementation rootProject.ext.dependencies.play_service_ads_identifier
+    implementation rootProject.ext.dependencies.play_services_ads_identifier
     implementation 'com.google.android.gms:play-services-basement:18.1.0'
     implementation project(path: ':adapter:ironsource')
+
 
     // Fyber
     implementation "com.fyber.vamp:core-sdk:${rootProject.ext.dependencies.fyber}"
@@ -112,14 +116,20 @@ dependencies {
     implementation project(path: ':adapter:fyber')
 
     // Chartboost Helium
-//    implementation rootProject.ext.dependencies.helium
-//    implementation rootProject.ext.dependencies.helium_facebook_adapter
-//    implementation rootProject.ext.dependencies.eventbus
-//    implementation project(path: ':adapter:helium')
+    implementation rootProject.ext.dependencies.helium
+    implementation rootProject.ext.dependencies.helium_facebook_adapter
+    implementation rootProject.ext.dependencies.eventbus
+    implementation rootProject.ext.dependencies.kotlin_stdlib
+    implementation rootProject.ext.dependencies.kotlin_reflect
+    implementation rootProject.ext.dependencies.kotlinx_coroutines
+    implementation rootProject.ext.dependencies.play_services_base
+    implementation rootProject.ext.dependencies.play_services_ads_identifier
+    implementation rootProject.ext.dependencies.play_services_appset
+    implementation project(path: ':adapter:helium')
 
     // Pangle
     implementation rootProject.ext.dependencies.pangle
-    implementation rootProject.ext.dependencies.play_service_ads_identifier
+    implementation rootProject.ext.dependencies.play_services_ads_identifier
     implementation project(path: ':adapter:tiktok')
 
     // Ogury
@@ -133,7 +143,7 @@ dependencies {
     // Admost
     implementation rootProject.ext.dependencies.admost
     implementation rootProject.ext.dependencies.admost_volley
-    implementation rootProject.ext.dependencies.play_service_base
+    implementation rootProject.ext.dependencies.play_services_base
     implementation rootProject.ext.dependencies.admost_facebook_adapter
     implementation rootProject.ext.dependencies.admost_recyclerview
     implementation rootProject.ext.dependencies.admost_annotation
@@ -172,12 +182,12 @@ dependencies {
 //    implementation project(path: ':adapter_cn:mintegral_cn')
 
     // Sigmob
-    implementation(name: 'sigmob-common-1.3.4', ext: 'aar')
-    implementation(name: 'sigmob-sdk-4.4.0', ext: 'aar')
+    implementation(name: 'sigmob-common-1.3.5', ext: 'aar')
+    implementation(name: 'sigmob-sdk-4.5.0', ext: 'aar')
     implementation project(path: ':adapter_cn:sigmob_cn')
 
     // 快手
-    implementation(name: 'kssdk-ad-3.3.27', ext: 'aar')
+    implementation(name: 'kssdk-ad-3.3.31', ext: 'aar')
     implementation project(path: ':adapter_cn:ksad_cn')
 
     // 华为

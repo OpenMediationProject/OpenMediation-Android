@@ -107,17 +107,27 @@ public class MintegralAdapter extends CustomAdsAdapter {
     public void setGDPRConsent(final Context context, final boolean consent) {
         super.setGDPRConsent(context, consent);
         if (context != null) {
-            MBridgeSDK sdk = MBridgeSDKFactory.getMBridgeSDK();
-            int consentStatus = consent ? MBridgeConstans.IS_SWITCH_ON : MBridgeConstans.IS_SWITCH_OFF;
-            sdk.setConsentStatus(context, consentStatus);
+            MediationUtil.runOnUiThread(() -> {
+                try {
+                    MBridgeSDK sdk = MBridgeSDKFactory.getMBridgeSDK();
+                    int consentStatus = consent ? MBridgeConstans.IS_SWITCH_ON : MBridgeConstans.IS_SWITCH_OFF;
+                    sdk.setConsentStatus(context, consentStatus);
+                } catch (Throwable ignored) {
+                }
+            });
         }
     }
 
     @Override
     public void setUSPrivacyLimit(Context context, boolean value) {
         super.setUSPrivacyLimit(context, value);
-        MBridgeSDK sdk = MBridgeSDKFactory.getMBridgeSDK();
-        sdk.setDoNotTrackStatus(value);
+        MediationUtil.runOnUiThread(() -> {
+            try {
+                MBridgeSDK sdk = MBridgeSDKFactory.getMBridgeSDK();
+                sdk.setDoNotTrackStatus(value);
+            } catch (Throwable ignored) {
+            }
+        });
     }
 
     @Override
@@ -447,7 +457,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        MintegralBannerManager.getInstance().initAd(MediationUtil.getContext(), extras, callback);
+        MintegralBannerManager.getInstance().initAd(MediationUtil.getContext(), extras, callback, mUserConsent, mAgeRestricted);
     }
 
     @Override
@@ -486,7 +496,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        MintegralSplashManager.getInstance().initAd(MediationUtil.getContext(), extras, callback);
+        MintegralSplashManager.getInstance().initAd(MediationUtil.getContext(), extras, callback, mUserConsent, mAgeRestricted);
     }
 
     @Override
@@ -539,7 +549,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        MintegralNativeManager.getInstance().initAd(MediationUtil.getContext(), extras, callback);
+        MintegralNativeManager.getInstance().initAd(MediationUtil.getContext(), extras, callback, mUserConsent, mAgeRestricted);
     }
 
     @Override
@@ -569,7 +579,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
     }
 
     private void initSDK(MintegralSingleTon.InitCallback listener) {
-        MintegralSingleTon.getInstance().initSDK(MediationUtil.getContext(), mAppKey, listener);
+        MintegralSingleTon.getInstance().initSDK(MediationUtil.getContext(), mAppKey, listener, mUserConsent, mAgeRestricted);
     }
 
     private static class MtgInterstitialAdListener implements NewInterstitialListener {
