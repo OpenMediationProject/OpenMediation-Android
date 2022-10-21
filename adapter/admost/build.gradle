@@ -36,7 +36,7 @@ dependencies {
     //AdMost
     implementation rootProject.ext.dependencies.admost
     implementation rootProject.ext.dependencies.admost_volley
-    implementation rootProject.ext.dependencies.play_service_base
+    implementation rootProject.ext.dependencies.play_services_base
     implementation rootProject.ext.dependencies.admost_facebook_adapter
     implementation rootProject.ext.dependencies.facebook
     implementation rootProject.ext.dependencies.admost_recyclerview

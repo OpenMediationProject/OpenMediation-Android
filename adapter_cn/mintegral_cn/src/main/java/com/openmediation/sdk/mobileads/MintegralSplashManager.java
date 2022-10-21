@@ -35,7 +35,7 @@ public class MintegralSplashManager {
         return Holder.INSTANCE;
     }
 
-    public void initAd(Context context, Map<String, Object> extras, final SplashAdCallback callback) {
+    public void initAd(Context context, Map<String, Object> extras, final SplashAdCallback callback, Boolean userConsent, Boolean ageRestricted) {
         String appKey = (String) extras.get("AppKey");
         MintegralSingleTon.getInstance().initSDK(context.getApplicationContext(), appKey, new MintegralSingleTon.InitCallback() {
             @Override
@@ -52,7 +52,7 @@ public class MintegralSplashManager {
                             AdapterErrorBuilder.AD_UNIT_SPLASH, "MintegralAdapter", msg));
                 }
             }
-        });
+        }, userConsent, ageRestricted);
     }
 
     public void loadAd(Context context, final String adUnitId, final Map<String, Object> extras, final SplashAdCallback callback) {

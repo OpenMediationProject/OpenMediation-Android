@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 
+import com.mbridge.msdk.MBridgeConstans;
 import com.mbridge.msdk.MBridgeSDK;
 import com.mbridge.msdk.out.MBridgeSDKFactory;
 import com.mbridge.msdk.out.SDKInitStatusListener;
@@ -52,7 +53,7 @@ public class MintegralSingleTon {
         return MintegralHolder.INSTANCE;
     }
 
-    public synchronized void initSDK(final Context context, final String appKey, final InitCallback listener) {
+    public synchronized void initSDK(final Context context, final String appKey, final InitCallback listener, final Boolean consent, final Boolean ageRestricted) {
         if (context == null || TextUtils.isEmpty(appKey)) {
             if (listener != null) {
                 AdLog.getSingleton().LogE("Init Failed: Context or AppKey is null");
@@ -76,7 +77,7 @@ public class MintegralSingleTon {
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
-                initSDK(context, appKey);
+                initSDK(context, appKey, consent, ageRestricted);
             }
         };
         if (Looper.getMainLooper() == Looper.myLooper()) {
@@ -86,13 +87,20 @@ public class MintegralSingleTon {
         new Handler(Looper.getMainLooper()).post(runnable);
     }
 
-    private void initSDK(Context context, String appKey) {
+    private void initSDK(Context context, String appKey, final Boolean consent, final Boolean ageRestricted) {
         try {
             String[] tmp = appKey.split("#");
             String appId = tmp[0];
             String key = tmp[1];
             final MBridgeSDK sdk = MBridgeSDKFactory.getMBridgeSDK();
             final Map<String, String> map = sdk.getMBConfigurationMap(appId, key);
+            if (consent != null) {
+                sdk.setConsentStatus(context, consent ? MBridgeConstans.IS_SWITCH_ON : MBridgeConstans.IS_SWITCH_OFF);
+            }
+            if (ageRestricted != null) {
+                sdk.setDoNotTrackStatus(ageRestricted);
+            }
+
             sdk.init(map, context.getApplicationContext(), new SDKInitStatusListener() {
                 @Override
                 public void onInitSuccess() {

@@ -10,6 +10,8 @@ import android.os.Looper;
 import android.text.TextUtils;
 import android.view.ViewGroup;
 
+import com.mbridge.msdk.MBridgeConstans;
+import com.mbridge.msdk.MBridgeSDK;
 import com.mbridge.msdk.mbbid.out.BidManager;
 import com.mbridge.msdk.newinterstitial.out.MBBidInterstitialVideoHandler;
 import com.mbridge.msdk.newinterstitial.out.MBNewInterstitialHandler;
@@ -18,6 +20,7 @@ import com.mbridge.msdk.out.MBBidRewardVideoHandler;
 import com.mbridge.msdk.out.MBConfiguration;
 import com.mbridge.msdk.out.MBRewardVideoHandler;
 import com.mbridge.msdk.out.MBridgeIds;
+import com.mbridge.msdk.out.MBridgeSDKFactory;
 import com.mbridge.msdk.out.RewardInfo;
 import com.mbridge.msdk.out.RewardVideoListener;
 import com.openmediation.sdk.mediation.AdapterErrorBuilder;
@@ -98,6 +101,33 @@ public class MintegralAdapter extends CustomAdsAdapter {
             AdLog.getSingleton().LogE("Mintegral getBuyerUid Error: " + e.getMessage());
         }
         return "";
+    }
+
+    @Override
+    public void setGDPRConsent(final Context context, final boolean consent) {
+        super.setGDPRConsent(context, consent);
+        if (context != null) {
+            MediationUtil.runOnUiThread(() -> {
+                try {
+                    MBridgeSDK sdk = MBridgeSDKFactory.getMBridgeSDK();
+                    int consentStatus = consent ? MBridgeConstans.IS_SWITCH_ON : MBridgeConstans.IS_SWITCH_OFF;
+                    sdk.setConsentStatus(context, consentStatus);
+                } catch (Throwable ignored) {
+                }
+            });
+        }
+    }
+
+    @Override
+    public void setUSPrivacyLimit(Context context, boolean value) {
+        super.setUSPrivacyLimit(context, value);
+        MediationUtil.runOnUiThread(() -> {
+            try {
+                MBridgeSDK sdk = MBridgeSDKFactory.getMBridgeSDK();
+                sdk.setDoNotTrackStatus(value);
+            } catch (Throwable ignored) {
+            }
+        });
     }
 
     @Override
@@ -429,7 +459,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        MintegralBannerManager.getInstance().initAd(MediationUtil.getContext(), extras, callback);
+        MintegralBannerManager.getInstance().initAd(MediationUtil.getContext(), extras, callback, mUserConsent, mAgeRestricted);
     }
 
     @Override
@@ -468,7 +498,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        MintegralSplashManager.getInstance().initAd(MediationUtil.getContext(), extras, callback);
+        MintegralSplashManager.getInstance().initAd(MediationUtil.getContext(), extras, callback, mUserConsent, mAgeRestricted);
     }
 
     @Override
@@ -521,7 +551,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        MintegralNativeManager.getInstance().initAd(MediationUtil.getContext(), extras, callback);
+        MintegralNativeManager.getInstance().initAd(MediationUtil.getContext(), extras, callback, mUserConsent, mAgeRestricted);
     }
 
     @Override
@@ -551,7 +581,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
     }
 
     private void initSDK(MintegralSingleTon.InitCallback listener) {
-        MintegralSingleTon.getInstance().initSDK(MediationUtil.getContext(), mAppKey, listener);
+        MintegralSingleTon.getInstance().initSDK(MediationUtil.getContext(), mAppKey, listener, mUserConsent, mAgeRestricted);
     }
 
     private static class MtgInterstitialAdListener implements NewInterstitialListener {
@@ -564,7 +594,6 @@ public class MintegralAdapter extends CustomAdsAdapter {
 
         @Override
         public void onLoadCampaignSuccess(MBridgeIds mBridgeIds) {
-
         }
 
         @Override
@@ -613,17 +642,14 @@ public class MintegralAdapter extends CustomAdsAdapter {
 
         @Override
         public void onVideoComplete(MBridgeIds mBridgeIds) {
-
         }
 
         @Override
         public void onAdCloseWithNIReward(MBridgeIds mBridgeIds, RewardInfo rewardInfo) {
-
         }
 
         @Override
         public void onEndcardShow(MBridgeIds mBridgeIds) {
-
         }
     }
 

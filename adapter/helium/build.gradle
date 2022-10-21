@@ -35,6 +35,10 @@ dependencies {
     implementation rootProject.ext.dependencies.helium
     implementation rootProject.ext.dependencies.helium_facebook_adapter
     implementation rootProject.ext.dependencies.eventbus
-    implementation rootProject.ext.dependencies.play_service_base
-    implementation rootProject.ext.dependencies.play_service_ads_identifier
+    implementation rootProject.ext.dependencies.kotlin_stdlib
+    implementation rootProject.ext.dependencies.kotlin_reflect
+    implementation rootProject.ext.dependencies.kotlinx_coroutines
+    implementation rootProject.ext.dependencies.play_services_base
+    implementation rootProject.ext.dependencies.play_services_ads_identifier
+    implementation rootProject.ext.dependencies.play_services_appset
 }

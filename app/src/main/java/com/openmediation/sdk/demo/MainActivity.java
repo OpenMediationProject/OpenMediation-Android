@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -79,6 +80,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         splashButton.setOnClickListener(this);
         nativeRecyclerView.setOnClickListener(this);
 
+        WebView.setWebContentsDebuggingEnabled(true);
         initSDK();
         setListener();
         if (RewardedVideoAd.isReady()) {
@@ -136,6 +138,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     private void initSDK() {
+        OmAds.setGDPRConsent(true);
         Constants.printLog("om start init sdk");
         InitConfiguration configuration = new InitConfiguration.Builder()
                 .appKey(Constants.APPKEY)
@@ -317,6 +320,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         bannerAd = new BannerAd(Constants.P_BANNER, new BannerAdListener() {
             @Override
             public void onBannerAdLoaded(String placementId, View view) {
+                Constants.printLog("onBannerAdLoaded: " + placementId);
                 try {
                     if (null != view.getParent()) {
                         ((ViewGroup) view.getParent()).removeView(view);
@@ -335,13 +339,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
             @Override
             public void onBannerAdLoadFailed(String placementId, Error error) {
+                Constants.printLog("onBannerAdLoadFailed: " + placementId + ", error: " + error);
                 bannerButton.setEnabled(true);
                 bannerButton.setText("Banner Load Failed, Try Again");
             }
 
             @Override
             public void onBannerAdClicked(String placementId) {
-
+                Constants.printLog("onBannerAdClicked: " + placementId);
             }
 
         });

@@ -457,7 +457,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        MintegralBannerManager.getInstance().initAd(MediationUtil.getContext(), extras, callback);
+        MintegralBannerManager.getInstance().initAd(MediationUtil.getContext(), extras, callback, mUserConsent, mAgeRestricted);
     }
 
     @Override
@@ -496,7 +496,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        MintegralSplashManager.getInstance().initAd(MediationUtil.getContext(), extras, callback);
+        MintegralSplashManager.getInstance().initAd(MediationUtil.getContext(), extras, callback, mUserConsent, mAgeRestricted);
     }
 
     @Override
@@ -549,7 +549,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
             }
             return;
         }
-        MintegralNativeManager.getInstance().initAd(MediationUtil.getContext(), extras, callback);
+        MintegralNativeManager.getInstance().initAd(MediationUtil.getContext(), extras, callback, mUserConsent, mAgeRestricted);
     }
 
     @Override
@@ -579,7 +579,7 @@ public class MintegralAdapter extends CustomAdsAdapter {
     }
 
     private void initSDK(MintegralSingleTon.InitCallback listener) {
-        MintegralSingleTon.getInstance().initSDK(MediationUtil.getContext(), mAppKey, listener);
+        MintegralSingleTon.getInstance().initSDK(MediationUtil.getContext(), mAppKey, listener, mUserConsent, mAgeRestricted);
     }
 
     private static class MtgInterstitialAdListener implements NewInterstitialListener {
