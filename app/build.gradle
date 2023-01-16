@@ -182,16 +182,17 @@ dependencies {
 //    implementation project(path: ':adapter_cn:mintegral_cn')
 
     // Sigmob
-    implementation(name: 'sigmob-common-1.3.5', ext: 'aar')
-    implementation(name: 'sigmob-sdk-4.5.0', ext: 'aar')
+    implementation(name: 'sigmob-common-1.4.2', ext: 'aar')
+    implementation(name: 'sigmob-sdk-4.9.0', ext: 'aar')
     implementation project(path: ':adapter_cn:sigmob_cn')
 
     // 快手
-    implementation(name: 'kssdk-ad-3.3.31', ext: 'aar')
+    implementation(name: 'kssdk-ad-3.3.36', ext: 'aar')
     implementation project(path: ':adapter_cn:ksad_cn')
 
     // 华为
     implementation rootProject.ext.dependencies.hwads
+    implementation rootProject.ext.dependencies.hwads_installreferrer
 //    implementation rootProject.ext.dependencies.hwads_identifier
     implementation project(path: ':adapter:hwads')
 

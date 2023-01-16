@@ -11,7 +11,7 @@ public interface CommonConstants {
     int API_VERSION = 1;
     int API_VERSION_V4 = 4;
 
-    String SDK_VERSION_NAME = "2.6.5";
+    String SDK_VERSION_NAME = "2.6.6";
 
     String ADTYPE_BANNER = "Banner";
     String ADTYPE_NATIVE = "Native";
