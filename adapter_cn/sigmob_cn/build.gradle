@@ -28,8 +28,8 @@ android.libraryVariants.all { variant ->
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation project(':om-android-sdk')
-    implementation(name: 'sigmob-common-1.3.5', ext: 'aar')
-    implementation(name: 'sigmob-sdk-4.5.0', ext: 'aar')
+    implementation(name: 'sigmob-common-1.4.2', ext: 'aar')
+    implementation(name: 'sigmob-sdk-4.9.0', ext: 'aar')
 }
 
 repositories {

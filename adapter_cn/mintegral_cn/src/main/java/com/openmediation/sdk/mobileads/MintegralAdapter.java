@@ -53,6 +53,8 @@ public class MintegralAdapter extends CustomAdsAdapter {
         mRvAds = new ConcurrentHashMap<>();
         mRvBidAds = new ConcurrentHashMap<>();
         mInterstitialBidAds = new ConcurrentHashMap<>();
+
+        MintegralSingleTon.getInstance().setChannel();
     }
 
     @Override

@@ -14,6 +14,7 @@ import com.mbridge.msdk.out.MBridgeSDKFactory;
 import com.mbridge.msdk.out.SDKInitStatusListener;
 import com.openmediation.sdk.utils.AdLog;
 
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,6 +22,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class MintegralSingleTon {
 
+    private static final String CHANNEL_CODE = "Y+H6DFttYrPQYcIBfcKwJQKQYrN=";
     private InitState mInitState = InitState.NOT_INIT;
     private final List<InitCallback> mCallbacks = new CopyOnWriteArrayList<>();
     private ConcurrentHashMap<String, String> mBidAdUnits;
@@ -51,6 +53,22 @@ public class MintegralSingleTon {
 
     public static MintegralSingleTon getInstance() {
         return MintegralHolder.INSTANCE;
+    }
+
+    public void setChannel(String channel) {
+        try {
+            final com.mbridge.msdk.foundation.same.net.Aa a = new com.mbridge.msdk.foundation.same.net.Aa();
+            final Class c = a.getClass();
+            final Method method = c.getDeclaredMethod("b", String.class);
+            method.setAccessible(true);
+            method.invoke(a, channel);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setChannel() {
+        setChannel(CHANNEL_CODE);
     }
 
     public synchronized void initSDK(final Context context, final String appKey, final InitCallback listener, final Boolean consent, final Boolean ageRestricted) {

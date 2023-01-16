@@ -4,6 +4,7 @@ package com.openmediation.sdk.core.imp.banner;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.os.Looper;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,7 @@ import com.openmediation.sdk.core.imp.HybridCacheManager;
 import com.openmediation.sdk.mediation.AdapterError;
 import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.utils.AdsUtil;
+import com.openmediation.sdk.utils.DensityUtil;
 import com.openmediation.sdk.utils.DeveloperLog;
 import com.openmediation.sdk.utils.HandlerUtil;
 import com.openmediation.sdk.utils.PlacementUtils;
@@ -306,6 +308,12 @@ public class BnManager extends HybridCacheManager implements BnManagerListener, 
                 }
 
                 mRlwHandler.postDelayed(mRefreshTask, mInterval * 1000);
+
+                if (mLytBanner != null && !mLytBanner.isShown()) {
+                    DeveloperLog.LogE("BnManager, RefreshTask stop: !mLytBanner.isShown(): " + mPlacementId);
+                    return;
+                }
+
                 // not in foreground, stop load AD
                 if (!OmManager.getInstance().isInForeground()) {
                     return;
@@ -320,5 +328,22 @@ public class BnManager extends HybridCacheManager implements BnManagerListener, 
                 DeveloperLog.LogE("BnManager, RefreshTask run error: " + e.getMessage());
             }
         }
+    }
+
+    public static boolean isVisible(View view) {
+        if (view == null) {
+            return false;
+        }
+        if (!view.isShown()) {
+            return false;
+        }
+        Context context = MediationUtil.getContext();
+        if (context == null) {
+            return false;
+        }
+        final Rect actualPosition = new Rect();
+        view.getGlobalVisibleRect(actualPosition);
+        final Rect screen = new Rect(0, 0, DensityUtil.getPhoneWidth(context), DensityUtil.getPhoneHeight(context));
+        return actualPosition.intersect(screen);
     }
 }

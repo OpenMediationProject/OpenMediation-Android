@@ -343,7 +343,7 @@ public class RequestBuilder {
         body.put(KeyConstants.RequestBody.KEY_ADNS, adapters);
         body.put(KeyConstants.RequestBody.KEY_ANDROID, buildAndroidRequestBody(context));
 
-        DeveloperLog.LogD("init params:" + body.toString());
+        DeveloperLog.LogD("init params:" + body);
         return Gzip.inGZip(body.toString().getBytes(Charset.forName(CommonConstants.CHARTSET_UTF8)));
     }
 
