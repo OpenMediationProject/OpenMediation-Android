@@ -22,7 +22,7 @@ dependencies {
   // AdTiming-Adapter
   implementation 'com.openmediation.adapters:adtiming:2.5.0@aar'
   // AdMob-Adapter
-  implementation 'com.openmediation.adapters:admob:2.5.4@aar'
+  implementation 'com.openmediation.adapters:admob:2.5.5@aar'
   // Facebook-Adapter
   implementation 'com.openmediation.adapters:facebook:2.6.2@aar'
   // Unity-Adapter
@@ -36,7 +36,7 @@ dependencies {
   // Tapjoy-Adapter
   implementation 'com.openmediation.adapters:tapjoy:2.6.0@aar'
   // Chartboost-Adapter
-  implementation 'com.openmediation.adapters:chartboost:2.6.0@aar'
+  implementation 'com.openmediation.adapters:chartboost:2.6.1@aar'
   // Mintegral-Adapter
   implementation 'com.openmediation.adapters:mintegral:2.6.5@aar'
   //TikTok-Adapter

@@ -108,7 +108,6 @@ dependencies {
     implementation 'com.google.android.gms:play-services-basement:18.1.0'
     implementation project(path: ':adapter:ironsource')
 
-
     // Fyber
     implementation "com.fyber.vamp:core-sdk:${rootProject.ext.dependencies.fyber}"
     implementation "com.fyber.vamp:video-kit:${rootProject.ext.dependencies.fyber}"
@@ -187,7 +186,7 @@ dependencies {
     implementation project(path: ':adapter_cn:sigmob_cn')
 
     // 快手
-    implementation(name: 'kssdk-ad-3.3.36', ext: 'aar')
+    implementation(name: 'kssdk-ad-3.3.38', ext: 'aar')
     implementation project(path: ':adapter_cn:ksad_cn')
 
     // 华为

@@ -5,7 +5,6 @@ package com.openmediation.sdk.mobileads;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -64,12 +63,6 @@ public class AdMobSplashManager {
     }
 
     public void loadAd(final Context context, final String adUnitId, final Map<String, Object> config, Boolean userConsent, Boolean uSPrivacyLimit, final SplashAdCallback callback) {
-        final int orientation;
-        if (context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            orientation = AppOpenAd.APP_OPEN_AD_ORIENTATION_LANDSCAPE;
-        } else {
-            orientation = AppOpenAd.APP_OPEN_AD_ORIENTATION_PORTRAIT;
-        }
         final AppOpenAd.AppOpenAdLoadCallback loadCallback = new AppOpenAd.AppOpenAdLoadCallback() {
 
             /**
@@ -107,7 +100,7 @@ public class AdMobSplashManager {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                AppOpenAd.load(context, adUnitId, request, orientation, loadCallback);
+                AppOpenAd.load(context, adUnitId, request, loadCallback);
             }
         });
     }
