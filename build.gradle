@@ -39,10 +39,10 @@ ext {
             "facebook"                   : 'com.facebook.android:audience-network-sdk:6.12.0',
             //admob https://developers.google.com/admob/android/rel-notes
             //google ad manager https://developers.google.com/ad-manager/mobile-ads-sdk/android/quick-start
-            "admob"                      : 'com.google.android.gms:play-services-ads:21.4.0',
+            "admob"                      : 'com.google.android.gms:play-services-ads:21.5.0',
             "admob_facebook_adapter"     : 'com.google.ads.mediation:facebook:6.12.0.0',
             //vungle https://github.com/Vungle/Android-SDK/blob/master/CHANGELOG.md
-            "vungle"                     : 'com.vungle:publisher-sdk-android:6.12.0',
+            "vungle"                     : 'com.vungle:publisher-sdk-android:6.12.1',
             "vungle_androidx"            : 'androidx.core:core:1.3.2',
             "vungle_localbroadcast"      : 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0',
             "play_services_basement"     : 'com.google.android.gms:play-services-basement:18.1.0',
@@ -53,11 +53,11 @@ ext {
             //AdColony https://github.com/AdColony/AdColony-Android-SDK/blob/master/CHANGELOG.md
             "adcolony"                   : 'com.adcolony:sdk:4.8.0',
             //AppLovin https://dash.applovin.com/documentation/mediation/android/changelog
-            "applovin"                   : 'com.applovin:applovin-sdk:11.6.0',
+            "applovin"                   : 'com.applovin:applovin-sdk:11.7.1',
             //TapJoy https://dev.tapjoy.com/en/android-sdk/Changelog
             "tapjoy"                     : 'com.tapjoy:tapjoy-android-sdk:12.11.1',
             //chartboost https://answers.chartboost.com/en-us/child_article/android-amazon
-            "chartboost"                 : 'com.chartboost:chartboost-sdk:9.1.1',
+            "chartboost"                 : 'com.chartboost:chartboost-sdk:9.2.0',
             //unity https://github.com/Unity-Technologies/unity-ads-android/releases
             "unity"                      : 'com.unity3d.ads:unity-ads:4.5.0',
             //gp-base.
@@ -65,17 +65,17 @@ ext {
             //gp-ads-identifier
             "play_services_ads_identifier": 'com.google.android.gms:play-services-ads-identifier:18.0.1',
             //Mintegral http://cdn-adn.rayjump.com/cdn-adn/v2/markdown_v2/index.html?file=sdk-m_sdk-android&lang=en
-            "mtg_version"                : '16.3.21',
-            "mtg_china_version"          : '16.3.22',
+            "mtg_version"                : '16.3.61',
+            "mtg_china_version"          : '16.3.62',
             // ironSource https://developers.ironsrc.com/ironsource-mobile/android/sdk-change-log/
-            "ironsource"                 : 'com.ironsource.sdk:mediationsdk:7.2.6',
+            "ironsource"                 : 'com.ironsource.sdk:mediationsdk:7.2.7',
             // https://developer.fyber.com/hc/en-us/articles/360010822437-Integrating-the-Android-SDK
             "fyber"                      : '7.8.4',
             // https://www.pangleglobal.com/
             "pangle"                     : 'com.pangle.global:ads-sdk:4.9.0.6',
-            // https://helium.chartboost.com/
-            "helium"                     : 'com.chartboost:helium:3.2.0',
-            "helium_facebook_adapter"    : 'com.chartboost:helium-facebook:3.2.0.0',
+            // https://developers.chartboost.com/docs/get-started-with-mediation
+            "helium"                     : 'com.chartboost:helium:3.3.1',
+            "helium_facebook_adapter"    : 'com.chartboost:helium-facebook:3.3.1.0',
             "eventbus"                   : 'org.greenrobot:eventbus:3.3.1',
             "kotlin_stdlib"              : 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.10',
             "kotlin_reflect"             : 'org.jetbrains.kotlin:kotlin-reflect:1.6.10',
@@ -85,11 +85,11 @@ ext {
             "play_services_appset"       : 'com.google.android.gms:play-services-appset:16.0.2',
             // https://developers.adnet.qq.com/doc/android/access_doc
             // https://adnet.qq.com/resource/sdk
-            "tencentad"                  : 'com.qq.e.union:union:4.492.1362',
+            "tencentad"                  : 'com.qq.e.union:union:4.512.1382',
             // https://ogury-ltd.gitbook.io/release-notes/android
             "ogury"                      : 'co.ogury:ogury-sdk:5.4.0',
             // https://github.com/pubnative/pubnative-hybid-android-sdk/wiki/HyBid-Configuration
-            "pubnative"                  : 'net.pubnative:hybid.sdk:2.16.2',
+            "pubnative"                  : 'net.pubnative:hybid.sdk:2.17.0',
             // https://admost.github.io/amrandroid/
             "admost"                     : 'com.admost.sdk:amr:2.7.0',
             "admost_volley"              : 'com.android.volley:volley:1.2.1',
@@ -104,7 +104,7 @@ ext {
             "sanads"                     : 'com.myadsget:san-sdk:3.12.7',
             "okhttp"                     : 'com.squareup.okhttp3:okhttp:3.14.9',
             // 穿山甲国内 https://www.pangle.cn/
-            "pangle_cn"                  : 'com.pangle.cn:ads-sdk-pro:5.0.0.4',
+            "pangle_cn"                  : 'com.pangle.cn:ads-sdk-pro:5.1.0.2',
 
             // https://dev.appsflyer.com/hc/docs/install-android-sdk
             "appsflyer"                  : 'com.appsflyer:af-android-sdk:6.4.0',
@@ -114,18 +114,18 @@ ext {
             // 华为广告服务
             // https://developer.huawei.com/consumer/cn/doc/distribution/monetize/androidappsdk-0000001053440624
             // https://developer.huawei.com/consumer/cn/doc/development/HMSCore-References/android-error-code-0000001130129080
-            "hwads"                      : 'com.huawei.hms:ads-lite:13.4.58.301',
+            "hwads"                      : 'com.huawei.hms:ads-lite:13.4.61.300',
             "hwads_installreferrer"      : 'com.huawei.hms:ads-installreferrer:3.4.56.300',
             "hwads_identifier"           : 'com.huawei.hms:ads-identifier:3.4.56.300',
     ]
 
     adapterVersion = [
             'adcolony'      : '2.6.1',
-            'admob'         : '2.5.4',
+            'admob'         : '2.5.5',
             'admost'        : '2.5.0',
             'adtiming'      : '2.5.0',
             'applovin'      : '2.5.3',
-            'chartboost'    : '2.6.0',
+            'chartboost'    : '2.6.1',
             'facebook'      : '2.6.2',
             'flatads'       : '2.6.0',
             'fyber'         : '2.5.0',

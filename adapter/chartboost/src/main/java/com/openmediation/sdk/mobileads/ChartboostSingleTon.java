@@ -22,6 +22,7 @@ import com.chartboost.sdk.events.RewardEvent;
 import com.chartboost.sdk.events.ShowError;
 import com.chartboost.sdk.events.ShowEvent;
 import com.chartboost.sdk.events.StartError;
+import com.openmediation.sdk.mediation.AdapterErrorBuilder;
 import com.openmediation.sdk.mediation.InterstitialAdCallback;
 import com.openmediation.sdk.mediation.MediationUtil;
 import com.openmediation.sdk.mediation.RewardedVideoCallback;
@@ -120,20 +121,6 @@ public class ChartboostSingleTon {
 
     public void loadRewardedVideo(String adUnitId, RewardedVideoCallback callback) {
         AdLog.getSingleton().LogD(TAG, "loadRewardedVideo: " + adUnitId);
-//        InnerRewardedCallback innerRewardedCallback = mRvCallbacks.get(adUnitId);
-//        if (innerRewardedCallback == null) {
-//            innerRewardedCallback = new InnerRewardedCallback();
-//            mRvCallbacks.put(adUnitId, innerRewardedCallback);
-//        }
-//        Rewarded rewarded = mRewardedAds.get(adUnitId);
-//        if (rewarded == null) {
-//            rewarded = new Rewarded(adUnitId, innerRewardedCallback, null);
-//            mRewardedAds.put(adUnitId, rewarded);
-//        }
-//        innerRewardedCallback.setRewardedAd(adUnitId, callback);
-//        rewarded.cache();
-
-
         InnerRewardedCallback rewardedCallback = new InnerRewardedCallback();
         Rewarded rewarded = new Rewarded(adUnitId, rewardedCallback, null);
         rewardedCallback.setRewardedAd(adUnitId, rewarded, callback);
@@ -157,19 +144,6 @@ public class ChartboostSingleTon {
 
     public void loadInterstitialAd(String adUnitId, InterstitialAdCallback callback) {
         AdLog.getSingleton().LogD(TAG, "loadInterstitialAd: " + adUnitId);
-//        InnerInterstitialCallback interstitialCallback = mIsCallbacks.get(adUnitId);
-//        if (interstitialCallback == null) {
-//            interstitialCallback = new InnerInterstitialCallback();
-//            mIsCallbacks.put(adUnitId, interstitialCallback);
-//        }
-//        Interstitial interstitial = mInterstitialAds.get(adUnitId);
-//        if (interstitial == null) {
-//            interstitial = new Interstitial(adUnitId, interstitialCallback, null);
-//            mInterstitialAds.put(adUnitId, interstitial);
-//        }
-//        interstitialCallback.setInterstitialAd(adUnitId, callback);
-//        interstitial.cache();
-
         InnerInterstitialCallback interstitialCallback = new InnerInterstitialCallback();
         Interstitial interstitial = new Interstitial(adUnitId, interstitialCallback, null);
         interstitialCallback.setInterstitialAd(adUnitId, interstitial, callback);
@@ -207,7 +181,10 @@ public class ChartboostSingleTon {
 
         @Override
         public void onAdClicked(ClickEvent clickEvent, ClickError clickError) {
-            AdLog.getSingleton().LogD(TAG, "RewardedAd onAdClicked: " + mAdUnitId);
+            AdLog.getSingleton().LogD(TAG, "RewardedAd onAdClicked: " + mAdUnitId + ", ClickError: " + clickError);
+            if (clickError != null) {
+                return;
+            }
             if (mAdCallback != null) {
                 mAdCallback.onRewardedVideoAdClicked();
             }
@@ -215,7 +192,14 @@ public class ChartboostSingleTon {
 
         @Override
         public void onAdLoaded(CacheEvent cacheEvent, CacheError cacheError) {
-            AdLog.getSingleton().LogD(TAG, "RewardedAd onAdLoaded: " + mAdUnitId);
+            AdLog.getSingleton().LogD(TAG, "RewardedAd onAdLoaded: " + mAdUnitId + ", CacheError: " + cacheError);
+            if (cacheError != null) {
+                if (mAdCallback != null) {
+                    mAdCallback.onRewardedVideoLoadFailed(AdapterErrorBuilder.buildLoadError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, "ChartboostAdapter", cacheError.toString()));
+                }
+                return;
+            }
             if (mRewarded != null) {
                 mRewardedAds.put(mAdUnitId, mRewarded);
             }
@@ -231,7 +215,14 @@ public class ChartboostSingleTon {
 
         @Override
         public void onAdShown(ShowEvent showEvent, ShowError showError) {
-            AdLog.getSingleton().LogD(TAG, "RewardedAd onAdShown: " + mAdUnitId);
+            AdLog.getSingleton().LogD(TAG, "RewardedAd onAdShown: " + mAdUnitId + ", ShowError: " + showError);
+            if (showError != null) {
+                if (mAdCallback != null) {
+                    mAdCallback.onRewardedVideoAdShowFailed(AdapterErrorBuilder.buildShowError(
+                            AdapterErrorBuilder.AD_UNIT_REWARDED_VIDEO, "ChartboostAdapter", showError.toString()));
+                }
+                return;
+            }
             if (mAdCallback != null) {
                 mAdCallback.onRewardedVideoAdShowSuccess();
                 mAdCallback.onRewardedVideoAdStarted();
@@ -279,7 +270,10 @@ public class ChartboostSingleTon {
 
         @Override
         public void onAdClicked(@NotNull ClickEvent clickEvent, @Nullable ClickError clickError) {
-            AdLog.getSingleton().LogD(TAG, "InterstitialAd onAdClicked: " + mAdUnitId);
+            AdLog.getSingleton().LogD(TAG, "InterstitialAd onAdClicked: " + mAdUnitId + ", ClickError: " + clickError);
+            if (clickError != null) {
+                return;
+            }
             if (mAdCallback != null) {
                 mAdCallback.onInterstitialAdClicked();
             }
@@ -287,7 +281,14 @@ public class ChartboostSingleTon {
 
         @Override
         public void onAdLoaded(@NotNull CacheEvent cacheEvent, @Nullable CacheError cacheError) {
-            AdLog.getSingleton().LogD(TAG, "InterstitialAd onAdLoaded: " + mAdUnitId);
+            AdLog.getSingleton().LogD(TAG, "InterstitialAd onAdLoaded: " + mAdUnitId + ", CacheError: " + cacheError);
+            if (cacheError != null) {
+                if (mAdCallback != null) {
+                    mAdCallback.onInterstitialAdLoadFailed(AdapterErrorBuilder.buildLoadError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, "ChartboostAdapter", cacheError.toString()));
+                }
+                return;
+            }
             if (mInterstitial != null) {
                 mInterstitialAds.put(mAdUnitId, mInterstitial);
             }
@@ -303,7 +304,14 @@ public class ChartboostSingleTon {
 
         @Override
         public void onAdShown(@NotNull ShowEvent showEvent, @Nullable ShowError showError) {
-            AdLog.getSingleton().LogD(TAG, "InterstitialAd onAdShown: " + mAdUnitId);
+            AdLog.getSingleton().LogD(TAG, "InterstitialAd onAdShown: " + mAdUnitId + ", ShowError: " + showError);
+            if (showError != null) {
+                if (mAdCallback != null) {
+                    mAdCallback.onInterstitialAdShowFailed(AdapterErrorBuilder.buildShowError(
+                            AdapterErrorBuilder.AD_UNIT_INTERSTITIAL, "ChartboostAdapter", showError.toString()));
+                }
+                return;
+            }
             if (mAdCallback != null) {
                 mAdCallback.onInterstitialAdShowSuccess();
             }
